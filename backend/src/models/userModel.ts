@@ -1,0 +1,346 @@
+import mongoose, { Types } from "mongoose";
+import countries, { CountryCode } from "../constants/countries";
+import userRole, { UserRole } from "../constants/roles";
+import genders, { Gender } from "../constants/genders";
+import status, { Status } from "../constants/statuses";
+import goals, { Goals } from "../constants/goals";
+import { INotification } from "../models/notificationModel";
+import { IBadge } from "../models/badgeModel";
+import { IPost } from "../models/postModel";
+import { IExercise } from "../models/exerciseModel";
+import { ITrainingPlan } from "../models/trainingPlanModel";
+import { IUserHasTrainingPlans } from "../models/userHasTrainingPlansModel";
+
+export interface IUser extends Document {
+  username: string;
+  email: string;
+  password: string;
+  createdAccountAt: Date;
+  lastLoginAt: Date;
+  role: UserRole;
+  favorites: {
+    trainingPlans: {
+      trainingPlanId: Types.ObjectId | ITrainingPlan;
+      addedAt: Date;
+    }[];
+    exercises: {
+      exerciseId: Types.ObjectId | IExercise;
+      addedAt: Date;
+    }[];
+  };
+  followedUsers: {
+    followedUserId: Types.ObjectId | IUser;
+    addedAt: Date;
+  }[];
+  followers: {
+    followerId: Types.ObjectId | IUser;
+    addedAt: Date;
+  }[];
+  statistics: {
+    totalWeight: number;
+    totalTrainingsTime: number;
+    startedTrainingPlans: {
+      trainingPlanId: Types.ObjectId | IUserHasTrainingPlans;
+      status: Status;
+    }[];
+  };
+  exercises: {
+    exerciseId: Types.ObjectId | IExercise;
+  }[];
+  trainingPlans: {
+    trainingPlanId: Types.ObjectId | ITrainingPlan;
+  }[];
+  posts: {
+    postId: Types.ObjectId | IPost;
+  }[];
+  profileDetails?: {
+    profilePicture: string;
+    description: string;
+    goal: Goals;
+  };
+  personalDetails?: {
+    firstName: string;
+    lastName: string;
+    country: CountryCode;
+  };
+  fitnessDetails?: {
+    height: number;
+    weight: number;
+    age: number;
+    gender: Gender;
+  };
+  privacySettings: {
+    isPersonalDetailsPublic: boolean;
+    isFitnessDetailsPublic: boolean;
+    isBadgesDetailsPublic: boolean;
+    isGoalPublic: boolean;
+    isTrainingStatisticsPublic: boolean;
+  };
+  badges?: {
+    badge: Types.ObjectId | IBadge;
+    isPinned: boolean;
+    awardedAt: Date;
+  }[];
+  notifications?: {
+    notificationId: Types.ObjectId | INotification;
+  }[];
+  sensor?: {
+    isUsed: boolean;
+    addedAt: Date;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: userRole,
+      default: userRole[0],
+      required: true,
+    },
+    favorites: {
+      trainingPlans: [
+        {
+          trainingPlanId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "TrainingPlan",
+            required: true,
+          },
+          addedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+      exercises: [
+        {
+          exerciseId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Exercise",
+          },
+          addedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+    },
+    followedUsers: [
+      {
+        followedUserId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    followers: [
+      {
+        followerId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    statistics: {
+      totalWeight: {
+        type: Number,
+        default: 0,
+      },
+      completedTrainings: {
+        type: Number,
+        default: 0,
+      },
+      activeTrainings: {
+        type: Number,
+        default: 0,
+      },
+      uncompletedTrainings: {
+        type: Number,
+        default: 0,
+      },
+      totalTrainingsTime: {
+        type: Number,
+        default: 0,
+      },
+      startedTrainingPlans: [
+        {
+          trainingPlanId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "UserHasTrainingPlans",
+          },
+          status: {
+            type: String,
+            enum: status,
+            default: status[0],
+            required: true,
+          },
+        },
+      ],
+    },
+
+    exercises: [
+      {
+        exerciseId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Exercise",
+        },
+      },
+    ],
+    trainingPlans: [
+      {
+        trainingPlanId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "TrainingPlan",
+        },
+      },
+    ],
+    posts: [
+      {
+        postId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Post",
+        },
+      },
+    ],
+
+    profileDetails: {
+      profilePicture: {
+        type: String,
+        default: "",
+      },
+      description: {
+        type: String,
+        maxlength: 150,
+        default: "",
+      },
+      goal: {
+        type: String,
+        enum: goals,
+        default: goals[0],
+      },
+    },
+
+    personalDetails: {
+      firstName: {
+        type: String,
+      },
+      lastName: {
+        type: String,
+      },
+      country: {
+        type: String,
+        enum: countries,
+        default: countries[0],
+      },
+    },
+
+    fitnessDetails: {
+      height: {
+        type: Number,
+        default: 0,
+      },
+      weight: {
+        type: Number,
+        default: 0,
+      },
+      age: {
+        type: Number,
+        default: 0,
+      },
+      gender: {
+        type: String,
+        enum: genders,
+        default: genders[0],
+      },
+    },
+
+    privacySettings: {
+      isPersonalDetailsPublic: {
+        type: Boolean,
+        default: true,
+      },
+      isFitnessDetailsPublic: {
+        type: Boolean,
+        default: true,
+      },
+      isBadgesDetailsPublic: {
+        type: Boolean,
+        default: true,
+      },
+      isGoalPublic: {
+        type: Boolean,
+        default: true,
+      },
+      isTrainingStatisticsPublic: {
+        type: Boolean,
+        default: true,
+      },
+    },
+
+    badges: [
+      {
+        badge: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Badge",
+        },
+        isPinned: {
+          type: Boolean,
+          default: false,
+        },
+        awardedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    notifications: [
+      {
+        notificationId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Notification",
+        },
+      },
+    ],
+
+    sensor: {
+      isUsed: {
+        type: Boolean,
+        default: false,
+      },
+      addedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  },
+  { timestamps: true },
+);
+
+const User = mongoose.model<IUser>("User", userSchema);
+
+export default User;
