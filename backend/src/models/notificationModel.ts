@@ -1,6 +1,6 @@
 import mongoose, { Types } from "mongoose";
-import notifications, { Notifications } from "../constants/notifications";
 import { IUser } from "../models/userModel";
+import { Notifications, notificationsValues } from "../constants/notifications";
 
 export interface INotification extends mongoose.Document {
   sender: Types.ObjectId | IUser;
@@ -22,8 +22,8 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: notifications,
-      default: notifications[0],
+      enum: notificationsValues,
+      default: Notifications.Info,
     },
   },
   { timestamps: true },

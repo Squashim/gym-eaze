@@ -1,15 +1,15 @@
 import mongoose, { Types } from "mongoose";
 import countries, { CountryCode } from "../constants/countries";
-import userRole, { UserRole } from "../constants/roles";
-import genders, { Gender } from "../constants/genders";
-import status, { Status } from "../constants/statuses";
-import goals, { Goals } from "../constants/goals";
+import { UserRole, userRoleValues } from "../constants/roles";
+import { Gender, genderValues } from "../constants/genders";
+import { Goal, goalValues } from "../constants/goals";
 import { INotification } from "../models/notificationModel";
 import { IBadge } from "../models/badgeModel";
 import { IPost } from "../models/postModel";
 import { IExercise } from "../models/exerciseModel";
 import { ITrainingPlan } from "../models/trainingPlanModel";
 import { IUserHasTrainingPlans } from "../models/userHasTrainingPlansModel";
+import { statusesValues, StatusTraining } from "../constants/statuses";
 
 export interface IUser extends Document {
   username: string;
@@ -41,7 +41,7 @@ export interface IUser extends Document {
     totalTrainingsTime: number;
     startedTrainingPlans: {
       trainingPlanId: Types.ObjectId | IUserHasTrainingPlans;
-      status: Status;
+      status: StatusTraining;
     }[];
   };
   exercises: {
@@ -56,7 +56,7 @@ export interface IUser extends Document {
   profileDetails?: {
     profilePicture: string;
     description: string;
-    goal: Goals;
+    goal: Goal;
   };
   personalDetails?: {
     firstName: string;
@@ -110,8 +110,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: userRole,
-      default: userRole[0],
+      enum: userRoleValues,
+      default: UserRole.User,
       required: true,
     },
     favorites: {
@@ -194,8 +194,8 @@ const userSchema = new mongoose.Schema(
           },
           status: {
             type: String,
-            enum: status,
-            default: status[0],
+            enum: statusesValues,
+            default: StatusTraining.Active,
             required: true,
           },
         },
@@ -239,8 +239,8 @@ const userSchema = new mongoose.Schema(
       },
       goal: {
         type: String,
-        enum: goals,
-        default: goals[0],
+        enum: goalValues,
+        default: Goal.None,
       },
     },
 
@@ -273,8 +273,8 @@ const userSchema = new mongoose.Schema(
       },
       gender: {
         type: String,
-        enum: genders,
-        default: genders[0],
+        enum: genderValues,
+        default: Gender.none,
       },
     },
 

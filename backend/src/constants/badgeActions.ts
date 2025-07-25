@@ -1,11 +1,10 @@
-// mozna jako enum
-export const badgeActions = [
-  "Days",
-  "Followers",
-  "Trainings",
-  "Sensor",
-  "Exercises",
-  "Posts",
-] as const;
+export enum BadgeActions {
+  days = "Days",
+  followers = "Followers",
+  trainings = "Trainings",
+  sensor = "Sensor",
+  exercises = "Exercises",
+  posts = "Posts",
+}
 
-export type BadgeAction = (typeof badgeActions)[number];
+export const badgeActionValues = Object.values(BadgeActions);

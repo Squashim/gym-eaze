@@ -16,18 +16,18 @@ import { seedHashtags } from "./data/hashtagsData";
 const seed = async () => {
   await connectToDB();
   try {
-    //await seedBadges();
-    //await seedEquipment();
-    //await seedMuscleGroups();
-    //await seedHashtags();
-    //await seedExercises();
+    await seedBadges();
+    await seedEquipment();
+    await seedMuscleGroups();
+    await seedHashtags();
+    await seedExercises();
 
     //await downloadedBadge();
     //await downloadedEquipment();
     //await downloadedMuscleGroup();
     //await downloadedHashtags();
 
-    await downloadedExercises();
+    //await downloadedExercises();
   } catch (error) {
     console.error("Błąd:", error);
   } finally {

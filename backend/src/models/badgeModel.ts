@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import { badgeActions, BadgeAction } from "../constants/badgeActions";
+import { BadgeActions, badgeActionValues } from "../constants/badgeActions";
 
 export interface IBadge extends Document {
   title: string;
   description: string;
   image: string;
   requirements: {
-    action: BadgeAction;
+    action: BadgeActions;
     target?: number;
     connected?: boolean;
   };
@@ -28,7 +28,7 @@ const badgeSchema = new mongoose.Schema({
   requirements: {
     action: {
       type: String,
-      enum: badgeActions,
+      enum: badgeActionValues,
       required: true,
     },
     target: {

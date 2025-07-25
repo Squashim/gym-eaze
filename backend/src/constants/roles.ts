@@ -1,4 +1,5 @@
-// mozna jako enum
-const userRoles = ["user", "admin"] as const;
-export type UserRole = (typeof userRoles)[number];
-export default userRoles;
+export enum UserRole {
+  User = "user",
+  Admin = "admin",
+}
+export const userRoleValues = Object.values(UserRole);

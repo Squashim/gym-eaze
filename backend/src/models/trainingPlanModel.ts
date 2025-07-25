@@ -1,12 +1,17 @@
 import mongoose, { Types } from "mongoose";
-import privacySettings, { PrivacySettings } from "../constants/privacySettings";
-import advancedLevel, { AdvancedLevel } from "../constants/advancedLevel";
+import {
+  PrivacySettings,
+  privacySettingsValues,
+} from "../constants/privacySettings";
+import { AdvancedLevel, advancedLevelValues } from "../constants/advancedLevel";
 import { IExercise } from "../models/exerciseModel";
+import { Goal, goalValues } from "../constants/goals";
 
 export interface ITrainingPlan extends mongoose.Document {
   title: string;
   description?: string;
   image?: string;
+  goal: Goal;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
   likes: number;
@@ -29,6 +34,7 @@ export interface ITrainingPlan extends mongoose.Document {
       }[];
     };
   }[];
+  hashtags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,25 +50,26 @@ const trainingSchema = new mongoose.Schema(
     description: {
       type: String,
       maxLength: 800,
-      // to jest wymagane w koncu?
-      minLength: 1,
     },
     image: {
       type: String,
-      // dal bym bez default
       default: "",
+    },
+    goal: {
+      type: String,
+      enum: goalValues,
+      default: Goal.None,
     },
     visibility: {
       type: String,
-      enum: privacySettings,
-      default: privacySettings[0],
+      enum: privacySettingsValues,
+      default: PrivacySettings.Publiczny,
       required: true,
     },
     advancedLevel: {
       type: String,
-      enum: advancedLevel,
-      default: advancedLevel[0],
-      required: true,
+      enum: advancedLevelValues,
+      default: AdvancedLevel.Easy,
     },
     likes: {
       type: Number,
@@ -74,13 +81,11 @@ const trainingSchema = new mongoose.Schema(
           name: {
             type: String,
             maxLength: 150,
-            // tak samo minLength, skoro jest required
-            minLength: 1,
             required: true,
           },
           restBetweenExercises: {
             type: Number,
-            // dal bym defaulta jakiegos nawet na te 30 sekund
+            default: 30,
             required: true,
           },
           totalDuration: {
@@ -109,8 +114,6 @@ const trainingSchema = new mongoose.Schema(
                     },
                     weight: {
                       type: Number,
-                      // chyba ciezar byl opcjonalny
-                      required: true,
                     },
                     restAfterSet: {
                       type: Number,
@@ -124,7 +127,11 @@ const trainingSchema = new mongoose.Schema(
         },
       },
     ],
-    // timestampy
+    hashtags: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true },
 );

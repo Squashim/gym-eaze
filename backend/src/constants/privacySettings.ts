@@ -1,4 +1,6 @@
-// mozna jako enum
-const privacySettings = ["Publiczny", "Prywatny"] as const;
-export type PrivacySettings = (typeof privacySettings)[number];
-export default privacySettings;
+export enum PrivacySettings {
+  Publiczny = "Publiczny",
+  Prywatny = "Prywatny",
+}
+
+export const privacySettingsValues = Object.values(PrivacySettings);

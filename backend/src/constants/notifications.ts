@@ -1,4 +1,7 @@
-// mozna jako enum
-const notifications = ["Informacja", "Ostrzeżenie", "Błąd"] as const;
-export type Notifications = (typeof notifications)[number];
-export default notifications;
+export enum Notifications {
+  Info = "Informacja",
+  Warning = "Ostrzeżenie",
+  Error = "Błąd",
+}
+
+export const notificationsValues = Object.values(Notifications);

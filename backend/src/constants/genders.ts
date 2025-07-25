@@ -1,4 +1,7 @@
-// mozna jako enum
-const gender = ["Nie wybrano", "Kobieta", "Mężczyzna"] as const;
-export type Gender = (typeof gender)[number];
-export default gender;
+export enum Gender {
+  none = "Nie wybrano",
+  female = "Kobieta",
+  male = "Mężczyzna",
+}
+
+export const genderValues = Object.values(Gender);

@@ -3,6 +3,7 @@ import Equipment from "../../models/equipmentModel";
 import Exercise from "../../models/exerciseModel";
 import MuscleGroup from "../../models/muscleGroup";
 import Hashtag from "../../models/hashtagsModel";
+//robie zmiany
 
 export const downloadedBadge = async () => {
   const badge = await Badge.find();

@@ -1,18 +1,17 @@
-// mozna jako enum
-const goals = [
-  "Nie wybrano",
-  "Regeneracja i odpoczynek",
-  "Zwiększanie siły",
-  "Poprawa postawy ciała",
-  "Zwiększenie masy ciała",
-  "Poprawa koordynacji",
-  "Spalanie kalorii",
-  "Poprawa mobilności",
-  "Rozwój nóg i pośladków",
-  "Poprawa wytrzymałości",
-  "Redukcja tkanki tłuszczowej",
-  "Budowanie masy mięśniowej",
-  "Poprawa gibkości",
-] as const;
-export type Goals = (typeof goals)[number];
-export default goals;
+export enum Goal {
+  None = "Nie wybrano",
+  Recovery = "Regeneracja i odpoczynek",
+  Strength = "Zwiększanie siły",
+  Posture = "Poprawa postawy ciała",
+  MassGain = "Zwiększenie masy ciała",
+  Coordination = "Poprawa koordynacji",
+  CalorieBurn = "Spalanie kalorii",
+  Mobility = "Poprawa mobilności",
+  LegsGlutes = "Rozwój nóg i pośladków",
+  Endurance = "Poprawa wytrzymałości",
+  FatLoss = "Redukcja tkanki tłuszczowej",
+  MuscleGain = "Budowanie masy mięśniowej",
+  Flexibility = "Poprawa gibkości",
+}
+
+export const goalValues = Object.values(Goal);
