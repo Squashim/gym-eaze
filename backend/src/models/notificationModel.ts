@@ -1,9 +1,7 @@
-import mongoose, { Types } from "mongoose";
-import { IUser } from "../models/userModel";
+import mongoose from "mongoose";
 import { Notifications, notificationsValues } from "../constants/notifications";
 
 export interface INotification extends mongoose.Document {
-  sender: Types.ObjectId | IUser;
   message: string;
   type: Notifications;
   createdAt: Date;
@@ -12,10 +10,6 @@ export interface INotification extends mongoose.Document {
 
 const notificationSchema = new mongoose.Schema(
   {
-    sender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     message: {
       type: String,
       required: true,

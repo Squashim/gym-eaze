@@ -2,8 +2,7 @@ import Badge from "../../models/badgeModel";
 import Equipment from "../../models/equipmentModel";
 import Exercise from "../../models/exerciseModel";
 import MuscleGroup from "../../models/muscleGroup";
-import Hashtag from "../../models/hashtagsModel";
-//robie zmiany
+import User from "../../models/userModel";
 
 export const downloadedBadge = async () => {
   const badge = await Badge.find();
@@ -20,16 +19,16 @@ export const downloadedMuscleGroup = async () => {
   console.log(muscleGroups);
 };
 
-export const downloadedHashtags = async () => {
-  const hashtags = await Hashtag.find();
-  console.log(hashtags);
-};
-
 export const downloadedExercises = async () => {
   const exercises = await Exercise.find()
     .populate("muscleGroup")
     .populate("equipment")
     .populate("hashtags");
 
-  console.log(exercises);
+  console.log(JSON.stringify(exercises, null, 2));
+};
+
+export const downloadedUsers = async () => {
+  const users = await User.find().populate("favorites.exercises.exerciseId");
+  console.log(JSON.stringify(users, null, 2));
 };

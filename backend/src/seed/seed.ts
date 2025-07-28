@@ -9,25 +9,24 @@ import {
   downloadedMuscleGroup,
   downloadedBadge,
   downloadedEquipment,
-  downloadedHashtags,
+  downloadedUsers,
 } from "./test/downloadData";
-import { seedHashtags } from "./data/hashtagsData";
+import { seedUsers } from "./data/userData";
 
 const seed = async () => {
   await connectToDB();
   try {
-    await seedBadges();
-    await seedEquipment();
-    await seedMuscleGroups();
-    await seedHashtags();
-    await seedExercises();
+    //await seedBadges();
+    //await seedEquipment();
+    //await seedMuscleGroups();
+    //await seedExercises();
+    //await seedUsers();
 
     //await downloadedBadge();
     //await downloadedEquipment();
     //await downloadedMuscleGroup();
-    //await downloadedHashtags();
-
     //await downloadedExercises();
+    await downloadedUsers();
   } catch (error) {
     console.error("Błąd:", error);
   } finally {

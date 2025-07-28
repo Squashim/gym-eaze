@@ -5,7 +5,6 @@ import { Gender, genderValues } from "../constants/genders";
 import { Goal, goalValues } from "../constants/goals";
 import { INotification } from "../models/notificationModel";
 import { IBadge } from "../models/badgeModel";
-import { IPost } from "../models/postModel";
 import { IExercise } from "../models/exerciseModel";
 import { ITrainingPlan } from "../models/trainingPlanModel";
 import { IUserHasTrainingPlans } from "../models/userHasTrainingPlansModel";
@@ -44,15 +43,6 @@ export interface IUser extends Document {
       status: StatusTraining;
     }[];
   };
-  exercises: {
-    exerciseId: Types.ObjectId | IExercise;
-  }[];
-  trainingPlans: {
-    trainingPlanId: Types.ObjectId | ITrainingPlan;
-  }[];
-  posts: {
-    postId: Types.ObjectId | IPost;
-  }[];
   profileDetails?: {
     profilePicture: string;
     description: string;
@@ -201,32 +191,6 @@ const userSchema = new mongoose.Schema(
         },
       ],
     },
-
-    exercises: [
-      {
-        exerciseId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Exercise",
-        },
-      },
-    ],
-    trainingPlans: [
-      {
-        trainingPlanId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "TrainingPlan",
-        },
-      },
-    ],
-    posts: [
-      {
-        postId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Post",
-        },
-      },
-    ],
-
     profileDetails: {
       profilePicture: {
         type: String,
@@ -253,8 +217,8 @@ const userSchema = new mongoose.Schema(
       },
       country: {
         type: String,
-        enum: countries,
-        default: countries[0],
+        enum: countries.map((c) => c.code),
+        default: "PL",
       },
     },
 
