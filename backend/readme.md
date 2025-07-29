@@ -1,4 +1,37 @@
-Aby uruchomić seeda nalezy wpisać komende, pamietaj ze musisz znajdować się w katalogu backend
-npm run seed
+# GymEaze Backend
 
-# UWAGA: SEED jest jeszcze w trakcie
+## Uruchamianie backendu
+
+1. **Przejdź do katalogu backend:**
+
+   ```sh
+   cd backend
+   ```
+
+2. **Utwórz plik `.env` w glownym folderze czyli `backend` i ustaw zmienne środowiskowe:**
+
+   ```env
+   MONGODB_URI=tu_wstaw_swoje_URI_do_MongoDBAtlas
+   PORT=standard_to_3000
+   ```
+
+3. **Zainstaluj zależności:**
+
+   ```sh
+   npm install
+   ```
+
+4. **Aby uruchomić backend wpisz:**
+   ```sh
+   npm run dev
+   ```
+
+## Uruchamianie seeda
+
+4. **Uruchom seeda:**
+
+   Jeśli chcesz sprawdzić dane lub je dodac do bazy to odkometuj lub zakomentuj funkcje w `seed.ts`
+
+   ```sh
+   npm run seed
+   ```

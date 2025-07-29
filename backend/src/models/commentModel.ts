@@ -1,13 +1,12 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
+import { CommentType } from "../constants/commentType";
 
 interface IComment extends mongoose.Document {
   content: string;
-  author: mongoose.Schema.Types.ObjectId;
+  author: Types.ObjectId;
   likes: number;
-  // to mozna do odzielnego typu dac
-  parentType: "Exercise" | "Training" | "Post" | "Comment";
-  parentId: mongoose.Schema.Types.ObjectId;
-  replies: mongoose.Schema.Types.ObjectId[];
+  parentType: CommentType;
+  parentId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,7 +31,7 @@ const commentSchema = new mongoose.Schema(
 
     parentType: {
       type: String,
-      enum: ["Exercise", "Training", "Post"],
+      enum: CommentType,
     },
 
     parentId: {

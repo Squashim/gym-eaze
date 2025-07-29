@@ -6,9 +6,11 @@ import {
 import { AdvancedLevel, advancedLevelValues } from "../constants/advancedLevel";
 import { IExercise } from "../models/exerciseModel";
 import { Goal, goalValues } from "../constants/goals";
+import { IUser } from "./userModel";
 
 export interface ITrainingPlan extends mongoose.Document {
   title: string;
+  author: Types.ObjectId | IUser;
   description?: string;
   image?: string;
   goal: Goal;
@@ -45,6 +47,11 @@ const trainingSchema = new mongoose.Schema(
       type: String,
       maxLength: 150,
       minLength: 1,
+      required: true,
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     description: {
@@ -119,9 +126,11 @@ const trainingSchema = new mongoose.Schema(
                       type: Number,
                       required: true,
                     },
+                    _id: false,
                   },
                 ],
               },
+              _id: false,
             },
           ],
         },

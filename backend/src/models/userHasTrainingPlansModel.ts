@@ -5,14 +5,17 @@ import { IExercise } from "../models/exerciseModel";
 export interface IUserHasTrainingPlans extends mongoose.Document {
   trainingPlanId: Types.ObjectId | ITrainingPlan;
   completedAt?: Date;
-  progress?: {
+  progress: {
     totalDays: number;
     completedDays: {
-      exerciseId: Types.ObjectId | IExercise;
-      sets: {
-        balancePercentage?: number;
-        tempoPercentage?: number;
-        time?: string;
+      day: Types.ObjectId;
+      exercises: {
+        id: Types.ObjectId | IExercise;
+        sets: {
+          balancePercentage?: number;
+          tempoPercentage?: number;
+          time?: number;
+        }[];
       }[];
     }[];
   };
@@ -38,24 +41,31 @@ const userHasTrainingPlansSchema = new mongoose.Schema(
       },
       completedDays: [
         {
-          exerciseId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Exercise",
+          day: {
+            type: String,
             required: true,
+            exerciseId: [
+              {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Exercise",
+                required: true,
+                sets: [
+                  {
+                    balancePercentage: {
+                      type: Number,
+                    },
+                    tempoPercentage: {
+                      type: Number,
+                    },
+                    time: {
+                      type: Number,
+                    },
+                  },
+                ],
+              },
+            ],
           },
-          sets: [
-            {
-              balancePercentage: {
-                type: Number,
-              },
-              tempoPercentage: {
-                type: Number,
-              },
-              time: {
-                type: String,
-              },
-            },
-          ],
+          _id: false,
         },
       ],
     },

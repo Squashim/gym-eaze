@@ -3,6 +3,7 @@ import User from "../../models/userModel";
 import { UserRole } from "../../constants/roles";
 import { Goal } from "../../constants/goals";
 import { Gender } from "../../constants/genders";
+import { StatusTraining } from "../../constants/statuses";
 
 export const seedUsers = async () => {
   await User.deleteMany();
@@ -12,7 +13,7 @@ export const seedUsers = async () => {
 
 const users = [
   {
-    _id: new Types.ObjectId("68875a0b053920a2eca69cbe"),
+    _id: new Types.ObjectId("68875a0b053920a2eca69cbe"), // monikaGym
     username: "monikaGym",
     email: "monikaGym@example.com",
     password: "TestPassword123",
@@ -23,40 +24,25 @@ const users = [
       trainingPlans: [],
       exercises: [
         new Types.ObjectId("68875b48a6d40cbbe47d1d9a"),
-
         new Types.ObjectId("68875afe9d9533738f442263"),
-        //po prostutablic i tyle
       ],
     },
     followedUsers: [],
     followers: [
-      //tak samo tablica
-      {
-        followerId: new Types.ObjectId("6887cc687882c42182cdf1f5"), //paulaRunner
-        addedAt: new Date(),
-      },
+      new Types.ObjectId("6887cc687882c42182cdf1f5"), //paulaRunner
     ],
     statistics: {
       totalWeight: 0,
       totalTrainingsTime: 0,
-      startedTrainingPlans: [],
+      startedTrainingPlans: [
+        {
+          trainingPlanId: "6888e4ecdbbdf0460db19682",
+        },
+        {
+          status: StatusTraining.Active,
+        },
+      ],
     },
-    exercises: [
-      //tak samo
-      {
-        exerciseId: new Types.ObjectId("68875afe9d9533738f442263"),
-      },
-      {
-        exerciseId: new Types.ObjectId("68875b48a6d40cbbe47d1d9a"),
-      },
-    ],
-    trainingPlans: [],
-    posts: [
-      //tak samo
-      {
-        postId: new Types.ObjectId("6887ce64297974f8c21a1fcf"),
-      },
-    ],
     profileDetails: {
       profilePicture: "https://ibb.co/5XNdQ2n3",
       description: "Miłośniczka fitnessu i zdrowego stylu życia.",
@@ -82,24 +68,31 @@ const users = [
     },
     badges: [
       {
-        //PAMIETAJ ABY USUWAC _id
         badge: new Types.ObjectId("6887b71977991eea1a365c96"),
         isPinnded: true,
         awardedAt: new Date(),
-        _id: false,
+      },
+      {
+        badge: new Types.ObjectId("6887b73a2078947c7f327f80"),
+        isPinned: false,
+        awardedAt: new Date(),
+      },
+      {
+        badge: new Types.ObjectId("6887b63aa3234565c7b5392b"),
+        isPinned: true,
+        awardedAt: new Date(),
       },
     ],
     notifications: [
-      //sama talica
-      {
-        notificationId: new Types.ObjectId("6887b9757bd7aefa4ba5edec"),
-      },
+      new Types.ObjectId("6887b9757bd7aefa4ba5edec"),
+      new Types.ObjectId("6888cb96cc1c5787cec0f18f"),
+      new Types.ObjectId("6888e5ab11463715323aa72c"),
     ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
   {
-    _id: new Types.ObjectId("6887c5f43118c221f43b4e23"),
+    _id: new Types.ObjectId("6887c5f43118c221f43b4e23"), // fitnessFan
     username: "fitnessFan",
     email: "fitnessFan@example.com",
     password: "TestPassword123",
@@ -108,30 +101,17 @@ const users = [
     role: UserRole.User,
     favorites: {
       trainingPlans: [],
-      exercises: [
-        {
-          exerciseId: new Types.ObjectId("6887c6be1f99e50d61923bb2"),
-          addedAt: new Date(),
-        },
-      ],
+      exercises: [new Types.ObjectId("6887c6be1f99e50d61923bb2")],
     },
     followedUsers: [],
-    followers: [],
+    followers: [
+      new Types.ObjectId("6887cc687882c42182cdf1f5"), // monikaGym
+    ],
     statistics: {
       totalWeight: 0,
       totalTrainingsTime: 0,
       startedTrainingPlans: [],
     },
-    exercises: [
-      {
-        exerciseId: new Types.ObjectId("68875afe9d9533738f442263"), //1 cwiczenie
-      },
-      {
-        exerciseId: new Types.ObjectId("68875b48a6d40cbbe47d1d9a"), //2 cwiczenie
-      },
-    ],
-    trainingPlans: [],
-    posts: [],
     profileDetails: {
       profilePicture: "https://ibb.co/Z1t67gdW",
       description: "Entuzjasta zdrowego stylu życia i aktywności fizycznej.",
@@ -158,20 +138,24 @@ const users = [
     badges: [
       {
         badge: new Types.ObjectId("6887b71977991eea1a365c96"),
-        isPinnded: true,
+        isPinned: true,
+        awardedAt: new Date(),
+      },
+      {
+        badge: new Types.ObjectId("6887b73a2078947c7f327f80"),
+        isPinned: false,
         awardedAt: new Date(),
       },
     ],
     notifications: [
-      {
-        notificationId: new Types.ObjectId("6887b9757bd7aefa4ba5edec"),
-      },
+      new Types.ObjectId("6887b9757bd7aefa4ba5edec"),
+      new Types.ObjectId("6888cb96cc1c5787cec0f18f"),
     ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
   {
-    _id: new Types.ObjectId("6887cc687882c42182cdf1f5"),
+    _id: new Types.ObjectId("6887cc687882c42182cdf1f5"), // paulaRunner
     username: "paulaRunner",
     email: "paulaRunner@example.com",
     password: "TestPassword123",
@@ -183,10 +167,8 @@ const users = [
       exercises: [],
     },
     followedUsers: [
-      {
-        followedUserId: new Types.ObjectId("68875a0b053920a2eca69cbe"), //MonikaGym
-        addedAt: new Date(),
-      },
+      new Types.ObjectId("68875a0b053920a2eca69cbe"), //MonikaGym
+      new Types.ObjectId("6887c5f43118c221f43b4e23"), //fitnessFan
     ],
     followers: [],
     statistics: {
@@ -194,9 +176,6 @@ const users = [
       totalTrainingsTime: 0,
       startedTrainingPlans: [],
     },
-    exercises: [],
-    trainingPlans: [],
-    posts: [],
     profileDetails: {
       profilePicture: "https://ibb.co/TB3cbNCB",
       description: "Biegaczka z pasją do długich dystansów.",
@@ -220,8 +199,14 @@ const users = [
       isGoalPublic: true,
       isTrainingStatisticsPublic: true,
     },
-    badges: [],
-    notifications: [],
+    badges: [
+      {
+        badge: new Types.ObjectId("6887b73a2078947c7f327f80"),
+        isPinned: false,
+        awardedAt: new Date(),
+      },
+    ],
+    notifications: [new Types.ObjectId("6888cb96cc1c5787cec0f18f")],
     createdAt: new Date(),
     updatedAt: new Date(),
   },

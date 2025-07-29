@@ -80,7 +80,7 @@ const badges = [
   },
   {
     _id: "6887b62a0b6d756908a8e1b4",
-    title: "Fitness influencer - 100 obserwujących",
+    title: "Fitness influencer - 100 motywatorów",
     description: "Setka za Tobą! Twoja forma robi wrażenie",
     image: "https://ibb.co/NgkyztjH",
     requirements: {

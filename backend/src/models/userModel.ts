@@ -18,23 +18,11 @@ export interface IUser extends Document {
   lastLoginAt: Date;
   role: UserRole;
   favorites: {
-    trainingPlans: {
-      trainingPlanId: Types.ObjectId | ITrainingPlan;
-      addedAt: Date;
-    }[];
-    exercises: {
-      exerciseId: Types.ObjectId | IExercise;
-      addedAt: Date;
-    }[];
+    trainingPlans: (Types.ObjectId | ITrainingPlan)[];
+    exercises: (Types.ObjectId | IExercise)[];
   };
-  followedUsers: {
-    followedUserId: Types.ObjectId | IUser;
-    addedAt: Date;
-  }[];
-  followers: {
-    followerId: Types.ObjectId | IUser;
-    addedAt: Date;
-  }[];
+  followedUsers: (Types.ObjectId | IUser)[];
+  followers: (Types.ObjectId | IUser)[];
   statistics: {
     totalWeight: number;
     totalTrainingsTime: number;
@@ -71,9 +59,7 @@ export interface IUser extends Document {
     isPinned: boolean;
     awardedAt: Date;
   }[];
-  notifications?: {
-    notificationId: Types.ObjectId | INotification;
-  }[];
+  notifications?: (Types.ObjectId | INotification)[];
   sensor?: {
     isUsed: boolean;
     addedAt: Date;
@@ -107,52 +93,27 @@ const userSchema = new mongoose.Schema(
     favorites: {
       trainingPlans: [
         {
-          trainingPlanId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "TrainingPlan",
-            required: true,
-          },
-          addedAt: {
-            type: Date,
-            default: Date.now,
-          },
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "TrainingPlan",
         },
       ],
       exercises: [
         {
-          exerciseId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Exercise",
-          },
-          addedAt: {
-            type: Date,
-            default: Date.now,
-          },
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Exercise",
         },
       ],
     },
     followedUsers: [
       {
-        followedUserId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        addedAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     followers: [
       {
-        followerId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        addedAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     statistics: {
@@ -279,15 +240,14 @@ const userSchema = new mongoose.Schema(
           type: Date,
           default: Date.now,
         },
+        _id: false,
       },
     ],
 
     notifications: [
       {
-        notificationId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Notification",
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Notification",
       },
     ],
 
@@ -298,7 +258,6 @@ const userSchema = new mongoose.Schema(
       },
       addedAt: {
         type: Date,
-        default: Date.now,
       },
     },
   },
