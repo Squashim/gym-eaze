@@ -1,7 +1,8 @@
 export enum AdvancedLevel {
-  Easy = "Początkujący",
-  Medium = "Średniozaawansowany",
-  Hard = "Zaawansowany",
+  none = "Nie wybrano",
+  easy = "Początkujący",
+  medium = "Średniozaawansowany",
+  hard = "Zaawansowany",
 }
 
 export const advancedLevelValues = Object.values(AdvancedLevel);

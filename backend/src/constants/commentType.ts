@@ -1,8 +1,8 @@
-export enum CommentType {
-  Exercise = "Ćwiczenie",
-  Training = "Trening",
-  Post = "Post",
-  Comment = "Komentarz",
+export enum CommentParentType {
+  exercise = "Ćwiczenie",
+  training = "Trening",
+  post = "Post",
+  comment = "Komentarz",
 }
 
-export const commentTypeValues = Object.values(CommentType);
+export const commentParentTypeValues = Object.values(CommentParentType);

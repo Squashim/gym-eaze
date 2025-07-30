@@ -65,18 +65,18 @@ const trainingSchema = new mongoose.Schema(
     goal: {
       type: String,
       enum: goalValues,
-      default: Goal.None,
+      default: Goal.none,
     },
     visibility: {
       type: String,
       enum: privacySettingsValues,
-      default: PrivacySettings.Publiczny,
+      default: PrivacySettings.public,
       required: true,
     },
     advancedLevel: {
       type: String,
       enum: advancedLevelValues,
-      default: AdvancedLevel.Easy,
+      default: AdvancedLevel.easy,
     },
     likes: {
       type: Number,

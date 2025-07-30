@@ -17,9 +17,8 @@ const users = [
     username: "monikaGym",
     email: "monikaGym@example.com",
     password: "TestPassword123",
-    createdAccountAt: new Date(),
     lastLoginAt: new Date(),
-    role: UserRole.User,
+    role: UserRole.user,
     favorites: {
       trainingPlans: [],
       exercises: [
@@ -37,16 +36,14 @@ const users = [
       startedTrainingPlans: [
         {
           trainingPlanId: "6888e4ecdbbdf0460db19682",
-        },
-        {
-          status: StatusTraining.Active,
+          status: StatusTraining.active,
         },
       ],
     },
     profileDetails: {
       profilePicture: "https://ibb.co/5XNdQ2n3",
       description: "Miłośniczka fitnessu i zdrowego stylu życia.",
-      goal: Goal.CalorieBurn,
+      goal: Goal.calorieBurn,
     },
     personalDetails: {
       firstName: "Monika",
@@ -96,9 +93,8 @@ const users = [
     username: "fitnessFan",
     email: "fitnessFan@example.com",
     password: "TestPassword123",
-    createdAccountAt: new Date(),
     lastLoginAt: new Date(),
-    role: UserRole.User,
+    role: UserRole.user,
     favorites: {
       trainingPlans: [],
       exercises: [new Types.ObjectId("6887c6be1f99e50d61923bb2")],
@@ -115,7 +111,7 @@ const users = [
     profileDetails: {
       profilePicture: "https://ibb.co/Z1t67gdW",
       description: "Entuzjasta zdrowego stylu życia i aktywności fizycznej.",
-      goal: Goal.MuscleGain,
+      goal: Goal.muscleGain,
     },
     personalDetails: {
       firstName: "Fabian",
@@ -159,9 +155,8 @@ const users = [
     username: "paulaRunner",
     email: "paulaRunner@example.com",
     password: "TestPassword123",
-    createdAccountAt: new Date(),
     lastLoginAt: new Date(),
-    role: UserRole.User,
+    role: UserRole.user,
     favorites: {
       trainingPlans: [],
       exercises: [],
@@ -179,7 +174,7 @@ const users = [
     profileDetails: {
       profilePicture: "https://ibb.co/TB3cbNCB",
       description: "Biegaczka z pasją do długich dystansów.",
-      goal: Goal.MuscleGain,
+      goal: Goal.muscleGain,
     },
     personalDetails: {
       firstName: "Paulina",

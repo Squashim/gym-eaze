@@ -1,7 +1,7 @@
 export enum Notifications {
-  Info = "Informacja",
-  Warning = "Ostrzeżenie",
-  Error = "Błąd",
+  info = "Informacja",
+  warning = "Ostrzeżenie",
+  error = "Błąd",
 }
 
 export const notificationsValues = Object.values(Notifications);

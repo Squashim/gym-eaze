@@ -8,7 +8,7 @@ export interface IBadge extends Document {
   requirements: {
     action: BadgeActions;
     target?: number;
-    connected?: boolean;
+    isConnected?: boolean;
   };
 }
 
@@ -35,7 +35,7 @@ const badgeSchema = new mongoose.Schema({
       type: Number,
       default: 0,
     },
-    connected: {
+    isConnected: {
       type: Boolean,
       default: false,
     },

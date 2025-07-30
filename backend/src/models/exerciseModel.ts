@@ -57,13 +57,13 @@ const exerciseSchema = new mongoose.Schema(
     visibility: {
       type: String,
       enum: privacySettingsValues,
-      default: PrivacySettings.Publiczny,
+      default: PrivacySettings.public,
       required: true,
     },
     advancedLevel: {
       type: String,
       enum: advancedLevelValues,
-      default: AdvancedLevel.Easy,
+      default: AdvancedLevel.easy,
       required: true,
     },
     muscleGroup: [

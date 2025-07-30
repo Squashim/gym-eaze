@@ -1,11 +1,11 @@
 import mongoose, { Types } from "mongoose";
-import { CommentType } from "../constants/commentType";
+import { CommentParentType } from "../constants/commentType";
 
 interface IComment extends mongoose.Document {
   content: string;
   author: Types.ObjectId;
   likes: number;
-  parentType: CommentType;
+  parentType: CommentParentType;
   parentId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -31,7 +31,7 @@ const commentSchema = new mongoose.Schema(
 
     parentType: {
       type: String,
-      enum: CommentType,
+      enum: CommentParentType,
     },
 
     parentId: {

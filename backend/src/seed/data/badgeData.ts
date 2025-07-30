@@ -137,7 +137,7 @@ const badges = [
     image: "https://ibb.co/6RypnMCK",
     requirements: {
       action: "Sensor",
-      connected: true,
+      isConnected: true,
     },
   },
   //======================= ODZNAKI ZA STWORZONE ĆWICZENIA =====================

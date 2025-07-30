@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import Exercise from "../../models/exerciseModel";
+import { PrivacySettings } from "../../constants/privacySettings";
 
 export const seedExercises = async () => {
   await Exercise.deleteMany();
@@ -17,7 +18,7 @@ const exercises = [
     image: "https://ibb.co/DHDCrhZq",
     video: "https://streamable.com/1gthhv",
     likes: 0,
-    visibility: "Publiczny",
+    visibility: PrivacySettings.public,
     advancedLevel: "Początkujący",
     muscleGroup: [new Types.ObjectId("68825a370b497082d4918e2b")],
     equipment: [
@@ -37,7 +38,7 @@ const exercises = [
     image: "https://ibb.co/B5ypz3Lh",
     video: "https://streamable.com/1gthhv",
     likes: 5,
-    visibility: "Publiczny",
+    visibility: PrivacySettings.public,
     advancedLevel: "Średniozaawansowany",
     muscleGroup: [
       new Types.ObjectId("68825a812383da02f31ac12a"),
@@ -57,7 +58,7 @@ const exercises = [
     image: "https://ibb.co/cKdg8s12",
     video: "https://streamable.com/1gthhv",
     likes: 8,
-    visibility: "Publiczny",
+    visibility: PrivacySettings.public,
     advancedLevel: "Zaawansowany",
     muscleGroup: [
       new Types.ObjectId("68825aab333b8f74d2ea55dd"),
@@ -79,7 +80,7 @@ const exercises = [
     image: "https://ibb.co/M5RWMKN6",
     video: "https://streamable.com/1gthhv",
     likes: 12,
-    visibility: "Prywatny",
+    visibility: PrivacySettings.private,
     advancedLevel: "Początkujący",
     muscleGroup: [
       new Types.ObjectId("68825a3f2f2351ccb33b3dc6"),
@@ -104,7 +105,7 @@ const exercises = [
     image: "https://ibb.co/GvhnPKs2",
     video: "https://streamable.com/1gthhv",
     likes: 2,
-    visibility: "Publiczny",
+    visibility: PrivacySettings.public,
     advancedLevel: "Średniozaawansowany",
     muscleGroup: [
       new Types.ObjectId("68825a2739b1644b05f41baa"),
@@ -123,7 +124,7 @@ const exercises = [
       "Szybkie i efektywne ćwiczenie cardio, które angażuje całe ciało, poprawiając kondycję, koordynację oraz wytrzymałość. Skakanie na skakance aktywuje mięśnie nóg, ramion oraz core'a, co przekłada się na spalanie kalorii i poprawę ogólnej sprawności fizycznej. To doskonałe uzupełnienie treningu siłowego, które zwiększa tętno i wspomaga redukcję tkanki tłuszczowej. Regularne skakanie na skakance poprawia również gibkość, równowagę oraz koordynację ruchową. Idealne zarówno dla osób początkujących, jak i zaawansowanych, może być wykonywane w różnych wariantach intensywności.",
     image: "https://ibb.co/mrk1Crnz",
     likes: 2,
-    visibility: "Publiczny",
+    visibility: PrivacySettings.public,
     advancedLevel: "Początkujący",
     muscleGroup: [
       new Types.ObjectId("68825a4660b5b044fd789516"),

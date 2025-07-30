@@ -16,9 +16,9 @@ const trainingPlans = [
     title: "Plan na masę",
     description: "Plan treningowy na masę mięśniową, 2 dni w tygodniu",
     image: "https://ibb.co/HLk4MrZj",
-    goal: Goal.MuscleGain,
-    visibility: PrivacySettings.Publiczny,
-    advancedLevel: AdvancedLevel.Easy,
+    goal: Goal.muscleGain,
+    visibility: PrivacySettings.public,
+    advancedLevel: AdvancedLevel.easy,
     likes: 2,
     days: [
       {

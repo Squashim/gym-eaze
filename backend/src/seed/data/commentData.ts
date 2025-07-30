@@ -1,4 +1,4 @@
-import { CommentType } from "../../constants/commentType";
+import { CommentParentType } from "../../constants/commentType";
 import Comment from "../../models/commentModel";
 export const seedComments = async () => {
   await Comment.deleteMany();
@@ -12,7 +12,7 @@ const comments = [
     content: "Świetne ćwiczenie!",
     author: "68875a0b053920a2eca69cbe",
     likes: 1,
-    parentType: CommentType.Exercise,
+    parentType: CommentParentType.exercise,
     parentId: "68875afe9d9533738f442263",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -21,7 +21,7 @@ const comments = [
     _id: "6888da3e88ab14770092a2ec",
     content: "Zgadzam się z Moniką!",
     author: "6887cc687882c42182cdf1f5",
-    parentType: CommentType.Comment,
+    parentType: CommentParentType.comment,
     parentId: "6888da1a43fc6c0b89e26606",
   },
 ];

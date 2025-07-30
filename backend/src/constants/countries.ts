@@ -90,7 +90,7 @@ const countries: { code: string; name: string }[] = [
   { code: "KI", name: "Kiribati" },
   { code: "KP", name: "Korea Północna" },
   { code: "KR", name: "Korea Południowa" },
-  { code: "XK", name: "Kosowo" }, // Nieoficjalny kod
+  { code: "XK", name: "Kosowo" },
   { code: "KW", name: "Kuwejt" },
   { code: "KG", name: "Kirgistan" },
   { code: "LA", name: "Laos" },
@@ -170,7 +170,7 @@ const countries: { code: string; name: string }[] = [
   { code: "SE", name: "Szwecja" },
   { code: "CH", name: "Szwajcaria" },
   { code: "SY", name: "Syria" },
-  { code: "TW", name: "Tajwan" }, // Nieoficjalny kod (używany niekiedy jako "CN-TW")
+  { code: "TW", name: "Tajwan" },
   { code: "TJ", name: "Tadżykistan" },
   { code: "TZ", name: "Tanzania" },
   { code: "TH", name: "Tajlandia" },

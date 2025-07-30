@@ -1,6 +1,6 @@
 export enum PrivacySettings {
-  Publiczny = "Publiczny",
-  Prywatny = "Prywatny",
+  public = "Publiczny",
+  private = "Prywatny",
 }
 
 export const privacySettingsValues = Object.values(PrivacySettings);

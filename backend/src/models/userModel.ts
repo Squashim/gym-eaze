@@ -14,7 +14,6 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
-  createdAccountAt: Date;
   lastLoginAt: Date;
   role: UserRole;
   favorites: {
@@ -87,7 +86,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: userRoleValues,
-      default: UserRole.User,
+      default: UserRole.user,
       required: true,
     },
     favorites: {
@@ -121,18 +120,6 @@ const userSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
-      completedTrainings: {
-        type: Number,
-        default: 0,
-      },
-      activeTrainings: {
-        type: Number,
-        default: 0,
-      },
-      uncompletedTrainings: {
-        type: Number,
-        default: 0,
-      },
       totalTrainingsTime: {
         type: Number,
         default: 0,
@@ -142,13 +129,15 @@ const userSchema = new mongoose.Schema(
           trainingPlanId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "UserHasTrainingPlans",
+            required: true,
           },
           status: {
             type: String,
             enum: statusesValues,
-            default: StatusTraining.Active,
+            default: StatusTraining.active,
             required: true,
           },
+          _id: false,
         },
       ],
     },
@@ -165,7 +154,7 @@ const userSchema = new mongoose.Schema(
       goal: {
         type: String,
         enum: goalValues,
-        default: Goal.None,
+        default: Goal.none,
       },
     },
 

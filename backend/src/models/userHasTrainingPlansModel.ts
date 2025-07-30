@@ -42,7 +42,7 @@ const userHasTrainingPlansSchema = new mongoose.Schema(
       completedDays: [
         {
           day: {
-            type: String,
+            type: Types.ObjectId,
             required: true,
             exerciseId: [
               {
