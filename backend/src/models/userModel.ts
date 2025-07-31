@@ -11,6 +11,7 @@ import { IUserHasTrainingPlans } from "../models/userHasTrainingPlansModel";
 import { statusesValues, StatusTraining } from "../constants/statuses";
 
 export interface IUser extends Document {
+  refreshToken?: string;
   username: string;
   email: string;
   password: string;
@@ -67,8 +68,9 @@ export interface IUser extends Document {
   updatedAt: Date;
 }
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<IUser>(
   {
+    refreshToken: { type: String },
     username: {
       type: String,
       required: true,
