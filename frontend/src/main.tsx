@@ -1,13 +1,16 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './App.tsx';
-import { H1 } from '@/components/ui/typography.tsx';
+import { ThemeProvider } from './components/theme-provider';
+import { BrowserRouter as Router } from 'react-router-dom';
+import App from './app';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App>
-      <H1>Hello World</H1>
-    </App>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Router>
+        <App />
+      </Router>
+    </ThemeProvider>
   </StrictMode>,
 );
