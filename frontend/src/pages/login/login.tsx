@@ -91,7 +91,7 @@ const Login = () => {
                   <FormItem className="flex items-center gap-2">
                     <FormControl>
                       <Checkbox
-                        checked={field.value}
+                        checked={!!field.value}
                         id="remember-me"
                         name="rememberMe"
                         onCheckedChange={(checked) => field.onChange(!!checked)}
