@@ -162,21 +162,23 @@ const Signup = () => {
               alt="mężczyzna siedzący i wiążący sznurowadło butów"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5] aspect-[9/16]"
               height={800}
-              loading="lazy"
+              loading="eager"
               src={image}
               width={447}
             />
             <Tooltip>
               <TooltipTrigger className="absolute left-4 bottom-4 text-muted-foreground">
                 <Link
+                  aria-describedby="tooltip-description"
                   rel="noopener noreferrer"
                   target="_blank"
                   to="https://unsplash.com/photos/man-sitting-down-while-tying-shoe-lace-7RUvirkSMOY?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash"
                 >
-                  <InfoIcon size={20} />
+                  <span className="sr-only">Informacje o autorze zdjęcia</span>
+                  <InfoIcon aria-hidden="true" size={20} />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent id="tooltip-description">
                 <Small>Informacje o autorze zdjęcia</Small>
               </TooltipContent>
             </Tooltip>

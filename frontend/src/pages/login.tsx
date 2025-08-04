@@ -140,23 +140,25 @@ const Login = () => {
         <div className="relative hidden md:block md:min-h-[40rem]">
           <img
             alt="mężczyzna ćwiczy z hantlami na siłowni"
-            className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5]  aspect-[9/16]"
+            className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5] aspect-[9/16]"
             height={600}
-            loading="lazy"
+            loading="eager"
             src={image}
             width={447}
           />
           <Tooltip>
             <TooltipTrigger className="absolute right-4 bottom-4 text-muted-foreground">
               <Link
+                aria-describedby="tooltip-description"
                 rel="noopener noreferrer"
                 target="_blank"
                 to="https://unsplash.com/photos/a-man-is-doing-exercises-with-dumbs-in-a-gym-t9bG_FOXqMA"
               >
-                <InfoIcon size={20} />
+                <span className="sr-only">Informacje o autorze zdjęcia</span>
+                <InfoIcon aria-hidden="true" size={20} />
               </Link>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent id="tooltip-description">
               <Small>Informacje o autorze zdjęcia</Small>
             </TooltipContent>
           </Tooltip>

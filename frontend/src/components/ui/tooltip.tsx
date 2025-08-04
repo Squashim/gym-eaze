@@ -42,6 +42,7 @@ function TooltipContent({
           className,
         )}
         data-slot="tooltip-content"
+        role="tooltip"
         sideOffset={sideOffset}
         {...props}
       >
