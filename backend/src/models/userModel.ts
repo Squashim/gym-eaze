@@ -11,6 +11,7 @@ import { IUserHasTrainingPlans } from "../models/userHasTrainingPlansModel";
 import { statusesValues, StatusTraining } from "../constants/statuses";
 
 export interface IUser extends Document {
+  googleId?: string;
   refreshToken?: string;
   username: string;
   email: string;
@@ -70,6 +71,7 @@ export interface IUser extends Document {
 
 const userSchema = new mongoose.Schema<IUser>(
   {
+    googleId: { type: String, unique: true, sparse: true },
     refreshToken: { type: String },
     username: {
       type: String,
@@ -83,7 +85,6 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     password: {
       type: String,
-      required: true,
     },
     role: {
       type: String,
