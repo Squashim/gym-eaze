@@ -28,10 +28,16 @@
 
 ## Uruchamianie seeda
 
-4. **Uruchom seeda:**
+1. **Uruchom seeda:**
 
    Jeśli chcesz sprawdzić dane lub je dodac do bazy to odkometuj lub zakomentuj funkcje w `seed.ts`
 
    ```sh
    npm run seed
    ```
+
+## Dokumentacja
+
+1. **Dokumentacja API: **
+
+   Dokumentacja znajduje się pod `/api-docs`

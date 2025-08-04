@@ -1,15 +1,13 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 import {
   registerUser,
   loginUser,
   refreshAccessToken,
   logoutUser,
   googleLogin,
-} from "../services/authService";
-
-export interface JwtPayload {
-  userId: string;
-}
+  getCurrentUser,
+} from '../services/authService';
+import { AuthRequest } from '../types/auth';
 
 /**
  * @swagger
@@ -68,18 +66,18 @@ export const register = async (req: Request, res: Response) => {
 
   try {
     await registerUser(username, email, password);
-    res.status(201).json({ message: "Rejestracja udana" });
+    res.status(201).json({ message: 'Rejestracja udana' });
   } catch (err: unknown) {
-    let message = "Błąd rejestracji";
+    let message = 'Błąd rejestracji';
     if (err instanceof Error) {
       const messages: Record<string, string> = {
-        FIELDS_REQUIRED: "Wszystkie pola są wymagane",
-        EMAIL: "Użytkownik o takim emailu już istnieje",
-        EMAIL_LENGTH: "Email musi mieć od 2 do 320 znaków",
-        USERNAME: "Użytkownik o takim username już istnieje",
-        USERNAME_LENGTH: "Username musi mieć od 6 do 16 znaków",
-        PASSWORD_LENGTH: "Hasło musi",
-        PASSWORD: "Nieprawidłowe hasło.",
+        FIELDS_REQUIRED: 'Wszystkie pola są wymagane',
+        EMAIL: 'Użytkownik o takim emailu już istnieje',
+        EMAIL_LENGTH: 'Email musi mieć od 2 do 320 znaków',
+        USERNAME: 'Użytkownik o takim username już istnieje',
+        USERNAME_LENGTH: 'Username musi mieć od 6 do 16 znaków',
+        PASSWORD_LENGTH: 'Hasło musi',
+        PASSWORD: 'Nieprawidłowe hasło.',
       };
 
       message = messages[err.message] || message;
@@ -141,41 +139,41 @@ export const register = async (req: Request, res: Response) => {
  *         description: Nieprawidłowe dane logowania (np. błędny login lub hasło)
  */
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (req: Request, res: Response) => {
   const { login, password } = req.body;
 
   if (!login || !password) {
-    res.status(400).json({ message: "Username/email i hasło są wymagane" });
+    res.status(400).json({ message: 'Username/email i hasło są wymagane' });
     return;
   }
 
   try {
     const { accessToken, refreshToken } = await loginUser(login, password);
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.cookie("accessToken", accessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: 'strict',
       maxAge: 15 * 60 * 1000,
     });
 
     res.status(200).json({
-      message: "Logowanie udane",
+      message: 'Logowanie udane',
       accessToken,
       refreshToken,
     });
   } catch (err: unknown) {
     const message =
-      err instanceof Error && err.message === "INVALID_CREDENTIALS"
-        ? "Nieprawidłowe dane logowania"
-        : "Błąd logowania";
+      err instanceof Error && err.message === 'INVALID_CREDENTIALS'
+        ? 'Nieprawidłowe dane logowania'
+        : 'Błąd logowania';
 
     res.status(401).json({ message });
   }
@@ -232,37 +230,37 @@ export const googleAuth = async (req: Request, res: Response) => {
   const { token } = req.body;
 
   if (!token) {
-    return res.status(400).json({ message: "Token Google jest wymagany" });
+    return res.status(400).json({ message: 'Token Google jest wymagany' });
   }
 
   try {
     const result = await googleLogin(token);
     const { accessToken, refreshToken } = result;
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.cookie("accessToken", accessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: 'strict',
       maxAge: 15 * 60 * 1000,
     });
 
     res.status(200).json({
-      message: "Logowanie przez Google udane",
+      message: 'Logowanie przez Google udane',
       accessToken,
       refreshToken,
     });
   } catch (err: unknown) {
-    let message = "Błąd logowania przez Google";
+    let message = 'Błąd logowania przez Google';
     if (err instanceof Error) {
-      if (err.message === "INVALID_GOOGLE_TOKEN") {
-        message = "Nieprawidłowy token Google";
+      if (err.message === 'INVALID_GOOGLE_TOKEN') {
+        message = 'Nieprawidłowy token Google';
       }
     }
     res.status(401).json({ message });
@@ -271,12 +269,38 @@ export const googleAuth = async (req: Request, res: Response) => {
 
 /**
  * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Pobieranie danych o aktualnie zalogowanym użytkowniku
+ *     description: |
+ *       Zwraca informacje o profilu aktualnie zalogowanego użytkownika na podstawie accesstokenu
+ *       Token musi być przesłany w ciasteczku `accessToken` lub w nagłówku Authorization (dla mobilki).
+ *     tags:
+ *       - Auth
+ *     responses:
+ *       '200':
+ *         description: Dane użytkownika pobrane pomyślnie
+ *       '404':
+ *         description: Użytkownik nie znaleziony w bazie danych
+ */
+
+export const me = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await getCurrentUser(req.userId!);
+    res.json(user);
+  } catch {
+    res.status(404).json({ message: 'Użytkownik nie znaleziony' });
+  }
+};
+
+/**
+ * @swagger
  * /api/auth/refresh:
  *   post:
- *     summary: Odświeżenie tokenu dostępowego
+ *     summary: Odświeżenie accessToken
  *     description: |
- *       Odświeża token dostępowy (`accessToken`) na podstawie `refreshToken`, który może być przesłany w ciasteczku lub w treści żądania.
- *       Nowy accessToken jest również ustawiany w ciasteczku HttpOnly.
+ *       Odświeża accesToken  na podstawie refreshTokenu, który jest przeslany w cookies oraz JSONIE.
+ *       Nowy accessToken jest  ustawiany w ciasteczku oraz wysyłany w JSONIE.
  *     tags:
  *       - Auth
  *     requestBody:
@@ -292,7 +316,7 @@ export const googleAuth = async (req: Request, res: Response) => {
  *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *     responses:
  *       '200':
- *         description: Nowy token dostępowy został wygenerowany
+ *         description: AccessToken został wygenerowany
  *         content:
  *           application/json:
  *             schema:
@@ -311,22 +335,22 @@ export const refresh = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken || req.body.token;
 
   if (!token) {
-    return res.status(401).json({ message: "Brak tokenu odświeżania" });
+    return res.status(401).json({ message: 'Brak tokenu odświeżania' });
   }
 
   try {
     const newAccessToken = await refreshAccessToken(token);
 
-    res.cookie("accessToken", newAccessToken, {
+    res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: 'strict',
       maxAge: 15 * 60 * 1000,
     });
 
     res.json({ accessToken: newAccessToken });
   } catch {
-    res.status(403).json({ message: "Nieprawidlowy lub wygasły refreshToken" });
+    res.status(403).json({ message: 'Nieprawidłowy lub wygasły refreshToken' });
   }
 };
 
@@ -363,21 +387,21 @@ export const refresh = async (req: Request, res: Response) => {
  *                   type: string
  *                   example: Wylogowano
  *       '400':
- *         description: Brak tokena
+ *         description: Brak refreshTokenu
  *       '403':
- *         description: Nieprawidłowy lub wygasły refresh token
+ *         description: Nieprawidłowy/wygasly refresh token
  */
 
 export const logout = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken || req.body.token;
-  if (!token) return res.sendStatus(400);
+  if (!token) return res.status(400).json({ message: 'Brak refreshTokenu' });
 
   try {
     await logoutUser(token);
-    res.clearCookie("refreshToken");
-    res.clearCookie("accessToken");
-    res.json({ message: "Wylogowano" });
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    res.json({ message: 'Wylogowano' });
   } catch {
-    res.sendStatus(403);
+    res.status(403).json({ message: 'Nieprawidłowy/wygasly refreshToken' });
   }
 };

@@ -1,45 +1,35 @@
-import bcrypt from "bcryptjs";
-import User from "../models/userModel";
-import { OAuth2Client } from "google-auth-library";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../utils/jwt";
-import { JwtPayload } from "../controllers/authController";
-import { IUser } from "../models/userModel";
-import { HydratedDocument } from "mongoose";
+import bcrypt from 'bcryptjs';
+import User from '../models/userModel';
+import { OAuth2Client } from 'google-auth-library';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import { JwtPayload } from 'jsonwebtoken';
 
-export const registerUser = async (
-  username: string,
-  email: string,
-  password: string,
-) => {
+export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
-    throw new Error("FIELDS_REQUIRED");
+    throw new Error('FIELDS_REQUIRED');
   }
 
   const checkEmail = await User.findOne({ email });
-  if (checkEmail) throw new Error("EMAIL");
+  if (checkEmail) throw new Error('EMAIL');
 
   const checkUsername = await User.findOne({ username });
-  if (checkUsername) throw new Error("USERNAME");
+  if (checkUsername) throw new Error('USERNAME');
 
   if (username.length < 6 || username.length > 16) {
-    throw new Error("USERNAME_LENGTH");
+    throw new Error('USERNAME_LENGTH');
   }
 
   if (email.length < 2 || email.length > 320) {
-    throw new Error("EMAIL_LENGTH");
+    throw new Error('EMAIL_LENGTH');
   }
 
   if (password.length < 14 || password.length > 32) {
-    throw new Error("PASSWORD_LENGTH");
+    throw new Error('PASSWORD_LENGTH');
   }
 
   const passwordRegex =
     /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+./])[A-Za-z\d!@#$%^&*()_+./]{14,}$/;
-  if (!passwordRegex.test(password)) throw new Error("PASSWORD");
+  if (!passwordRegex.test(password)) throw new Error('PASSWORD');
 
   const hashedPassword = await bcrypt.hash(password, 12);
   const user = new User({ username, email, password: hashedPassword });
@@ -47,20 +37,13 @@ export const registerUser = async (
   return user;
 };
 
-export const loginUser = async (
-  login: string,
-  password: string,
-): Promise<{
-  user: HydratedDocument<IUser>;
-  accessToken: string;
-  refreshToken: string;
-}> => {
+export const loginUser = async (login: string, password: string) => {
   const user = await User.findOne({
     $or: [{ email: login }, { username: login }],
   });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw new Error("INVALID_CREDENTIALS");
+    throw new Error('INVALID_CREDENTIALS');
   }
 
   const accessToken = generateAccessToken(user._id.toString());
@@ -81,7 +64,7 @@ export const googleLogin = async (token: string) => {
   });
 
   const payload = ticket.getPayload();
-  if (!payload) throw new Error("INVALID_GOOGLE_TOKEN");
+  if (!payload) throw new Error('INVALID_GOOGLE_TOKEN');
 
   const { sub: googleId, email, name } = payload;
 
@@ -89,7 +72,7 @@ export const googleLogin = async (token: string) => {
 
   if (!user) {
     user = new User({
-      username: name || email?.split("@")[0],
+      username: name || email?.split('@')[0],
       email,
       googleId,
     });
@@ -108,19 +91,43 @@ export const googleLogin = async (token: string) => {
   return { user, accessToken, refreshToken };
 };
 
+export const getCurrentUser = async (userId: string) => {
+  const user = await User.findById(userId).select('-password -refreshToken');
+
+  if (!user) {
+    throw new Error('Użytkownik nie istnieje');
+  }
+
+  return user;
+};
+
 export const refreshAccessToken = async (token: string) => {
+  if (!token) {
+    throw new Error('Brak refreshToken');
+  }
   const payload = verifyRefreshToken(token) as JwtPayload;
+
+  if (!payload || typeof payload.userId !== 'string') {
+    throw new Error('Niepoprawny refreshToken');
+  }
+
   const user = await User.findById(payload.userId);
-  if (!user || user.refreshToken !== token) throw new Error("INVALID_REFRESH");
+
+  if (!user || user.refreshToken !== token) {
+    throw new Error('Niepoprawny refreshToken');
+  }
 
   return generateAccessToken(user._id.toString());
 };
 
 export const logoutUser = async (token: string) => {
   const payload = verifyRefreshToken(token) as JwtPayload;
+
   const user = await User.findById(payload.userId);
-  if (user) {
-    user.refreshToken = undefined;
-    await user.save();
+  if (!user) {
+    throw new Error('Nie ma takiego użytkownika');
   }
+
+  user.refreshToken = undefined;
+  await user.save();
 };
