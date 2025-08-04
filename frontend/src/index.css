@@ -158,6 +158,13 @@
       0 0;
     background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   }
+
+  .hide-password-toggle::-ms-reveal,
+  .hide-password-toggle::-ms-clear {
+    visibility: hidden;
+    pointer-events: none;
+    display: none;
+  }
 }
 
 @layer base {

@@ -23,7 +23,7 @@ const passwordValidator = z
   .string()
   .min(1, 'Hasło jest wymagane.')
   .regex(
-    /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^0-9A-Za-z]).{8,32}$/,
+    /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^0-9A-Za-z]).{14,32}$/,
     'Nieprawidłowe hasło.',
   );
 

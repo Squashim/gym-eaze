@@ -2,7 +2,17 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+function Input({ className, type, value, onBlur, ...props }: React.ComponentProps<'input'>) {
+  const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
+    if (typeof value === 'string' && value !== '') {
+      e.target.value = value.trim();
+    }
+
+    if (onBlur) {
+      onBlur(e);
+    }
+  };
+
   return (
     <input
       className={cn(
@@ -12,6 +22,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         className,
       )}
       data-slot="input"
+      onBlur={handleBlur}
       type={type}
       {...props}
     />

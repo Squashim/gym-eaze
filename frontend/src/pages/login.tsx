@@ -41,8 +41,8 @@ const Login = () => {
           <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <header className="flex flex-col items-center text-center">
-                <H1 className="mb-0.5">Witaj ponownie</H1>
-                <Lead className="text-base">Zaloguj się do swojego konta GymEaze</Lead>
+                <H1 className="mb-1">Witaj ponownie</H1>
+                <Lead className="text-lg">Zaloguj się do swojego konta GymEaze</Lead>
               </header>
               <FormField
                 control={form.control}
@@ -55,6 +55,7 @@ const Login = () => {
                         {...field}
                         autoComplete="email webauthn"
                         autoFocus
+                        maxLength={320}
                         placeholder="jan@kowalski.pl"
                         type="text"
                       />
@@ -74,6 +75,7 @@ const Login = () => {
                       <PasswordInput
                         {...field}
                         autoComplete="current-password webauthn"
+                        maxLength={32}
                         placeholder="••••••••••••"
                       />
                     </FormControl>
@@ -95,7 +97,7 @@ const Login = () => {
                         onCheckedChange={(checked) => field.onChange(!!checked)}
                       />
                     </FormControl>
-                    <FormLabel className="text-sm font-normal" htmlFor="remember-me">
+                    <FormLabel className="text-sm font-normal cursor-pointer" htmlFor="remember-me">
                       Zapamiętaj mnie
                     </FormLabel>
                   </FormItem>
@@ -135,14 +137,14 @@ const Login = () => {
             </div>
           </form>
         </Form>
-        <div className="relative hidden md:block ">
+        <div className="relative hidden md:block md:min-h-[40rem]">
           <img
             alt="mężczyzna ćwiczy z hantlami na siłowni"
             className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5]  aspect-[9/16]"
-            height={500}
+            height={600}
             loading="lazy"
             src={image}
-            width={357}
+            width={447}
           />
           <Tooltip>
             <TooltipTrigger className="absolute right-4 bottom-4 text-muted-foreground">
