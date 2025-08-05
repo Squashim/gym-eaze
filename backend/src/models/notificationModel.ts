@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import { Notifications, notificationsValues } from "../constants/notifications";
+import mongoose from 'mongoose';
+import { Notifications, notificationsValues } from '../constants/notifications';
 
 export interface INotification extends mongoose.Document {
   message: string;
@@ -23,9 +23,6 @@ const notificationSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const Notification = mongoose.model<INotification>(
-  "Notification",
-  notificationSchema,
-);
+const Notification = mongoose.model<INotification>('Notification', notificationSchema);
 
 export default Notification;

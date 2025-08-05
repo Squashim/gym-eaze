@@ -68,16 +68,16 @@ export const register = async (req: Request, res: Response) => {
     await registerUser(username, email, password);
     res.status(201).json({ message: 'Rejestracja udana' });
   } catch (err: unknown) {
-    let message = 'Błąd rejestracji';
+    let message = 'Wystąpił nieznany błąd podczas rejestracji';
     if (err instanceof Error) {
       const messages: Record<string, string> = {
-        FIELDS_REQUIRED: 'Wszystkie pola są wymagane',
+        WYMAGANE_POLA: 'Wszystkie pola są wymagane',
         EMAIL: 'Użytkownik o takim emailu już istnieje',
-        EMAIL_LENGTH: 'Email musi mieć od 2 do 320 znaków',
-        USERNAME: 'Użytkownik o takim username już istnieje',
-        USERNAME_LENGTH: 'Username musi mieć od 6 do 16 znaków',
-        PASSWORD_LENGTH: 'Hasło musi',
-        PASSWORD: 'Nieprawidłowe hasło.',
+        DLUGOSC_EMAILA: 'Email musi mieć od 2 do 320 znaków',
+        NAZWA_UŻYTKOWNIKA: 'Użytkownik o takim username już istnieje',
+        DLUGOSC_NAZWY_UZYTKOWNIKA: 'Username musi mieć od 6 do 16 znaków',
+        DLUGOSC_HASLA: 'Hasło musi miec co najmniej 14 znaków',
+        HASLO: 'Nieprawidłowe hasło.',
       };
 
       message = messages[err.message] || message;
@@ -143,7 +143,7 @@ export const login = async (req: Request, res: Response) => {
   const { login, password } = req.body;
 
   if (!login || !password) {
-    res.status(400).json({ message: 'Username/email i hasło są wymagane' });
+    res.status(400).json({ message: 'Nazwa użytkownika/email i hasło są wymagane' });
     return;
   }
 
@@ -165,7 +165,7 @@ export const login = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      message: 'Logowanie udane',
+      message: 'Zalogowano pomyślnie',
       accessToken,
       refreshToken,
     });
@@ -234,8 +234,7 @@ export const googleAuth = async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await googleLogin(token);
-    const { accessToken, refreshToken } = result;
+    const { accessToken, refreshToken } = await googleLogin(token);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -252,7 +251,7 @@ export const googleAuth = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      message: 'Logowanie przez Google udane',
+      message: 'Zalogowano pomyślnie',
       accessToken,
       refreshToken,
     });
@@ -287,7 +286,26 @@ export const googleAuth = async (req: Request, res: Response) => {
 export const me = async (req: AuthRequest, res: Response) => {
   try {
     const user = await getCurrentUser(req.userId!);
-    res.json(user);
+
+    const userResponse = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      profilePicture: user.profileDetails?.profilePicture || null,
+      notifications:
+        user.notifications?.map((notification) => ({
+          id: notification._id,
+          type: notification.type,
+          message: notification.message,
+          updatedAt: notification.updatedAt,
+          createdAt: notification.createdAt,
+        })) || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.json(userResponse);
   } catch {
     res.status(404).json({ message: 'Użytkownik nie znaleziony' });
   }
@@ -335,7 +353,7 @@ export const refresh = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken || req.body.token;
 
   if (!token) {
-    return res.status(401).json({ message: 'Brak tokenu odświeżania' });
+    return res.status(401).json({ message: 'Brak tokenu odświeżającego' });
   }
 
   try {
@@ -349,8 +367,11 @@ export const refresh = async (req: Request, res: Response) => {
     });
 
     res.json({ accessToken: newAccessToken });
-  } catch {
-    res.status(403).json({ message: 'Nieprawidłowy lub wygasły refreshToken' });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(403).json({ message: error.message });
+    }
+    return res.status(403).json({ message: 'Nieprawidłowy lub wygasły token odświeżający' });
   }
 };
 
@@ -394,14 +415,17 @@ export const refresh = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken || req.body.token;
-  if (!token) return res.status(400).json({ message: 'Brak refreshTokenu' });
+  if (!token) return res.status(400).json({ message: 'Brak tokenu odświeżającego' });
 
   try {
     await logoutUser(token);
     res.clearCookie('refreshToken');
     res.clearCookie('accessToken');
-    res.json({ message: 'Wylogowano' });
-  } catch {
-    res.status(403).json({ message: 'Nieprawidłowy/wygasly refreshToken' });
+    res.json({ message: 'Wylogowano pomyślnie' });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(403).json({ message: error.message });
+    }
+    return res.status(403).json({ message: 'Nieprawidłowy/wygasly token odświeżający' });
   }
 };
