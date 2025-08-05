@@ -286,26 +286,7 @@ export const googleAuth = async (req: Request, res: Response) => {
 export const me = async (req: AuthRequest, res: Response) => {
   try {
     const user = await getCurrentUser(req.userId!);
-
-    const userResponse = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      profilePicture: user.profileDetails?.profilePicture || null,
-      notifications:
-        user.notifications?.map((notification) => ({
-          id: notification._id,
-          type: notification.type,
-          message: notification.message,
-          updatedAt: notification.updatedAt,
-          createdAt: notification.createdAt,
-        })) || [],
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-
-    res.json(userResponse);
+    res.json(user);
   } catch {
     res.status(404).json({ message: 'Użytkownik nie znaleziony' });
   }

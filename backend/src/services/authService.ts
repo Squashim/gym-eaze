@@ -1,9 +1,10 @@
 import bcrypt from 'bcryptjs';
-import User, { IUser } from '../models/userModel';
+import User from '../models/userModel';
 import { OAuth2Client } from 'google-auth-library';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
 import { INotification } from '../models/notificationModel';
+import { UserRole } from '../constants/roles';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
@@ -91,24 +92,57 @@ export const googleLogin = async (token: string) => {
   return { accessToken, refreshToken };
 };
 
-interface IUserPopulated extends Omit<IUser, 'notifications'> {
-  notifications?: INotification[];
+interface INotificationSummary {
+  id: string;
+  type: string;
+  message: string;
+  updatedAt: Date;
+  createdAt: Date;
 }
 
-export const getCurrentUser = async (userId: string): Promise<IUserPopulated> => {
-  const user = (await User.findById(userId)
-    .select('username email role profileDetails createdAt updatedAt')
+export interface ICurrentUser {
+  _id: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  profilePicture: string | null;
+  notifications: INotificationSummary[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export const getCurrentUser = async (userId: string): Promise<ICurrentUser> => {
+  const user = await User.findById(userId)
+    .select('username email role profileDetails.profilePicture createdAt updatedAt')
     .populate({
       path: 'notifications',
       select: 'type message updatedAt createdAt',
     })
-    .exec()) as IUserPopulated;
+    .lean()
+    .exec();
 
   if (!user) {
     throw new Error('Użytkownik nie istnieje');
   }
 
-  return user;
+  const notifications = (user.notifications as unknown as INotification[]).map((n) => ({
+    id: n.id,
+    type: n.type,
+    message: n.message,
+    updatedAt: n.updatedAt,
+    createdAt: n.createdAt,
+  }));
+
+  return {
+    _id: user._id.toString(),
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    profilePicture: user.profileDetails?.profilePicture || null,
+    notifications,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
 };
 
 export const refreshAccessToken = async (token: string) => {
