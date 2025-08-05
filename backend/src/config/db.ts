@@ -1,17 +1,20 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import { config } from 'dotenv';
+
+config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error("Brakuje zmiennej środowiskowej MONGODB_URI");
+  throw new Error('Brakuje zmiennej środowiskowej MONGODB_URI');
 }
 
 export const connectToDB = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log("✅ Połączono z MongoDB");
+    console.log('✅ Połączono z MongoDB');
   } catch (err) {
-    console.error("Błąd połączenia z MongoDB:", err);
+    console.error('Błąd połączenia z MongoDB:', err);
     process.exit(1);
   }
 };
