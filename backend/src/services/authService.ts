@@ -3,8 +3,7 @@ import User from '../models/userModel';
 import { OAuth2Client } from 'google-auth-library';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
-import { INotification } from '../models/notificationModel';
-import { UserRole } from '../constants/roles';
+import { ICurrentUser } from '../types/auth';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
@@ -92,25 +91,6 @@ export const googleLogin = async (token: string) => {
   return { accessToken, refreshToken };
 };
 
-interface INotificationSummary {
-  id: string;
-  type: string;
-  message: string;
-  updatedAt: Date;
-  createdAt: Date;
-}
-
-export interface ICurrentUser {
-  _id: string;
-  username: string;
-  email: string;
-  role: UserRole;
-  profilePicture: string | null;
-  notifications: INotificationSummary[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export const getCurrentUser = async (userId: string): Promise<ICurrentUser> => {
   const user = await User.findById(userId)
     .select('username email role profileDetails.profilePicture createdAt updatedAt')
@@ -118,31 +98,13 @@ export const getCurrentUser = async (userId: string): Promise<ICurrentUser> => {
       path: 'notifications',
       select: 'type message updatedAt createdAt',
     })
-    .lean()
-    .exec();
+    .lean<ICurrentUser>();
 
   if (!user) {
     throw new Error('Użytkownik nie istnieje');
   }
 
-  const notifications = (user.notifications as unknown as INotification[]).map((n) => ({
-    id: n.id,
-    type: n.type,
-    message: n.message,
-    updatedAt: n.updatedAt,
-    createdAt: n.createdAt,
-  }));
-
-  return {
-    _id: user._id.toString(),
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    profilePicture: user.profileDetails?.profilePicture || null,
-    notifications,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
+  return user;
 };
 
 export const refreshAccessToken = async (token: string) => {
