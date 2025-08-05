@@ -11,8 +11,8 @@ export interface ICurrentUser {
   username: string;
   email: string;
   role: UserRole;
-  profilePicture: string;
-  notifications: INotificationSummary[];
+  profilePicture?: string;
+  notifications?: INotificationSummary[];
   createdAt: Date;
   updatedAt: Date;
 }
