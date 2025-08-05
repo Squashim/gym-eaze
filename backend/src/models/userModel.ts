@@ -1,16 +1,19 @@
-import mongoose, { Types } from "mongoose";
-import countries, { CountryCode } from "../constants/countries";
-import { UserRole, userRoleValues } from "../constants/roles";
-import { Gender, genderValues } from "../constants/genders";
-import { Goal, goalValues } from "../constants/goals";
-import { INotification } from "../models/notificationModel";
-import { IBadge } from "../models/badgeModel";
-import { IExercise } from "../models/exerciseModel";
-import { ITrainingPlan } from "../models/trainingPlanModel";
-import { IUserHasTrainingPlans } from "../models/userHasTrainingPlansModel";
-import { statusesValues, StatusTraining } from "../constants/statuses";
+import mongoose, { Types } from 'mongoose';
+import countries, { CountryCode } from '../constants/countries';
+import { UserRole, userRoleValues } from '../constants/roles';
+import { Gender, genderValues } from '../constants/genders';
+import { Goal, goalValues } from '../constants/goals';
+import { IBadge } from '../models/badgeModel';
+import { IExercise } from '../models/exerciseModel';
+import { ITrainingPlan } from '../models/trainingPlanModel';
+import { IUserHasTrainingPlans } from '../models/userHasTrainingPlansModel';
+import { statusesValues, StatusTraining } from '../constants/statuses';
+import '../models/notificationModel';
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
+  googleId?: string;
+  refreshToken?: string;
   username: string;
   email: string;
   password: string;
@@ -58,7 +61,7 @@ export interface IUser extends Document {
     isPinned: boolean;
     awardedAt: Date;
   }[];
-  notifications?: (Types.ObjectId | INotification)[];
+  notifications?: Types.ObjectId[];
   sensor?: {
     isUsed: boolean;
     addedAt: Date;
@@ -67,8 +70,10 @@ export interface IUser extends Document {
   updatedAt: Date;
 }
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<IUser>(
   {
+    googleId: { type: String, unique: true, sparse: true },
+    refreshToken: { type: String },
     username: {
       type: String,
       required: true,
@@ -81,7 +86,6 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     role: {
       type: String,
@@ -93,26 +97,26 @@ const userSchema = new mongoose.Schema(
       trainingPlans: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "TrainingPlan",
+          ref: 'TrainingPlan',
         },
       ],
       exercises: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Exercise",
+          ref: 'Exercise',
         },
       ],
     },
     followedUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     statistics: {
@@ -128,7 +132,7 @@ const userSchema = new mongoose.Schema(
         {
           trainingPlanId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "UserHasTrainingPlans",
+            ref: 'UserHasTrainingPlans',
             required: true,
           },
           status: {
@@ -144,12 +148,12 @@ const userSchema = new mongoose.Schema(
     profileDetails: {
       profilePicture: {
         type: String,
-        default: "",
+        default: '',
       },
       description: {
         type: String,
         maxlength: 150,
-        default: "",
+        default: '',
       },
       goal: {
         type: String,
@@ -168,7 +172,7 @@ const userSchema = new mongoose.Schema(
       country: {
         type: String,
         enum: countries.map((c) => c.code),
-        default: "PL",
+        default: 'PL',
       },
     },
 
@@ -219,7 +223,7 @@ const userSchema = new mongoose.Schema(
       {
         badge: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Badge",
+          ref: 'Badge',
         },
         isPinned: {
           type: Boolean,
@@ -236,7 +240,7 @@ const userSchema = new mongoose.Schema(
     notifications: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Notification",
+        ref: 'Notification',
       },
     ],
 
@@ -253,6 +257,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const User = mongoose.model<IUser>("User", userSchema);
+const User = mongoose.model<IUser>('User', userSchema);
 
 export default User;
