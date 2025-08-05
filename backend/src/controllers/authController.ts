@@ -66,18 +66,18 @@ export const register = async (req: Request, res: Response) => {
 
   try {
     await registerUser(username, email, password);
-    res.status(201).json({ message: 'Rejestracja udana' });
+    res.status(201).json({ message: 'Zarejestrowano pomyślnie' });
   } catch (err: unknown) {
     let message = 'Wystąpił nieznany błąd podczas rejestracji';
     if (err instanceof Error) {
       const messages: Record<string, string> = {
-        WYMAGANE_POLA: 'Wszystkie pola są wymagane',
+        REQUIRED_FIELDS: 'Wszystkie pola są wymagane',
         EMAIL: 'Użytkownik o takim emailu już istnieje',
-        DLUGOSC_EMAILA: 'Email musi mieć od 2 do 320 znaków',
-        NAZWA_UŻYTKOWNIKA: 'Użytkownik o takim username już istnieje',
-        DLUGOSC_NAZWY_UZYTKOWNIKA: 'Username musi mieć od 6 do 16 znaków',
-        DLUGOSC_HASLA: 'Hasło musi miec co najmniej 14 znaków',
-        HASLO: 'Nieprawidłowe hasło.',
+        EMAIL_LENGTH: 'Email musi mieć od 2 do 320 znaków',
+        USERNAME: 'Użytkownik o takim username już istnieje',
+        USERNAME_LENGTH: 'Nazwa użytkownika musi mieć od 6 do 16 znaków',
+        PASSWORD_LENGTH: 'Hasło musi miec co najmniej 14 znaków',
+        INVALID_PASSWORD: 'Nieprawidłowe hasło.',
       };
 
       message = messages[err.message] || message;

@@ -7,30 +7,30 @@ import { INotification } from '../models/notificationModel';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
-    throw new Error('WYMAGANE_POLA');
+    throw new Error('REQUIRED_FIELDS');
   }
 
   const checkEmail = await User.findOne({ email });
   if (checkEmail) throw new Error('EMAIL');
 
   const checkUsername = await User.findOne({ username });
-  if (checkUsername) throw new Error('NAZWA_UŻYTKOWNIKA');
+  if (checkUsername) throw new Error('USERNAME');
 
   if (username.length < 6 || username.length > 16) {
-    throw new Error('DLUGOSC_NAZWY_UZYTKOWNIKA');
+    throw new Error('USERNAME_LENGTH');
   }
 
   if (email.length < 2 || email.length > 320) {
-    throw new Error('DLUGOSC_EMAILA');
+    throw new Error('EMAIL_LENGTH');
   }
 
   if (password.length < 14 || password.length > 32) {
-    throw new Error('DLUGOSC_HASLA');
+    throw new Error('PASSWORD_LENGTH');
   }
 
   const passwordRegex =
     /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+./])[A-Za-z\d!@#$%^&*()_+./]{14,}$/;
-  if (!passwordRegex.test(password)) throw new Error('HASLO');
+  if (!passwordRegex.test(password)) throw new Error('INVALID_PASSWORD');
 
   const hashedPassword = await bcrypt.hash(password, 12);
   const user = new User({ username, email, password: hashedPassword });
@@ -97,8 +97,11 @@ interface IUserPopulated extends Omit<IUser, 'notifications'> {
 
 export const getCurrentUser = async (userId: string): Promise<IUserPopulated> => {
   const user = (await User.findById(userId)
-    .select('-password -refreshToken')
-    .populate('notifications')
+    .select('username email role profileDetails createdAt updatedAt')
+    .populate({
+      path: 'notifications',
+      select: 'type message updatedAt createdAt',
+    })
     .exec()) as IUserPopulated;
 
   if (!user) {
@@ -110,18 +113,18 @@ export const getCurrentUser = async (userId: string): Promise<IUserPopulated> =>
 
 export const refreshAccessToken = async (token: string) => {
   if (!token) {
-    throw new Error('Brak refreshTokenu');
+    throw new Error('Brak tokena odświeżającego');
   }
   const payload = verifyRefreshToken(token) as JwtPayload;
 
   if (!payload || typeof payload.userId !== 'string') {
-    throw new Error('Niepoprawny refreshToken');
+    throw new Error('Niepoprawny token odświeżający');
   }
 
   const user = await User.findById(payload.userId);
 
   if (!user || user.refreshToken !== token) {
-    throw new Error('Niepoprawny refreshToken');
+    throw new Error('Niepoprawny token odświeżający');
   }
 
   return generateAccessToken(user._id.toString());
