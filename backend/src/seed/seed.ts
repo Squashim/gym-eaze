@@ -1,9 +1,9 @@
-import { connectToDB } from "../config/db";
-import { seedBadges } from "./data/badgeData";
-import mongoose from "mongoose";
-import { seedEquipment } from "./data/equipmentData";
-import { seedMuscleGroups } from "./data/muscleGroupData";
-import { seedExercises } from "./data/exerciseData";
+import { connectToDB } from '../config/db';
+import { seedBadges } from './data/badgeData';
+import mongoose from 'mongoose';
+import { seedEquipment } from './data/equipmentData';
+import { seedMuscleGroups } from './data/muscleGroupData';
+import { seedExercises } from './data/exerciseData';
 import {
   downloadedExercises,
   downloadedMuscleGroup,
@@ -14,12 +14,13 @@ import {
   downloadedTrainingPlans,
   downloadedComments,
   downloadedUserHasTrainingPlans,
-} from "./test/downloadData";
-import { seedUsers } from "./data/userData";
-import { seedPosts } from "./data/postData";
-import { seedTrainingPlans } from "./data/trainingPlanData";
-import { seedComments } from "./data/commentData";
-import { seedUserHasTrainingPlans } from "./data/userHasTrainingPlansData";
+} from './test/downloadData';
+import { seedUsers } from './data/userData';
+import { seedPosts } from './data/postData';
+import { seedTrainingPlans } from './data/trainingPlanData';
+import { seedComments } from './data/commentData';
+import { seedUserHasTrainingPlans } from './data/userHasTrainingPlansData';
+import { seedNotifications } from './data/notificationData';
 
 const checkAddedData = async () => {
   try {
@@ -33,7 +34,7 @@ const checkAddedData = async () => {
     await downloadedComments();
     await downloadedUserHasTrainingPlans();
   } catch (error) {
-    console.error("Błąd", error);
+    console.error('Błąd', error);
   }
 };
 
@@ -49,8 +50,9 @@ const seed = async () => {
     await seedTrainingPlans();
     await seedComments();
     await seedUserHasTrainingPlans();
+    await seedNotifications();
   } catch (error) {
-    console.error("Błąd:", error);
+    console.error('Błąd:', error);
   } finally {
     mongoose.disconnect();
   }
