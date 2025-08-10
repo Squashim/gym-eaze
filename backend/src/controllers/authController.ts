@@ -140,7 +140,7 @@ export const register = async (req: Request, res: Response) => {
  */
 
 export const login = async (req: Request, res: Response) => {
-  const { login, password } = req.body;
+  const { login, password, rememberMe } = req.body;
 
   if (!login || !password) {
     res.status(400).json({ message: 'Nazwa użytkownika/email i hasło są wymagane' });
@@ -154,7 +154,7 @@ export const login = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie('accessToken', accessToken, {

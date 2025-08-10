@@ -1,5 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import Navbar from '../navbar';
+import { useUser } from '@/context/user';
+import Loading from '@/pages/loading';
 
 interface AuthLayoutProps {
   allow: 'logged-in' | 'not-logged-in' | 'all';
@@ -7,8 +9,13 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout = ({ allow, role = 'user' }: AuthLayoutProps) => {
-  const isLoggedIn = false; // TODO: Replace with actual authentication logic
-  const isAdmin = false; // TODO: Replace with actual admin check logic
+  const { user, isLoading } = useUser();
+  const isLoggedIn = !!user;
+  const isAdmin = user && user.role === 'admin';
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   if (allow === 'logged-in' && !isLoggedIn) {
     return <Navigate replace to="/login" />;

@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
 
 interface Props {
   className?: string;
-  children: string;
+  children: ReactNode;
 }
 
 const H1 = ({ className, children }: Props) => {

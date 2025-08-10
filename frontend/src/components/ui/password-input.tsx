@@ -77,6 +77,7 @@ const PasswordInput = ({
       <div className="relative">
         <Input
           className={cn('hide-password-toggle pr-10', className)}
+          placeholder="••••••••••••"
           type={showPassword ? 'text' : 'password'}
           {...props}
         />
