@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -10,11 +9,14 @@ import { Toaster } from '@/components/ui/sonner';
 import toasterOptions from './config/toaster';
 import { UserProvider } from './context/user';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { StrictMode } from 'react';
+
+const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+  <GoogleOAuthProvider clientId={clientId}>
+    <StrictMode>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <QueryClientProvider client={queryClient}>
           <Router>
             <UserProvider>
@@ -23,7 +25,7 @@ createRoot(document.getElementById('root')!).render(
           </Router>
           <Toaster {...toasterOptions} />
         </QueryClientProvider>
-      </GoogleOAuthProvider>
-    </ThemeProvider>
-  </StrictMode>,
+      </ThemeProvider>
+    </StrictMode>
+  </GoogleOAuthProvider>,
 );

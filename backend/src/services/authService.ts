@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/userModel';
-import { OAuth2Client } from 'google-auth-library';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
 import { ICurrentUser } from '../types/auth';
@@ -55,18 +54,18 @@ export const loginUser = async (login: string, password: string) => {
   return { accessToken, refreshToken };
 };
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 export const googleLogin = async (token: string) => {
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
+  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
-  const payload = ticket.getPayload();
-  if (!payload) throw new Error('INVALID_GOOGLE_TOKEN');
+  if (!response.ok) {
+    throw new Error('INVALID_GOOGLE_TOKEN');
+  }
 
-  const { sub: googleId, email, name } = payload;
+  const { sub: googleId, email, name, picture } = await response.json();
 
   let user = await User.findOne({ email });
 
@@ -75,6 +74,9 @@ export const googleLogin = async (token: string) => {
       username: name || email?.split('@')[0],
       email,
       googleId,
+      profileDetails: {
+        profilePicture: picture,
+      },
     });
     await user.save();
   } else if (!user.googleId) {

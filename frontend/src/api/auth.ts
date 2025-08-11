@@ -22,7 +22,10 @@ const login = async (payload: LoginPayload): Promise<ApiResponse> => {
   return data;
 };
 
-// export const googleLogin = async (payload: LoginPayload) => API.post(endpoints.login, payload);
+export const googleLogin = async (token: string): Promise<ApiResponse> => {
+  const { data } = await API.post<ApiResponse>(endpoints.googleLogin, { token });
+  return data;
+};
 
 const logout = async (): Promise<ApiResponse> => {
   const { data } = await API.post<ApiResponse>(endpoints.logout);

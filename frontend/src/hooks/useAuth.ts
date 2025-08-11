@@ -1,4 +1,4 @@
-import { getAuthenticatedUser, login, logout, signup } from '@/api/auth';
+import { getAuthenticatedUser, googleLogin, login, logout, signup } from '@/api/auth';
 import { getApiErrorMsg } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { FieldValues, UseFormSetError } from 'react-hook-form';
@@ -65,5 +65,32 @@ export function useAuth<T extends FieldValues>(setError?: UseFormSetError<T>) {
     },
   });
 
-  return { login: loginMutation, signup: signupMutation, logout: logoutMutation };
+  const googleLoginMutation = useMutation({
+    mutationFn: googleLogin,
+    onSuccess: async (response) => {
+      try {
+        const user = await getAuthenticatedUser();
+        queryClient.setQueryData(AUTH_USER_QUERY_KEY, user);
+        toast.success(response.message);
+        await navigate('/dashboard', { replace: true });
+      } catch {
+        toast.error('Błąd podczas pobierania danych użytkownika.');
+        await navigate('/', { replace: true });
+      }
+    },
+    onError: (error) => {
+      const errorMsg =
+        getApiErrorMsg(error) ||
+        'Wystąpił nieoczekiwany błąd podczas logowania. Spróbuj ponownie później.';
+
+      toast.error(errorMsg);
+    },
+  });
+
+  return {
+    login: loginMutation,
+    signup: signupMutation,
+    logout: logoutMutation,
+    googleLogin: googleLoginMutation,
+  };
 }
