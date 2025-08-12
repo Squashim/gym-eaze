@@ -74,7 +74,7 @@ export const register = async (req: Request, res: Response) => {
         REQUIRED_FIELDS: 'Wszystkie pola są wymagane',
         EMAIL: 'Użytkownik o takim emailu już istnieje',
         EMAIL_LENGTH: 'Email musi mieć od 2 do 320 znaków',
-        USERNAME: 'Użytkownik o takim username już istnieje',
+        USERNAME: 'Użytkownik o takiej nazwie już istnieje',
         USERNAME_LENGTH: 'Nazwa użytkownika musi mieć od 6 do 16 znaków',
         PASSWORD_LENGTH: 'Hasło musi miec co najmniej 14 znaków',
         INVALID_PASSWORD: 'Nieprawidłowe hasło.',
@@ -240,7 +240,7 @@ export const googleAuth = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie('accessToken', accessToken, {

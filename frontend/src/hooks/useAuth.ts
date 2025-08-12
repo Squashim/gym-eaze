@@ -1,7 +1,7 @@
 import { getAuthenticatedUser, googleLogin, login, logout, signup } from '@/api/auth';
-import { getApiErrorMsg } from '@/lib/utils';
+import { getApiErrorMsg, getSignupErrorInputField } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { FieldValues, UseFormSetError } from 'react-hook-form';
+import type { FieldValues, Path, UseFormSetError } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -41,11 +41,24 @@ export function useAuth<T extends FieldValues>(setError?: UseFormSetError<T>) {
 
   const signupMutation = useMutation({
     mutationFn: signup,
-    onSuccess: (response) => {
-      console.log(response);
+    onSuccess: async (response) => {
+      toast.success(response.message);
+      await navigate('/login');
     },
     onError: (error) => {
-      console.log(error);
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        if (setError) {
+          const inputField = getSignupErrorInputField(errorMsg);
+
+          setError(inputField as Path<T>, { type: 'server', message: errorMsg });
+        } else {
+          toast.error(errorMsg);
+        }
+      } else {
+        toast.error('Wystąpił nieoczekiwany błąd podczas rejestracji. Spróbuj ponownie później.');
+      }
     },
   });
 

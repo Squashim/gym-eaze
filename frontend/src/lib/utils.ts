@@ -22,3 +22,14 @@ export function getApiErrorMsg(error: unknown): string | undefined {
 
   return undefined;
 }
+
+export function getSignupErrorInputField(error: string): string {
+  switch (error) {
+    case 'Użytkownik o takiej nazwie już istnieje':
+      return 'username';
+    case 'Użytkownik o takim emailu już istnieje':
+      return 'email';
+    default:
+      return 'root';
+  }
+}

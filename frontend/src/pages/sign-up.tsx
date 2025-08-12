@@ -15,9 +15,11 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import image from '@/assets/images/register-page.webp';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, Loader2, TriangleAlert } from 'lucide-react';
 import { PasswordInput } from '@/components/ui/password-input';
 import { signupSchema, type SignupSchema } from '@/schemas/signup-schema';
+import { useAuth } from '@/hooks/useAuth';
+import GoogleLoginButton from '@/components/ui/google-login';
 
 const Signup = () => {
   const form = useForm<SignupSchema>({
@@ -29,9 +31,10 @@ const Signup = () => {
       confirmPassword: '',
     },
   });
+  const { signup } = useAuth(form.setError);
 
   const onSubmit = (data: SignupSchema) => {
-    console.log('Form submitted:', data);
+    signup.mutate(data);
   };
 
   return (
@@ -45,6 +48,12 @@ const Signup = () => {
                   <H1 className="mb-1">Zrób pierwszy krok</H1>
                   <Lead className="text-lg">Załóż konto i dołącz do społeczności GymEaze</Lead>
                 </header>
+                {form.formState.errors.root && (
+                  <div className="w-full bg-destructive/10 flex items-center gap-2 border border-destructive rounded-md  text-left p-2">
+                    <TriangleAlert className="text-destructive" size={18} />
+                    <Small className="text-destructive">{form.formState.errors.root.message}</Small>
+                  </div>
+                )}
                 <FormField
                   control={form.control}
                   name="username"
@@ -124,8 +133,19 @@ const Signup = () => {
                   )}
                 />
 
-                <Button className="w-full" type="submit">
-                  Zarejestruj się
+                <Button
+                  className="w-full"
+                  disabled={signup.isPending || !form.formState.isValid}
+                  type="submit"
+                >
+                  {signup.isPending ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Rejestrowanie
+                    </>
+                  ) : (
+                    'Zarejestruj się'
+                  )}
                 </Button>
 
                 <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -134,16 +154,7 @@ const Signup = () => {
                   </span>
                 </div>
 
-                <Button className="w-full" type="button" variant="outline">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Zarejestruj się przez Google
-                  <span className="sr-only">Rejestracja kontem Google</span>
-                </Button>
+                <GoogleLoginButton>Zarejestruj się przez Google</GoogleLoginButton>
 
                 <div className="text-center flex gap-1 items-center justify-center">
                   <Small>Masz już konto?</Small>
