@@ -29,6 +29,8 @@ export function getSignupErrorInputField(error: string): string {
       return 'username';
     case 'Użytkownik o takim emailu już istnieje':
       return 'email';
+    case 'Nieprawidłowe hasło.':
+      return 'password';
     default:
       return 'root';
   }

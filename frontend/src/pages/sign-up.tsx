@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -70,6 +71,10 @@ const Signup = () => {
                         />
                       </FormControl>
                       <FormMessage />
+                      <FormDescription>
+                        Nazwa użytkownika musi mieć od 6 do 16 znaków i może zawierać tylko litery i
+                        cyfry.
+                      </FormDescription>
                     </FormItem>
                   )}
                 />
