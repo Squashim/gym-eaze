@@ -148,7 +148,12 @@ export const login = async (req: Request, res: Response) => {
   }
 
   try {
-    const { accessToken, refreshToken } = await loginUser(login, password);
+    const { accessToken, refreshToken, isFirstLogin } = await loginUser(
+      login,
+      password,
+      req.headers['user-agent'] || '',
+      rememberMe,
+    );
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -168,6 +173,7 @@ export const login = async (req: Request, res: Response) => {
       message: 'Zalogowano pomyślnie',
       accessToken,
       refreshToken,
+      isFirstLogin,
     });
   } catch (err: unknown) {
     const message =
@@ -227,20 +233,24 @@ export const login = async (req: Request, res: Response) => {
  */
 
 export const googleAuth = async (req: Request, res: Response) => {
-  const { token } = req.body;
+  const { token, rememberMe } = req.body;
 
   if (!token) {
     return res.status(400).json({ message: 'Token Google jest wymagany' });
   }
 
   try {
-    const { accessToken, refreshToken } = await googleLogin(token);
+    const { accessToken, refreshToken } = await googleLogin(
+      token,
+      req.headers['user-agent'] || '',
+      rememberMe,
+    );
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie('accessToken', accessToken, {

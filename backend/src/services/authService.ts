@@ -3,6 +3,7 @@ import User from '../models/userModel';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
 import { ICurrentUser } from '../types/auth';
+import DeviceToken from '../models/deviceTokenModel';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
@@ -36,7 +37,12 @@ export const registerUser = async (username: string, email: string, password: st
   await user.save();
 };
 
-export const loginUser = async (login: string, password: string) => {
+export const loginUser = async (
+  login: string,
+  password: string,
+  deviceInfo: string,
+  rememberMe: boolean,
+) => {
   const user = await User.findOne({
     $or: [{ email: login }, { username: login }],
   });
@@ -45,16 +51,33 @@ export const loginUser = async (login: string, password: string) => {
     throw new Error('INVALID_CREDENTIALS');
   }
 
-  const accessToken = generateAccessToken(user._id.toString());
-  const refreshToken = generateRefreshToken(user._id.toString());
+  const isFirstLogin = !user.lastLoginAt;
 
-  user.refreshToken = refreshToken;
+  user.lastLoginAt = new Date();
   await user.save();
 
-  return { accessToken, refreshToken };
+  const accessToken = generateAccessToken(user._id.toString());
+  const refreshTokenExpiry = rememberMe ? '30d' : '7d';
+  const refreshToken = generateRefreshToken(user._id.toString(), refreshTokenExpiry);
+
+  const deviceCount = await DeviceToken.countDocuments({ userId: user._id });
+
+  if (deviceCount >= 5) {
+    await DeviceToken.findOneAndDelete({ userId: user._id }, { sort: { createdAt: 1 } });
+  }
+
+  const device = new DeviceToken({
+    userId: user._id,
+    refreshToken,
+    deviceInfo,
+  });
+
+  await device.save();
+
+  return { accessToken, refreshToken, isFirstLogin };
 };
 
-export const googleLogin = async (token: string) => {
+export const googleLogin = async (token: string, deviceInfo: string, rememberMe: boolean) => {
   const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -85,10 +108,15 @@ export const googleLogin = async (token: string) => {
   }
 
   const accessToken = generateAccessToken(user._id.toString());
-  const refreshToken = generateRefreshToken(user._id.toString());
+  const refreshTokenExpiry = rememberMe ? '30d' : '7d';
+  const refreshToken = generateRefreshToken(user._id.toString(), refreshTokenExpiry);
+  const device = new DeviceToken({
+    userId: user._id,
+    refreshToken,
+    deviceInfo: deviceInfo,
+  });
 
-  user.refreshToken = refreshToken;
-  await user.save();
+  await device.save();
 
   return { accessToken, refreshToken };
 };
@@ -120,8 +148,9 @@ export const refreshAccessToken = async (token: string) => {
   }
 
   const user = await User.findById(payload.userId);
+  const deviceToken = await DeviceToken.findOne({ userId: payload.userId, refreshToken: token });
 
-  if (!user || user.refreshToken !== token) {
+  if (!user || !deviceToken) {
     throw new Error('Niepoprawny token odświeżający');
   }
 
@@ -130,12 +159,17 @@ export const refreshAccessToken = async (token: string) => {
 
 export const logoutUser = async (token: string) => {
   const payload = verifyRefreshToken(token) as JwtPayload;
+  const deviceToken = await DeviceToken.findOne({ userId: payload.userId, refreshToken: token });
 
   const user = await User.findById(payload.userId);
+
   if (!user) {
     throw new Error('Nie ma takiego użytkownika');
   }
 
-  user.refreshToken = undefined;
-  await user.save();
+  if (!deviceToken) {
+    throw new Error('Nie ma takiego tokenu');
+  }
+
+  await deviceToken.deleteOne();
 };

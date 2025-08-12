@@ -7,6 +7,7 @@ function useGetLoggedUser() {
     queryKey: ['authenticated-user'],
     queryFn: () => getAuthenticatedUser(),
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
     gcTime: Infinity,
     retry: false,
   });

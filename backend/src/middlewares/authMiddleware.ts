@@ -21,3 +21,18 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     return res.status(403).json({ message: 'Nieprawidłowy token' });
   }
 };
+
+export const nonAuthenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
+    if (!token) return next();
+    const payload = verifyAccessToken(token) as JwtPayload;
+    if (payload.userId) {
+      return res.status(403).json({ message: 'Użytkownik jest już zalogowany' });
+    }
+  } catch {
+    return next();
+  }
+
+  next();
+};
