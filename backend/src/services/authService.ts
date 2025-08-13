@@ -4,6 +4,7 @@ import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '.
 import { JwtPayload } from 'jsonwebtoken';
 import { ICurrentUser } from '../types/auth';
 import DeviceToken from '../models/deviceTokenModel';
+import { verifyGoogleToken } from '../utils/google';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
@@ -62,7 +63,7 @@ export const loginUser = async (
 
   const deviceCount = await DeviceToken.countDocuments({ userId: user._id });
 
-  if (deviceCount >= 5) {
+  if (deviceCount >= 4) {
     await DeviceToken.findOneAndDelete({ userId: user._id }, { sort: { createdAt: 1 } });
   }
 
@@ -77,7 +78,7 @@ export const loginUser = async (
   return { accessToken, refreshToken, isFirstLogin };
 };
 
-export const googleLogin = async (token: string, deviceInfo: string, rememberMe: boolean) => {
+export const googleLogin = async (token: string, deviceInfo: string) => {
   const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -88,28 +89,55 @@ export const googleLogin = async (token: string, deviceInfo: string, rememberMe:
     throw new Error('INVALID_GOOGLE_TOKEN');
   }
 
-  const { sub: googleId, email, name, picture } = await response.json();
+  const { sub: googleId, email, name, email_verified } = await response.json();
 
   let user = await User.findOne({ email });
 
+  let isFirstLogin = false;
+
   if (!user) {
+    let username = name || email?.split('@')[0];
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      username = `${username}${Math.floor(Math.random() * 10000)}`;
+    }
+
     user = new User({
-      username: name || email?.split('@')[0],
+      username,
       email,
       googleId,
-      profileDetails: {
-        profilePicture: picture,
-      },
+      lastLoginAt: new Date(),
     });
+
+    isFirstLogin = true;
     await user.save();
   } else if (!user.googleId) {
-    user.googleId = googleId;
+    if (!email_verified) {
+      throw new Error('EMAIL_NOT_VERIFIED');
+    }
+
+    return {
+      linkRequired: true,
+      email,
+      googleId,
+    };
+  } else {
+    isFirstLogin = !user.lastLoginAt;
+    user.lastLoginAt = new Date();
     await user.save();
   }
 
   const accessToken = generateAccessToken(user._id.toString());
-  const refreshTokenExpiry = rememberMe ? '30d' : '7d';
+  const refreshTokenExpiry = '30d';
   const refreshToken = generateRefreshToken(user._id.toString(), refreshTokenExpiry);
+
+  const deviceCount = await DeviceToken.countDocuments({ userId: user._id });
+
+  if (deviceCount >= 4) {
+    await DeviceToken.findOneAndDelete({ userId: user._id }, { sort: { createdAt: 1 } });
+  }
+
   const device = new DeviceToken({
     userId: user._id,
     refreshToken,
@@ -118,7 +146,59 @@ export const googleLogin = async (token: string, deviceInfo: string, rememberMe:
 
   await device.save();
 
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, isFirstLogin };
+};
+
+export const linkGoogleAccount = async (
+  email: string,
+  password: string,
+  token: string,
+  deviceInfo: string,
+) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error('INVALID_CREDENTIALS');
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error('INVALID_CREDENTIALS');
+  }
+
+  if (user.googleId) {
+    throw new Error('ACCOUNT_ALREADY_LINKED');
+  }
+
+  const googleUser = await verifyGoogleToken(token);
+  if (!googleUser || googleUser.email !== email) {
+    throw new Error('INVALID_GOOGLE_ID');
+  }
+
+  const existingGoogleUser = await User.findOne({ googleId: googleUser.googleId });
+  if (existingGoogleUser) {
+    throw new Error('GOOGLE_ID_ALREADY_USED');
+  }
+
+  let isFirstLogin = !user.lastLoginAt;
+
+  user.lastLoginAt = new Date();
+  user.googleId = googleUser.googleId;
+  await user.save();
+
+  const accessToken = generateAccessToken(user._id.toString());
+  const refreshTokenExpiry = '30d';
+  const refreshToken = generateRefreshToken(user._id.toString(), refreshTokenExpiry);
+
+  const device = new DeviceToken({
+    userId: user._id,
+    refreshToken,
+    deviceInfo: deviceInfo,
+  });
+
+  await device.save();
+
+  return { accessToken, refreshToken, isFirstLogin };
 };
 
 export const getCurrentUser = async (userId: string): Promise<ICurrentUser> => {
