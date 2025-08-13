@@ -79,6 +79,7 @@ export const register = async (req: Request, res: Response) => {
         USERNAME_LENGTH: 'Nazwa użytkownika musi mieć od 6 do 16 znaków',
         PASSWORD_LENGTH: 'Hasło musi miec co najmniej 14 znaków',
         INVALID_PASSWORD: 'Nieprawidłowe hasło.',
+        GOOGLE_ID_ALREADY_USED: 'Ten adres email jest już powiązany z kontem Google',
       };
 
       message = messages[err.message] || message;
@@ -247,7 +248,7 @@ export const googleAuth = async (req: Request, res: Response) => {
       return res.status(409).json({
         linkRequired: true,
         email: result.email,
-        googleId: result.googleId,
+        token: result.token,
       });
     }
 
@@ -330,6 +331,8 @@ export const linkGoogle = async (req: Request, res: Response) => {
         message = 'To konto Google jest już połączone z innym użytkownikiem';
       } else if (err.message === 'ACCOUNT_ALREADY_LINKED') {
         message = 'Konto jest już połączone';
+      } else if (err.message === 'INVALID_GOOGLE_TOKEN') {
+        message = 'Nieprawidłowy token Google';
       }
     }
 

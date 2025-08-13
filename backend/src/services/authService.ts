@@ -17,6 +17,11 @@ export const registerUser = async (username: string, email: string, password: st
   const checkUsername = await User.findOne({ username });
   if (checkUsername) throw new Error('USERNAME');
 
+  const existingUser = await User.findOne({ email: email });
+  if (existingUser?.googleId) {
+    throw new Error('GOOGLE_ID_ALREADY_USED');
+  }
+
   if (username.length < 6 || username.length > 16) {
     throw new Error('USERNAME_LENGTH');
   }
@@ -79,17 +84,7 @@ export const loginUser = async (
 };
 
 export const googleLogin = async (token: string, deviceInfo: string) => {
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('INVALID_GOOGLE_TOKEN');
-  }
-
-  const { sub: googleId, email, name, email_verified } = await response.json();
+  const { email, googleId, name, email_verified } = await verifyGoogleToken(token);
 
   let user = await User.findOne({ email });
 
@@ -120,7 +115,7 @@ export const googleLogin = async (token: string, deviceInfo: string) => {
     return {
       linkRequired: true,
       email,
-      googleId,
+      token,
     };
   } else {
     isFirstLogin = !user.lastLoginAt;
@@ -180,7 +175,7 @@ export const linkGoogleAccount = async (
     throw new Error('GOOGLE_ID_ALREADY_USED');
   }
 
-  let isFirstLogin = !user.lastLoginAt;
+  const isFirstLogin = !user.lastLoginAt;
 
   user.lastLoginAt = new Date();
   user.googleId = googleUser.googleId;
