@@ -11,16 +11,15 @@ export const registerUser = async (username: string, email: string, password: st
     throw new Error('REQUIRED_FIELDS');
   }
 
-  const checkEmail = await User.findOne({ email });
-  if (checkEmail) throw new Error('EMAIL');
+  const existingUser = await User.findOne({ email: email });
+  if (existingUser && existingUser.googleId) {
+    throw new Error('GOOGLE_ID_ALREADY_USED');
+  } else if (existingUser) {
+    throw new Error('EMAIL');
+  }
 
   const checkUsername = await User.findOne({ username });
   if (checkUsername) throw new Error('USERNAME');
-
-  const existingUser = await User.findOne({ email: email });
-  if (existingUser?.googleId) {
-    throw new Error('GOOGLE_ID_ALREADY_USED');
-  }
 
   if (username.length < 6 || username.length > 16) {
     throw new Error('USERNAME_LENGTH');

@@ -1,5 +1,5 @@
 import LogoPath from '@/assets/images/logo.webp';
-import { useTheme } from '../theme-provider';
+import { useTheme } from '../../context/theme';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';

@@ -5,6 +5,7 @@ import AuthLayout from './components/layouts/auth-layout';
 import Home from './pages/home';
 import Welcome from './pages/welcome';
 import Error from './pages/error';
+import { GoogleLinkProvider } from './context/google-link';
 
 function App() {
   return (
@@ -14,8 +15,22 @@ function App() {
       </Route>
 
       <Route element={<AuthLayout allow="not-logged-in" />}>
-        <Route element={<Login />} path="login" />
-        <Route element={<Signup />} path="signup" />
+        <Route
+          element={
+            <GoogleLinkProvider>
+              <Login />
+            </GoogleLinkProvider>
+          }
+          path="login"
+        />
+        <Route
+          element={
+            <GoogleLinkProvider>
+              <Signup />
+            </GoogleLinkProvider>
+          }
+          path="signup"
+        />
       </Route>
 
       <Route element={<AuthLayout allow="logged-in" />}>

@@ -1,11 +1,12 @@
-import type { LoginPayload, SignupPayload } from '@/types/auth';
+import type { LinkGoogleAccountPayload, LoginPayload, SignupPayload } from '@/types/auth';
 import API from './api-client';
 import { type AuthenticatedUser } from '@/types/user';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse, LoginApiResponse } from '@/types/api';
 
 const endpoints = {
   login: 'auth/login',
   googleLogin: 'auth/google',
+  linkGoogleAccount: 'auth/link/google',
   register: 'auth/register',
   logout: 'auth/logout',
   refresh: 'auth/refresh',
@@ -17,13 +18,20 @@ const signup = async (payload: SignupPayload): Promise<ApiResponse> => {
   return data;
 };
 
-const login = async (payload: LoginPayload): Promise<ApiResponse> => {
-  const { data } = await API.post<ApiResponse>(endpoints.login, payload);
+const login = async (payload: LoginPayload): Promise<LoginApiResponse> => {
+  const { data } = await API.post<LoginApiResponse>(endpoints.login, payload);
   return data;
 };
 
-export const googleLogin = async (token: string): Promise<ApiResponse> => {
-  const { data } = await API.post<ApiResponse>(endpoints.googleLogin, { token });
+export const googleLogin = async (token: string): Promise<LoginApiResponse> => {
+  const { data } = await API.post<LoginApiResponse>(endpoints.googleLogin, { token });
+  return data;
+};
+
+export const linkGoogleAccount = async (
+  payload: LinkGoogleAccountPayload,
+): Promise<LoginApiResponse> => {
+  const { data } = await API.post<LoginApiResponse>(endpoints.linkGoogleAccount, payload);
   return data;
 };
 

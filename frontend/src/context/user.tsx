@@ -1,4 +1,4 @@
-import useGetLoggedUser from '@/hooks/useGetLoggedUser';
+import useGetLoggedUser from '@/hooks/auth/use-get-logged-user';
 import type { AuthenticatedUser } from '@/types/user';
 import { createContext, useContext, type PropsWithChildren } from 'react';
 

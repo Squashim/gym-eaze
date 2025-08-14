@@ -2,10 +2,25 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Input({ className, type, value, onBlur, ...props }: React.ComponentProps<'input'>) {
+function Input({
+  className,
+  type,
+  value,
+  onBlur,
+  onChange,
+  ...props
+}: React.ComponentProps<'input'>) {
   const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
-    if (typeof value === 'string' && value !== '') {
-      e.target.value = value.trim();
+    if (typeof e.target.value === 'string' && e.target.value !== e.target.value.trim()) {
+      const trimmedValue = e.target.value.trim();
+
+      if (onChange) {
+        const syntheticEvent = {
+          ...e,
+          target: { ...e.target, value: trimmedValue },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
+      }
     }
 
     if (onBlur) {
@@ -23,7 +38,9 @@ function Input({ className, type, value, onBlur, ...props }: React.ComponentProp
       )}
       data-slot="input"
       onBlur={handleBlur}
+      onChange={onChange}
       type={type}
+      value={value}
       {...props}
     />
   );

@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import Logo from './ui/logo';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from './ui/button';
 import { useUser } from '@/context/user';
+import { useLogout } from '@/hooks/auth/use-logout';
 
 const Navbar = () => {
-  const { logout } = useAuth();
+  const { logout } = useLogout();
   const { user } = useUser();
 
   const handleLogout = () => {

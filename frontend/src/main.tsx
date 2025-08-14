@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/context/theme';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import App from './app';
