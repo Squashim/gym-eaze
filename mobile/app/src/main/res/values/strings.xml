@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GymEaze</string>
+
+    <string name="join_us">Dołącz do nas!</string>
+    <string name="your_training_community_progress">Twój trening. Twoja społeczność. Twój progres.</string>
+    <string name="register">Zarejestruj się</string>
+    <string name="login">Zaloguj się</string>
+    <string name="username">Nazwa użytkownika</string>
+    <string name="email">Adres email</string>
+    <string name="password">Hasło</string>
+    <string name="confirm_password">Potwierdź hasło</string>
+    <string name="username_or_email">Nazwa użytkownika lub email</string>
+    <string name="or">lub</string>
+    <string name="continue_with_google">Kontynuuj z Google</string>
+    <string name="password_placeholder">•••••••</string>
+
+    <string name="settings">Ustawienia</string>
+    <string name="logo">GymEaze Logo</string>
+    <string name="welcome">Witaj w GymEaze!</string>
+    <string name="introduction">To jest ekran wprowadzenia dla nowych użytkowników</string>
+    <string name="begin">Rozpocznij korzystanie z aplikacji</string>
+    <string name="app_settings">Ustawienia aplikacji</string>
+    <string name="back">Wróć</string>
+    <string name="theme">Motyw aplikacji</string>
+    <string name="theme_choice">Wybór motywu</string>
+    <string name="theme_choice_desc">Wybierz motyw z którego chcesz korzystać w swojej aplikacji.</string>
+    <string name="dark">Ciemny (domyślny)</string>
+    <string name="light">Jasny</string>
+    <string name="google_logo">Google logo</string>
+
+    <string name="nav_home">Strona główna</string>
+    <string name="nav_workouts">Treningi</string>
+    <string name="nav_community">Społeczność</string>
+    <string name="nav_profile">Profil</string>
+</resources>

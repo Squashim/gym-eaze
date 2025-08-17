@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_green">#8BC34A</color>
+    <color name="primary_green_dark">#689F38</color>
+    <color name="background_dark">#1C1C1C</color>
+    <color name="surface_dark">#2D2D2D</color>
+    <color name="surface_variant">#3D3D3D</color>
+    <color name="on_surface_dark">#FFFFFF</color>
+    <color name="on_surface_secondary">#B0B0B0</color>
+
+    <color name="button_outlined">#4D4D4D</color>
+    <color name="google_button">#E0E0E0</color>
+    <color name="google_button_text">#1F1F1F</color>
+
+    <color name="input_background">#3D3D3D</color>
+    <color name="input_border">#5D5D5D</color>
+
+    <color name="nav_bar_background">#1C1C1C</color>
+    <color name="nav_bar_selected">#8BC34A</color>
+    <color name="nav_bar_unselected">#B0B0B0</color>
+</resources>
