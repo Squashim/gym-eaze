@@ -66,8 +66,8 @@ class MainActivity : ComponentActivity() {
                                 onToggleAuthMode = authViewModel::toggleAuthMode,
                                 onRegister = authViewModel::register,
                                 onLogin = authViewModel::login,
+                                onSettingsClick = authViewModel::showSettingsScreen,
                                 onGoogleLogin = authViewModel::loginWithGoogle,
-                                onSettingsClick = authViewModel::showSettingsScreen
                             )
                         }
 

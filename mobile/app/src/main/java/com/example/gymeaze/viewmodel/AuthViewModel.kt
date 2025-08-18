@@ -1,11 +1,10 @@
 package com.example.gymeaze.viewmodel
 
 import android.app.Application
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.AuthRepository
+import com.example.gymeaze.util.Validation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +20,15 @@ data class AuthUiState(
     val confirmPassword: String = "",
     val usernameOrEmail: String = "",
     val errorMessage: String? = null,
-    val isLoggedIn: Boolean = false
+    val isLoggedIn: Boolean = false,
+
+    val usernameError: String? = null,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val confirmPasswordError: String? = null,
+    val usernameOrEmailError: String? = null,
+    val isRegisterValid: Boolean = false,
+    val isLoginValid: Boolean = false
 )
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
@@ -39,35 +46,67 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         privateUiState.value = privateUiState.value.copy(
             isRegistering = !privateUiState.value.isRegistering,
             errorMessage = null
-        )
+        ).also { validate(it) }
     }
 
     fun updateUsername(username: String){
-        privateUiState.value = privateUiState.value.copy(username = username)
-
+        val newState = privateUiState.value.copy(username = username)
+        privateUiState.value = newState
+        validate(newState)
     }
 
     fun updateEmail(email: String){
-        privateUiState.value = privateUiState.value.copy(email = email)
+        val newState = privateUiState.value.copy(email = email)
+        privateUiState.value = newState
+        validate(newState)
     }
 
     fun updatePassword(password: String) {
-        privateUiState.value = privateUiState.value.copy(password = password)
+        val newState = privateUiState.value.copy(password = password)
+        privateUiState.value = newState
+        validate(newState)
     }
 
     fun updateConfirmPassword(confirmPassword: String){
-        privateUiState.value = privateUiState.value.copy(confirmPassword = confirmPassword)
+        val newState = privateUiState.value.copy(confirmPassword = confirmPassword)
+        privateUiState.value = newState
+        validate(newState)
     }
 
     fun updateUsernameOrEmail(usernameOrEmail: String) {
-        privateUiState.value = privateUiState.value.copy(usernameOrEmail = usernameOrEmail)
+        val newState = privateUiState.value.copy(usernameOrEmail = usernameOrEmail)
+        privateUiState.value = newState
+        validate(newState)
+    }
+
+    private fun validate(state: AuthUiState = privateUiState.value){
+        val usernameError = Validation.validateUsername(state.username)
+        val emailError = Validation.validateEmail(state.email)
+        val passwordError = Validation.validatePassword(state.password)
+        val confirmPasswordError = Validation.validateConfirmPassword(state.password, state.confirmPassword)
+        val isRegisterValid = listOf(usernameError, emailError, passwordError, confirmPasswordError).all { it == null }
+
+        val usernameOrEmailError = Validation.validateUsernameOrEmail(state.usernameOrEmail)
+        val loginPasswordError = if(state.password.isBlank()) "Hasło jest wymagane" else null
+        val isLoginValid = usernameOrEmailError == null && loginPasswordError == null
+
+        privateUiState.value = state.copy(
+            usernameError = usernameError,
+            emailError = emailError,
+            passwordError = if (state.isRegistering) passwordError else loginPasswordError,
+            confirmPasswordError = confirmPasswordError,
+            usernameOrEmailError = usernameOrEmailError,
+            isRegisterValid = isRegisterValid,
+            isLoginValid = isLoginValid
+        )
     }
 
     fun register() {
         val currentState = privateUiState.value
 
-        if(currentState.password!=currentState.confirmPassword){
-            privateUiState.value = currentState.copy(errorMessage = "Hasła nie są identyczne!")
+        validate(currentState)
+        if(!privateUiState.value.isRegisterValid){
+            privateUiState.value = privateUiState.value.copy(errorMessage = "Popraw błędy!")
             return
         }
 
@@ -75,42 +114,49 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch{
             val result = authRepository.register(
-                currentState.username,
-                currentState.email,
-                currentState.password
+                privateUiState.value.username,
+                privateUiState.value.email,
+                privateUiState.value.password
             )
             if(result.isSuccess) {
-                privateUiState.value = currentState.copy(
+                privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
                     isLoggedIn = true
                 )
             } else {
-                privateUiState.value = currentState.copy(
+                privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
                     errorMessage = "Błąd rejestracji! ${result.exceptionOrNull()?.message}"
                 )
             }
-
-
         }
     }
 
     fun login() {
         val currentState = privateUiState.value
+
+        validate(currentState)
+        if(!privateUiState.value.isLoginValid){
+            privateUiState.value = privateUiState.value.copy(
+                errorMessage = "Popraw błędy"
+            )
+            return
+        }
+
         privateUiState.value = currentState.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch {
             val result = authRepository.login(
-                currentState.usernameOrEmail,
-                currentState.password
+                privateUiState.value.usernameOrEmail,
+                privateUiState.value.password
             )
             if (result.isSuccess){
-                privateUiState.value = currentState.copy(
+                privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
                     isLoggedIn = true
                 )
             } else{
-                privateUiState.value = currentState.copy(
+                privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
                     errorMessage = "Błąd logowania! ${result.exceptionOrNull()?.message}"
                 )

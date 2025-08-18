@@ -160,7 +160,12 @@ fun AuthScreen(
                                 onPasswordChange = onPasswordChange,
                                 onConfirmPasswordChange = onConfirmPasswordChange,
                                 onRegister = onRegister,
-                                isLoading = uiState.isLoading
+                                isLoading = uiState.isLoading,
+                                usernameError = uiState.usernameError,
+                                emailError = uiState.emailError,
+                                passwordError = uiState.passwordError,
+                                confirmPasswordError = uiState.confirmPasswordError,
+                                isRegisterValid = uiState.isRegisterValid
                             )
                         } else {
                             LoginForm(
@@ -169,7 +174,9 @@ fun AuthScreen(
                                 onUsernameOrEmailChange = onUsernameOrEmailChange,
                                 onPasswordChange = onPasswordChange,
                                 onLogin = onLogin,
-                                isLoading = uiState.isLoading
+                                isLoading = uiState.isLoading,
+                                usernameOrEmailError = uiState.usernameOrEmailError,
+                                isLoginValid = uiState.isLoginValid
                             )
                         }
 
@@ -240,7 +247,12 @@ private fun RegisterForm(
     onPasswordChange: (String) -> Unit,
     onConfirmPasswordChange: (String) -> Unit,
     onRegister: () -> Unit,
-    isLoading: Boolean
+    isLoading: Boolean,
+    usernameError: String?,
+    emailError: String?,
+    passwordError: String?,
+    confirmPasswordError: String?,
+    isRegisterValid: Boolean
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -267,13 +279,25 @@ private fun RegisterForm(
                     tint = OnSurfaceSecondary
                 )
             },
+            isError = usernameError != null,
+            supportingText = {
+                if(usernameError != null){
+                    Text(
+                        text = usernameError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                        )
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = InputBorder,
                 focusedTextColor = OnSurfaceDark,
                 unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen
+                cursorColor = PrimaryGreen,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -300,6 +324,15 @@ private fun RegisterForm(
                     tint = OnSurfaceSecondary
                 )
             },
+            isError = emailError != null,
+            supportingText = {
+                if (emailError != null){
+                    Text(text = emailError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = OutlinedTextFieldDefaults.colors(
@@ -307,7 +340,9 @@ private fun RegisterForm(
                 unfocusedBorderColor = InputBorder,
                 focusedTextColor = OnSurfaceDark,
                 unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen
+                cursorColor = PrimaryGreen,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -334,6 +369,16 @@ private fun RegisterForm(
                     tint = OnSurfaceSecondary
                 )
             },
+            isError = passwordError != null,
+            supportingText = {
+                if(passwordError != null){
+                    Text(
+                        text = passwordError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -342,7 +387,9 @@ private fun RegisterForm(
                 unfocusedBorderColor = InputBorder,
                 focusedTextColor = OnSurfaceDark,
                 unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen
+                cursorColor = PrimaryGreen,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -369,6 +416,16 @@ private fun RegisterForm(
                     tint = OnSurfaceSecondary
                 )
             },
+            isError = confirmPasswordError != null,
+            supportingText = {
+                if(confirmPasswordError != null){
+                    Text(
+                        text = confirmPasswordError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -377,7 +434,9 @@ private fun RegisterForm(
                 unfocusedBorderColor = InputBorder,
                 focusedTextColor = OnSurfaceDark,
                 unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen
+                cursorColor = PrimaryGreen,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -388,10 +447,10 @@ private fun RegisterForm(
             onClick = onRegister,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = PrimaryGreen
+                containerColor = PrimaryGreen,
             ),
             shape = RoundedCornerShape(8.dp),
-            enabled = !isLoading
+            enabled = !isLoading && isRegisterValid,
         ) {
             if (isLoading){
                 CircularProgressIndicator(
@@ -416,7 +475,9 @@ private fun LoginForm(
     onUsernameOrEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLogin: () -> Unit,
-    isLoading: Boolean
+    isLoading: Boolean,
+    usernameOrEmailError: String?,
+    isLoginValid: Boolean
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -443,13 +504,24 @@ private fun LoginForm(
                     tint = OnSurfaceSecondary
                 )
             },
+            isError = usernameOrEmailError != null,
+            supportingText = {
+                if(usernameOrEmailError != null){
+                    Text(
+                        text = usernameOrEmailError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = InputBorder,
                 focusedTextColor = OnSurfaceDark,
                 unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen
+                cursorColor = PrimaryGreen,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -500,7 +572,7 @@ private fun LoginForm(
                 containerColor = PrimaryGreen
             ),
             shape = RoundedCornerShape(8.dp),
-            enabled = !isLoading
+            enabled = !isLoading && isLoginValid
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
