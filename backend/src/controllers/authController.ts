@@ -405,7 +405,7 @@ export const me = async (req: AuthRequest, res: Response) => {
  */
 
 export const refresh = async (req: Request, res: Response) => {
-  const token = req.cookies.refreshToken || req.body.token;
+  const token = req.cookies?.refreshToken || req.body?.token;
 
   if (!token) {
     return res.status(401).json({ message: 'Brak tokenu odświeżającego' });
@@ -481,6 +481,6 @@ export const logout = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return res.status(403).json({ message: error.message });
     }
-    return res.status(403).json({ message: 'Nieprawidłowy/wygasly token odświeżający' });
+    return res.status(403).json({ message: 'Nieprawidłowy/wygasły token odświeżający' });
   }
 };

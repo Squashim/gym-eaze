@@ -1,6 +1,6 @@
 import { getAuthenticatedUser, login } from '@/api/auth';
 import { QUERY_KEYS } from '@/constants/query-keys';
-import { SESSION_STORAGE_FLAGS } from '@/constants/session-storage-flags';
+import { STORAGE_FLAGS } from '@/constants/storage-flags';
 import { getApiErrorMsg } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { FieldValues, UseFormSetError } from 'react-hook-form';
@@ -22,8 +22,10 @@ export function useLogin<T extends FieldValues>(setError?: UseFormSetError<T>) {
         toast.success(response.message);
 
         if (isFirstLogin) {
-          sessionStorage.setItem(SESSION_STORAGE_FLAGS.isFirstLogin, 'true');
+          sessionStorage.setItem(STORAGE_FLAGS.isFirstLogin, 'true');
         }
+
+        localStorage.setItem(STORAGE_FLAGS.wasLoggedIn, 'true');
 
         await navigate(redirectPath, {
           replace: true,

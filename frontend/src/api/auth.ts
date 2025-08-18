@@ -1,17 +1,8 @@
 import type { LinkGoogleAccountPayload, LoginPayload, SignupPayload } from '@/types/auth';
-import API from './api-client';
+import API, { REFRESH_API } from './api-client';
 import { type AuthenticatedUser } from '@/types/user';
 import type { ApiResponse, LoginApiResponse } from '@/types/api';
-
-const endpoints = {
-  login: 'auth/login',
-  googleLogin: 'auth/google',
-  linkGoogleAccount: 'auth/link/google',
-  register: 'auth/register',
-  logout: 'auth/logout',
-  refresh: 'auth/refresh',
-  me: 'auth/me',
-} as const;
+import { AUTH as endpoints } from '@/constants/endpoints';
 
 const signup = async (payload: SignupPayload): Promise<ApiResponse> => {
   const { data } = await API.post<ApiResponse>(endpoints.register, payload);
@@ -23,14 +14,12 @@ const login = async (payload: LoginPayload): Promise<LoginApiResponse> => {
   return data;
 };
 
-export const googleLogin = async (token: string): Promise<LoginApiResponse> => {
+const googleLogin = async (token: string): Promise<LoginApiResponse> => {
   const { data } = await API.post<LoginApiResponse>(endpoints.googleLogin, { token });
   return data;
 };
 
-export const linkGoogleAccount = async (
-  payload: LinkGoogleAccountPayload,
-): Promise<LoginApiResponse> => {
+const linkGoogleAccount = async (payload: LinkGoogleAccountPayload): Promise<LoginApiResponse> => {
   const { data } = await API.post<LoginApiResponse>(endpoints.linkGoogleAccount, payload);
   return data;
 };
@@ -39,11 +28,20 @@ const logout = async (): Promise<ApiResponse> => {
   const { data } = await API.post<ApiResponse>(endpoints.logout);
   return data;
 };
-const refreshToken = () => API.post(endpoints.refresh);
+
+const refreshToken = (): Promise<ApiResponse> => REFRESH_API.post(endpoints.refresh);
 
 const getAuthenticatedUser = async (): Promise<AuthenticatedUser> => {
   const { data } = await API.get<AuthenticatedUser>(endpoints.me);
   return data;
 };
 
-export { signup, login, logout, refreshToken, getAuthenticatedUser };
+export {
+  signup,
+  login,
+  logout,
+  refreshToken,
+  getAuthenticatedUser,
+  googleLogin,
+  linkGoogleAccount,
+};

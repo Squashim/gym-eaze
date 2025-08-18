@@ -1,14 +1,10 @@
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
-import { AxiosError } from 'axios';
+import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-function isAxiosError(error: unknown): error is AxiosError {
-  return typeof error === 'object' && error !== null && (error as AxiosError).isAxiosError;
 }
 
 export function getApiErrorMsg(error: unknown): string | undefined {

@@ -213,7 +213,7 @@ export const getCurrentUser = async (userId: string): Promise<ICurrentUser> => {
 
 export const refreshAccessToken = async (token: string) => {
   if (!token) {
-    throw new Error('Brak tokena odświeżającego');
+    throw new Error('Brak tokenu odświeżającego');
   }
   const payload = verifyRefreshToken(token) as JwtPayload;
 

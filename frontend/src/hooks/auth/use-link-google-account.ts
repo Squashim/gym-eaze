@@ -1,6 +1,6 @@
 import { getAuthenticatedUser, linkGoogleAccount } from '@/api/auth';
 import { QUERY_KEYS } from '@/constants/query-keys';
-import { SESSION_STORAGE_FLAGS } from '@/constants/session-storage-flags';
+import { STORAGE_FLAGS } from '@/constants/storage-flags';
 import { useGoogleLink } from '@/context/google-link';
 import { getApiErrorMsg } from '@/lib/utils';
 
@@ -24,8 +24,10 @@ export function useLinkGoogleAccount() {
         toast.success(response.message);
 
         if (isFirstLogin) {
-          sessionStorage.setItem(SESSION_STORAGE_FLAGS.isFirstLogin, 'true');
+          sessionStorage.setItem(STORAGE_FLAGS.isFirstLogin, 'true');
         }
+
+        localStorage.setItem(STORAGE_FLAGS.wasLoggedIn, 'true');
 
         await navigate(redirectPath, {
           replace: true,
