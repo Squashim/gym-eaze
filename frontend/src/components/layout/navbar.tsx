@@ -73,7 +73,7 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
       return (
         <NavigationMenuItem key={item.title}>
           <NavigationMenuTrigger
-            className="data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground data-[active=true]:hover:bg-accent"
+            className="data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground data-[active=true]:hover:bg-accent transition-colors"
             data-active={item.items.some((subItem) => window.location.pathname === subItem.url)}
           >
             {item.title}
@@ -97,7 +97,7 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
     return (
       <NavigationMenuItem key={item.title}>
         <NavigationMenuLink
-          className="bg-background inline-flex w-max items-center justify-center rounded-md px-4 font-medium"
+          className="bg-background inline-flex w-max items-center justify-center rounded-md px-4 font-medium transition-colors"
           data-active={window.location.pathname === item.url}
           href={item.url}
         >
