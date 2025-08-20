@@ -1,5 +1,5 @@
 import Logo from '@/components/ui/logo';
-import { Lead } from '@/components/ui/typography';
+import Typography from '@/components/ui/typography';
 import { Loader2 } from 'lucide-react';
 
 const Loading = () => {
@@ -11,7 +11,7 @@ const Loading = () => {
           className="w-64 h-64 text-foreground animate-spin absolute bottom-8"
           strokeWidth={0.5}
         />
-        <Lead>Rozgrzewamy mięśnie...</Lead>
+        <Typography variant="lead">Rozgrzewamy mięśnie...</Typography>
       </div>
     </div>
   );

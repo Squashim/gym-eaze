@@ -28,7 +28,6 @@ export const seedUsers = async () => {
 const users = [
   {
     _id: new Types.ObjectId('68875a0b053920a2eca69cbe'), // monikaGym
-    refreshToken: 'someRefreshToken',
     username: 'monikaGym',
     email: 'monikaGym@example.com',
     password: 'TestPasswordddd123!',
@@ -56,7 +55,7 @@ const users = [
       ],
     },
     profileDetails: {
-      profilePicture: 'https://ibb.co/5XNdQ2n3',
+      profilePicture: 'https://i.ibb.co/mrLmnSXK/Zrzut-ekranu-2025-07-28-133242.png',
       description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
       goal: Goal.calorieBurn,
     },
@@ -107,7 +106,7 @@ const users = [
     _id: new Types.ObjectId('6887c5f43118c221f43b4e23'), // fitnessFan
     username: 'fitnessFan',
     email: 'fitnessFan@example.com',
-    password: 'TestPassword123',
+    password: 'TestPasswordddd123!',
     lastLoginAt: new Date(),
     role: UserRole.user,
     favorites: {
@@ -124,7 +123,7 @@ const users = [
       startedTrainingPlans: [],
     },
     profileDetails: {
-      profilePicture: 'https://ibb.co/Z1t67gdW',
+      profilePicture: 'https://i.ibb.co/dJ10xpBG/Zrzut-ekranu-2025-07-28-205510.png',
       description: 'Entuzjasta zdrowego stylu życia i aktywności fizycznej.',
       goal: Goal.muscleGain,
     },
@@ -169,7 +168,7 @@ const users = [
     _id: new Types.ObjectId('6887cc687882c42182cdf1f5'), // paulaRunner
     username: 'paulaRunner',
     email: 'paulaRunner@example.com',
-    password: 'TestPassword123',
+    password: 'TestPasswordddd123!',
     lastLoginAt: new Date(),
     role: UserRole.user,
     favorites: {
@@ -187,7 +186,7 @@ const users = [
       startedTrainingPlans: [],
     },
     profileDetails: {
-      profilePicture: 'https://ibb.co/TB3cbNCB',
+      profilePicture: 'https://i.ibb.co/XZRX3GwZ/Zrzut-ekranu-2025-07-28-211226.png',
       description: 'Biegaczka z pasją do długich dystansów.',
       goal: Goal.muscleGain,
     },

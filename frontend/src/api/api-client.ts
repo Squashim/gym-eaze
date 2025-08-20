@@ -3,6 +3,7 @@ import type { AuthAxiosRequestConfig } from '@/types/api';
 import { refreshToken } from './auth';
 import { toast } from 'sonner';
 import { STORAGE_FLAGS } from '@/constants/storage-flags';
+import { AUTH } from '@/constants/endpoints';
 
 if (!import.meta.env.VITE_API_URL) {
   throw new Error('VITE_API_URL is not defined');
@@ -13,6 +14,7 @@ const options: AxiosRequestConfig = {
   withCredentials: true,
 };
 
+const REFRESH_BLACKLIST = [AUTH.logout, AUTH.login, AUTH.register, AUTH.refresh] as const;
 const API = axios.create(options);
 export const REFRESH_API = axios.create(options);
 
@@ -26,7 +28,7 @@ API.interceptors.response.use(
       error.response.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes('/auth/logout')
+      !REFRESH_BLACKLIST.some((route) => originalRequest.url?.includes(route))
     ) {
       originalRequest._retry = true;
 

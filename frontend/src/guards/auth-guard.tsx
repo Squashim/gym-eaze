@@ -1,17 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import Navbar from '../navbar';
 import { useUser } from '@/context/user';
 import Loading from '@/pages/loading';
+import Navbar from '@/components/layout/navbar';
+import type { AuthAccessControlProps } from '@/types/auth';
 
-interface AuthLayoutProps {
-  allow: 'logged-in' | 'not-logged-in' | 'all';
-  role?: 'admin' | 'user';
-}
-
-const AuthLayout = ({ allow, role = 'user' }: AuthLayoutProps) => {
+const AuthGuard = ({ allow, role = 'user' }: AuthAccessControlProps) => {
   const { user, isLoading } = useUser();
   const isLoggedIn = !!user;
-  const isAdmin = user && user.role === 'admin';
+  const isAdmin = isLoggedIn && user.role === 'admin';
 
   if (isLoading) {
     return <Loading />;
@@ -31,7 +27,7 @@ const AuthLayout = ({ allow, role = 'user' }: AuthLayoutProps) => {
 
   return (
     <>
-      <Navbar />
+      <Navbar isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
       <main className="container flex min-dvh-with-navbar flex-col items-center justify-center">
         <Outlet />
       </main>
@@ -39,4 +35,4 @@ const AuthLayout = ({ allow, role = 'user' }: AuthLayoutProps) => {
   );
 };
 
-export default AuthLayout;
+export default AuthGuard;

@@ -15,7 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Button } from './button';
 import { useState } from 'react';
 import { useGoogleLink } from '@/context/google-link';
 import { toast } from 'sonner';
@@ -28,9 +27,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { LinkGoogleAccountPayload } from '@/types/auth';
 import { useLinkGoogleAccount } from '@/hooks/auth/use-link-google-account';
-import { Input } from './input';
-import { PasswordInput } from './password-input';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 
 const LinkGoogleAccountDialog = () => {
   const navigate = useNavigate();

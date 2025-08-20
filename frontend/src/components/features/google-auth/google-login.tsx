@@ -1,8 +1,8 @@
-import { Button } from './button';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useGoogleLogin as useLocalGoogleLogin } from '@/hooks/auth/use-google-login';
 import { toast } from 'sonner';
 import type { PropsWithChildren } from 'react';
+import { Button } from '@/components/ui/button';
 
 function GoogleLoginButton({ children }: PropsWithChildren) {
   const { googleLogin } = useLocalGoogleLogin();

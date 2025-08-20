@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { H1, Lead, Small } from '@/components/ui/typography';
+import Typography from '@/components/ui/typography';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
@@ -19,10 +19,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { InfoIcon, Loader2, TriangleAlert } from 'lucide-react';
 import { PasswordInput } from '@/components/ui/password-input';
 import { signupSchema, type SignupSchema } from '@/schemas/signup-schema';
-import GoogleLoginButton from '@/components/ui/google-login';
+import GoogleLoginButton from '@/components/features/google-auth/google-login';
 import { useSignup } from '@/hooks/auth/use-signup';
 import { useGoogleLink } from '@/context/google-link';
-import LinkGoogleAccountDialog from '@/components/ui/link-google-account-dialog';
+import LinkGoogleAccountDialog from '@/components/features/google-auth/link-google-account-dialog';
 
 const Signup = () => {
   const form = useForm<SignupSchema>({
@@ -51,15 +51,19 @@ const Signup = () => {
               <form className="p-6 md:p-8 order-1" onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="flex flex-col gap-6">
                   <header className="flex flex-col items-center text-center">
-                    <H1 className="mb-1">Zrób pierwszy krok</H1>
-                    <Lead className="text-lg">Załóż konto i dołącz do społeczności GymEaze</Lead>
+                    <Typography className="mb-1" variant="h1">
+                      Zrób pierwszy krok
+                    </Typography>
+                    <Typography className="text-lg" variant="lead">
+                      Załóż konto i dołącz do społeczności GymEaze
+                    </Typography>
                   </header>
                   {form.formState.errors.root && (
                     <div className="w-full bg-destructive/10 flex items-center gap-2 border border-destructive rounded-md  text-left p-2">
                       <TriangleAlert className="text-destructive" size={18} />
-                      <Small className="text-destructive">
+                      <Typography className="text-destructive" variant="small">
                         {form.formState.errors.root.message}
-                      </Small>
+                      </Typography>
                     </div>
                   )}
                   <FormField
@@ -169,7 +173,7 @@ const Signup = () => {
                   <GoogleLoginButton>Zarejestruj się przez Google</GoogleLoginButton>
 
                   <div className="text-center flex gap-1 items-center justify-center">
-                    <Small>Masz już konto?</Small>
+                    <Typography variant="small">Masz już konto?</Typography>
                     <Link
                       className="underline underline-offset-4 text-sm hover:text-accent-foreground transition-color"
                       to="/login"
@@ -202,7 +206,7 @@ const Signup = () => {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent id="tooltip-description">
-                  <Small>Informacje o autorze zdjęcia</Small>
+                  <Typography variant="small">Informacje o autorze zdjęcia</Typography>
                 </TooltipContent>
               </Tooltip>
             </div>

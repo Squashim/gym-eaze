@@ -2,7 +2,6 @@ import LogoPath from '@/assets/images/logo.webp';
 import { useTheme } from '../../context/theme';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
 
 const logoVariants = cva('transition-all duration-300 ease-in-out ', {
   variants: {
@@ -46,7 +45,7 @@ function Logo({
     />
   );
 
-  return redirect ? <Link to="/">{logoImage}</Link> : logoImage;
+  return redirect ? <a href="/">{logoImage}</a> : logoImage;
 }
 
 export default Logo;

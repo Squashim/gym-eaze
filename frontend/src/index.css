@@ -48,7 +48,7 @@
   --font-sans: 'Inter', sans-serif;
   --radius: 0.625rem;
   --navbar-height: 4rem;
-  --background: oklch(94.007% 0.00011 271.152);
+  --background: oklch(88.46% 0.00326 15.523);
   --foreground: oklch(0.145 0 0);
   --card: oklch(97.015% 0.00011 271.152);
   --card-foreground: oklch(0.145 0 0);
@@ -135,6 +135,11 @@
 
   .min-dvh-with-navbar {
     min-height: calc(100dvh - var(--navbar-height));
+  }
+
+  .scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-foreground) var(--card);
   }
 
   .bg-dots {
