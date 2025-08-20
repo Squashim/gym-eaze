@@ -18,7 +18,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +49,7 @@ fun AuthScreen(
     onGoogleLogin: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
+
     Scaffold(
         topBar = {
             GymEazeTopAppBar(onSettingsClick = onSettingsClick)
@@ -56,7 +60,7 @@ fun AuthScreen(
                 onItemSelected = { /* Logika nawigacji */ }
             )
         },
-        containerColor = BackgroundDark
+        containerColor = getBackgroundColor()
     ) { paddingValues ->
         // Tło z gradientem
         Box(
@@ -65,9 +69,9 @@ fun AuthScreen(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Start,
-                            Middle,
-                            End
+                            getGradientStartColor(),
+                            getGradientMiddleColor(),
+                            getGradientEndColor()
                         ),
                         radius = 1200f
                     )
@@ -80,26 +84,26 @@ fun AuthScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceDark)
+                    colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = stringResource(R.string.join_us),
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
-                            color = OnSurfaceDark,
+                            color = getOnSurfaceColor(),
                             textAlign = TextAlign.Center
                         )
 
@@ -108,11 +112,11 @@ fun AuthScreen(
                         Text(
                             text = stringResource(R.string.your_training_community_progress),
                             fontSize = 14.sp,
-                            color = OnSurfaceSecondary,
+                            color = getOnSurfaceSecondaryColor(),
                             textAlign = TextAlign.Center
                         )
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -122,13 +126,13 @@ fun AuthScreen(
                                 onClick = { if (!uiState.isRegistering) onToggleAuthMode() },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (uiState.isRegistering) PrimaryGreen else ButtonOutlined
+                                    containerColor = if (uiState.isRegistering) getPrimaryColor() else getButtonOutlinedColor()
                                 ),
                                 shape = RoundedCornerShape(25.dp)
                             ) {
                                 Text(
                                     text = stringResource(R.string.register),
-                                    color = OnSurfaceDark
+                                    color = getOnSurfaceColor()
                                 )
                             }
 
@@ -136,18 +140,18 @@ fun AuthScreen(
                                 onClick = { if (uiState.isRegistering) onToggleAuthMode() },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (!uiState.isRegistering) PrimaryGreen else Color.Transparent
+                                    containerColor = if (!uiState.isRegistering) getPrimaryColor() else Color.Transparent
                                 ),
                                 shape = RoundedCornerShape(25.dp)
                             ) {
                                 Text(
                                     text = stringResource(R.string.login),
-                                    color = OnSurfaceDark
+                                    color = getOnSurfaceColor()
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         if (uiState.isRegistering) {
                             RegisterForm(
@@ -184,26 +188,26 @@ fun AuthScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = error,
-                                color = MaterialTheme.colorScheme.error,
+                                color = getErrorColor(),
                                 fontSize = 14.sp
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
                             text = stringResource(R.string.or),
-                            color = OnSurfaceSecondary,
+                            color = getOnSurfaceSecondaryColor(),
                             fontSize = 14.sp
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Button(
                             onClick = onGoogleLogin,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = GoogleButton
+                                containerColor = getGoogleButtonColor()
                             ),
                             shape = RoundedCornerShape(8.dp),
                             enabled = !uiState.isLoading
@@ -223,7 +227,7 @@ fun AuthScreen(
 
                                 Text(
                                     text = stringResource(R.string.continue_with_google),
-                                    color = GoogleButtonText,
+                                    color = getGoogleButtonTextColor(),
                                     fontSize = 16.sp
                                 )
                             }
@@ -231,7 +235,7 @@ fun AuthScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -255,11 +259,11 @@ private fun RegisterForm(
     isRegisterValid: Boolean
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy((-1.5).dp)
     ) {
         Text(
             text = stringResource(R.string.username),
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp
         )
 
@@ -269,14 +273,14 @@ private fun RegisterForm(
             placeholder = {
                 Text(
                     text = stringResource(R.string.username),
-                    color = OnSurfaceSecondary
+                    color = getOnSurfaceSecondaryColor()
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = OnSurfaceSecondary
+                    tint = getOnSurfaceSecondaryColor()
                 )
             },
             isError = usernameError != null,
@@ -284,27 +288,32 @@ private fun RegisterForm(
                 if(usernameError != null){
                     Text(
                         text = usernameError,
-                        color = MaterialTheme.colorScheme.error,
+                        color = getErrorColor(),
                         fontSize = 12.sp
                         )
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                unfocusedBorderColor = InputBorder,
-                focusedTextColor = OnSurfaceDark,
-                unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLeadingIconColor = MaterialTheme.colorScheme.error
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor(),
+                errorBorderColor = getErrorColor(),
+                errorLeadingIconColor = getErrorColor()
             ),
             shape = RoundedCornerShape(8.dp)
         )
 
         Text(
             text = stringResource(R.string.email),
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp
         )
 
@@ -314,42 +323,47 @@ private fun RegisterForm(
             placeholder = {
                 Text(
                     text = "Email",
-                    color = OnSurfaceSecondary
+                    color = getOnSurfaceSecondaryColor()
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
-                    tint = OnSurfaceSecondary
+                    tint = getOnSurfaceSecondaryColor()
                 )
             },
             isError = emailError != null,
             supportingText = {
                 if (emailError != null){
                     Text(text = emailError,
-                        color = MaterialTheme.colorScheme.error,
+                        color = getErrorColor(),
                         fontSize = 12.sp
                     )
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clearAndSetSemantics { contentDescription = "Email input field" },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                unfocusedBorderColor = InputBorder,
-                focusedTextColor = OnSurfaceDark,
-                unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLeadingIconColor = MaterialTheme.colorScheme.error
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor(),
+                errorBorderColor = getErrorColor(),
+                errorLeadingIconColor = getErrorColor()
             ),
             shape = RoundedCornerShape(8.dp)
         )
 
         Text(
             text = stringResource(R.string.password),
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp
         )
 
@@ -359,14 +373,14 @@ private fun RegisterForm(
             placeholder = {
                 Text(
                     text = stringResource(R.string.password_placeholder),
-                    color = OnSurfaceSecondary
+                    color = getOnSurfaceSecondaryColor()
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = OnSurfaceSecondary
+                    tint = getOnSurfaceSecondaryColor()
                 )
             },
             isError = passwordError != null,
@@ -374,7 +388,7 @@ private fun RegisterForm(
                 if(passwordError != null){
                     Text(
                         text = passwordError,
-                        color = MaterialTheme.colorScheme.error,
+                        color = getErrorColor(),
                         fontSize = 12.sp
                     )
                 }
@@ -383,20 +397,20 @@ private fun RegisterForm(
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                unfocusedBorderColor = InputBorder,
-                focusedTextColor = OnSurfaceDark,
-                unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLeadingIconColor = MaterialTheme.colorScheme.error
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor(),
+                errorBorderColor = getErrorColor(),
+                errorLeadingIconColor = getErrorColor()
             ),
             shape = RoundedCornerShape(8.dp)
         )
 
         Text(
             text = stringResource(R.string.confirm_password),
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp
         )
 
@@ -406,14 +420,14 @@ private fun RegisterForm(
             placeholder = {
                 Text(
                     text = stringResource(R.string.password_placeholder),
-                    color = OnSurfaceSecondary
+                    color = getOnSurfaceSecondaryColor()
                 )
             },
             leadingIcon ={
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = OnSurfaceSecondary
+                    tint = getOnSurfaceSecondaryColor()
                 )
             },
             isError = confirmPasswordError != null,
@@ -421,7 +435,7 @@ private fun RegisterForm(
                 if(confirmPasswordError != null){
                     Text(
                         text = confirmPasswordError,
-                        color = MaterialTheme.colorScheme.error,
+                        color = getErrorColor(),
                         fontSize = 12.sp
                     )
                 }
@@ -430,13 +444,13 @@ private fun RegisterForm(
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                unfocusedBorderColor = InputBorder,
-                focusedTextColor = OnSurfaceDark,
-                unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLeadingIconColor = MaterialTheme.colorScheme.error
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor(),
+                errorBorderColor = getErrorColor(),
+                errorLeadingIconColor = getErrorColor()
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -447,7 +461,7 @@ private fun RegisterForm(
             onClick = onRegister,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = PrimaryGreen,
+                containerColor = getPrimaryColor(),
             ),
             shape = RoundedCornerShape(8.dp),
             enabled = !isLoading && isRegisterValid,
@@ -455,12 +469,12 @@ private fun RegisterForm(
             if (isLoading){
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = OnSurfaceDark
+                    color = getOnSurfaceColor()
                 )
             } else {
                 Text(
                     text = stringResource(R.string.register),
-                    color = OnSurfaceDark,
+                    color = getOnSurfaceColor(),
                     fontSize = 16.sp
                 )
             }
@@ -484,7 +498,7 @@ private fun LoginForm(
     ) {
         Text(
             text = stringResource(R.string.username_or_email),
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp
         )
 
@@ -494,14 +508,14 @@ private fun LoginForm(
             placeholder = {
                 Text(
                     text = stringResource(R.string.username),
-                    color = OnSurfaceSecondary
+                    color = getOnSurfaceSecondaryColor()
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = OnSurfaceSecondary
+                    tint = getOnSurfaceSecondaryColor()
                 )
             },
             isError = usernameOrEmailError != null,
@@ -509,19 +523,25 @@ private fun LoginForm(
                 if(usernameOrEmailError != null){
                     Text(
                         text = usernameOrEmailError,
-                        color = MaterialTheme.colorScheme.error,
+                        color = getErrorColor(),
                         fontSize = 12.sp)
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clearAndSetSemantics { contentDescription = "Username input field" },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                unfocusedBorderColor = InputBorder,
-                focusedTextColor = OnSurfaceDark,
-                unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLeadingIconColor = MaterialTheme.colorScheme.error
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor(),
+                errorBorderColor = getErrorColor(),
+                errorLeadingIconColor = getErrorColor()
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -529,7 +549,7 @@ private fun LoginForm(
 
         Text(
             text = stringResource(R.string.password),
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp
         )
 
@@ -539,25 +559,25 @@ private fun LoginForm(
             placeholder = {
                 Text(
                     text = stringResource(R.string.password_placeholder),
-                    color = OnSurfaceSecondary
+                    color = getOnSurfaceSecondaryColor()
                 )
             },
             leadingIcon ={
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = OnSurfaceSecondary
+                    tint = getOnSurfaceSecondaryColor()
                 )
             },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                unfocusedBorderColor = InputBorder,
-                focusedTextColor = OnSurfaceDark,
-                unfocusedTextColor = OnSurfaceDark,
-                cursorColor = PrimaryGreen
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -569,7 +589,7 @@ private fun LoginForm(
             onClick = onLogin,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = PrimaryGreen
+                containerColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
             enabled = !isLoading && isLoginValid
@@ -577,12 +597,12 @@ private fun LoginForm(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = OnSurfaceDark
+                    color = getOnSurfaceColor()
                 )
             } else {
                 Text(
                     text = stringResource(R.string.login),
-                    color = OnSurfaceDark,
+                    color = getOnSurfaceColor(),
                     fontSize = 16.sp
                 )
             }

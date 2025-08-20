@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
-import com.example.gymeaze.ui.theme.BackgroundDark
 import com.example.gymeaze.ui.theme.GymEazeTheme
-import com.example.gymeaze.ui.theme.OnSurfaceDark
-import com.example.gymeaze.ui.theme.OnSurfaceSecondary
+import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getOnSurfaceColor
+import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,13 +54,13 @@ fun IntroductionScreen(
                 onItemSelected = {}
             )
         },
-        containerColor = BackgroundDark
+        containerColor = getBackgroundColor()
     ) {
         paddingValues -> Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(BackgroundDark),
+                .background(getBackgroundColor()),
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -69,11 +69,11 @@ fun IntroductionScreen(
                     .padding(horizontal = 24.dp)
                     .border(
                         width = 1.dp,
-                        color = OnSurfaceDark.copy(alpha = 0.3f),
+                        color = getOnSurfaceColor().copy(alpha = 0.3f),
                         shape = RoundedCornerShape(16.dp)
                     ),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = BackgroundDark)
+                colors = CardDefaults.cardColors(containerColor = getBackgroundColor())
             )
                 {
                     Column(
@@ -85,7 +85,7 @@ fun IntroductionScreen(
                         Text(
                             text = stringResource(R.string.welcome_user, username),
                             fontWeight = FontWeight.Bold,
-                            color = OnSurfaceDark,
+                            color = getOnSurfaceColor(),
                             fontSize = 20.sp,
                             textAlign = TextAlign.Center
                         )
@@ -94,7 +94,7 @@ fun IntroductionScreen(
 
                         Text(
                             text = stringResource(R.string.desc),
-                            color = OnSurfaceSecondary,
+                            color = getOnSurfaceSecondaryColor(),
                             fontSize = 14.sp,
                             textAlign = TextAlign.Left,
                             lineHeight = 20.sp
@@ -112,17 +112,17 @@ fun IntroductionScreen(
                                     .weight(1f)
                                     .border(
                                     width = 1.dp,
-                                    color = OnSurfaceDark.copy(alpha = 0.3f),
+                                    color = getOnSurfaceColor().copy(alpha = 0.3f),
                                     shape = RoundedCornerShape(8.dp),
                                 ),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = BackgroundDark
+                                    containerColor = getBackgroundColor()
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
                                     text = stringResource(R.string.skip),
-                                    color = OnSurfaceDark,
+                                    color = getOnSurfaceColor(),
                                     fontSize = 14.sp
                                 )
                             }
@@ -133,17 +133,17 @@ fun IntroductionScreen(
                                 .weight(1.1f)
                                 .border(
                                     width = 1.dp,
-                                    color = BackgroundDark.copy(alpha = 0.3f),
+                                    color = getBackgroundColor().copy(alpha = 0.3f),
                                     shape = RoundedCornerShape(8.dp)
                                 ),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = OnSurfaceDark
+                                containerColor = getOnSurfaceColor()
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ){
                             Text(
                                 text = stringResource(R.string.continue_further),
-                                color = BackgroundDark,
+                                color = getBackgroundColor(),
                                 fontSize = 14.sp
                             )
                         }

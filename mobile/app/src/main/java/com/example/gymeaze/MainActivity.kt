@@ -1,6 +1,8 @@
 package com.example.gymeaze
 
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import com.example.gymeaze.ui.screens.IntroductionScreen
 import com.example.gymeaze.ui.screens.SettingsScreen
 import com.example.gymeaze.ui.screens.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
+import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
@@ -35,7 +38,7 @@ class MainActivity : ComponentActivity() {
             GymEazeTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = getBackgroundColor()
                 ) {
                     when {
                         // Ekran wyboru motywu
@@ -87,12 +90,12 @@ class MainActivity : ComponentActivity() {
                             // TODO: Implementacja głównych ekranów aplikacji
                             Surface(
                                 modifier = Modifier.fillMaxSize(),
-                                color = MaterialTheme.colorScheme.background
+                                color = getBackgroundColor()
                             ) {
                                 Column {
                                     Text(
                                         text = "Główna aplikacja - TODO: Implementacja",
-                                        color = MaterialTheme.colorScheme.onBackground
+                                        color = getBackgroundColor()
                                     )
                                     Button(
                                         onClick = authViewModel::logout

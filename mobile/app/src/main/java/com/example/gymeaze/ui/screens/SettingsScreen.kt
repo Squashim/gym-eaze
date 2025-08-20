@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
-import com.example.gymeaze.ui.theme.BackgroundDark
 import com.example.gymeaze.ui.theme.GymEazeTheme
-import com.example.gymeaze.ui.theme.OnSurfaceDark
-import com.example.gymeaze.ui.theme.OnSurfaceSecondary
+import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getOnSurfaceColor
+import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +49,7 @@ fun SettingsScreen(
         TopAppBar(title = {
             Text(
                 text = stringResource(R.string.app_settings),
-                color = OnSurfaceDark,
+                color = getOnSurfaceColor(),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -59,12 +59,12 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back),
-                        tint = OnSurfaceDark
+                        tint = getOnSurfaceColor()
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = BackgroundDark
+                containerColor = getBackgroundColor()
             )
         )
     },
@@ -74,12 +74,12 @@ fun SettingsScreen(
                 onItemSelected = onNavigationItemSelected
             )
     },
-        containerColor = BackgroundDark
+        containerColor = getBackgroundColor()
     ) { paddingValues -> Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(BackgroundDark)
+            .background(getBackgroundColor())
     ) {
         SettingsItem(
             icon = Icons.Default.FormatPaint,
@@ -106,7 +106,7 @@ private fun SettingsItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = OnSurfaceDark,
+            tint = getOnSurfaceColor(),
             modifier = Modifier.size(24.dp)
         )
 
@@ -114,7 +114,7 @@ private fun SettingsItem(
 
         Text(
             text = title,
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 16.sp,
             modifier = Modifier.weight(1f)
         )
@@ -122,7 +122,7 @@ private fun SettingsItem(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = OnSurfaceSecondary,
+            tint = getOnSurfaceSecondaryColor(),
             modifier = Modifier.size(24.dp)
 
         )
