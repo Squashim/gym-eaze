@@ -13,11 +13,10 @@ import '../models/notificationModel';
 export interface IUser extends Document {
   _id: Types.ObjectId;
   googleId?: string;
-  refreshToken?: string;
   username: string;
   email: string;
   password: string;
-  lastLoginAt: Date;
+  lastLoginAt?: Date;
   role: UserRole;
   favorites: {
     trainingPlans: (Types.ObjectId | ITrainingPlan)[];
@@ -73,7 +72,6 @@ export interface IUser extends Document {
 const userSchema = new mongoose.Schema<IUser>(
   {
     googleId: { type: String, unique: true, sparse: true },
-    refreshToken: { type: String },
     username: {
       type: String,
       required: true,
@@ -86,6 +84,9 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     password: {
       type: String,
+    },
+    lastLoginAt: {
+      type: Date,
     },
     role: {
       type: String,

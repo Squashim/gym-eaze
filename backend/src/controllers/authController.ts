@@ -6,6 +6,7 @@ import {
   logoutUser,
   googleLogin,
   getCurrentUser,
+  linkGoogleAccount,
 } from '../services/authService';
 import { AuthRequest } from '../types/auth';
 
@@ -74,10 +75,11 @@ export const register = async (req: Request, res: Response) => {
         REQUIRED_FIELDS: 'Wszystkie pola są wymagane',
         EMAIL: 'Użytkownik o takim emailu już istnieje',
         EMAIL_LENGTH: 'Email musi mieć od 2 do 320 znaków',
-        USERNAME: 'Użytkownik o takim username już istnieje',
+        USERNAME: 'Użytkownik o takiej nazwie już istnieje',
         USERNAME_LENGTH: 'Nazwa użytkownika musi mieć od 6 do 16 znaków',
         PASSWORD_LENGTH: 'Hasło musi miec co najmniej 14 znaków',
         INVALID_PASSWORD: 'Nieprawidłowe hasło.',
+        GOOGLE_ID_ALREADY_USED: 'Ten adres email jest już powiązany z kontem Google',
       };
 
       message = messages[err.message] || message;
@@ -140,7 +142,7 @@ export const register = async (req: Request, res: Response) => {
  */
 
 export const login = async (req: Request, res: Response) => {
-  const { login, password } = req.body;
+  const { login, password, rememberMe } = req.body;
 
   if (!login || !password) {
     res.status(400).json({ message: 'Nazwa użytkownika/email i hasło są wymagane' });
@@ -148,13 +150,18 @@ export const login = async (req: Request, res: Response) => {
   }
 
   try {
-    const { accessToken, refreshToken } = await loginUser(login, password);
+    const { accessToken, refreshToken, isFirstLogin } = await loginUser(
+      login,
+      password,
+      req.headers['user-agent'] || '',
+      rememberMe,
+    );
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie('accessToken', accessToken, {
@@ -168,6 +175,7 @@ export const login = async (req: Request, res: Response) => {
       message: 'Zalogowano pomyślnie',
       accessToken,
       refreshToken,
+      isFirstLogin,
     });
   } catch (err: unknown) {
     const message =
@@ -234,16 +242,24 @@ export const googleAuth = async (req: Request, res: Response) => {
   }
 
   try {
-    const { accessToken, refreshToken } = await googleLogin(token);
+    const result = await googleLogin(token, req.headers['user-agent'] || '');
 
-    res.cookie('refreshToken', refreshToken, {
+    if (result.linkRequired) {
+      return res.status(409).json({
+        linkRequired: true,
+        email: result.email,
+        token: result.token,
+      });
+    }
+
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
-    res.cookie('accessToken', accessToken, {
+    res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
@@ -252,17 +268,75 @@ export const googleAuth = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: 'Zalogowano pomyślnie',
-      accessToken,
-      refreshToken,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      isFirstLogin: result.isFirstLogin,
     });
   } catch (err: unknown) {
     let message = 'Błąd logowania przez Google';
+    let statusCode = 401;
+
     if (err instanceof Error) {
       if (err.message === 'INVALID_GOOGLE_TOKEN') {
         message = 'Nieprawidłowy token Google';
+      } else if (err.message === 'EMAIL_NOT_VERIFIED') {
+        message = 'Email Google nie jest zweryfikowany';
+        statusCode = 400;
       }
     }
-    res.status(401).json({ message });
+
+    res.status(statusCode).json({ message });
+  }
+};
+
+export const linkGoogle = async (req: Request, res: Response) => {
+  const { email, password, token } = req.body;
+
+  if (!email || !password || !token) {
+    return res.status(400).json({ message: 'Email, hasło i token Google są wymagane' });
+  }
+
+  try {
+    const result = await linkGoogleAccount(email, password, token, req.headers['user-agent'] || '');
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      message: 'Konto zostało połączone pomyślnie',
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      isFirstLogin: result.isFirstLogin,
+    });
+  } catch (err: unknown) {
+    let message = 'Błąd łączenia konta';
+
+    if (err instanceof Error) {
+      if (err.message === 'INVALID_CREDENTIALS') {
+        message = 'Nieprawidłowe dane logowania';
+      } else if (err.message === 'INVALID_GOOGLE_ID') {
+        message = 'Nieprawidłowy Google ID lub nie należy do tego konta email';
+      } else if (err.message === 'GOOGLE_ID_ALREADY_USED') {
+        message = 'To konto Google jest już połączone z innym użytkownikiem';
+      } else if (err.message === 'ACCOUNT_ALREADY_LINKED') {
+        message = 'Konto jest już połączone';
+      } else if (err.message === 'INVALID_GOOGLE_TOKEN') {
+        message = 'Nieprawidłowy token Google';
+      }
+    }
+
+    res.status(400).json({ message });
   }
 };
 
@@ -331,7 +405,7 @@ export const me = async (req: AuthRequest, res: Response) => {
  */
 
 export const refresh = async (req: Request, res: Response) => {
-  const token = req.cookies.refreshToken || req.body.token;
+  const token = req.cookies?.refreshToken || req.body?.token;
 
   if (!token) {
     return res.status(401).json({ message: 'Brak tokenu odświeżającego' });
@@ -407,6 +481,6 @@ export const logout = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return res.status(403).json({ message: error.message });
     }
-    return res.status(403).json({ message: 'Nieprawidłowy/wygasly token odświeżający' });
+    return res.status(403).json({ message: 'Nieprawidłowy/wygasły token odświeżający' });
   }
 };
