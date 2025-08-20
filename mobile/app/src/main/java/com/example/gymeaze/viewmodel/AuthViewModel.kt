@@ -42,6 +42,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val isFirstLogin = userPreferences.firstLogin
     val isDarkTheme = userPreferences.isDarkTheme
 
+    val username = userPreferences.username
+
     fun toggleAuthMode() {
         privateUiState.value = privateUiState.value.copy(
             isRegistering = !privateUiState.value.isRegistering,

@@ -63,7 +63,6 @@ class UserPreferences (private val context: Context) {
         }
     }
 
-
     suspend fun saveUserData(userId: String, username: String, email: String) {
         dataStore.edit { preferences ->
             preferences[USER_ID] = userId

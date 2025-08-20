@@ -28,6 +28,11 @@
     <string name="dark">Ciemny (domyślny)</string>
     <string name="light">Jasny</string>
     <string name="google_logo">Google logo</string>
+    <string name="welcome_user">Witaj! %1$s</string>
+    <string name="desc">Pozwól innym użytkownikom Cię poznać! Ustaw swoje zdjęcie profilowe i inne informacje personalne oraz fizyczne!</string>
+    <string name="skip">Pomiń</string>
+    <string name="continue_further">Przechodzę dalej</string>
+
 
     <string name="nav_home">Strona główna</string>
     <string name="nav_workouts">Treningi</string>

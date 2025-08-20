@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
             val isDarkTheme by authViewModel.isDarkTheme.collectAsState(initial = true)
             val showSettings by authViewModel.showSettings.collectAsState()
             val showThemeSelection by authViewModel.showThemeSelection.collectAsState()
+            val username by authViewModel.username.collectAsState(initial = "")
 
             GymEazeTheme(darkTheme = isDarkTheme) {
                 Surface(
@@ -74,7 +75,10 @@ class MainActivity : ComponentActivity() {
                         // Użytkownik jest zalogowany i to jego pierwszy login - pokaż wprowadzenie
                         isUserLoggedIn && isFirstLogin -> {
                             IntroductionScreen(
-                                onCompleteIntroduction = authViewModel::clearFirstLogin
+                                username = username,
+                                onCompleteIntroduction = authViewModel::clearFirstLogin,
+                                onSkipIntroduction = authViewModel::clearFirstLogin,
+                                onSettingsClick = authViewModel::showSettingsScreen
                             )
                         }
 
