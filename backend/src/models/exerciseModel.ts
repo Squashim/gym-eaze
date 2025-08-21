@@ -11,16 +11,16 @@ import {
 export interface IExercise extends mongoose.Document {
   author: Types.ObjectId | IUser;
   name: string;
-  description?: string;
-  image?: string;
-  video?: string;
+  description: string;
+  image: string;
+  video: string;
   likes: number;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
   muscleGroup: {
     type: Types.ObjectId | IMuscleGroup;
   }[];
-  equipment: { type: Types.ObjectId | IEquipment }[];
+  equipment?: { type: Types.ObjectId | IEquipment }[];
   hashtags?: string[];
   createdAt: Date;
   updatedAt: Date;
