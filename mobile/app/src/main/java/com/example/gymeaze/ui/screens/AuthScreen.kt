@@ -132,7 +132,7 @@ fun AuthScreen(
                             ) {
                                 Text(
                                     text = stringResource(R.string.register),
-                                    color = getOnSurfaceColor()
+                                    color = OnSurfaceDark
                                 )
                             }
 

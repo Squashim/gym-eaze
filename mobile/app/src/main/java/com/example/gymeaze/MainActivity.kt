@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.screens.AuthScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
+import com.example.gymeaze.ui.screens.ProfileEditScreen
 import com.example.gymeaze.ui.screens.SettingsScreen
 import com.example.gymeaze.ui.screens.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
             val isDarkTheme by authViewModel.isDarkTheme.collectAsState(initial = true)
             val showSettings by authViewModel.showSettings.collectAsState()
             val showThemeSelection by authViewModel.showThemeSelection.collectAsState()
+            val showProfileEdit by authViewModel.showProfileEdit.collectAsState()
             val username by authViewModel.username.collectAsState(initial = "")
 
             GymEazeTheme(darkTheme = isDarkTheme) {
@@ -58,6 +60,14 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        showProfileEdit -> {
+                            ProfileEditScreen(
+                                onReturnClick = authViewModel::hideProfileEditScreen,
+                                onCancelClick = authViewModel::cancelProfileSetup,
+                                onSaveClick = authViewModel::completeProfileSetup
+                            )
+                        }
+
                         // Użytkownik nie jest zalogowany - pokaż ekran autoryzacji
                         !isUserLoggedIn -> {
                             AuthScreen(
@@ -79,7 +89,7 @@ class MainActivity : ComponentActivity() {
                         isUserLoggedIn && isFirstLogin -> {
                             IntroductionScreen(
                                 username = username,
-                                onCompleteIntroduction = authViewModel::clearFirstLogin,
+                                onCompleteIntroduction = authViewModel::showProfileEditScreen,
                                 onSkipIntroduction = authViewModel::clearFirstLogin,
                                 onSettingsClick = authViewModel::showSettingsScreen
                             )

@@ -211,6 +211,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val privateShowThemeSelection = MutableStateFlow(false)
     val showThemeSelection = privateShowThemeSelection.asStateFlow()
 
+    private val privateShowProfileEdit = MutableStateFlow(false)
+    val showProfileEdit = privateShowProfileEdit.asStateFlow()
+
     fun showSettingsScreen() {
         privateShowSettings.value = true
     }
@@ -227,9 +230,28 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         privateShowThemeSelection.value = false
     }
 
+    fun showProfileEditScreen() {
+        privateShowProfileEdit.value = true
+    }
+
+    fun hideProfileEditScreen() {
+        privateShowProfileEdit.value = false
+    }
+
     fun selectTheme(isDark: Boolean){
         viewModelScope.launch {
             userPreferences.setDarkTheme(isDark)
         }
+    }
+
+    fun completeProfileSetup() {
+        //TODO Zapisz dane
+        clearFirstLogin()
+        hideProfileEditScreen()
+    }
+
+    fun cancelProfileSetup() {
+        clearFirstLogin()
+        hideProfileEditScreen()
     }
 }

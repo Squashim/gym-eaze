@@ -33,6 +33,25 @@
     <string name="skip">Pomiń</string>
     <string name="continue_further">Przechodzę dalej</string>
 
+    <string name="profile_edit">Edycja profilu</string>
+    <string name="profile_info">Informacje o profilu</string>
+    <string name="login_data">Dane logowania</string>
+    <string name="personal_data">Dane personalne</string>
+    <string name="physical_info">Informacje fizyczne</string>
+    <string name="profile_picture">Zdjęcie profilowe</string>
+    <string name="no_picture_selected">Nie wybrano zdjęcia</string>
+    <string name="picture_requirements">Maksymalny rozmiar zdjęcia to 5MB. Obsługiwane typy: .jpg, .png, .webp.</string>
+    <string name="biography">Biogram</string>
+    <string name="biography_placeholder">Napisz coś o sobie...</string>
+    <string name="biography_limit">Maksymalnie 250 znaków</string>
+    <string name="biography_limit_current">%d/250 znaków</string>
+    <string name="training_goal">Cel treningowy</string>
+    <string name="select_training_goal">Wybierz swój cel treningowy</string>
+    <string name="pinned_badges">Przypięte odznaki</string>
+    <string name="no_pinned_badges">Brak przypiętej odznaki.</string>
+    <string name="badges_limit">Zaznacz max. 5 odznak - pokażą, co Cię wyróżnia!</string>
+    <string name="cancel">Anuluj</string>
+    <string name="save">Zapisz</string>
 
     <string name="nav_home">Strona główna</string>
     <string name="nav_workouts">Treningi</string>
