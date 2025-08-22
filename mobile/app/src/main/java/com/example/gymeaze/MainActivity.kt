@@ -1,10 +1,14 @@
 package com.example.gymeaze
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
@@ -14,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.ui.components.AccountLinkingDialog
 import com.example.gymeaze.ui.screens.AuthScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
 import com.example.gymeaze.ui.screens.ProfileEditScreen
@@ -22,12 +27,24 @@ import com.example.gymeaze.ui.screens.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val authViewModel: AuthViewModel = viewModel()
+
+            val googleSignInLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                authViewModel.handleGoogleSignInResult(task)
+            }
+
             val uiState by authViewModel.uiState.collectAsState()
             val isUserLoggedIn by authViewModel.isLoggedIn.collectAsState(initial = false)
             val isFirstLogin by authViewModel.isFirstLogin.collectAsState(initial = true)
@@ -36,12 +53,26 @@ class MainActivity : ComponentActivity() {
             val showThemeSelection by authViewModel.showThemeSelection.collectAsState()
             val showProfileEdit by authViewModel.showProfileEdit.collectAsState()
             val username by authViewModel.username.collectAsState(initial = "")
+            val showAccountLinking by authViewModel.showAccountLinking.collectAsState()
+            val linkingEmail by authViewModel.linkingEmail.collectAsState()
+            val linkingError by authViewModel.linkingError.collectAsState()
 
             GymEazeTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = getBackgroundColor()
                 ) {
+
+                    if(showAccountLinking) {
+                        AccountLinkingDialog(
+                            email = linkingEmail,
+                            onDismiss = authViewModel::dismissAccountLinking,
+                            onConfirm = authViewModel::confirmAccountLinking,
+                            isLoading = uiState.isLoading,
+                            errorMessage = linkingError
+                        )
+                    }
+
                     when {
                         // Ekran wyboru motywu
                         showThemeSelection -> {
@@ -81,7 +112,10 @@ class MainActivity : ComponentActivity() {
                                 onRegister = authViewModel::register,
                                 onLogin = authViewModel::login,
                                 onSettingsClick = authViewModel::showSettingsScreen,
-                                onGoogleLogin = authViewModel::loginWithGoogle,
+                                onGoogleLogin = {
+                                    val signInIntent = authViewModel.startGoogleSignIn()
+                                    googleSignInLauncher.launch(signInIntent)
+                                },
                             )
                         }
 

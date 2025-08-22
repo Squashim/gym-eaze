@@ -2,13 +2,16 @@ package com.example.gymeaze.data
 
 import android.content.Context
 import com.example.gymeaze.data.api.AuthApiService
+import com.example.gymeaze.data.models.AccountLinkingError
 import com.example.gymeaze.data.models.AuthResponse
 import com.example.gymeaze.data.models.GoogleAuthRequest
+import com.example.gymeaze.data.models.GoogleSignInResult
 import com.example.gymeaze.data.models.LoginRequest
 import com.example.gymeaze.data.models.LogoutRequest
 import com.example.gymeaze.data.models.RegisterRequest
 import com.example.gymeaze.data.models.RefreshTokenRequest
 import com.example.gymeaze.data.models.User
+import com.example.gymeaze.util.GoogleSignInHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -38,6 +41,8 @@ class AuthRepository(private val context: Context){
             .build()
             .create(AuthApiService::class.java)
     }
+
+    private val googleSignInHelper = GoogleSignInHelper(context)
 
     suspend fun register(username: String, email: String, password: String): Result<Boolean> {
         return withContext(Dispatchers.IO) {
@@ -93,44 +98,128 @@ class AuthRepository(private val context: Context){
         }
     }
 
-    //TODO tymczasowe zeby dzialalo
-    suspend fun loginWithGoogle(): Result<AuthResponse> {
-        return Result.failure(Exception("Google Sign-In nie jest jeszcze skonfigurowany w aplikacji"))
-    }
 
-    //Docelowe?
-    suspend fun loginWithGoogle(googleToken: String): Result<AuthResponse> {
-        return try {
-            val response = api.googleAuth(GoogleAuthRequest(token = googleToken))
-            if (response.isSuccessful && response.body() != null) {
-                val authResponse = response.body()!!
+    suspend fun loginWithGoogle(googleIdToken: String, linkingPassword: String? = null): Result<GoogleSignInResult> {
+        return withContext(Dispatchers.IO) {
+            try{
+                val request = GoogleAuthRequest(
+                    token = googleIdToken,
+                    password = linkingPassword
+                )
+                val response = api.googleAuth(request)
 
-                val userResult = getUserWithToken(authResponse.accessToken)
-                if (userResult.isSuccess) {
-                    val user = userResult.getOrNull()!!
+                when {
+                    response.isSuccessful && response.body() != null -> {
+                        val authResponse = response.body()!!
 
-                    val savedUserId = userPreferences.userId.first()
-                    val isFirstLogin = savedUserId != user._id
+                        val userResult = getUserWithToken(authResponse.accessToken)
+                        if (userResult.isSuccess) {
+                            val user = userResult.getOrNull()!!
 
-                    userPreferences.saveTokens(authResponse.accessToken, authResponse.refreshToken)
-                    userPreferences.saveUserData(user._id, user.username, user.email)
-                    userPreferences.setLoggedIn(true)
+                            userPreferences.saveTokens(authResponse.accessToken, authResponse.refreshToken)
+                            userPreferences.saveUserData(user._id, user.username, user.email)
+                            userPreferences.setLoggedIn(true)
 
-                    if (isFirstLogin) {
-                        userPreferences.setFirstLogin(true)
+                            userPreferences.setFirstLogin(authResponse.isFirstLogin)
+
+                            Result.success(GoogleSignInResult(success = true))
+                        } else {
+                            Result.success(GoogleSignInResult(
+                                success = false,
+                                error = "Nie udało się pobrać danych użytkownika"
+                            ))
+                        }
                     }
 
-                    Result.success(authResponse)
-                } else {
-                    Result.failure(Exception("Nie udało się pobrać danych użytkownika po Google login"))
+                    response.code() == 409 -> {
+                        val errorBody = response.errorBody()?.string()
+                        if (errorBody?.contains("linkRequired") == true) {
+                            try {
+                                val gson = com.google.gson.Gson()
+                                val linkingError = gson.fromJson(errorBody, AccountLinkingError::class.java)
+                                Result.success(GoogleSignInResult(
+                                    success = false,
+                                    needsLinking = true,
+                                    email = linkingError.email,
+                                    token = googleIdToken
+                                ))
+                            } catch(e: Exception) {
+                                Result.success(GoogleSignInResult(
+                                    success = false,
+                                    error = "Konto wymaga połączenia"
+                                ))
+                            }
+                        } else {
+                            Result.success(GoogleSignInResult(
+                                success = false,
+                                error = errorBody ?: "Błąd Google login"
+                            ))
+                        }
+                    }
+
+                    response.code() == 401 -> {
+                        Result.success(GoogleSignInResult(
+                            success = false,
+                            error = "Nieprawidłowy token Google"
+                        ))
+                    }
+
+                    else -> {
+                        val errorMsg = response.errorBody()?.string() ?: "Google login failed"
+                        Result.success(GoogleSignInResult(
+                            success = false,
+                            error = "Google login failed: $errorMsg"
+                        ))
+                    }
                 }
-            } else {
-                Result.failure(Exception("Niepowodzenie. Google login nie powiódł się: ${response.code()}"))
+            } catch(e: Exception) {
+                Result.success(GoogleSignInResult(
+                    success = false,
+                    error = e.message ?: "Nieznany błąd"
+                ))
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
+
+
+    suspend fun linkGoogleAccount(email: String, password: String, token: String): Result<Boolean> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.linkGoogleAccount(GoogleAuthRequest(token, password, email))
+
+                if(response.isSuccessful && response.body() != null ) {
+                    val authResponse = response.body()!!
+
+                    val userResult = getUserWithToken(authResponse.accessToken)
+                    if (userResult.isSuccess) {
+                        val user = userResult.getOrNull()!!
+
+                        userPreferences.saveTokens(authResponse.accessToken, authResponse.refreshToken)
+                        userPreferences.saveUserData(user._id, user.username, user.email)
+                        userPreferences.setLoggedIn(true)
+                        userPreferences.setFirstLogin(false)
+
+                        Result.success(true)
+                    } else {
+                        Result.failure(Exception("Nie udało się pobrać danych użytkownika po połączeniu kont"))
+                    }
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: "Link accounts failed"
+                    when (response.code()) {
+                        400 -> Result.failure(Exception("Nieprawidłowe dane: $errorMsg"))
+                        401 -> Result.failure(Exception("Nieprawidłowe hasło lub token Google"))
+                        404 -> Result.failure(Exception("Nie znaleziono konta z tym emailem"))
+                        409 -> Result.failure(Exception("Konto Google jest już połączone"))
+                        else -> Result.failure(Exception("Błąd łączenia kont (${response.code()}): $errorMsg"))
+                    }
+                }
+            } catch(e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    fun getGoogleSignInHelper() = googleSignInHelper
 
     suspend fun refreshAccessToken(): Result<String> {
         return try {

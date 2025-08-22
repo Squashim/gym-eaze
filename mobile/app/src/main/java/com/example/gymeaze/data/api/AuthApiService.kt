@@ -35,4 +35,7 @@ interface AuthApiService {
     //z cookies
     @GET("/api/auth/me")
     suspend fun getCurrentUserWithCookie(): Response<User>
+
+    @POST("/api/auth/link/google")
+    suspend fun linkGoogleAccount(@Body request: GoogleAuthRequest): Response<AuthResponse>
 }

@@ -1,23 +1,30 @@
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client();
+
 export const verifyGoogleToken = async (token: string) => {
   try {
-    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: [
+        process.env.GOOGLE_CLIENT_ID!,
+        process.env.GOOGLE_CLIENT_SECRET!, 
+      ],
     });
 
-    if (!response.ok) {
+    const payload = ticket.getPayload();
+    if (!payload) {
       throw new Error('INVALID_GOOGLE_TOKEN');
     }
 
-    const userInfo = await response.json();
     return {
-      email: userInfo.email,
-      googleId: userInfo.sub,
-      name: userInfo.name,
-      email_verified: userInfo.email_verified,
+      email: payload.email!,
+      googleId: payload.sub,
+      name: payload.name!,
+      email_verified: payload.email_verified!,
     };
-  } catch {
+  } catch (error) {
+    console.error('Google token verification failed:', error);
     throw new Error('INVALID_GOOGLE_TOKEN');
   }
 };

@@ -1,10 +1,13 @@
 package com.example.gymeaze.viewmodel
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.AuthRepository
 import com.example.gymeaze.util.Validation
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +46,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val isDarkTheme = userPreferences.isDarkTheme
 
     val username = userPreferences.username
+
+    private val privateShowAccountLinking = MutableStateFlow(false)
+    val showAccountLinking = privateShowAccountLinking.asStateFlow()
+
+    private val privateLinkingEmail = MutableStateFlow("")
+    val linkingEmail = privateLinkingEmail.asStateFlow()
+
+    private val privateLinkingToken = MutableStateFlow("")
+    val linkingToken = privateLinkingToken.asStateFlow()
+
+    private val privateLinkingError = MutableStateFlow<String?>(null)
+    val linkingError = privateLinkingError.asStateFlow()
 
     fun toggleAuthMode() {
         privateUiState.value = privateUiState.value.copy(
@@ -166,22 +181,99 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loginWithGoogle() {
+    fun loginWithGoogle(googleIdToken: String) {
         privateUiState.value = privateUiState.value.copy(isLoading = true, errorMessage = null)
-        viewModelScope.launch {
-            val result = authRepository.loginWithGoogle()
 
-            if (result.isSuccess){
+        viewModelScope.launch {
+            val result = authRepository.loginWithGoogle(googleIdToken)
+
+            if(result.isSuccess) {
+                val googleResult = result.getOrNull()!!
+
+                when {
+                    googleResult.success -> {
+                        privateUiState.value = privateUiState.value.copy(
+                            isLoading = false,
+                            isLoggedIn = true
+                        )
+                    }
+
+                    googleResult.needsLinking -> {
+                        privateLinkingEmail.value = googleResult.email ?: ""
+                        privateLinkingToken.value = googleResult.token ?: ""
+                        privateShowAccountLinking.value = true
+                        privateUiState.value = privateUiState.value.copy(isLoading = false)
+                    }
+
+                    else -> {
+                        privateUiState.value = privateUiState.value.copy(
+                            isLoading = false,
+                            errorMessage = googleResult.error ?: "Google login failed"
+                        )
+                    }
+                }
+            } else {
+                privateUiState.value = privateUiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Google login error: ${result.exceptionOrNull()?.message}"
+                )
+            }
+        }
+    }
+
+    fun confirmAccountLinking(password: String) {
+        privateUiState.value = privateUiState.value.copy(isLoading = true)
+        privateLinkingError.value = null
+
+        viewModelScope.launch {
+            val result = authRepository.linkGoogleAccount(
+                privateLinkingEmail.value,
+                password,
+                privateLinkingToken.value
+            )
+
+            if (result.isSuccess) {
+                privateShowAccountLinking.value = false
                 privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
                     isLoggedIn = true
                 )
-            } else {
+            } else{
+                privateLinkingError.value = result.exceptionOrNull()?.message
+                privateUiState.value = privateUiState.value.copy(isLoading = false)
+            }
+        }
+    }
+
+    fun dismissAccountLinking() {
+        privateShowAccountLinking.value = false
+        privateLinkingError.value = null
+        privateLinkingEmail.value = ""
+        privateLinkingToken.value = ""
+        privateUiState.value = privateUiState.value.copy(isLoading = false)
+    }
+
+    fun startGoogleSignIn(): Intent {
+        return authRepository.getGoogleSignInHelper().getSignInIntent()
+    }
+
+    fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
+        val result = authRepository.getGoogleSignInHelper().handleSignInResult(task)
+
+        if(result.isSuccess) {
+            val account = result.getOrNull()!!
+            account.idToken?.let {
+                token ->
+                loginWithGoogle(token)
+            } ?: run {
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    errorMessage = "Błąd logowania przez Google: ${result.exceptionOrNull()?.message}"
+                    errorMessage = "Nie udało się uzyskać tokenu Google"
                 )
             }
+        } else{
+            privateUiState.value = privateUiState.value.copy(
+                errorMessage = result.exceptionOrNull()?.message ?: "Google Sing-In failed"
+            )
         }
     }
 

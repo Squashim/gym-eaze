@@ -22,10 +22,6 @@ data class LoginRequest(
     val rememberMe: Boolean = true
 )
 
-data class GoogleAuthRequest(
-    val token: String,
-)
-
 data class RefreshTokenRequest(
     val token: String
 )
@@ -37,7 +33,8 @@ data class LogoutRequest(
 data class AuthResponse(
     val message: String,
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
+    val isFirstLogin: Boolean = false
 )
 
 data class MessageResponse(
@@ -51,4 +48,24 @@ data class RefreshResponse(
 data class ErrorResponse(
     val error: String,
     val message: String
+)
+
+data class GoogleAuthRequest(
+    val token: String,
+    val password: String? = null,
+    val email: String? = null
+)
+
+data class GoogleSignInResult(
+    val success: Boolean,
+    val needsLinking: Boolean = false,
+    val email: String? = null,
+    val token: String? = null,
+    val error: String? = null
+)
+
+data class AccountLinkingError(
+    val error: String,
+    val message: String,
+    val email: String
 )
