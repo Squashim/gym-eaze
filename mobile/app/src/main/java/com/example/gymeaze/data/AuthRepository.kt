@@ -246,13 +246,15 @@ class AuthRepository(private val context: Context){
     suspend fun logout(): Result<String> {
         return try {
             val refreshToken = userPreferences.refreshToken.first()
+            val accessToken = userPreferences.accessToken.first()
+
             if (!refreshToken.isNullOrEmpty()){
-                runCatching { api.logout(LogoutRequest(refreshToken)) }
+                runCatching { api.logout(LogoutRequest(refreshToken), "Bearer $accessToken") }
             }
             userPreferences.clearTokens()
             userPreferences.clearUserData()
             userPreferences.setLoggedIn(false)
-            Result.success("Pomyslne wylogowanie")
+            Result.success("Pomyślnie wylogowano")
         } catch(e: Exception) {
             userPreferences.clearTokens()
             userPreferences.clearUserData()
