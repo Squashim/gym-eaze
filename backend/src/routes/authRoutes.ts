@@ -1,15 +1,16 @@
 import express from 'express';
-import { login, logout, me, refresh, register } from '../controllers/authController';
+import { linkGoogle, login, logout, me, refresh, register } from '../controllers/authController';
 import { googleAuth } from '../controllers/authController';
-import { authenticate } from '../middlewares/authMiddleware';
+import { authenticate, nonAuthenticate } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
 //Publiczne
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', nonAuthenticate, register);
+router.post('/login', nonAuthenticate, login);
 router.post('/refresh', refresh);
-router.post('/google', googleAuth);
+router.post('/google', nonAuthenticate, googleAuth);
+router.post('/link/google', linkGoogle);
 
 //Chronione
 router.get('/me', authenticate, me);

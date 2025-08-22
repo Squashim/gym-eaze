@@ -1,4 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
 
 const ACCESS_SECRET = process.env.ACCESS_SECRET as string;
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
@@ -11,8 +12,10 @@ export const generateAccessToken = (userId: string) => {
   return jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: '15m' });
 };
 
-export const generateRefreshToken = (userId: string) => {
-  return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: '7d' });
+export const generateRefreshToken = (userId: string, expiresIn: string | number) => {
+  return jwt.sign({ userId }, REFRESH_SECRET as string, {
+    expiresIn: expiresIn as SignOptions['expiresIn'],
+  });
 };
 
 export const verifyAccessToken = (token: string) => {

@@ -33,6 +33,14 @@ export default tseslint.config([
     rules: {
       'react/button-has-type': 'error',
       'react/jsx-sort-props': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        2,
+        {
+          checksVoidReturn: {
+            attributes: false,
+          },
+        },
+      ],
     },
   },
 ]);

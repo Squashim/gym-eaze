@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --navbar-height: var(--navbar-height);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -46,22 +47,23 @@
 :root {
   --font-sans: 'Inter', sans-serif;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --navbar-height: 4rem;
+  --background: oklch(88.46% 0.00326 15.523);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(97.015% 0.00011 271.152);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.19 0 0);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.76 0.1848 126.08);
-  --secondary-foreground: oklch(0.19 0 0);
+  --secondary: oklch(49.61% 0.10733 124.405);
+  --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.47 0.175 30.94);
-  --border: oklch(0.922 0 0);
+  --border: oklch(0.922 0 0 / 80%);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -94,7 +96,7 @@
   --muted-foreground: oklch(0.7 0.0023 17.21);
   --accent: oklch(0.27 0 0);
   --accent-foreground: oklch(0.97 0.0107 189.83);
-  --destructive: oklch(0.57 0.188 31.03);
+  --destructive: oklch(64.851% 0.16653 28.97);
   --border: oklch(0.34 0.0014 17.23 / 45.88%);
   --input: oklch(0.37 0 0 / 61.6%);
   --ring: oklch(0.35 0.0028 17.29);
@@ -122,6 +124,80 @@
   }
 }
 
+@layer utilities {
+  .container {
+    @apply w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .h-navbar {
+    @apply h-[var(--navbar-height)];
+  }
+
+  .min-dvh-with-navbar {
+    min-height: calc(100dvh - var(--navbar-height));
+  }
+
+  .scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-foreground) var(--card);
+  }
+
+  .bg-dots {
+    background-image:
+      radial-gradient(circle, var(--border) 2px, transparent 2px),
+      linear-gradient(45deg, var(--background), var(--input)),
+      radial-gradient(circle at 80% -10%, var(--secondary) 0%, transparent 15%),
+      radial-gradient(circle at 10% 50%, var(--secondary) 10%, transparent 30%),
+      radial-gradient(circle at 100% 80%, var(--secondary) 0%, transparent 15%);
+    background-size:
+      20px 20px,
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      100% 100%;
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0;
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  }
+
+  .hide-password-toggle::-ms-reveal,
+  .hide-password-toggle::-ms-clear {
+    visibility: hidden;
+    pointer-events: none;
+    display: none;
+  }
+}
+
+@layer components {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    border: 1px solid #e5e5e5 !important;
+    caret-color: var(--color-foreground);
+    -webkit-text-fill-color: var(--color-foreground);
+    -webkit-box-shadow: 0 0 0px 30px #fff inset !important;
+  }
+
+  input:-webkit-autofill:focus-visible {
+    outline: 3px solid #cdcdcd !important;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus {
+    border: 1px solid #323232 !important;
+    -webkit-box-shadow: 0 0 0px 30px #1c1c1c inset !important;
+  }
+
+  .dark input:-webkit-autofill:focus-visible {
+    outline: 3px solid #282727 !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -130,6 +206,6 @@
     @apply font-sans;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-auto;
   }
 }
