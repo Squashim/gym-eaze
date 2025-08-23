@@ -1,10 +1,11 @@
 package com.example.gymeaze.data
 
 import android.content.Context
+import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.data.api.AuthApiService
 import com.example.gymeaze.data.models.AccountLinkingError
-import com.example.gymeaze.data.models.AuthResponse
-import com.example.gymeaze.data.models.GoogleAuthRequest
+import com.example.gymeaze.data.models.GoogleAuthLoginRequest
+import com.example.gymeaze.data.models.GoogleLinkRequest
 import com.example.gymeaze.data.models.GoogleSignInResult
 import com.example.gymeaze.data.models.LoginRequest
 import com.example.gymeaze.data.models.LogoutRequest
@@ -23,8 +24,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 class AuthRepository(private val context: Context){
     private val userPreferences = UserPreferences(context)
 
-    private val BASE_URL = "http://10.0.2.2:3000/" //dla emulatora, dla rzeczywistego urzadzenia zmienic
-
     private val loggingInterceptor = HttpLoggingInterceptor().apply{
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -35,7 +34,7 @@ class AuthRepository(private val context: Context){
 
     private val api: AuthApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.API_URL)
             .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -73,10 +72,8 @@ class AuthRepository(private val context: Context){
                     if(body != null) {
                         userPreferences.saveTokens(body.accessToken, body.refreshToken)
 
-
-                        //opcjonalne
                         runCatching {
-                            val meRes = api.getCurrentUser("Bearer ${body?.accessToken}")
+                            val meRes = api.getCurrentUser("Bearer ${body.accessToken}")
                             if (meRes.isSuccessful && meRes.body() != null) {
                                 val user = meRes.body()!!
                                 userPreferences.saveUserData(user._id, user.username, user.email)
@@ -85,7 +82,7 @@ class AuthRepository(private val context: Context){
 
                         userPreferences.setEmail(usernameOrEmail)
                         userPreferences.setLoggedIn(true)
-                        userPreferences.setFirstLogin(false)
+                        userPreferences.setFirstLogin(body.isFirstLogin)
                     }
                     Result.success(true)
                 } else {
@@ -99,13 +96,10 @@ class AuthRepository(private val context: Context){
     }
 
 
-    suspend fun loginWithGoogle(googleIdToken: String, linkingPassword: String? = null): Result<GoogleSignInResult> {
+    suspend fun loginWithGoogle(googleAuthCode: String): Result<GoogleSignInResult> {
         return withContext(Dispatchers.IO) {
             try{
-                val request = GoogleAuthRequest(
-                    token = googleIdToken,
-                    password = linkingPassword
-                )
+                val request = GoogleAuthLoginRequest(code = googleAuthCode)
                 val response = api.googleAuth(request)
 
                 when {
@@ -141,9 +135,9 @@ class AuthRepository(private val context: Context){
                                     success = false,
                                     needsLinking = true,
                                     email = linkingError.email,
-                                    token = googleIdToken
+                                    token = linkingError.token
                                 ))
-                            } catch(e: Exception) {
+                            } catch(_: Exception) {
                                 Result.success(GoogleSignInResult(
                                     success = false,
                                     error = "Konto wymaga połączenia"
@@ -152,30 +146,37 @@ class AuthRepository(private val context: Context){
                         } else {
                             Result.success(GoogleSignInResult(
                                 success = false,
-                                error = errorBody ?: "Błąd Google login"
+                                error = "Konflikt podczas logowania Google"
                             ))
                         }
+                    }
+
+                    response.code() == 400 -> {
+                        Result.success(GoogleSignInResult(
+                            success = false,
+                            error = "Kod Google jest wymagany lub nieprawidłowy"
+                        ))
                     }
 
                     response.code() == 401 -> {
                         Result.success(GoogleSignInResult(
                             success = false,
-                            error = "Nieprawidłowy token Google"
+                            error = "Nieprawidłowy kod autoryzacji Google"
                         ))
                     }
 
                     else -> {
-                        val errorMsg = response.errorBody()?.string() ?: "Google login failed"
+                        val errorMsg = response.errorBody()?.string() ?: "Nieznany błąd"
                         Result.success(GoogleSignInResult(
                             success = false,
-                            error = "Google login failed: $errorMsg"
+                            error = "Błąd logowania Google: $errorMsg"
                         ))
                     }
                 }
             } catch(e: Exception) {
                 Result.success(GoogleSignInResult(
                     success = false,
-                    error = e.message ?: "Nieznany błąd"
+                    error = e.message ?: "Nieznany błąd podczas logowania Google"
                 ))
             }
         }
@@ -185,7 +186,7 @@ class AuthRepository(private val context: Context){
     suspend fun linkGoogleAccount(email: String, password: String, token: String): Result<Boolean> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = api.linkGoogleAccount(GoogleAuthRequest(token, password, email))
+                val response = api.linkGoogleAccount(GoogleLinkRequest(token, password, email))
 
                 if(response.isSuccessful && response.body() != null ) {
                     val authResponse = response.body()!!
@@ -197,7 +198,7 @@ class AuthRepository(private val context: Context){
                         userPreferences.saveTokens(authResponse.accessToken, authResponse.refreshToken)
                         userPreferences.saveUserData(user._id, user.username, user.email)
                         userPreferences.setLoggedIn(true)
-                        userPreferences.setFirstLogin(false)
+                        userPreferences.setFirstLogin(authResponse.isFirstLogin)
 
                         Result.success(true)
                     } else {

@@ -14,8 +14,8 @@ const login = async (payload: LoginPayload): Promise<LoginApiResponse> => {
   return data;
 };
 
-const googleLogin = async (token: string): Promise<LoginApiResponse> => {
-  const { data } = await API.post<LoginApiResponse>(endpoints.googleLogin, { token });
+const googleLogin = async (code: string): Promise<LoginApiResponse> => {
+  const { data } = await API.post<LoginApiResponse>(endpoints.googleLogin, { code });
   return data;
 };
 

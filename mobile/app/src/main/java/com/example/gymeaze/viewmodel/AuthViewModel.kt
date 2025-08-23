@@ -181,11 +181,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loginWithGoogle(googleIdToken: String) {
+    fun loginWithGoogle(googleAuthCode: String) {
         privateUiState.value = privateUiState.value.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch {
-            val result = authRepository.loginWithGoogle(googleIdToken)
+            val result = authRepository.loginWithGoogle(googleAuthCode)
 
             if(result.isSuccess) {
                 val googleResult = result.getOrNull()!!
@@ -261,15 +261,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         val result = authRepository.getGoogleSignInHelper().handleSignInResult(task)
 
         if(result.isSuccess) {
-            val account = result.getOrNull()!!
-            account.idToken?.let {
-                token ->
-                loginWithGoogle(token)
-            } ?: run {
-                privateUiState.value = privateUiState.value.copy(
-                    errorMessage = "Nie udało się uzyskać tokenu Google"
-                )
-            }
+            val authCode = result.getOrNull()!!
+            loginWithGoogle(authCode);
         } else{
             privateUiState.value = privateUiState.value.copy(
                 errorMessage = result.exceptionOrNull()?.message ?: "Google Sing-In failed"

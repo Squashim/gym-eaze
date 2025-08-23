@@ -50,10 +50,14 @@ data class ErrorResponse(
     val message: String
 )
 
-data class GoogleAuthRequest(
+data class GoogleAuthLoginRequest(
+    val code: String,
+)
+
+data class GoogleLinkRequest(
     val token: String,
-    val password: String? = null,
-    val email: String? = null
+    val password: String,
+    val email: String
 )
 
 data class GoogleSignInResult(
@@ -65,7 +69,7 @@ data class GoogleSignInResult(
 )
 
 data class AccountLinkingError(
-    val error: String,
-    val message: String,
-    val email: String
+    val linkRequired: Boolean,
+    val email: String,
+    val token: String
 )
