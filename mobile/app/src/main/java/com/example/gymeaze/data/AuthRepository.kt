@@ -48,11 +48,7 @@ class AuthRepository(private val context: Context){
             try {
                 val response = api.register(RegisterRequest(username, email, password))
                 if (response.isSuccessful) {
-                    userPreferences.setUsername(username)
-                    userPreferences.setEmail(email)
-                    userPreferences.setLoggedIn(true)
-                    userPreferences.setFirstLogin(true)
-                    Result.success(true)
+                    login(email, password)
                 } else {
                     val msg = response.errorBody()?.string()?.ifBlank { null }
                     Result.failure(Exception(msg ?: "Błąd rejestracji (kod ${response.code()})"))
