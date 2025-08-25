@@ -26,9 +26,9 @@ const checkAddedData = async () => {
   await connectToDB();
   try {
     //await downloadedExercises();
-    await downloadedMuscleGroup();
+    //await downloadedMuscleGroup();
     //await downloadedBadge();
-    //await downloadedEquipment();
+    await downloadedEquipment();
     //await downloadedUsers();
     //await downloadedPosts();
     //await downloadedTrainingPlans();
@@ -43,8 +43,8 @@ const seed = async () => {
   await connectToDB();
   try {
     //await seedBadges();
-    //await seedEquipment();
-    await seedMuscleGroups();
+    await seedEquipment();
+    //await seedMuscleGroups();
     //await seedExercises();
     //await seedUsers();
     //await seedPosts();
