@@ -3,6 +3,7 @@ package com.example.gymeaze.util
 import android.content.Context
 import android.content.Intent
 import com.example.gymeaze.BuildConfig
+import com.example.gymeaze.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -30,14 +31,14 @@ class GoogleSignInHelper(private val context: Context) {
             if(authCode != null){
                 Result.success(authCode)
             }else{
-                Result.failure(Exception("Nie udało się uzyskać kodu autoryzacji z Google"))
+                Result.failure(Exception(context.getString(R.string.google_auth_code_error)))
             }
         } catch (e: ApiException) {
             val errorMessage = when (e.statusCode) {
-                12501 -> "Logowanie zostało anulowane przez użytkownika" // SIGN_IN_CANCELLED
-                12500 -> "Logowanie nie powiodło się" // SIGN_IN_FAILED
-                7 -> "Wystąpił błąd połączenia sieciowego" // NETWORK_ERROR
-                else -> "Błąd logowania Google: ${e.message}"
+                12501 -> context.getString(R.string.google_signin_cancelled) // SIGN_IN_CANCELLED
+                12500 -> context.getString(R.string.google_signin_failed_error) // SIGN_IN_FAILED
+                7 -> context.getString(R.string.google_network_error) // NETWORK_ERROR
+                else -> context.getString(R.string.google_login_error_format, e.message ?: "")
             }
             Result.failure(Exception(errorMessage))
         }

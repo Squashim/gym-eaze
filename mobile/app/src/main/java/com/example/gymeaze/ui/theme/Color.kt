@@ -59,6 +59,13 @@ val MiddleLight = Color(0xFFE5E5E5)
 val EndLight = Color(0xFF5D761E)
 
 
+
+@Composable
+fun getOnPrimaryColor(): Color {
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) OnSurfaceDark else Color.White
+}
+
 @Composable
 fun getBackgroundColor(): Color {
     val isDarkTheme = LocalDarkTheme.current

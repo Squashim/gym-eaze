@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,8 +39,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getInputBorderColor
+import com.example.gymeaze.ui.theme.getOnPrimaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -70,7 +73,7 @@ fun AccountLinkingDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Połącz konta",
+                    text = stringResource(R.string.connect_accounts),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor(),
@@ -80,7 +83,7 @@ fun AccountLinkingDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Konto z adresem $email już istnieje. Wprowadź hasło, aby połączyć je z kontem Google.",
+                    text = stringResource(R.string.account_linking_message, email),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     textAlign = TextAlign.Center,
@@ -92,7 +95,7 @@ fun AccountLinkingDialog(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = {Text("Hasło")},
+                    label = {Text(stringResource(R.string.password))},
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
@@ -136,7 +139,7 @@ fun AccountLinkingDialog(
                         enabled = !isLoading
                     ) {
                         Text(
-                            text = "Anuluj",
+                            text = stringResource(R.string.cancel),
                             color = getOnSurfaceColor()
                         )
                     }
@@ -152,12 +155,12 @@ fun AccountLinkingDialog(
                         if(isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
-                                color = getOnSurfaceColor()
+                                color = getOnPrimaryColor()
                             )
                         } else {
                             Text(
-                                text = "Połącz konta",
-                                color = getOnSurfaceColor()
+                                text = stringResource(R.string.connect_accounts_button),
+                                color = getOnPrimaryColor()
                             )
                         }
                     }
@@ -166,3 +169,4 @@ fun AccountLinkingDialog(
         }
     }
 }
+

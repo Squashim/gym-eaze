@@ -13,7 +13,7 @@
     <string name="username_or_email">Nazwa użytkownika lub email</string>
     <string name="or">lub</string>
     <string name="continue_with_google">Kontynuuj z Google</string>
-    <string name="password_placeholder">•••••••</string>
+    <string name="password_placeholder">••••••••••••••</string>
 
     <string name="settings">Ustawienia</string>
     <string name="logo">GymEaze Logo</string>
@@ -52,6 +52,41 @@
     <string name="badges_limit">Zaznacz max. 5 odznak - pokażą, co Cię wyróżnia!</string>
     <string name="cancel">Anuluj</string>
     <string name="save">Zapisz</string>
+    
+    <string name="registration_error_code">Błąd rejestracji (kod %1$d)</string>
+    <string name="login_error_code">Błąd logowania (kod %1$d)</string>
+    <string name="user_data_fetch_failed">Nie udało się pobrać danych użytkownika</string>
+    <string name="account_linking_required">Konto wymaga połączenia</string>
+    <string name="google_login_conflict">Konflikt podczas logowania Google</string>
+    <string name="google_code_invalid">Kod Google jest wymagany lub nieprawidłowy</string>
+    <string name="google_auth_code_invalid">Nieprawidłowy kod autoryzacji Google</string>
+    <string name="unknown_error">Nieznany błąd</string>
+    <string name="google_login_unknown_error">Nieznany błąd podczas logowania Google</string>
+    <string name="google_login_error_prefix">Błąd logowania Google: %1$s</string>
+    <string name="user_data_fetch_failed_after_linking">Nie udało się pobrać danych użytkownika po połączeniu kont</string>
+    <string name="link_accounts_failed">Link accounts failed</string>
+    <string name="invalid_data_error">Nieprawidłowe dane: %1$s</string>
+    <string name="invalid_password_or_token">Nieprawidłowe hasło lub token Google</string>
+    <string name="account_not_found">Nie znaleziono konta z tym emailem</string>
+    <string name="google_account_already_linked">Konto Google jest już połączone</string>
+    <string name="account_linking_error">Błąd łączenia kont (%1$d): %2$s</string>
+    <string name="no_refresh_token">Brak tokenu refresh.</string>
+    <string name="refresh_token_expired">Refresh token wygasl lub jest niepoprawny.</string>
+    <string name="logout_success">Pomyślnie wylogowano</string>
+    <string name="no_access_token">Brak tokenu access</string>
+    <string name="session_expired">Sesja wygasła</string>
+    <string name="user_data_fetch_general_error">Niepowodzenie. Nie udało się pobrać danych użytkownika</string>
+    <string name="user_fetch_error_code">Błąd pobierania użytkownika: %1$d</string>
+
+    <string name="connect_accounts">Połącz konta</string>
+    <string name="account_linking_message">Konto z adresem %1$s już istnieje. Wprowadź hasło, aby połączyć je z kontem Google.</string>
+    <string name="connect_accounts_button">Połącz konta</string>
+
+    <string name="google_auth_code_error">Nie udało się uzyskać kodu autoryzacji z Google</string>
+    <string name="google_signin_cancelled">Logowanie zostało anulowane przez użytkownika</string>
+    <string name="google_signin_failed_error">Logowanie nie powiodło się</string>
+    <string name="google_network_error">Wystąpił błąd połączenia sieciowego</string>
+    <string name="google_login_error_format">Błąd logowania Google: %1$s</string>
 
     <string name="nav_home">Strona główna</string>
     <string name="nav_workouts">Treningi</string>

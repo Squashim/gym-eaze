@@ -132,7 +132,7 @@ fun AuthScreen(
                             ) {
                                 Text(
                                     text = stringResource(R.string.register),
-                                    color = OnSurfaceDark
+                                    color = if (uiState.isRegistering) getOnPrimaryColor() else getOnSurfaceColor()
                                 )
                             }
 
@@ -146,7 +146,7 @@ fun AuthScreen(
                             ) {
                                 Text(
                                     text = stringResource(R.string.login),
-                                    color = getOnSurfaceColor()
+                                    color = if (!uiState.isRegistering) getOnPrimaryColor() else getOnSurfaceColor()
                                 )
                             }
                         }
@@ -469,12 +469,12 @@ private fun RegisterForm(
             if (isLoading){
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = getOnSurfaceColor()
+                    color = getOnPrimaryColor()
                 )
             } else {
                 Text(
                     text = stringResource(R.string.register),
-                    color = getOnSurfaceColor(),
+                    color = getOnPrimaryColor(),
                     fontSize = 16.sp
                 )
             }
@@ -597,12 +597,12 @@ private fun LoginForm(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = getOnSurfaceColor()
+                    color = getOnPrimaryColor()
                 )
             } else {
                 Text(
                     text = stringResource(R.string.login),
-                    color = getOnSurfaceColor(),
+                    color = getOnPrimaryColor(),
                     fontSize = 16.sp
                 )
             }

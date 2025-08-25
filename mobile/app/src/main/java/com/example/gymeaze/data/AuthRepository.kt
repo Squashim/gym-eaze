@@ -2,6 +2,7 @@ package com.example.gymeaze.data
 
 import android.content.Context
 import com.example.gymeaze.BuildConfig
+import com.example.gymeaze.R
 import com.example.gymeaze.data.api.AuthApiService
 import com.example.gymeaze.data.models.AccountLinkingError
 import com.example.gymeaze.data.models.GoogleAuthLoginRequest
@@ -51,7 +52,7 @@ class AuthRepository(private val context: Context){
                     login(email, password)
                 } else {
                     val msg = response.errorBody()?.string()?.ifBlank { null }
-                    Result.failure(Exception(msg ?: "Błąd rejestracji (kod ${response.code()})"))
+                    Result.failure(Exception(msg ?: context.getString(R.string.registration_error_code, response.code())))
                 }
             } catch (e: Exception) {
                 Result.failure(e)
@@ -83,7 +84,7 @@ class AuthRepository(private val context: Context){
                     Result.success(true)
                 } else {
                     val msg = response.errorBody()?.string()?.ifBlank { null }
-                    Result.failure(Exception(msg ?: "Błąd logowania (kod ${response.code()})"))
+                    Result.failure(Exception(msg ?: context.getString(R.string.login_error_code, response.code())))
                 }
             } catch (e: Exception) {
                 Result.failure(e)
@@ -116,7 +117,7 @@ class AuthRepository(private val context: Context){
                         } else {
                             Result.success(GoogleSignInResult(
                                 success = false,
-                                error = "Nie udało się pobrać danych użytkownika"
+                                error = context.getString(R.string.user_data_fetch_failed)
                             ))
                         }
                     }
@@ -136,13 +137,13 @@ class AuthRepository(private val context: Context){
                             } catch(_: Exception) {
                                 Result.success(GoogleSignInResult(
                                     success = false,
-                                    error = "Konto wymaga połączenia"
+                                    error = context.getString(R.string.account_linking_required)
                                 ))
                             }
                         } else {
                             Result.success(GoogleSignInResult(
                                 success = false,
-                                error = "Konflikt podczas logowania Google"
+                                error = context.getString(R.string.google_login_conflict)
                             ))
                         }
                     }
@@ -150,29 +151,29 @@ class AuthRepository(private val context: Context){
                     response.code() == 400 -> {
                         Result.success(GoogleSignInResult(
                             success = false,
-                            error = "Kod Google jest wymagany lub nieprawidłowy"
+                            error = context.getString(R.string.google_code_invalid)
                         ))
                     }
 
                     response.code() == 401 -> {
                         Result.success(GoogleSignInResult(
                             success = false,
-                            error = "Nieprawidłowy kod autoryzacji Google"
+                            error = context.getString(R.string.google_auth_code_invalid)
                         ))
                     }
 
                     else -> {
-                        val errorMsg = response.errorBody()?.string() ?: "Nieznany błąd"
+                        val errorMsg = response.errorBody()?.string() ?: context.getString(R.string.unknown_error)
                         Result.success(GoogleSignInResult(
                             success = false,
-                            error = "Błąd logowania Google: $errorMsg"
+                            error = context.getString(R.string.google_login_error_prefix, errorMsg)
                         ))
                     }
                 }
             } catch(e: Exception) {
                 Result.success(GoogleSignInResult(
                     success = false,
-                    error = e.message ?: "Nieznany błąd podczas logowania Google"
+                    error = e.message ?: context.getString(R.string.google_login_unknown_error)
                 ))
             }
         }
@@ -198,16 +199,16 @@ class AuthRepository(private val context: Context){
 
                         Result.success(true)
                     } else {
-                        Result.failure(Exception("Nie udało się pobrać danych użytkownika po połączeniu kont"))
+                        Result.failure(Exception(context.getString(R.string.user_data_fetch_failed_after_linking)))
                     }
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Link accounts failed"
+                    val errorMsg = response.errorBody()?.string() ?: context.getString(R.string.link_accounts_failed)
                     when (response.code()) {
-                        400 -> Result.failure(Exception("Nieprawidłowe dane: $errorMsg"))
-                        401 -> Result.failure(Exception("Nieprawidłowe hasło lub token Google"))
-                        404 -> Result.failure(Exception("Nie znaleziono konta z tym emailem"))
-                        409 -> Result.failure(Exception("Konto Google jest już połączone"))
-                        else -> Result.failure(Exception("Błąd łączenia kont (${response.code()}): $errorMsg"))
+                        400 -> Result.failure(Exception(context.getString(R.string.invalid_data_error, errorMsg)))
+                        401 -> Result.failure(Exception(context.getString(R.string.invalid_password_or_token)))
+                        404 -> Result.failure(Exception(context.getString(R.string.account_not_found)))
+                        409 -> Result.failure(Exception(context.getString(R.string.google_account_already_linked)))
+                        else -> Result.failure(Exception(context.getString(R.string.account_linking_error, response.code(), errorMsg)))
                     }
                 }
             } catch(e: Exception) {
@@ -222,7 +223,7 @@ class AuthRepository(private val context: Context){
         return try {
             val refreshToken = userPreferences.refreshToken.first()
             if (refreshToken.isNullOrEmpty()) {
-                return Result.failure(Exception("Brak tokenu refresh."))
+                return Result.failure(Exception(context.getString(R.string.no_refresh_token)))
             }
 
             val response = api.refreshToken(RefreshTokenRequest(refreshToken))
@@ -232,7 +233,7 @@ class AuthRepository(private val context: Context){
                 Result.success(newAccessToken)
             } else {
                 logout()
-                Result.failure(Exception("Refresh token wygasl lub jest niepoprawny."))
+                Result.failure(Exception(context.getString(R.string.refresh_token_expired)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -251,7 +252,7 @@ class AuthRepository(private val context: Context){
             userPreferences.clearTokens()
             userPreferences.clearUserData()
             userPreferences.setLoggedIn(false)
-            Result.success("Pomyślnie wylogowano")
+            Result.success(context.getString(R.string.logout_success))
         } catch(e: Exception) {
             userPreferences.clearTokens()
             userPreferences.clearUserData()
@@ -264,7 +265,7 @@ class AuthRepository(private val context: Context){
         return try {
             val accessToken = userPreferences.accessToken.first()
             if( accessToken.isNullOrEmpty()){
-                return Result.failure(Exception("Brak tokenu access"))
+                return Result.failure(Exception(context.getString(R.string.no_access_token)))
             }
 
             val response = api.getCurrentUser("Bearer $accessToken")
@@ -275,10 +276,10 @@ class AuthRepository(private val context: Context){
                 if(refreshResult.isSuccess) {
                     getCurrentUser()
                 } else {
-                    Result.failure(Exception("Sesja wygasła"))
+                    Result.failure(Exception(context.getString(R.string.session_expired)))
                 }
             } else {
-                Result.failure(Exception("Niepowodzenie. Nie udało się pobrać danych użytkownika"))
+                Result.failure(Exception(context.getString(R.string.user_data_fetch_general_error)))
             }
         } catch (e: Exception){
             Result .failure(e)
@@ -291,7 +292,7 @@ class AuthRepository(private val context: Context){
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Błąd pobierania użytkownika: ${response.code()}"))
+                Result.failure(Exception(context.getString(R.string.user_fetch_error_code, response.code())))
             }
         } catch (e: Exception) {
             Result.failure(e)

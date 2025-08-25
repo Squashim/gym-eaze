@@ -14,6 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+
+data class ValidationErrors(
+    val username: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+    val confirmPassword: String? = null,
+    val usernameOrEmail: String? = null
+)
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isRegistering: Boolean = true, //true - rejestracja, false - logowanie
@@ -25,14 +33,44 @@ data class AuthUiState(
     val errorMessage: String? = null,
     val isLoggedIn: Boolean = false,
 
-    val usernameError: String? = null,
-    val emailError: String? = null,
-    val passwordError: String? = null,
-    val confirmPasswordError: String? = null,
-    val usernameOrEmailError: String? = null,
-    val isRegisterValid: Boolean = false,
-    val isLoginValid: Boolean = false
-)
+    val registerErrors: ValidationErrors = ValidationErrors(),
+    val loginErrors: ValidationErrors = ValidationErrors(),
+    val touchedFields: Set<String> = emptySet()
+) {
+
+    val usernameError: String?
+        get() = if("username" in touchedFields && isRegistering) registerErrors.username else null
+
+    val emailError: String?
+        get() = if("email" in touchedFields && isRegistering) registerErrors.email else null
+
+    val passwordError: String?
+        get() = if("password" in touchedFields) {
+            if(isRegistering) registerErrors.password else loginErrors.password
+        } else null
+
+    val confirmPasswordError: String?
+        get() = if("confirmPassword" in touchedFields && isRegistering) registerErrors.confirmPassword else null
+
+    val usernameOrEmailError: String?
+        get() = if("usernameOrEmail" in touchedFields && !isRegistering) loginErrors.usernameOrEmail else null
+
+    val isRegisterValid: Boolean
+        get() = registerErrors.username == null &&
+                registerErrors.email == null &&
+                registerErrors.password == null &&
+                registerErrors.confirmPassword == null &&
+                username.isNotBlank() &&
+                email.isNotBlank() &&
+                password.isNotBlank() &&
+                confirmPassword.isNotBlank()
+
+    val isLoginValid: Boolean
+        get() = loginErrors.usernameOrEmail == null &&
+                loginErrors.password == null &&
+                usernameOrEmail.isNotBlank() &&
+                password.isNotBlank()
+}
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val authRepository = AuthRepository(application.applicationContext)
@@ -62,72 +100,133 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleAuthMode() {
         privateUiState.value = privateUiState.value.copy(
             isRegistering = !privateUiState.value.isRegistering,
-            errorMessage = null
-        ).also { validate(it) }
-    }
-
-    fun updateUsername(username: String){
-        val newState = privateUiState.value.copy(username = username)
-        privateUiState.value = newState
-        validate(newState)
-    }
-
-    fun updateEmail(email: String){
-        val newState = privateUiState.value.copy(email = email)
-        privateUiState.value = newState
-        validate(newState)
-    }
-
-    fun updatePassword(password: String) {
-        val newState = privateUiState.value.copy(password = password)
-        privateUiState.value = newState
-        validate(newState)
-    }
-
-    fun updateConfirmPassword(confirmPassword: String){
-        val newState = privateUiState.value.copy(confirmPassword = confirmPassword)
-        privateUiState.value = newState
-        validate(newState)
-    }
-
-    fun updateUsernameOrEmail(usernameOrEmail: String) {
-        val newState = privateUiState.value.copy(usernameOrEmail = usernameOrEmail)
-        privateUiState.value = newState
-        validate(newState)
-    }
-
-    private fun validate(state: AuthUiState = privateUiState.value){
-        val usernameError = Validation.validateUsername(state.username)
-        val emailError = Validation.validateEmail(state.email)
-        val passwordError = Validation.validatePassword(state.password)
-        val confirmPasswordError = Validation.validateConfirmPassword(state.password, state.confirmPassword)
-        val isRegisterValid = listOf(usernameError, emailError, passwordError, confirmPasswordError).all { it == null }
-
-        val usernameOrEmailError = Validation.validateUsernameOrEmail(state.usernameOrEmail)
-        val loginPasswordError = if(state.password.isBlank()) "Hasło jest wymagane" else null
-        val isLoginValid = usernameOrEmailError == null && loginPasswordError == null
-
-        privateUiState.value = state.copy(
-            usernameError = usernameError,
-            emailError = emailError,
-            passwordError = if (state.isRegistering) passwordError else loginPasswordError,
-            confirmPasswordError = confirmPasswordError,
-            usernameOrEmailError = usernameOrEmailError,
-            isRegisterValid = isRegisterValid,
-            isLoginValid = isLoginValid
+            errorMessage = null,
+            touchedFields = emptySet(),
+            password = ""
         )
     }
 
-    fun register() {
+    fun updateUsername(username: String){
+        val currentState = privateUiState.value
+        val newRegisterErrors = currentState.registerErrors.copy(
+            username = Validation.validateUsername(username)
+        )
+
+        privateUiState.value = currentState.copy(
+            username = username,
+            registerErrors = newRegisterErrors,
+            touchedFields = currentState.touchedFields + "username"
+        )
+    }
+
+    fun updateEmail(email: String){
+        val currentState = privateUiState.value
+        val newRegisterErrors = currentState.registerErrors.copy(
+            email = Validation.validateEmail(email)
+        )
+
+        privateUiState.value = currentState.copy(
+            email = email,
+            registerErrors = newRegisterErrors,
+            touchedFields = currentState.touchedFields + "email"
+        )
+    }
+
+    fun updatePassword(password: String) {
         val currentState = privateUiState.value
 
-        validate(currentState)
-        if(!privateUiState.value.isRegisterValid){
+        if(currentState.isRegistering) {
+            val newRegisterErrors = currentState.registerErrors.copy(
+                password = Validation.validatePassword(password),
+                confirmPassword = if (currentState.confirmPassword.isNotEmpty()) {
+                    Validation.validateConfirmPassword(password, currentState.confirmPassword)
+                } else currentState.registerErrors.confirmPassword
+            )
+
+            privateUiState.value = currentState.copy(
+                password = password,
+                registerErrors = newRegisterErrors,
+                touchedFields = currentState.touchedFields + "password"
+            )
+        } else {
+            val newLoginErrors = currentState.loginErrors.copy(
+                password = if(password.isBlank()) "Hasło jest wymagane" else null
+            )
+
+            privateUiState.value = currentState.copy(
+                password = password,
+                loginErrors = newLoginErrors,
+                touchedFields = currentState.touchedFields + "password"
+            )
+        }
+    }
+
+    fun updateConfirmPassword(confirmPassword: String){
+        val currentState = privateUiState.value
+        val newRegisterErrors = currentState.registerErrors.copy(
+            confirmPassword = Validation.validateConfirmPassword(currentState.password, confirmPassword)
+        )
+
+        privateUiState.value = currentState.copy(
+            confirmPassword = confirmPassword,
+            registerErrors = newRegisterErrors,
+            touchedFields = currentState.touchedFields + "confirmPassword"
+        )
+    }
+
+    fun updateUsernameOrEmail(usernameOrEmail: String) {
+        val currentState = privateUiState.value
+        val newLoginErrors = currentState.loginErrors.copy(
+            usernameOrEmail = Validation.validateUsernameOrEmail(usernameOrEmail)
+        )
+
+        privateUiState.value = currentState.copy(
+            usernameOrEmail = usernameOrEmail,
+            loginErrors = newLoginErrors,
+            touchedFields = currentState.touchedFields + "usernameOrEmail"
+        )
+    }
+
+    private fun validateAllFields(): Boolean{
+       val currentState = privateUiState.value
+
+        if(currentState.isRegistering) {
+            val errors = ValidationErrors(
+                username = Validation.validateUsername(currentState.username),
+                email = Validation.validateEmail(currentState.email),
+                password = Validation.validatePassword(currentState.password),
+                confirmPassword = Validation.validateConfirmPassword(currentState.password, currentState.confirmPassword)
+            )
+
+            privateUiState.value = currentState.copy(
+                registerErrors = errors,
+                touchedFields = setOf("username", "email", "password", "confirmPassword")
+            )
+
+            return errors.username == null && errors.email == null &&
+                    errors.password == null && errors.confirmPassword == null
+        } else {
+            val errors = ValidationErrors(
+                usernameOrEmail = Validation.validateUsernameOrEmail(currentState.usernameOrEmail),
+                password = if (currentState.password.isBlank()) "Hasło jest wymagane" else null
+            )
+
+            privateUiState.value = currentState.copy(
+                loginErrors = errors,
+                touchedFields = setOf("usernameOrEmail", "password")
+            )
+
+            return errors.usernameOrEmail == null && errors.password == null
+        }
+    }
+
+    fun register() {
+        if(!validateAllFields()){
             privateUiState.value = privateUiState.value.copy(errorMessage = "Popraw błędy!")
             return
         }
 
-        privateUiState.value = currentState.copy(isLoading = true, errorMessage = null)
+        privateUiState.value = privateUiState.value.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch{
             val result = authRepository.register(
@@ -150,17 +249,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun login() {
-        val currentState = privateUiState.value
-
-        validate(currentState)
-        if(!privateUiState.value.isLoginValid){
-            privateUiState.value = privateUiState.value.copy(
-                errorMessage = "Popraw błędy"
-            )
+        if(!validateAllFields()) {
+            privateUiState.value = privateUiState.value.copy(errorMessage = "Popraw błędy")
             return
         }
 
-        privateUiState.value = currentState.copy(isLoading = true, errorMessage = null)
+        privateUiState.value = privateUiState.value.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch {
             val result = authRepository.login(
