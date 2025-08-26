@@ -1,6 +1,7 @@
 package com.example.gymeaze.data
 
 import android.content.Context
+import android.widget.Toast
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.api.AuthApiService
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.IOException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -61,6 +63,8 @@ class AuthRepository(private val context: Context){
                     )
                     return@withContext Result.failure(Exception(userMessage))
                 }
+            } catch(_: IOException){
+                return@withContext  Result.failure(Exception(context.getString(R.string.network_error)))
             } catch (e: Exception) {
                 return@withContext Result.failure(e)
             }
@@ -87,6 +91,10 @@ class AuthRepository(private val context: Context){
                         userPreferences.setEmail(usernameOrEmail)
                         userPreferences.setLoggedIn(true)
                         userPreferences.setFirstLogin(body.isFirstLogin)
+
+                        withContext(Dispatchers.Main){
+                            Toast.makeText(context, context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
+                        }
                     }
                     return@withContext Result.success(true)
                 } else {
@@ -98,6 +106,8 @@ class AuthRepository(private val context: Context){
                     )
                     Result.failure(Exception(userMessage))
                 }
+            }catch(_: IOException){
+              return@withContext  Result.failure(Exception(context.getString(R.string.network_error)))
             } catch (e: Exception) {
                 return@withContext  Result.failure(e)
             }
@@ -124,6 +134,10 @@ class AuthRepository(private val context: Context){
                             userPreferences.setLoggedIn(true)
 
                             userPreferences.setFirstLogin(authResponse.isFirstLogin)
+
+                            withContext(Dispatchers.Main){
+                                Toast.makeText(context, context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
+                            }
 
                             Result.success(GoogleSignInResult(success = true))
                         } else {
@@ -201,6 +215,10 @@ class AuthRepository(private val context: Context){
                         userPreferences.setLoggedIn(true)
                         userPreferences.setFirstLogin(authResponse.isFirstLogin)
 
+                        withContext(Dispatchers.Main){
+                            Toast.makeText(context, context.getString(R.string.link_accounts_success), Toast.LENGTH_SHORT).show()
+                        }
+
                         Result.success(true)
                     } else {
                         Result.failure(Exception(context.getString(R.string.user_data_fetch_failed_after_linking)))
@@ -258,6 +276,11 @@ class AuthRepository(private val context: Context){
             userPreferences.clearTokens()
             userPreferences.clearUserData()
             userPreferences.setLoggedIn(false)
+
+            withContext(Dispatchers.Main){
+                Toast.makeText(context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
+            }
+
             Result.success(context.getString(R.string.logout_success))
         } catch(e: Exception) {
             userPreferences.clearTokens()

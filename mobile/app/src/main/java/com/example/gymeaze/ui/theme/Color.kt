@@ -12,6 +12,7 @@ val SurfaceDark = Color(0xFF2D2D2D)
 val SurfaceVariant = Color(0xFF3D3D3D)
 val OnSurfaceDark = Color(0xFFFFFFFF)
 val OnSurfaceSecondary = Color(0xFFB0B0B0)
+val InputErrorDark = Color(0xFFE25F50);
 
 //Gradient
 val Start = Color(0xFF3D3D3D)
@@ -43,7 +44,7 @@ val PrimaryGreenSecondaryLight = Color(0xFFFFFFFF)
 
 val InputBackgroundLight = Color(0xFFE5E5E5)
 val InputBorderLight = Color(0xFFA1A1A1)
-val InputErrorLight = Color(0xFFA7100B)
+val InputErrorLight = Color(0xFFA71D0B)
 
 val NavBarBackgroundLight = Color(0xFFFFFFFF)
 val NavBarSelectedLight = Color(0xFF5D761E)
@@ -179,7 +180,10 @@ fun getGradientEndColor(): Color {
 }
 
 @Composable
-fun getErrorColor() = InputErrorLight
+fun getErrorColor(): Color{
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) InputErrorDark else InputErrorLight
+}
 
 
 @Composable

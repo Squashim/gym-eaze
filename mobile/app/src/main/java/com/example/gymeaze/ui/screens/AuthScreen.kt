@@ -1,6 +1,7 @@
 package com.example.gymeaze.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -186,11 +188,27 @@ fun AuthScreen(
 
                         uiState.errorMessage?.let { error ->
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = error,
-                                color = getErrorColor(),
-                                fontSize = 14.sp
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(1.dp, getErrorColor(), RoundedCornerShape(8.dp))
+                                    .background(getErrorColor().copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                    .padding(12.dp, 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = getErrorColor(),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = error,
+                                    color = getErrorColor(),
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
