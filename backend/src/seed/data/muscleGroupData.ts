@@ -7,7 +7,7 @@ export const seedMuscleGroups = async () => {
   console.log("Grupy mięśniowe dodane");
 };
 
-const muscleGroupsIds = {
+export const muscleGroupsIds = {
   cardio: new ObjectId("68aad35e098f8656a74a8d40"), // cardio
   biceps: new ObjectId("68aad36527462a652be1a09d"), // biceps
   triceps: new ObjectId("68aad36aae944d0d0bbdfe07"), // triceps

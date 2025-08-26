@@ -4,6 +4,7 @@ import { UserRole } from '../../constants/roles';
 import { Goal } from '../../constants/goals';
 import { Gender } from '../../constants/genders';
 import { StatusTraining } from '../../constants/statuses';
+import { ObjectId } from "mongodb";
 import bcrypt from 'bcrypt';
 
 const saltRounds = 10;
@@ -25,7 +26,20 @@ export const seedUsers = async () => {
   console.log('Użytkownicy dodani');
 };
 
+export const userIds = {
+  admin: new ObjectId("68aadfbccc15cf46f25867ad"), // admin
+};
+
+
 const users = [
+    {
+    _id: userIds.admin,
+    username: "GymEaze",
+    email: "gymeaze.admin@gmail.com",
+    password: "Admin12345678!",
+    role: UserRole.admin,
+  },
+  /*
   {
     _id: new Types.ObjectId('68875a0b053920a2eca69cbe'), // monikaGym
     username: 'monikaGym',
@@ -219,4 +233,5 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  */
 ];

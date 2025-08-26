@@ -7,7 +7,7 @@ export const seedEquipment = async () => {
   console.log("Sprzęt dodany");
 };
 
-const equipmentIds = {
+export const equipmentIds = {
   atlas: new ObjectId("68a855c7fe5b33155436dcc5"), // maszyna atlas
   treadmill: new ObjectId("68a8563482fd72cf3d3d614f"), // bieznia
   ownWeight: new ObjectId("68a8564723f9e644cb3b6471"), // wlasna waga
