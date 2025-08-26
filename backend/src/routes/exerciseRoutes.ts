@@ -2,6 +2,7 @@ import { Router } from "express";
 import { addExercise } from "../controllers/exerciseController";
 import { uploadExerciseFiles, handleMulterError, checkFileSizes } from "../middlewares/exerciseMiddleware";
 import { authenticate } from "../middlewares/authMiddleware";
+import { deleteExercise } from "../controllers/exerciseController";
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.post(
   checkFileSizes,
   addExercise
 );
+
+router.delete("/:id", authenticate, deleteExercise);
 
 export default router;

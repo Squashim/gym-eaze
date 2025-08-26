@@ -39,3 +39,18 @@ export const createExercise = async (
 
   return await exercise.save();
 };
+
+export const deleteExercise = async (exerciseId: string, userId: string) => {
+  const exercise = await Exercise.findById(exerciseId);
+
+  if (!exercise) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (exercise.author.toString() !== userId.toString()) {
+    return false; 
+  }
+
+  await exercise.deleteOne();
+  return true;
+};
