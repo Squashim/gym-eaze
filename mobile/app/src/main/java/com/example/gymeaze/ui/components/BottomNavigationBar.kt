@@ -15,9 +15,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.GymEazeTheme
-import com.example.gymeaze.ui.theme.NavBarBackground
-import com.example.gymeaze.ui.theme.NavBarSelected
-import com.example.gymeaze.ui.theme.NavBarUnselected
+import com.example.gymeaze.ui.theme.getNavBarBackgroundColor
+import com.example.gymeaze.ui.theme.getNavBarSelectedColor
+import com.example.gymeaze.ui.theme.getNavBarUnselectedColor
 
 data class BottomNavItem(
     val route: String,
@@ -38,7 +38,7 @@ fun GymEazeBottomNavigationBar(
     )
 
     NavigationBar(
-        containerColor = NavBarBackground
+        containerColor = getNavBarBackgroundColor()
     ) {
         items.forEach { item ->
             NavigationBarItem(
@@ -52,9 +52,9 @@ fun GymEazeBottomNavigationBar(
                 selected = selectedRoute == item.route,
                 onClick = { onItemSelected(item.route) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = NavBarSelected,
-                    unselectedIconColor = NavBarUnselected,
-                    indicatorColor = NavBarBackground
+                    selectedIconColor = getNavBarSelectedColor(),
+                    unselectedIconColor = getNavBarUnselectedColor(),
+                    indicatorColor = getNavBarBackgroundColor()
                 )
             )
         }

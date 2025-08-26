@@ -235,20 +235,21 @@ export const login = async (req: Request, res: Response) => {
  */
 
 export const googleAuth = async (req: Request, res: Response) => {
-  const { token } = req.body;
+  const { code } = req.body;
 
-  if (!token) {
-    return res.status(400).json({ message: 'Token Google jest wymagany' });
+  if (!code) {
+    return res.status(400).json({ message: 'Kod Google jest wymagany' });
   }
 
   try {
-    const result = await googleLogin(token, req.headers['user-agent'] || '');
+    const userAgent = req.headers['user-agent'] || '';
+    const result = await googleLogin(code, userAgent);
 
     if (result.linkRequired) {
       return res.status(409).json({
         linkRequired: true,
         email: result.email,
-        token: result.token,
+        token: result.google_accessToken,
       });
     }
 
@@ -272,32 +273,37 @@ export const googleAuth = async (req: Request, res: Response) => {
       refreshToken: result.refreshToken,
       isFirstLogin: result.isFirstLogin,
     });
-  } catch (err: unknown) {
-    let message = 'Błąd logowania przez Google';
-    let statusCode = 401;
-
-    if (err instanceof Error) {
-      if (err.message === 'INVALID_GOOGLE_TOKEN') {
-        message = 'Nieprawidłowy token Google';
-      } else if (err.message === 'EMAIL_NOT_VERIFIED') {
-        message = 'Email Google nie jest zweryfikowany';
-        statusCode = 400;
+  } catch (error) {
+    if (error instanceof Error) {
+      switch (error.message) {
+        case 'INVALID_TOKEN':
+          return res.status(401).json({ message: 'Nieprawidłowy token Google' });
+        case 'EMAIL_NOT_VERIFIED':
+          return res
+            .status(403)
+            .json({ message: 'Adres email konta Google nie jest zweryfikowany.' });
+        case 'INVALID_CODE':
+          return res.status(400).json({ message: 'Nieprawidłowy kod autoryzacji Google' });
+        case 'AUTH_FAILED':
+          return res.status(401).json({ message: 'Autoryzacja Google nie powiodła się' });
+        case 'GOOGLE_OAUTH_NOT_CONFIGURED':
+          return res.status(500).json({ message: 'Konfiguracja Google OAuth jest niepełna' });
+        default:
+          return res.status(500).json({ message: 'Błąd serwera podczas autoryzacji' });
       }
     }
-
-    res.status(statusCode).json({ message });
+    return res.status(500).json({ message: 'Nieoczekiwany błąd serwera' });
   }
 };
 
 export const linkGoogle = async (req: Request, res: Response) => {
   const { email, password, token } = req.body;
-
   if (!email || !password || !token) {
     return res.status(400).json({ message: 'Email, hasło i token Google są wymagane' });
   }
-
   try {
-    const result = await linkGoogleAccount(email, password, token, req.headers['user-agent'] || '');
+    const userAgent = req.headers['user-agent'] || '';
+    const result = await linkGoogleAccount(email, password, token, userAgent);
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
@@ -305,7 +311,6 @@ export const linkGoogle = async (req: Request, res: Response) => {
       sameSite: 'strict',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
-
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: true,
@@ -319,24 +324,35 @@ export const linkGoogle = async (req: Request, res: Response) => {
       refreshToken: result.refreshToken,
       isFirstLogin: result.isFirstLogin,
     });
-  } catch (err: unknown) {
+  } catch (error) {
     let message = 'Błąd łączenia konta';
-
-    if (err instanceof Error) {
-      if (err.message === 'INVALID_CREDENTIALS') {
-        message = 'Nieprawidłowe dane logowania';
-      } else if (err.message === 'INVALID_GOOGLE_ID') {
-        message = 'Nieprawidłowy Google ID lub nie należy do tego konta email';
-      } else if (err.message === 'GOOGLE_ID_ALREADY_USED') {
-        message = 'To konto Google jest już połączone z innym użytkownikiem';
-      } else if (err.message === 'ACCOUNT_ALREADY_LINKED') {
-        message = 'Konto jest już połączone';
-      } else if (err.message === 'INVALID_GOOGLE_TOKEN') {
-        message = 'Nieprawidłowy token Google';
+    if (error instanceof Error) {
+      switch (error.message) {
+        case 'INVALID_CREDENTIALS':
+          message = 'Nieprawidłowe dane logowania';
+          break;
+        case 'INVALID_GOOGLE_ID':
+          message = 'Nieprawidłowy Google ID lub nie należy do tego konta email';
+          break;
+        case 'GOOGLE_ID_ALREADY_USED':
+          message = 'To konto Google jest już połączone z innym użytkownikiem';
+          break;
+        case 'ACCOUNT_ALREADY_LINKED':
+          message = 'Konto jest już połączone z Google';
+          break;
+        case 'AUTH_FAILED':
+          message = 'Autoryzacja Google nie powiodła się';
+          break;
+        case 'INVALID_TOKEN':
+          message = 'Nieprawidłowy token Google';
+          break;
+        default:
+          message = 'Błąd podczas łączenia konta';
+          break;
       }
+      return res.status(400).json({ message });
     }
-
-    res.status(400).json({ message });
+    return res.status(500).json({ message: 'Wystąpił nieoczekiwany błąd serwera' });
   }
 };
 

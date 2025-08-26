@@ -1,6 +1,7 @@
 package com.example.gymeaze.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.gymeaze.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -19,26 +20,32 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gymeaze.ui.theme.BackgroundDark
 import com.example.gymeaze.ui.theme.GymEazeTheme
-import com.example.gymeaze.ui.theme.OnSurfaceDark
+import com.example.gymeaze.ui.theme.LocalDarkTheme
+import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getOnSurfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GymEazeTopAppBar(
     onSettingsClick: () -> Unit
 ){
+
+    val isDarkTheme = LocalDarkTheme.current
+
     TopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 Image(
-                    painter = painterResource(id = R.drawable.gym_eaze_logo),
-                    contentDescription = stringResource(R.string.logo),
-                   modifier = Modifier
-                       .height(48.dp)
-                       .scale(2f)
+                    painter = painterResource(
+                        id = if(isDarkTheme){
+                            R.drawable.gym_eaze_logo_light
+                        } else {
+                            R.drawable.gym_eaze_logo_dark
+                        }),
+                    contentDescription = stringResource(R.string.logo)
                 )
             }
         },
@@ -47,12 +54,12 @@ fun GymEazeTopAppBar(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = stringResource(R.string.settings),
-                    tint = OnSurfaceDark
+                    tint = getOnSurfaceColor()
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = BackgroundDark
+            containerColor = getBackgroundColor()
         )
     )
 }
