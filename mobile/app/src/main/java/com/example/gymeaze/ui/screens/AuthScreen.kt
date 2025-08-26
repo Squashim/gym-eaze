@@ -494,7 +494,7 @@ private fun LoginForm(
     isLoginValid: Boolean
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy((-1.5).dp)
     ) {
         Text(
             text = stringResource(R.string.username_or_email),
@@ -582,7 +582,7 @@ private fun LoginForm(
             shape = RoundedCornerShape(8.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
 
         Button(

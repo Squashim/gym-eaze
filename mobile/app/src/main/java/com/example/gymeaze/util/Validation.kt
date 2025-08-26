@@ -19,9 +19,10 @@ object Validation {
     }
 
     fun validatePassword(password: String): String?{
-        if(password.isBlank()) return "Hasło jest wymagane."
-        if(!passwordRegex.containsMatchIn(password)) {
-            return "Hasło musi mieć min 14 znaków, 1 dużą literę, 1 małą literę, 1 cyfre i 1 znak specjalny."
+        if (password.isBlank()) return "Hasło jest wymagane."
+        if (password.any { it.isWhitespace() }) return "Hasło nie może zawierać spacji ani innych znaków białych."
+        if (!passwordRegex.containsMatchIn(password)) {
+            return "Hasło musi mieć min 14 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę i 1 znak specjalny."
         }
         return null
     }

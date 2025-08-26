@@ -13,6 +13,8 @@ import com.example.gymeaze.data.models.LogoutRequest
 import com.example.gymeaze.data.models.RegisterRequest
 import com.example.gymeaze.data.models.RefreshTokenRequest
 import com.example.gymeaze.data.models.User
+import com.example.gymeaze.util.AuthErrorMapper
+import com.example.gymeaze.util.GoogleErrorMapper
 import com.example.gymeaze.util.GoogleSignInHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -51,11 +53,16 @@ class AuthRepository(private val context: Context){
                 if (response.isSuccessful) {
                     login(email, password)
                 } else {
-                    val msg = response.errorBody()?.string()?.ifBlank { null }
-                    Result.failure(Exception(msg ?: context.getString(R.string.registration_error_code, response.code())))
+                    val raw = response.errorBody()?.string()
+                    val userMessage = AuthErrorMapper.mapAuthErrorToUserMessage(
+                        context,
+                        raw,
+                        response.code()
+                    )
+                    return@withContext Result.failure(Exception(userMessage))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                return@withContext Result.failure(e)
             }
         }
     }
@@ -81,13 +88,18 @@ class AuthRepository(private val context: Context){
                         userPreferences.setLoggedIn(true)
                         userPreferences.setFirstLogin(body.isFirstLogin)
                     }
-                    Result.success(true)
+                    return@withContext Result.success(true)
                 } else {
-                    val msg = response.errorBody()?.string()?.ifBlank { null }
-                    Result.failure(Exception(msg ?: context.getString(R.string.login_error_code, response.code())))
+                    val raw = response.errorBody()?.string()
+                    val userMessage = AuthErrorMapper.mapAuthErrorToUserMessage(
+                        context,
+                        raw,
+                        response.code()
+                    )
+                    Result.failure(Exception(userMessage))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                return@withContext  Result.failure(e)
             }
         }
     }
@@ -117,7 +129,7 @@ class AuthRepository(private val context: Context){
                         } else {
                             Result.success(GoogleSignInResult(
                                 success = false,
-                                error = context.getString(R.string.user_data_fetch_failed)
+                                error = context.getString(R.string.error_google_user_data_fetch_failed)
                             ))
                         }
                     }
@@ -148,32 +160,24 @@ class AuthRepository(private val context: Context){
                         }
                     }
 
-                    response.code() == 400 -> {
-                        Result.success(GoogleSignInResult(
-                            success = false,
-                            error = context.getString(R.string.google_code_invalid)
-                        ))
-                    }
-
-                    response.code() == 401 -> {
-                        Result.success(GoogleSignInResult(
-                            success = false,
-                            error = context.getString(R.string.google_auth_code_invalid)
-                        ))
-                    }
-
                     else -> {
-                        val errorMsg = response.errorBody()?.string() ?: context.getString(R.string.unknown_error)
+                        val errorBody = response.errorBody()?.string()
+                        val userMessage = GoogleErrorMapper.mapGoogleAuthApiError(
+                            context,
+                            errorBody,
+                            response.code()
+                        )
                         Result.success(GoogleSignInResult(
                             success = false,
-                            error = context.getString(R.string.google_login_error_prefix, errorMsg)
+                            error = userMessage
                         ))
                     }
                 }
             } catch(e: Exception) {
+                val userMessage = GoogleErrorMapper.mapGoogleAuthApiError(context, e.message)
                 Result.success(GoogleSignInResult(
                     success = false,
-                    error = e.message ?: context.getString(R.string.google_login_unknown_error)
+                    error = userMessage
                 ))
             }
         }
@@ -202,17 +206,19 @@ class AuthRepository(private val context: Context){
                         Result.failure(Exception(context.getString(R.string.user_data_fetch_failed_after_linking)))
                     }
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: context.getString(R.string.link_accounts_failed)
-                    when (response.code()) {
-                        400 -> Result.failure(Exception(context.getString(R.string.invalid_data_error, errorMsg)))
-                        401 -> Result.failure(Exception(context.getString(R.string.invalid_password_or_token)))
-                        404 -> Result.failure(Exception(context.getString(R.string.account_not_found)))
-                        409 -> Result.failure(Exception(context.getString(R.string.google_account_already_linked)))
-                        else -> Result.failure(Exception(context.getString(R.string.account_linking_error, response.code(), errorMsg)))
+                    val errorBody = response.errorBody()?.string()
+                    val userMessage = when (response.code()) {
+                        400 -> context.getString(R.string.error_validation_failed)
+                        401 -> context.getString(R.string.error_invalid_credentials)
+                        404 -> context.getString(R.string.error_user_not_found)
+                        409 -> context.getString(R.string.error_google_login_conflict)
+                        else -> GoogleErrorMapper.mapGoogleAuthApiError(context, errorBody, response.code())
                     }
+                    Result.failure(Exception(userMessage))
                 }
             } catch(e: Exception) {
-                Result.failure(e)
+                val userMessage = GoogleErrorMapper.mapGoogleAuthApiError(context, e.message)
+                Result.failure(Exception(userMessage))
             }
         }
     }

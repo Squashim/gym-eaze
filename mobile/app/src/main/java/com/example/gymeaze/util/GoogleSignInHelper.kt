@@ -34,12 +34,7 @@ class GoogleSignInHelper(private val context: Context) {
                 Result.failure(Exception(context.getString(R.string.google_auth_code_error)))
             }
         } catch (e: ApiException) {
-            val errorMessage = when (e.statusCode) {
-                12501 -> context.getString(R.string.google_signin_cancelled) // SIGN_IN_CANCELLED
-                12500 -> context.getString(R.string.google_signin_failed_error) // SIGN_IN_FAILED
-                7 -> context.getString(R.string.google_network_error) // NETWORK_ERROR
-                else -> context.getString(R.string.google_login_error_format, e.message ?: "")
-            }
+            val errorMessage = GoogleErrorMapper.mapGoogleSignInSdkStatus(context, e.statusCode)
             Result.failure(Exception(errorMessage))
         }
     }

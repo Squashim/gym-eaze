@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.AuthRepository
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -222,7 +223,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun register() {
         if(!validateAllFields()){
-            privateUiState.value = privateUiState.value.copy(errorMessage = "Popraw błędy!")
+            privateUiState.value = privateUiState.value.copy(
+                errorMessage = getApplication<Application>().getString(R.string.error_fix_validation_errors)
+            )
             return
         }
 
@@ -242,7 +245,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             } else {
                 privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Błąd rejestracji! ${result.exceptionOrNull()?.message}"
+                    errorMessage = result.exceptionOrNull()?.message ?:
+                    getApplication<Application>().getString(R.string.error_registration_failed)
                 )
             }
         }
@@ -250,7 +254,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun login() {
         if(!validateAllFields()) {
-            privateUiState.value = privateUiState.value.copy(errorMessage = "Popraw błędy")
+            privateUiState.value = privateUiState.value.copy(
+                errorMessage = getApplication<Application>().getString(R.string.error_fix_validation_errors)
+            )
             return
         }
 
@@ -269,7 +275,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             } else{
                 privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Błąd logowania! ${result.exceptionOrNull()?.message}"
+                    errorMessage = result.exceptionOrNull()?.message ?:
+                    getApplication<Application>().getString(R.string.error_login_failed)
                 )
             }
         }
