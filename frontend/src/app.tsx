@@ -6,6 +6,7 @@ import Welcome from './pages/welcome';
 import Error from './pages/error';
 import { GoogleLinkProvider } from './context/google-link';
 import AuthGuard from './guards/auth-guard';
+import ExerciseCreator from './components/features/exercises/exercise-creator';
 
 function App() {
   return (
@@ -38,6 +39,8 @@ function App() {
 
       <Route element={<AuthGuard allow="logged-in" />}>
         <Route element={<Home />} index path="home" />
+
+        <Route element={<ExerciseCreator />} path="exercises/create" />
       </Route>
 
       <Route element={<AuthGuard allow="logged-in" role="admin" />}>
