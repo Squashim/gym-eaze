@@ -8,8 +8,9 @@ function GoogleLoginButton({ children }: PropsWithChildren) {
   const { googleLogin } = useLocalGoogleLogin();
 
   const loginWithGoogle = useGoogleLogin({
+    flow: 'auth-code',
     onSuccess: (tokenResponse) => {
-      googleLogin.mutate(tokenResponse.access_token);
+      googleLogin.mutate(tokenResponse.code);
     },
     onError: () => {
       toast.error('Wystąpił błąd podczas logowania przez Google. Spróbuj ponownie później.');

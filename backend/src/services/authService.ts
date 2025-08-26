@@ -4,7 +4,7 @@ import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '.
 import { JwtPayload } from 'jsonwebtoken';
 import { ICurrentUser } from '../types/auth';
 import DeviceToken from '../models/deviceTokenModel';
-import { verifyGoogleToken } from '../utils/google';
+import { getGoogleUser, verifyGoogleToken } from '../utils/google';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
@@ -82,11 +82,10 @@ export const loginUser = async (
   return { accessToken, refreshToken, isFirstLogin };
 };
 
-export const googleLogin = async (token: string, deviceInfo: string) => {
-  const { email, googleId, name, email_verified } = await verifyGoogleToken(token);
+export const googleLogin = async (code: string, deviceInfo: string) => {
+  const { email, googleId, name, email_verified, google_accessToken } = await getGoogleUser(code);
 
   let user = await User.findOne({ email });
-
   let isFirstLogin = false;
 
   if (!user) {
@@ -114,7 +113,7 @@ export const googleLogin = async (token: string, deviceInfo: string) => {
     return {
       linkRequired: true,
       email,
-      token,
+      google_accessToken,
     };
   } else {
     isFirstLogin = !user.lastLoginAt;
@@ -123,8 +122,7 @@ export const googleLogin = async (token: string, deviceInfo: string) => {
   }
 
   const accessToken = generateAccessToken(user._id.toString());
-  const refreshTokenExpiry = '30d';
-  const refreshToken = generateRefreshToken(user._id.toString(), refreshTokenExpiry);
+  const refreshToken = generateRefreshToken(user._id.toString(), '30d');
 
   const deviceCount = await DeviceToken.countDocuments({ userId: user._id });
 
@@ -150,48 +148,36 @@ export const linkGoogleAccount = async (
   deviceInfo: string,
 ) => {
   const user = await User.findOne({ email });
-
   if (!user) {
     throw new Error('INVALID_CREDENTIALS');
   }
-
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new Error('INVALID_CREDENTIALS');
   }
-
   if (user.googleId) {
     throw new Error('ACCOUNT_ALREADY_LINKED');
   }
-
   const googleUser = await verifyGoogleToken(token);
   if (!googleUser || googleUser.email !== email) {
     throw new Error('INVALID_GOOGLE_ID');
   }
-
   const existingGoogleUser = await User.findOne({ googleId: googleUser.googleId });
   if (existingGoogleUser) {
     throw new Error('GOOGLE_ID_ALREADY_USED');
   }
-
   const isFirstLogin = !user.lastLoginAt;
-
   user.lastLoginAt = new Date();
   user.googleId = googleUser.googleId;
   await user.save();
-
   const accessToken = generateAccessToken(user._id.toString());
-  const refreshTokenExpiry = '30d';
-  const refreshToken = generateRefreshToken(user._id.toString(), refreshTokenExpiry);
-
+  const refreshToken = generateRefreshToken(user._id.toString(), '30d');
   const device = new DeviceToken({
     userId: user._id,
     refreshToken,
     deviceInfo: deviceInfo,
   });
-
   await device.save();
-
   return { accessToken, refreshToken, isFirstLogin };
 };
 

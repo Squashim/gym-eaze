@@ -14,7 +14,14 @@ const options: AxiosRequestConfig = {
   withCredentials: true,
 };
 
-const REFRESH_BLACKLIST = [AUTH.logout, AUTH.login, AUTH.register, AUTH.refresh] as const;
+const REFRESH_BLACKLIST = [
+  AUTH.logout,
+  AUTH.login,
+  AUTH.register,
+  AUTH.refresh,
+  AUTH.googleLogin,
+  AUTH.linkGoogleAccount,
+] as const;
 const API = axios.create(options);
 export const REFRESH_API = axios.create(options);
 

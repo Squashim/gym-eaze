@@ -29,11 +29,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
-import com.example.gymeaze.ui.theme.BackgroundDark
 import com.example.gymeaze.ui.theme.GymEazeTheme
-import com.example.gymeaze.ui.theme.OnSurfaceDark
-import com.example.gymeaze.ui.theme.OnSurfaceSecondary
-import com.example.gymeaze.ui.theme.PrimaryGreen
+import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getOnSurfaceColor
+import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
+import com.example.gymeaze.ui.theme.getPrimaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +50,7 @@ fun ThemeSelectionScreen(
                 title = {
                     Text(
                         text = stringResource(R.string.theme),
-                        color = OnSurfaceDark,
+                        color = getOnSurfaceColor(),
                         fontWeight = FontWeight.Medium,
                         fontSize = 20.sp
                     )
@@ -60,27 +60,27 @@ fun ThemeSelectionScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
-                            tint = OnSurfaceDark
+                            tint = getOnSurfaceColor()
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BackgroundDark
+                    containerColor = getBackgroundColor()
                 )
             )
         },
-        containerColor = BackgroundDark
+        containerColor = getBackgroundColor()
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .background(BackgroundDark)
+                .background(getBackgroundColor())
         ) {
             Text(
                 text = stringResource(R.string.theme_choice),
-                color = OnSurfaceDark,
+                color = getOnSurfaceColor(),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
@@ -89,7 +89,7 @@ fun ThemeSelectionScreen(
 
             Text(
                 text = stringResource(R.string.theme_choice_desc),
-                color = OnSurfaceSecondary,
+                color = getOnSurfaceSecondaryColor(),
                 lineHeight = 20.sp,
                 fontSize = 14.sp,
                 modifier = Modifier
@@ -132,15 +132,15 @@ private fun ThemeOption(
                 selected = isSelected,
                 onClick = onClick,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = PrimaryGreen,
-                    unselectedColor = OnSurfaceSecondary
+                    selectedColor = getPrimaryColor(),
+                    unselectedColor = getOnSurfaceSecondaryColor()
                 )
             )
         }
 
         Text(
             text = title,
-            color = OnSurfaceDark,
+            color = getOnSurfaceColor(),
             fontSize = 14.sp,
             lineHeight = 20.sp
         )
