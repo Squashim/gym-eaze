@@ -9,11 +9,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -23,6 +28,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +39,8 @@ import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.theme.*
+import kotlinx.coroutines.selects.select
+import kotlin.math.exp
 
 enum class ProfileTab {
     PROFILE_INFO,
@@ -480,42 +490,716 @@ private fun BadgesSection() {
 
 @Composable
 private fun LoginDataContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        EditLoginDataSection()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        DeleteAccountSection()
+    }
+}
+
+@Composable
+private fun EditLoginDataSection() {
+    Text(
+        text = stringResource(R.string.edit_login_data),
+        color = getOnSurfaceColor(),
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Medium
+    )
+    Text(
+        text = stringResource(R.string.edit_login_data_description),
+        color = getOnSurfaceSecondaryColor(),
+        fontSize = 14.sp,
+        lineHeight = 20.sp
+    )
+
+    UsernameField()
+
+    EmailField()
+
+    NewPasswordField()
+
+    ConfirmNewPasswordField()
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Button(
+        onClick = {
+            //TODO: Implementacja zapisywania zmian
+        },
+        modifier = Modifier
+            .fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = getOnSurfaceColor()
+        ),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Text(
-            text = "TODO: Dane logowania",
-            color = getOnSurfaceSecondaryColor(),
+            text = stringResource(R.string.save_changes),
+            color = getBackgroundColor(),
             fontSize = 16.sp
         )
     }
 }
 
 @Composable
-private fun PersonalDataContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+private fun UsernameField() {
+    var username by remember { mutableStateOf("")} //TODO Pobrać z ViewModel
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.username),
+                color = getOnSurfaceColor(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier
+                    .size(16.dp)
+            )
+        }
+
+        OutlinedTextField(
+            value = username,
+            onValueChange = {
+                username = it
+                //TODO Walidacja i aktualizacja w ViewModel
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
+    }
+}
+
+@Composable
+private fun EmailField() {
+    var email by remember {mutableStateOf("")} //TODO Pobrać z ViewModel
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "TODO: Dane personalne",
-            color = getOnSurfaceSecondaryColor(),
-            fontSize = 16.sp
+            text = stringResource(R.string.email),
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
         )
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+                //TODO Walidacja email i aktualizacja w ViewModel
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        )
+    }
+}
+
+@Composable
+private fun NewPasswordField() {
+    var newPassword by remember {mutableStateOf("")}
+    var isPasswordVisible by remember {mutableStateOf(false)}
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.new_password),
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        OutlinedTextField(
+            value = newPassword,
+            onValueChange = {
+                newPassword = it
+                //TODO Walidacja hasla i aktualizacja w ViewModel
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            visualTransformation = if (isPasswordVisible)
+                VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = {isPasswordVisible = !isPasswordVisible}) {
+                    Icon(
+                        imageVector = if(isPasswordVisible)
+                            Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if(isPasswordVisible)
+                        "Ukryj hasło" else "Pokaż hasło",
+                        tint = getOnSurfaceSecondaryColor()
+                    )
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+
+        )
+    }
+}
+
+@Composable
+private fun ConfirmNewPasswordField() {
+    var confirmPassword by remember {mutableStateOf("")}
+    var isPasswordVisible by remember {mutableStateOf(false)}
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.confirm_new_password),
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                //TODO Walidacja potwierdzenia hasla i aktualizacja ViewModel
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            visualTransformation = if (isPasswordVisible)
+                VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                    Icon(
+                        imageVector = if (isPasswordVisible)
+                            Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (isPasswordVisible)
+                            "Ukryj hasło" else "Pokaż hasło",
+                        tint = getOnSurfaceSecondaryColor()
+                    )
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+        )
+    }
+}
+
+@Composable
+private fun DeleteAccountSection() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFB71C1C).copy(alpha = 0.1f)
+        ),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Color(0xFFB71C1C).copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.delete_account),
+                color = Color(0xFFB71C1C),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Text(
+                text = stringResource(R.string.delete_account_description),
+                color = getOnSurfaceColor(),
+                fontSize = 14.sp,
+                lineHeight = 20.sp
+            )
+
+            Button(
+                onClick = {
+                    //TODO Implementacja usuwania konta
+                },
+                modifier = Modifier
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFB71C1C)
+                ),
+                    shape = RoundedCornerShape(8.dp)
+            ) {
+                    Text(
+                        text = stringResource(R.string.delete_account),
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
+        }
+    }
+}
+@Composable
+private fun PersonalDataContent() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        EditPersonalDataSection()
+    }
+}
+
+@Composable
+private fun EditPersonalDataSection() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.edit_personal_data),
+                color = getOnSurfaceColor(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier
+                    .size(16.dp)
+            )
+        }
+
+        Text(
+            text = stringResource(R.string.edit_personal_data_description),
+            color = getOnSurfaceSecondaryColor(),
+            fontSize = 14.sp,
+            lineHeight = 20.sp
+        )
+
+        PersonalDataField(
+            label = stringResource(R.string.username),
+            value = "",//TODO Pobrac z ViewModel
+            onValueChange = {
+                //TODO aktualizacjia w ViewModel
+            }
+        )
+
+        PersonalDataField(
+            label = stringResource(R.string.surname),
+            value = "", // TODO Pobrac z ViewModel
+            onValueChange = {
+                //TODO akutalizacja w ViewModel
+            }
+        )
+
+        CountryField()
+
+        Button(
+            onClick = {
+                //TODO Implementacja zapisywania zmian
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = getOnSurfaceColor()
+            ),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.save_changes),
+                color = getBackgroundColor(),
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun PersonalDataField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    var fieldValue by remember {mutableStateOf(value)}
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = label,
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        OutlinedTextField(
+            value = fieldValue,
+            onValueChange ={
+                fieldValue = it
+                onValueChange(it)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
+    }
+}
+
+@Composable
+private fun CountryField() {
+    var selectedCountry by remember {mutableStateOf("Podaj kraj zamieszkania")} //TODO pobrac z viewmodel
+    var expanded by remember {mutableStateOf(false)}
+
+    //tymczasowe TODO pobrac z Api
+
+    val countries = listOf(
+        "Polska",
+        "Wielka Brytania",
+        "Niemcy",
+        "Hiszpania",
+        "Francja",
+        "Czechy",
+        "Włochy",
+        "Słowacja",
+        "Litwa"
+    )
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.country),
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        Box{
+            OutlinedTextField(
+                value = selectedCountry,
+                onValueChange = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable{expanded = true},
+                enabled = false,
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledBorderColor = getInputBorderColor(),
+                    disabledTextColor = if (selectedCountry == "Podaj kraj zamieszkania")
+                        getOnSurfaceSecondaryColor() else getOnSurfaceColor()
+                ),
+                shape = RoundedCornerShape(8.dp),
+                trailingIcon = {
+                    Icon(
+                        imageVector = if (expanded)
+                            Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = getOnSurfaceSecondaryColor(),
+                        modifier = Modifier
+                            .clickable{expanded = !expanded}
+                    )
+                }
+            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {expanded = false},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(getSurfaceColor())
+            ) {
+                countries.forEach { country ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = country,
+                                color = getOnSurfaceColor()
+                            )
+                        },
+                        onClick = {
+                            selectedCountry = country
+                            expanded = false
+                            //TODO aktualizacja w viewmodel
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun PhysicalInfoContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        EditPhysicalInfoSection()
+    }
+}
+
+@Composable
+private fun EditPhysicalInfoSection() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.edit_physical_info),
+                color = getOnSurfaceColor(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        Text(
+            text = stringResource(R.string.edit_physical_info_description),
+            color = getOnSurfaceSecondaryColor(),
+            fontSize = 14.sp,
+            lineHeight = 20.sp
+        )
+
+        GenderSection()
+
+        PhysicalDataField(
+            label = stringResource(R.string.age),
+            value = "", //TODO pobrac z viewmodel
+            onValueChange = {
+                //TODO aktualizacja w viewmodel
+            },
+            keyboardType = KeyboardType.Number
+        )
+
+        PhysicalDataField(
+            label = stringResource(R.string.height_cm),
+            value = "", //TODO pobrac z viewmodel
+            onValueChange = {
+                //TODO akutalizacja w viewmodel
+            },
+            keyboardType = KeyboardType.Number
+        )
+
+        PhysicalDataField(
+            label = stringResource(R.string.weight_kg),
+            value = "", //TODO pobrac z viewmodel
+            onValueChange = {
+                //TODO aktualizacja w viewmodel
+            },
+            keyboardType = KeyboardType.Number
+        )
+
+        Button(
+            onClick = {
+                //TODO Implementacja zapisywania zmian
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = getOnSurfaceColor()
+            ),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.save_changes),
+                color = getBackgroundColor(),
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun GenderSection() {
+    //TODO pobrac z viewmodel
+    var selectedGender by remember {mutableStateOf("prefer_not_to_say")} //"male", "female", "prefer_not_to_say"
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
-            text = "TODO: Informacje fizyczne",
-            color = getOnSurfaceSecondaryColor(),
-            fontSize = 16.sp
+            text = stringResource(R.string.gender),
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        GenderOption(
+            text = stringResource(R.string.prefer_not_to_say_default),
+            isSelected = selectedGender == "prefer_not_to_say",
+            onClick = {
+                selectedGender = "prefer_not_to_say"
+                //TODO aktualiazajca w viewmodel
+            }
+        )
+
+        GenderOption(
+            text = stringResource(R.string.male),
+            isSelected = selectedGender == "male",
+            onClick = {
+                selectedGender="male"
+                //TODO aktualizacja w viewmodel
+            }
+        )
+
+        GenderOption(
+            text = stringResource(R.string.female),
+            isSelected = selectedGender == "female",
+            onClick = {
+                selectedGender = "female"
+                //TODO aktualizacja w viewmodel
+            }
+        )
+    }
+}
+
+@Composable
+private fun GenderOption(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable{onClick()}
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        RadioButton(
+            selected = isSelected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = getPrimaryColor(),
+                unselectedColor = getOnSurfaceSecondaryColor()
+            )
+        )
+
+            Text(
+                text = text,
+                color = getOnSurfaceColor(),
+                fontSize = 14.sp
+            )
+    }
+}
+
+@Composable
+private fun PhysicalDataField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    var fieldValue by remember {mutableStateOf(value)}
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = label,
+            color = getOnSurfaceColor(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        OutlinedTextField(
+            value = fieldValue,
+            onValueChange = {newValue ->
+                if(keyboardType == KeyboardType.Number) {
+                    if(newValue.all {it.isDigit()} || newValue.isEmpty()) {
+                        fieldValue = newValue
+                        onValueChange(newValue)
+                    }
+                } else{
+                    fieldValue = newValue
+                    onValueChange(newValue)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
     }
 }
