@@ -9,6 +9,7 @@ import { ITrainingPlan } from '../models/trainingPlanModel';
 import { IUserHasTrainingPlans } from '../models/userHasTrainingPlansModel';
 import { statusesValues, StatusTraining } from '../constants/statuses';
 import '../models/notificationModel';
+import { IPost } from './postModel';
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -18,6 +19,11 @@ export interface IUser extends Document {
   password: string;
   lastLoginAt?: Date;
   role: UserRole;
+  likes: {
+    trainingPlans: (Types.ObjectId | ITrainingPlan)[];
+    exercises: (Types.ObjectId | IExercise)[];
+    posts: (Types.ObjectId | IPost)[];
+  };
   favorites: {
     trainingPlans: (Types.ObjectId | ITrainingPlan)[];
     exercises: (Types.ObjectId | IExercise)[];
@@ -93,6 +99,26 @@ const userSchema = new mongoose.Schema<IUser>(
       enum: userRoleValues,
       default: UserRole.user,
       required: true,
+    },
+    likes: {
+      trainingPlans: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'TrainingPlan',
+        },
+      ],
+      exercises: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Exercise',
+        },
+      ],
+      posts: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Post',
+        },
+      ],
     },
     favorites: {
       trainingPlans: [

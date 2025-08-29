@@ -15,7 +15,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
 
     const payload = verifyAccessToken(token) as JwtPayload;
-    req.userId = payload.userId as string;
+    req.userId = payload.userId;
     next();
   } catch {
     return res.status(403).json({ message: 'Nieprawidłowy token' });
@@ -36,3 +36,17 @@ export const nonAuthenticate = (req: AuthRequest, res: Response, next: NextFunct
 
   next();
 };
+
+export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const payload = verifyAccessToken(token) as JwtPayload;
+      req.userId = payload.userId;
+    }
+  } catch {
+    req.userId = undefined; 
+  }
+  next();
+};
+

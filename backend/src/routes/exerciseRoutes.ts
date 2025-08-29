@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { addExercise } from "../controllers/exerciseController";
+import { addExercise, getExerciseById, getExercises, getExercisesByUser, getFavoriteExercises, toggleExerciseFavorite, toggleExerciseLike} from "../controllers/exerciseController";
 import { uploadExerciseFiles, handleMulterError, checkFileSizes } from "../middlewares/exerciseMiddleware";
-import { authenticate } from "../middlewares/authMiddleware";
-import { deleteExercise } from "../controllers/exerciseController";
+import { authenticate, optionalAuth } from "../middlewares/authMiddleware";
+import { deleteExercise, updateExercise } from "../controllers/exerciseController";
 
 const router = Router();
 
@@ -19,5 +19,30 @@ router.post(
 );
 
 router.delete("/:id", authenticate, deleteExercise);
+
+router.patch(
+  "/:id",
+  authenticate,
+  uploadExerciseFiles.fields([
+    { name: "image", maxCount: 1 },
+    { name: "video", maxCount: 1 }
+  ]),
+  handleMulterError,
+  checkFileSizes,
+  updateExercise
+);
+
+router.get("/favorite", authenticate, getFavoriteExercises); 
+
+router.patch("/:id/like", authenticate, toggleExerciseLike);
+  
+router.patch("/:id/favorite", authenticate, toggleExerciseFavorite);
+
+router.get("/:id", optionalAuth, getExerciseById);
+
+router.get("/", optionalAuth, getExercises); 
+
+router.get("/user/:userId", optionalAuth, getExercisesByUser); 
+
 
 export default router;

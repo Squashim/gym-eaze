@@ -46,7 +46,7 @@ const seed = async () => {
     //await seedEquipment();
     //await seedMuscleGroups();
     //await seedExercises();
-    //await seedUsers();
+    await seedUsers();
     //await seedPosts();
     //await seedTrainingPlans();
     //await seedComments();
@@ -60,8 +60,8 @@ const seed = async () => {
 };
 
 const run = async () => {
-  await checkAddedData(); //Sprawdzenie czy dane zostały dodane
-  //await seed(); //Dodawanie danych do bazy
+  //await checkAddedData(); //Sprawdzenie czy dane zostały dodane
+  await seed(); //Dodawanie danych do bazy
 };
 
 run();
