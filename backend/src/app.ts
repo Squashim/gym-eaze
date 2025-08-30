@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from '../src/routes/authRoutes';
 import { swaggerUi, swaggerSpec } from '../src/config/swagger';
+import equipmentRoutes from './routes/equipmentRoutes';
 import exerciseRoutes from './routes/exerciseRoutes';
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use("/api/exercises", exerciseRoutes);
+app.use("/api/equipment", equipmentRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API działa 🚀');
