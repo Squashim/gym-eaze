@@ -11,9 +11,9 @@ import {
 export interface IExercise extends mongoose.Document {
   author: Types.ObjectId | IUser;
   name: string;
-  description?: string;
-  image?: string;
-  video?: string;
+  description: string;
+  image: string;
+  video: string;
   likes: number;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
