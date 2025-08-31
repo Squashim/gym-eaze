@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.theme.*
@@ -65,20 +66,8 @@ fun AuthScreen(
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         // Tło z gradientem
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            getGradientStartColor(),
-                            getGradientMiddleColor(),
-                            getGradientEndColor()
-                        ),
-                        radius = 1200f
-                    )
-                )
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
             Column(
                 modifier = Modifier
                     .fillMaxSize()

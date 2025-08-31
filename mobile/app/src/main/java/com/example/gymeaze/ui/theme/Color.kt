@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 //Dark
-val PrimaryGreen = Color(0xFF8BC34A)
+val PrimaryGreen = Color(0xFF94C521)
 val PrimaryGreenDark = Color(0xFF689F38)
 val BackgroundDark = Color(0xFF1C1C1C)
 val SurfaceDark = Color(0xFF2D2D2D)
