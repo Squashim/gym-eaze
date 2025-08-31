@@ -20,7 +20,7 @@ export interface IExercise extends mongoose.Document {
   muscleGroup: {
     type: Types.ObjectId | IMuscleGroup;
   }[];
-  equipment?: { type: Types.ObjectId | IEquipment }[];
+  equipment: { type: Types.ObjectId | IEquipment }[];
   hashtags?: string[];
   createdAt: Date;
   updatedAt: Date;

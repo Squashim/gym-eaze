@@ -77,14 +77,14 @@ export const validateExercisePatchData = (data: Partial<ExerciseValidationData>)
   // walidacja muscleGroup
   if (data.muscleGroup !== undefined) {
     if (!Array.isArray(data.muscleGroup) || data.muscleGroup.length === 0) {
-      throw new ExerciseValidationError("MuscleGroup musi zawierać co najmniej jedną grupę mięśniową");
+      throw new ExerciseValidationError("Wymagana co najmniej jedna grupa mięśniowa");
     }
   }
 
   // walidacja equipment
   if (data.equipment !== undefined) {
     if (!Array.isArray(data.equipment) || data.equipment.length === 0) {
-      throw new ExerciseValidationError("Equipment musi zawierać co najmniej jeden sprzęt");
+      throw new ExerciseValidationError("Wymagany co najmniej jeden sprzęt");
     }
     if (data.equipment.length > 8) {
       throw new ExerciseValidationError("Możesz wybrać maksymalnie 8 sprzętów");

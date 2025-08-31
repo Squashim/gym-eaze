@@ -1,11 +1,11 @@
 import Exercise, { IExercise } from "../models/exerciseModel";
 import { uploadExerciseMedia } from "../config/cloudinary"
-import { validateExerciseData, ExerciseValidationData, validateExercisePatchData } from "../utils/exerciseValidation";
+import { validateExerciseData, validateExercisePatchData } from "../utils/exerciseValidation";
 import mongoose, { Types } from "mongoose";
 import User from "../models/userModel";
 
 interface ExerciseData {
-  author?: string;
+  author: string;
   name: string;
   description: string;
   visibility: string;
@@ -60,7 +60,7 @@ export const deleteExercise = async (exerciseId: string, userId: string) => {
 export const updateExercise = async (
   exerciseId: string,
   userId: string,
-  data: ExerciseData,
+  data: Partial<ExerciseData>,
   imageBuffer?: Buffer,
   videoBuffer?: Buffer
 ) => {
