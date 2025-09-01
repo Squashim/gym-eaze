@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.AccountLinkingDialog
 import com.example.gymeaze.ui.screens.AuthScreen
+import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
 import com.example.gymeaze.ui.screens.ProfileEditScreen
 import com.example.gymeaze.ui.screens.SettingsScreen
@@ -131,23 +132,11 @@ class MainActivity : ComponentActivity() {
 
                         // Użytkownik jest zalogowany i nie jest to pierwszy login - główna aplikacja
                         else -> {
-                            // TODO: Implementacja głównych ekranów aplikacji
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                color = getBackgroundColor()
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Główna aplikacja - TODO: Implementacja",
-                                        color = getBackgroundColor()
-                                    )
-                                    Button(
-                                        onClick = authViewModel::logout
-                                    ) {
-                                        Text("Wyloguj")
-                                    }
-                                }
-                            }
+                            HomeScreen(
+                                username = username,
+                                onLogout = authViewModel::logout,
+                                onExerciseCreatorClick = {}
+                            )
                         }
                     }
                 }

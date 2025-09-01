@@ -522,8 +522,6 @@ private fun EditLoginDataSection() {
 
     UsernameField()
 
-    EmailField()
-
     NewPasswordField()
 
     ConfirmNewPasswordField()
@@ -592,42 +590,6 @@ private fun UsernameField() {
             ),
             shape = RoundedCornerShape(8.dp),
             singleLine = true
-        )
-    }
-}
-
-@Composable
-private fun EmailField() {
-    var email by remember {mutableStateOf("")} //TODO Pobrać z ViewModel
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.email),
-            color = getOnSurfaceColor(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                //TODO Walidacja email i aktualizacja w ViewModel
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = getPrimaryColor(),
-                unfocusedBorderColor = getInputBorderColor(),
-                focusedTextColor = getOnSurfaceColor(),
-                unfocusedTextColor = getOnSurfaceColor(),
-                cursorColor = getPrimaryColor()
-            ),
-            shape = RoundedCornerShape(8.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
     }
 }
