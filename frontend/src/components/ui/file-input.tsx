@@ -66,6 +66,7 @@ const FileInput = ({
           disabled && 'cursor-not-allowed opacity-60',
           invalid && 'border-destructive',
         )}
+        data-type="file"
         onClick={() => inputRef.current?.click()}
         onDragLeave={(e) => handleDragEvents(e, false)}
         onDragOver={(e) => handleDragEvents(e, true)}

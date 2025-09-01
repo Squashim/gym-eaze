@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useForm, type DefaultValues, type Path } from 'react-hook-form';
 import type { z, ZodTypeAny } from 'zod/v3';
 
@@ -23,7 +23,15 @@ export function UseStepForm<TSchema extends ZodTypeAny>({
     defaultValues,
   });
   const [step, setStep] = useState(0);
+  const submitRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const stepKeys = Object.keys(defaultValues) as Array<keyof FormValues>;
+
+  useEffect(() => {
+    if (step === totalSteps - 1) {
+      submitRef.current?.focus();
+    }
+  }, [step, totalSteps]);
 
   const validateStep = async () => {
     const stepKey = stepKeys[step];
@@ -45,11 +53,42 @@ export function UseStepForm<TSchema extends ZodTypeAny>({
     }
   };
 
+  const handleKeyDown = async (e: KeyboardEvent<HTMLElement>) => {
+    const target = e.target as HTMLElement;
+
+    console.log('Key down:', e.key, 'on', target);
+
+    if (
+      e.key === 'Escape' &&
+      !(!(target instanceof HTMLButtonElement) && target.role === 'combobox')
+    ) {
+      e.preventDefault();
+      cancelRef.current?.focus();
+    }
+
+    if (
+      e.key === 'Enter' &&
+      step < totalSteps - 1 &&
+      !(target instanceof HTMLTextAreaElement) &&
+      !(target instanceof HTMLDivElement && target.dataset['type'] === 'file') &&
+      !(target instanceof HTMLInputElement && target.dataset['type'] === 'hashtag-input') &&
+      !(target.role === 'combobox')
+    ) {
+      e.preventDefault();
+      await nextStep();
+    }
+  };
+
   return {
     form,
     step,
+    totalSteps,
+    refs: {
+      submitRef,
+      cancelRef,
+    },
     nextStep,
     prevStep,
-    totalSteps,
+    handleKeyDown,
   };
 }

@@ -23,7 +23,6 @@ const videoValidator = z
   );
 
 const exerciseStepOneSchema = z.object({
-  author: z.string(),
   name: z
     .string()
     .min(1, 'Nazwa ćwiczenia jest wymagana.')
@@ -40,12 +39,12 @@ const exerciseStepTwoSchema = z.object({
     .string()
     .min(1, 'Opis ćwiczenia jest wymagany.')
     .max(850, 'Opis ćwiczenia nie może być dłuższy niż 850 znaków.'),
-  // muscleGroup: z.array(z.string()).min(1, 'Wybierz przynajmniej jedną grupę mięśniową.'),
-  // equipment: z
-  //   .array(z.string())
-  //   .min(1, 'Wybierz przynajmniej jeden sprzęt.')
-  //   .max(8, 'Możesz wybrać maksymalnie 8 sprzętów.'),
-  // hashtags: z.array(z.string()).max(50, 'Możesz dodać maksymalnie 50 hashtagów.').optional(),
+  muscleGroup: z.array(z.string()).min(1, 'Wybierz przynajmniej jedną grupę mięśniową.'),
+  equipment: z
+    .array(z.string())
+    .min(1, 'Wybierz przynajmniej jeden sprzęt.')
+    .max(8, 'Możesz wybrać maksymalnie 8 sprzętów.'),
+  hashtags: z.array(z.string()).max(50, 'Możesz dodać maksymalnie 50 hashtagów.'),
 });
 
 export const exerciseSchema = z.object({
