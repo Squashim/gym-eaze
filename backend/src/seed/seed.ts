@@ -23,16 +23,17 @@ import { seedUserHasTrainingPlans } from './data/userHasTrainingPlansData';
 import { seedNotifications } from './data/notificationData';
 
 const checkAddedData = async () => {
+  await connectToDB();
   try {
-    await downloadedExercises();
-    await downloadedMuscleGroup();
-    await downloadedBadge();
-    await downloadedEquipment();
+    //await downloadedExercises();
+    //await downloadedMuscleGroup();
+    //await downloadedBadge();
+    //await downloadedEquipment();
     await downloadedUsers();
-    await downloadedPosts();
-    await downloadedTrainingPlans();
-    await downloadedComments();
-    await downloadedUserHasTrainingPlans();
+    //await downloadedPosts();
+    //await downloadedTrainingPlans();
+    //await downloadedComments();
+    //await downloadedUserHasTrainingPlans();
   } catch (error) {
     console.error('Błąd', error);
   }
@@ -41,16 +42,16 @@ const checkAddedData = async () => {
 const seed = async () => {
   await connectToDB();
   try {
-    await seedBadges();
-    await seedEquipment();
-    await seedMuscleGroups();
-    await seedExercises();
+    //await seedBadges();
+    //await seedEquipment();
+    //await seedMuscleGroups();
+    //await seedExercises();
     await seedUsers();
-    await seedPosts();
-    await seedTrainingPlans();
-    await seedComments();
-    await seedUserHasTrainingPlans();
-    await seedNotifications();
+    //await seedPosts();
+    //await seedTrainingPlans();
+    //await seedComments();
+    //await seedUserHasTrainingPlans();
+    //await seedNotifications();
   } catch (error) {
     console.error('Błąd:', error);
   } finally {

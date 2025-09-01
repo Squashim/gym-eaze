@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export interface IEquipment extends mongoose.Document {
   name: string;
   image: string;
+  imageCredit: string;
 }
 
 const equipmentSchema = new mongoose.Schema({
@@ -14,6 +15,10 @@ const equipmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  imageCredit: {
+    type: String,
+    required: true,
+  }
 });
 
 const Equipment = mongoose.model<IEquipment>("Equipment", equipmentSchema);
