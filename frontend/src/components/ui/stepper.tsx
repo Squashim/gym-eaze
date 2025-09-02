@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import Typography from './typography';
+import { Check } from 'lucide-react';
 
 type StepperProps = {
   step: number;
@@ -21,12 +22,19 @@ const Stepper = ({ step, steps }: StepperProps) => {
               className={cn(
                 'size-10 rounded-full transition-all duration-400 flex items-center justify-center shadow-xs border border-muted dark:border-border bg-input/30',
                 index === step && 'border-primary dark:border-primary w-16 sm:w-24',
+                index === totalSteps - 1 &&
+                  index === step &&
+                  'bg-secondary border-primary dark:border-border text-secondary-foreground',
                 index < step && 'bg-secondary dark:border-border text-secondary-foreground',
               )}
             >
-              <Typography className="font-semibold" variant="small">
-                {index + 1}
-              </Typography>
+              {step === totalSteps - 1 && index === step ? (
+                <Check className="size-5" />
+              ) : (
+                <Typography className="font-semibold" variant="small">
+                  {index + 1}
+                </Typography>
+              )}
             </div>
             <Typography variant="small">{stepText}</Typography>
           </div>

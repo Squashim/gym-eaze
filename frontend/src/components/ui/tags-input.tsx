@@ -100,11 +100,17 @@ function TagsInput({ value, onChange, placeholder, disabled, maxTags = 50, id }:
     >
       {value.length > 6 && (
         <div className="absolute top-1 right-1 flex flex-col">
-          <Button onClick={handleCopy} size="icon" type="button" variant="ghost">
+          <Button
+            className="hover:shadow-sm hover:bg-white/50"
+            onClick={handleCopy}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
             <Copy />
           </Button>
           <Button
-            className="text-destructive hover:text-destructive"
+            className="text-destructive hover:shadow-sm hover:text-destructive/80 hover:bg-white/50"
             onClick={clearTags}
             size="icon"
             type="button"
@@ -123,7 +129,7 @@ function TagsInput({ value, onChange, placeholder, disabled, maxTags = 50, id }:
           <span>{`#${tag}`}</span>
           <div
             aria-label={`Usuń #${tag}`}
-            className="ml-2 h-4 w-4 cursor-pointer hover:bg-white/20 rounded-sm -m-0.5 focus:outline-none focus:ring-1 focus:ring-white/50 flex items-center justify-center"
+            className="ml-2 h-4 w-4 cursor-pointer dark:hover:bg-white/20 hover:bg-ring/50 rounded-sm -m-0.5 focus:outline-none focus:ring-1 dark:focus:ring-white/50 focus:ring-ring flex items-center justify-center"
             onClick={(event) => {
               event.stopPropagation();
               removeTag(index);

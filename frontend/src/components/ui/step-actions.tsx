@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
 import { Button } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 import Typography from './typography';
@@ -13,10 +13,12 @@ type StepActionsProps = {
   nextStep: () => void;
   exitLabel: string;
   submitLabel: string;
+  submittingLabel?: string;
   refs: {
     submitRef?: Ref<HTMLButtonElement>;
     cancelRef?: Ref<HTMLButtonElement>;
   };
+  isSubmitting: boolean;
 };
 
 const StepActions = ({
@@ -26,14 +28,16 @@ const StepActions = ({
   nextStep,
   exitLabel,
   submitLabel,
+  submittingLabel = 'Wysyłanie...',
   refs,
+  isSubmitting,
 }: StepActionsProps) => {
   const uid = useId();
   const isFirstStep = step === 0;
   const isLastStep = step === totalSteps - 1;
   const isBackAvailable = step < totalSteps - 1;
   const navigate = useNavigate();
-  const isSmallBackIcon = useMediaQuery('(width <= 385px)');
+  const isSmallBackIcon = useMediaQuery('(width <= 400px)');
 
   const handleCancel = () => {
     void navigate(-1);
@@ -88,8 +92,15 @@ const StepActions = ({
         )}
 
         {isLastStep && (
-          <Button ref={refs.submitRef} size="lg" type="submit">
-            {submitLabel}
+          <Button disabled={isSubmitting} ref={refs.submitRef} size="lg" type="submit">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" />
+                {submittingLabel}
+              </>
+            ) : (
+              submitLabel
+            )}
           </Button>
         )}
       </div>

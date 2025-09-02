@@ -1,3 +1,5 @@
+import { AdvancedLevel } from '@/constants/advanced-level';
+import { Visibility } from '@/constants/visibility';
 import z from 'zod/v3';
 
 const IMAGE_MIME_TYPES = ['image/png', 'image/jpg', 'image/webp'];
@@ -30,8 +32,8 @@ const exerciseStepOneSchema = z.object({
 
   image: imageValidator,
   video: videoValidator,
-  visibility: z.enum(['public', 'private']),
-  advancedLevel: z.enum(['easy', 'medium', 'hard']),
+  visibility: z.nativeEnum(Visibility),
+  advancedLevel: z.nativeEnum(AdvancedLevel),
 });
 
 const exerciseStepTwoSchema = z.object({
@@ -39,7 +41,10 @@ const exerciseStepTwoSchema = z.object({
     .string()
     .min(1, 'Opis ćwiczenia jest wymagany.')
     .max(850, 'Opis ćwiczenia nie może być dłuższy niż 850 znaków.'),
-  muscleGroup: z.array(z.string()).min(1, 'Wybierz przynajmniej jedną grupę mięśniową.'),
+  muscleGroup: z
+    .array(z.string())
+    .min(1, 'Wybierz przynajmniej jedną grupę mięśniową.')
+    .max(8, 'Możesz wybrać maksymalnie 8 grup mięśniowych.'),
   equipment: z
     .array(z.string())
     .min(1, 'Wybierz przynajmniej jeden sprzęt.')

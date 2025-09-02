@@ -22,37 +22,38 @@ import { Textarea } from '@/components/ui/textarea';
 import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
-import { cn } from '@/lib/utils';
+import { apiResponseToMultiSelectOptions, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Globe2, Lock } from 'lucide-react';
+import { AdvancedLevel } from '@/constants/advanced-level';
+import useGetEquipment from '@/hooks/use-get-equipment';
+import useGetMuscleGroups from '@/hooks/use-get-muscle-groups';
+import type { MuscleGroup } from '@/types/muscle-group';
+import type { Equipment } from '@/types/equipment';
+import { useMemo, type PropsWithChildren } from 'react';
+import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
+import { exerciseCreatorConstants } from '@/constants/forms';
+import { useExercise } from '@/hooks/use-exercise';
+import { useUser } from '@/context/user';
+import type { CreateExercisePayload } from '@/types/exercise';
 
 const ExerciseCreator = () => {
-  const steps = ['Podstawowe dane', 'Dodatkowe informacje', 'Podsumowanie'];
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = UseStepForm({
     schema: exerciseSchema,
-    defaultValues: {
-      stepOne: {
-        name: '',
-        image: undefined,
-        video: undefined,
-        visibility: 'public',
-        advancedLevel: 'easy',
-      },
-      stepTwo: {
-        description: '',
-        muscleGroup: [],
-        equipment: [],
-        hashtags: [],
-      },
-    },
-    totalSteps: steps.length,
+    defaultValues: exerciseCreatorConstants.defaultValues,
+    totalSteps: exerciseCreatorConstants.steps.length,
   });
-
+  const { createExercise } = useExercise();
+  const { user } = useUser();
   const { handleSubmit } = form;
 
   const onSubmit = (formData: ExerciseSchema) => {
-    // TODO: add create exercise logic
-    console.log(formData);
+    const formattedData = {
+      author: user!._id,
+      ...formData.stepOne,
+      ...formData.stepTwo,
+    } as CreateExercisePayload;
+
+    createExercise.mutate(formattedData);
   };
 
   useUnsavedChangesWarning(form.formState.isDirty);
@@ -60,7 +61,7 @@ const ExerciseCreator = () => {
   return (
     <div className="flex flex-col gap-6 max-w-lg md:max-w-3xl w-full mx-auto my-4">
       <Typography variant="h1">Kreator ćwiczenia</Typography>
-      <Stepper step={step} steps={steps} />
+      <Stepper step={step} steps={exerciseCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-center">
         <CardContent className="w-full">
           <Form {...form}>
@@ -75,11 +76,13 @@ const ExerciseCreator = () => {
 
               <StepActions
                 exitLabel="Wyjdź z kreatora"
+                isSubmitting={createExercise.isPending}
                 nextStep={nextStep}
                 prevStep={prevStep}
                 refs={refs}
                 step={step}
                 submitLabel="Stwórz ćwiczenie"
+                submittingLabel="Tworzenie..."
                 totalSteps={totalSteps}
               />
             </form>
@@ -114,6 +117,7 @@ const ExerciseCreatorStepOne = () => {
               />
             </FormControl>
             <FormMessage />
+            <FormDescription>Maksymalna długość nazwy to 150 znaków.</FormDescription>
           </FormItem>
         )}
       />
@@ -188,24 +192,14 @@ const ExerciseCreatorStepOne = () => {
                 name={field.name}
                 onValueChange={field.onChange}
               >
-                <FormItem className="flex items-center gap-3">
-                  <FormControl>
-                    <RadioGroupItem value="easy" />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">Początkujący</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center gap-3">
-                  <FormControl>
-                    <RadioGroupItem value="medium" />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">Średniozaawansowany</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center gap-3">
-                  <FormControl>
-                    <RadioGroupItem value="hard" />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">Zaawansowany</FormLabel>
-                </FormItem>
+                {Object.entries(AdvancedLevel).map(([key, value]) => (
+                  <FormItem className="flex items-center gap-3" key={key}>
+                    <FormControl>
+                      <RadioGroupItem value={value} />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">{value}</FormLabel>
+                  </FormItem>
+                ))}
               </RadioGroup>
             </FormControl>
           </FormItem>
@@ -220,14 +214,14 @@ const ExerciseCreatorStepOne = () => {
             <div className="flex flex-col gap-1">
               <FormLabel className="font-semibold">Publiczne ćwiczenie*</FormLabel>
               <FormDescription>
-                Inni użytkownicy będą mogli znaleźć i używać tego ćwiczenia.
+                Inni użytkownicy będą mogli wyszukać i korzystać z tego ćwiczenia.
               </FormDescription>
             </div>
             <FormControl>
               <Switch
-                checked={field.value === 'public'}
+                checked={field.value === 'Publiczny'}
                 name={field.name}
-                onCheckedChange={(checked) => field.onChange(checked ? 'public' : 'private')}
+                onCheckedChange={(checked) => field.onChange(checked ? 'Publiczny' : 'Prywatny')}
               />
             </FormControl>
           </FormItem>
@@ -239,39 +233,8 @@ const ExerciseCreatorStepOne = () => {
 
 const ExerciseCreatorStepTwo = () => {
   const { control } = useFormContext<ExerciseSchema>();
-
-  // TODO: change to fetch from API
-  const equipmentList = [
-    {
-      label: 'Hantle',
-      value: 'dumbbells',
-      image: '/images/equipment/dumbbells.png',
-    },
-    {
-      label: 'Sztanga',
-      value: 'barbell',
-      image: '/images/equipment/barbell.png',
-    },
-    { label: 'Ławka', value: 'bench', image: '/images/equipment/bench.png' },
-    { label: 'Drążek', value: 'pull-up-bar', image: '/images/equipment/pull-up-bar.png' },
-    { label: 'Gumy', value: 'bands', image: '/images/equipment/bands.png' },
-    { label: 'Brak', value: 'none', image: '/images/equipment/none.png' },
-    { label: 'Kettlebell', value: 'kettlebell', image: '/images/equipment/kettlebell.png' },
-    { label: 'Piłka', value: 'ball', image: '/images/equipment/ball.png' },
-    { label: 'Stepper', value: 'stepper', image: '/images/equipment/stepper.png' },
-    { label: 'Orbitrek', value: 'elliptical', image: '/images/equipment/elliptical.png' },
-    { label: 'Rower', value: 'bike', image: '/images/equipment/bike.png' },
-  ];
-  const muscleGroupsList = [
-    { label: 'Klatka piersiowa', value: 'chest', image: '/images/muscle-groups/chest.png' },
-    { label: 'Plecy', value: 'back', image: '/images/muscle-groups/back.png' },
-    { label: 'Barki', value: 'shoulders', image: '/images/muscle-groups/shoulders.png' },
-    { label: 'Biceps', value: 'biceps', image: '/images/muscle-groups/biceps.png' },
-    { label: 'Triceps', value: 'triceps', image: '/images/muscle-groups/triceps.png' },
-    { label: 'Nogi', value: 'legs', image: '/images/muscle-groups/legs.png' },
-    { label: 'Brzuch', value: 'abs', image: '/images/muscle-groups/abs.png' },
-    { label: 'Pośladki', value: 'glutes', image: '/images/muscle-groups/glutes.png' },
-  ];
+  const { data: equipment, isLoading: isEquipmentLoading } = useGetEquipment();
+  const { data: muscleGroups, isLoading: isMuscleGroupsLoading } = useGetMuscleGroups();
 
   return (
     <>
@@ -286,7 +249,7 @@ const ExerciseCreatorStepTwo = () => {
                 {...field}
                 autoComplete="off"
                 autoFocus
-                className="resize-none min-h-44 scrollbar overflow-y-auto"
+                className="resize-none min-h-48 max-h-48 scrollbar overflow-y-auto"
                 maxLength={850}
                 placeholder={`Opisz ćwiczenie i sposób wykonania np.\nKrok 1. Ustaw się w pozycji pompki...\nKrok 2. Zegnij ramiona...\n...`}
               />
@@ -305,11 +268,12 @@ const ExerciseCreatorStepTwo = () => {
             <FormLabel className="font-semibold">Grupy mięśniowe*</FormLabel>
             <FormControl>
               <MultiSelect
+                defaultValue={field.value}
+                disabled={isMuscleGroupsLoading}
                 maxCount={3}
                 onValueChange={field.onChange}
-                options={muscleGroupsList}
-                placeholder="Wybierz grupy mięśniowe..."
-                value={field.value}
+                options={apiResponseToMultiSelectOptions(muscleGroups)}
+                placeholder={isMuscleGroupsLoading ? 'Ładowanie...' : 'Wybierz grupy mięśniowe...'}
               />
             </FormControl>
             <FormMessage />
@@ -325,12 +289,13 @@ const ExerciseCreatorStepTwo = () => {
             <FormLabel className="font-semibold">Sprzęt ćwiczeniowy*</FormLabel>
             <FormControl>
               <MultiSelect
+                defaultValue={field.value}
+                disabled={isEquipmentLoading}
                 hideSelectAll
                 maxCount={3}
                 onValueChange={field.onChange}
-                options={equipmentList}
-                placeholder="Wybierz sprzęt..."
-                value={field.value}
+                options={apiResponseToMultiSelectOptions(equipment)}
+                placeholder={isEquipmentLoading ? 'Ładowanie...' : 'Wybierz sprzęt...'}
               />
             </FormControl>
             <FormMessage />
@@ -355,7 +320,7 @@ const ExerciseCreatorStepTwo = () => {
               />
             </FormControl>
             <FormDescription>
-              Hashtag może zawierać tylko małe litery i cyfry. Możesz dodać do 50 hashtagów.
+              Hasztag może zawierać tylko małe litery i cyfry. Możesz dodać do 50 hasztagów.
             </FormDescription>
           </FormItem>
         )}
@@ -366,7 +331,79 @@ const ExerciseCreatorStepTwo = () => {
 
 const ExerciseCreatorStepThree = () => {
   const { watch } = useFormContext<ExerciseSchema>();
+  const { data: equipment } = useGetEquipment();
+  const { data: muscleGroups } = useGetMuscleGroups();
   const formData = watch();
+
+  const muscleMap = useMemo(() => {
+    const map: Record<string, MuscleGroup> = {};
+    if (!muscleGroups) return map;
+
+    muscleGroups.forEach((muscle) => {
+      map[muscle._id] = muscle;
+    });
+    return map;
+  }, [muscleGroups]);
+
+  const equipmentMap = useMemo(() => {
+    const map: Record<string, Equipment> = {};
+    if (!equipment) return map;
+
+    equipment.forEach((eq) => {
+      map[eq._id] = eq;
+    });
+    return map;
+  }, [equipment]);
+
+  const InfoField = ({
+    label,
+    fullWidth = false,
+    children,
+  }: PropsWithChildren & {
+    fullWidth?: boolean;
+    label: string;
+  }) => (
+    <div className={cn('flex flex-col gap-1', fullWidth && 'md:col-span-2')}>
+      <Typography className="font-semibold" variant="small">
+        {label}:
+      </Typography>
+      {children}
+    </div>
+  );
+
+  const ItemsHorizontalGallery = <T extends { _id: string; name: string; image: string }>({
+    itemIds,
+    itemMap,
+    isRounded = false,
+  }: {
+    itemIds: string[];
+    itemMap: Record<string, T>;
+    isRounded?: boolean;
+  }) => {
+    return (
+      <div className="flex gap-2 items-center overflow-x-auto scrollbar py-1">
+        {itemIds.map((id) => {
+          const item = itemMap[id];
+          if (!item) return null;
+
+          return (
+            <Badge
+              className="font-semibold max-w-38 break-words whitespace-break-spaces text-center bg-muted-foreground/20"
+              key={item._id}
+              variant="outline"
+            >
+              <img
+                alt={`zdjęcie przedstawiające ${item.name}`}
+                className={cn('size-13 aspect-square object-cover', isRounded && 'rounded-lg')}
+                src={item.image}
+              />
+              {item.name}
+            </Badge>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -375,95 +412,57 @@ const ExerciseCreatorStepThree = () => {
           Sprawdź poprawność danych
         </Typography>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Typography className="font-medium" variant="small">
-              Nazwa ćwiczenia
-            </Typography>
-            <Typography className="px-1 bg-accent/50 rounded-md break-words" variant="p">
+          <InfoField fullWidth label="Nazwa ćwiczenia">
+            <Typography
+              className="break-words px-2 py-1 rounded-md bg-accent-foreground/10"
+              variant="p"
+            >
               {formData.stepOne.name}
             </Typography>
-          </div>
+          </InfoField>
 
-          <div className="flex items-center gap-2">
-            <Typography className="font-medium" variant="small">
-              Poziom trudności:
-            </Typography>
-            <Badge
-              className={cn(
-                formData.stepOne.advancedLevel === 'easy'
-                  ? 'bg-secondary text-secondary-foreground'
-                  : formData.stepOne.advancedLevel === 'medium'
-                    ? 'bg-yellow-600 dark:bg-yellow-400 text-accent-foreground dark:text-accent'
-                    : 'bg-destructive',
-              )}
+          <InfoField label="Poziom trudności">
+            <AdvancedLevelBadge advancedLevel={formData.stepOne.advancedLevel} />
+          </InfoField>
+
+          <InfoField label="Widoczność ćwiczenia">
+            <VisibilityBadge type="Exercise" visibility={formData.stepOne.visibility} />
+          </InfoField>
+
+          <InfoField fullWidth label="Opis ćwiczenia">
+            <Typography
+              className="break-words whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar px-2 py-1 rounded-md bg-accent-foreground/10"
+              variant="p"
             >
-              {formData.stepOne.advancedLevel}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Typography className="font-medium" variant="small">
-              Widoczność ćwiczenia:
-            </Typography>
-            <Badge className="flex h-auto w-fit">
-              {formData.stepOne.visibility === 'public' ? <Globe2 /> : <Lock />}
-              {formData.stepOne.visibility}
-            </Badge>
-          </div>
-
-          <div className="flex flex-col gap-1 md:col-span-2 max-h-44 overflow-y-scroll scrollbar">
-            <Typography className="font-medium" variant="small">
-              Opis ćwiczenia
-            </Typography>
-            <Typography className="px-1 bg-accent/50 rounded-md break-words" variant="p">
               {formData.stepTwo.description}
             </Typography>
-          </div>
+          </InfoField>
 
-          <div className="flex flex-col gap-1">
-            <Typography className="font-medium" variant="small">
-              Grupy mięśniowe
-            </Typography>
-            <div className="px-1 rounded-md flex flex-wrap gap-1">
-              {formData.stepTwo.muscleGroup.map((muscle) => {
-                return (
-                  <Badge key={muscle} variant="outline">
-                    {muscle}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
+          <InfoField fullWidth label="Grupy mięśniowe">
+            <ItemsHorizontalGallery itemIds={formData.stepTwo.muscleGroup} itemMap={muscleMap} />
+          </InfoField>
 
-          <div className="flex flex-col gap-1">
-            <Typography className="font-medium" variant="small">
-              Wymagany sprzęt
-            </Typography>
-            <div className="px-1 rounded-md flex flex-wrap gap-1">
-              {formData.stepTwo.equipment.map((equipment) => {
-                return (
-                  <Badge key={equipment} variant="outline">
-                    {equipment}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
+          <InfoField fullWidth label="Sprzęt ćwiczeniowy">
+            <ItemsHorizontalGallery
+              isRounded
+              itemIds={formData.stepTwo.equipment}
+              itemMap={equipmentMap}
+            />
+          </InfoField>
 
-          <div className="flex flex-col gap-1 md:col-span-2 max-h-24 overflow-y-scroll scrollbar">
-            <Typography className="font-medium" variant="small">
-              Hasztagi
-            </Typography>
-            <div className="px-1 rounded-md flex flex-wrap gap-1">
-              {formData.stepTwo.hashtags.map((hashtag) => {
-                return (
-                  <Badge key={hashtag} variant="outline">
-                    {`#${hashtag}`}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
+          {formData.stepTwo.hashtags.length > 0 && (
+            <InfoField fullWidth label="Hasztagi">
+              <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
+                {formData.stepTwo.hashtags.map((hashtag) => {
+                  return (
+                    <Badge key={hashtag} variant="outline">
+                      {`#${hashtag}`}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </InfoField>
+          )}
         </div>
       </div>
     </>

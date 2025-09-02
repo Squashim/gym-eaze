@@ -56,8 +56,6 @@ export function UseStepForm<TSchema extends ZodTypeAny>({
   const handleKeyDown = async (e: KeyboardEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
 
-    console.log('Key down:', e.key, 'on', target);
-
     if (
       e.key === 'Escape' &&
       !(!(target instanceof HTMLButtonElement) && target.role === 'combobox')

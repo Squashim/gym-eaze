@@ -106,7 +106,7 @@ interface MultiSelectProps
   /**
    * An array of option objects or groups to be displayed in the multi-select component.
    */
-  options: MultiSelectOption[] | MultiSelectGroup[];
+  options: MultiSelectOption[] | MultiSelectGroup[] | undefined;
   /**
    * Callback function triggered when the selected values change.
    * Receives an array of the new selected values.
@@ -500,6 +500,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
     };
 
     const getAllOptions = React.useCallback((): MultiSelectOption[] => {
+      if (!options) return [];
       if (options.length === 0) return [];
       let allOptions: MultiSelectOption[];
       if (isGroupedOptions(options)) {
@@ -547,6 +548,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
     );
 
     const filteredOptions = React.useMemo(() => {
+      if (!options) return [];
       if (!searchable || !searchValue) return options;
       if (options.length === 0) return [];
       if (isGroupedOptions(options)) {
@@ -770,7 +772,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
               }}
             >
               {selectedValues.length > 0 ? (
-                <div className="flex justify-between items-center w-full">
+                <div className="flex justify-between w-full">
                   <div
                     className={cn(
                       'flex items-center gap-1',
@@ -839,7 +841,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             </span>
                             <div
                               aria-label={`Usuń ${option.label} z zaznaczonych opcji`}
-                              className="ml-2 h-4 w-4 cursor-pointer hover:bg-white/20 rounded-sm p-0.5 -m-0.5 focus:outline-none focus:ring-1 focus:ring-white/50 flex items-center justify-center"
+                              className="ml-2 h-4 w-4 cursor-pointer dark:hover:bg-white/20 hover:bg-ring/50 rounded-sm p-0.5 -m-0.5 focus:outline-none focus:ring-1 dark:focus:ring-white/50 focus:ring-ring flex items-center justify-center"
                               onClick={(event) => {
                                 event.stopPropagation();
                                 toggleOption(value);
@@ -890,6 +892,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             event.stopPropagation();
                             clearExtraOptions();
                           }}
+                          tabIndex={0}
                         />
                       </Badge>
                     )}
@@ -1052,7 +1055,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             {option.image && (
                               <img
                                 alt={option.label}
-                                className="size-10 rounded-full mr-2 aspect-square object-cover"
+                                className="size-10 rounded-full mr-2 aspect-square object-cover bg-muted-foreground/40"
                                 loading="lazy"
                                 src={option.image}
                               />
@@ -1103,7 +1106,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                           {option.image && (
                             <img
                               alt={option.label}
-                              className="size-10 rounded-full mr-2 aspect-square object-cover"
+                              className="size-10 rounded-full mr-2 aspect-square object-cover bg-muted-foreground/40"
                               loading="lazy"
                               src={option.image}
                             />
