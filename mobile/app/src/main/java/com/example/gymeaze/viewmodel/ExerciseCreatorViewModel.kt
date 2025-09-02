@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.ExerciseRepository
+import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Hashtag
 import com.example.gymeaze.data.models.MuscleGroup
@@ -42,8 +43,8 @@ data class ExerciseCreatorState(
 
 }
 
-class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(application) {
-    private val repo = ExerciseRepository(application)
+class ExerciseCreatorViewModel(application: Application, private val userPreferences: UserPreferences) : AndroidViewModel(application) {
+    private val repo = ExerciseRepository(application, userPreferences)
 
     private val _uiState = MutableStateFlow(ExerciseCreatorState())
     val uiState: StateFlow<ExerciseCreatorState> = _uiState.asStateFlow()
