@@ -7,3 +7,8 @@ export const parseField = (field?: string | string[]): string[] => {
     return [field];
   }
 };
+
+export const parseDescription = (description: string): string => {
+  const normalized = description.replace(/\r\n/g, '\n');
+  return normalized;
+};

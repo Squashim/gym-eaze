@@ -1,4 +1,5 @@
 import { CreateExerciseData, UpdateExerciseData } from '../types/exercise';
+import { parseDescription } from './parsers';
 
 export class ExerciseValidationError extends Error {
   constructor(message: string) {
@@ -20,7 +21,7 @@ export const validateExerciseData = (data: CreateExerciseData): void => {
     throw new ExerciseValidationError('Nazwa może mieć maksymalnie 150 znaków');
   }
 
-  if (data.description.length > 850) {
+  if (parseDescription(data.description).length > 850) {
     throw new ExerciseValidationError('Opis może mieć maksymalnie 850 znaków');
   }
 
@@ -72,7 +73,7 @@ export const validateExercisePatchData = (data: UpdateExerciseData): void => {
     if (typeof data.description !== 'string' || data.description.trim().length === 0) {
       throw new ExerciseValidationError('Opis nie może być pusty');
     }
-    if (data.description.trim().length > 850) {
+    if (parseDescription(data.description).length > 850) {
       throw new ExerciseValidationError('Opis może mieć maksymalnie 850 znaków');
     }
   }
