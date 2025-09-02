@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.AccountLinkingDialog
 import com.example.gymeaze.ui.screens.AuthScreen
+import com.example.gymeaze.ui.screens.ExerciseCreatorScreen
 import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
 import com.example.gymeaze.ui.screens.ProfileEditScreen
@@ -28,6 +29,7 @@ import com.example.gymeaze.ui.screens.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
+import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 class MainActivity : ComponentActivity() {
@@ -38,6 +40,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val authViewModel: AuthViewModel = viewModel()
+
+            val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
 
             val googleSignInLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartActivityForResult()
@@ -57,6 +61,7 @@ class MainActivity : ComponentActivity() {
             val showAccountLinking by authViewModel.showAccountLinking.collectAsState()
             val linkingEmail by authViewModel.linkingEmail.collectAsState()
             val linkingError by authViewModel.linkingError.collectAsState()
+            val showExerciseCreator by authViewModel.showExerciseCreator.collectAsState()
 
             GymEazeTheme(darkTheme = isDarkTheme) {
                 Surface(
@@ -100,6 +105,14 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        showExerciseCreator -> {
+                            ExerciseCreatorScreen(
+                                viewModel = exerciseCreatorViewModel,
+                                onBackClick = authViewModel::hideExerciseCreatorScreen,
+                                onCreated = authViewModel::hideExerciseCreatorScreen
+                            )
+                        }
+
                         // Użytkownik nie jest zalogowany - pokaż ekran autoryzacji
                         !isUserLoggedIn -> {
                             AuthScreen(
@@ -135,7 +148,7 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 username = username,
                                 onLogout = authViewModel::logout,
-                                onExerciseCreatorClick = {}
+                                onExerciseCreatorClick = authViewModel::showExerciseCreatorScreen
                             )
                         }
                     }

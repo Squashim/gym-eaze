@@ -400,6 +400,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val privateShowProfileEdit = MutableStateFlow(false)
     val showProfileEdit = privateShowProfileEdit.asStateFlow()
 
+    private val privateShowExerciseCreator = MutableStateFlow(false)
+    val showExerciseCreator = privateShowExerciseCreator.asStateFlow()
+
     fun showSettingsScreen() {
         privateShowSettings.value = true
     }
@@ -423,6 +426,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun hideProfileEditScreen() {
         privateShowProfileEdit.value = false
     }
+
+    fun showExerciseCreatorScreen() { privateShowExerciseCreator.value = true }
+    fun hideExerciseCreatorScreen() { privateShowExerciseCreator.value = false }
 
     fun selectTheme(isDark: Boolean){
         viewModelScope.launch {

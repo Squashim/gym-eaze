@@ -158,5 +158,6 @@
     <string name="age">Wiek</string>
     <string name="height_cm">Wzrost (cm)</string>
     <string name="weight_kg">Waga (kg)</string>
+    <string name="unauthorized">Nieautoryzowane</string>
 
 </resources>
