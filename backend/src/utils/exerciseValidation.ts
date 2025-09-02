@@ -1,10 +1,5 @@
-export interface ExerciseValidationData {
-  name?: string;
-  description?: string;
-  equipment?: string[];
-  hashtags?: string[];
-  muscleGroup?: string[];
-}
+import { CreateExerciseData, UpdateExerciseData } from '../types/exercise';
+import { parseDescription } from './parsers';
 
 export class ExerciseValidationError extends Error {
   constructor(message: string) {
@@ -13,87 +8,95 @@ export class ExerciseValidationError extends Error {
   }
 }
 
-export const validateExerciseData = (data: ExerciseValidationData): void => {
-
-  if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
-    throw new ExerciseValidationError("Nazwa jest wymagana");
+export const validateExerciseData = (data: CreateExerciseData): void => {
+  if (!data.name || typeof data.name !== 'string' || data.name.length === 0) {
+    throw new ExerciseValidationError('Nazwa jest wymagana');
   }
 
-  if (!data.description || typeof data.description !== 'string' || data.description.trim().length === 0) {
-    throw new ExerciseValidationError("Opis jest wymagany");
+  if (!data.description || typeof data.description !== 'string' || data.description.length === 0) {
+    throw new ExerciseValidationError('Opis jest wymagany');
   }
 
-  const trimmedName = data.name.trim();
-  const trimmedDescription = data.description.trim();
+  if (data.name.length > 150) {
+    throw new ExerciseValidationError('Nazwa może mieć maksymalnie 150 znaków');
+  }
 
-  if (trimmedName.length > 150) {
-    throw new ExerciseValidationError("Nazwa może mieć maksymalnie 150 znaków");
+  if (parseDescription(data.description).length > 850) {
+    throw new ExerciseValidationError('Opis może mieć maksymalnie 850 znaków');
   }
-  
-  if (trimmedDescription.length > 850) {
-    throw new ExerciseValidationError("Opis może mieć maksymalnie 850 znaków");
+
+  if (!data.muscleGroup || !Array.isArray(data.muscleGroup) || data.muscleGroup.length === 0) {
+    throw new ExerciseValidationError('Wybierz przynajmniej jedną grupę mięśniową');
   }
-  
-  if (data.equipment && data.equipment.length > 8) {
-    throw new ExerciseValidationError("Możesz wybrać maksymalnie 8 sprzętów");
+
+  if (data.muscleGroup.length > 8) {
+    throw new ExerciseValidationError('Możesz wybrać maksymalnie 8 grup mięśniowych');
   }
-  
+
+  if (!data.equipment || !Array.isArray(data.equipment) || data.equipment.length === 0) {
+    throw new ExerciseValidationError('Wybierz przynajmniej jeden sprzęt');
+  }
+
+  if (data.equipment.length > 8) {
+    throw new ExerciseValidationError('Możesz wybrać maksymalnie 8 sprzętów');
+  }
+
   if (data.hashtags && data.hashtags.length > 50) {
-    throw new ExerciseValidationError("Możesz napisać maksymalnie 50 hashtagów");
+    throw new ExerciseValidationError('Możesz dodać maksymalnie 50 hashtagów');
   }
 };
 
-export const validateExerciseFiles = (imageFile: any, videoFile: any): void => {
+export const validateExerciseFiles = (
+  imageFile: Express.Multer.File | undefined,
+  videoFile: Express.Multer.File | undefined,
+): void => {
   if (!imageFile) {
-    throw new ExerciseValidationError("Zdjęcie jest wymagane");
+    throw new ExerciseValidationError('Zdjęcie jest wymagane');
   }
-  
+
   if (!videoFile) {
-    throw new ExerciseValidationError("Filmik jest wymagany");
+    throw new ExerciseValidationError('Filmik jest wymagany');
   }
 };
 
-export const validateExercisePatchData = (data: Partial<ExerciseValidationData>): void => {
-  // walidacja nazwy
+export const validateExercisePatchData = (data: UpdateExerciseData): void => {
   if (data.name !== undefined) {
     if (typeof data.name !== 'string' || data.name.trim().length === 0) {
-      throw new ExerciseValidationError("Nazwa nie może być pusta");
+      throw new ExerciseValidationError('Nazwa nie może być pusta');
     }
     if (data.name.trim().length > 150) {
-      throw new ExerciseValidationError("Nazwa może mieć maksymalnie 150 znaków");
+      throw new ExerciseValidationError('Nazwa może mieć maksymalnie 150 znaków');
     }
   }
 
-  // walidacja opisu
   if (data.description !== undefined) {
     if (typeof data.description !== 'string' || data.description.trim().length === 0) {
-      throw new ExerciseValidationError("Opis nie może być pusty");
+      throw new ExerciseValidationError('Opis nie może być pusty');
     }
-    if (data.description.trim().length > 850) {
-      throw new ExerciseValidationError("Opis może mieć maksymalnie 850 znaków");
+    if (parseDescription(data.description).length > 850) {
+      throw new ExerciseValidationError('Opis może mieć maksymalnie 850 znaków');
     }
   }
 
-  // walidacja muscleGroup
   if (data.muscleGroup !== undefined) {
     if (!Array.isArray(data.muscleGroup) || data.muscleGroup.length === 0) {
-      throw new ExerciseValidationError("Wymagana co najmniej jedna grupa mięśniowa");
+      throw new ExerciseValidationError('Wymagana co najmniej jedna grupa mięśniowa');
+    }
+    if (data.muscleGroup.length > 8) {
+      throw new ExerciseValidationError('Możesz wybrać maksymalnie 8 grup mięśniowych');
     }
   }
 
-  // walidacja equipment
   if (data.equipment !== undefined) {
     if (!Array.isArray(data.equipment) || data.equipment.length === 0) {
-      throw new ExerciseValidationError("Wymagany co najmniej jeden sprzęt");
+      throw new ExerciseValidationError('Wymagany co najmniej jeden sprzęt');
     }
     if (data.equipment.length > 8) {
-      throw new ExerciseValidationError("Możesz wybrać maksymalnie 8 sprzętów");
+      throw new ExerciseValidationError('Możesz wybrać maksymalnie 8 sprzętów');
     }
   }
 
-  // walidacja hashtags
   if (data.hashtags !== undefined && data.hashtags.length > 50) {
-    throw new ExerciseValidationError("Możesz napisać maksymalnie 50 hashtagów");
+    throw new ExerciseValidationError('Możesz dodać maksymalnie 50 hashtagów');
   }
 };
-

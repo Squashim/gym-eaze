@@ -5,8 +5,8 @@ export const getAllMuscleGroups = async (req: Request, res: Response): Promise<v
   try {
     const muscleGroups = await muscleGroupService.getAllMuscleGroups();
     res.json(muscleGroups);
-  } catch (err: any) {
-    res.status(500).json({ message: "Błąd serwera", error: err.message });
+  } catch {
+    res.status(500).json({ message: 'Błąd serwera' });
   }
 };
 
@@ -15,12 +15,12 @@ export const getMuscleGroupById = async (req: Request, res: Response): Promise<v
     const muscleGroup = await muscleGroupService.getMuscleGroupById(req.params.id);
 
     if (!muscleGroup) {
-      res.status(404).json({ message: "Nie znaleziono grupy mięśniowej" });
+      res.status(404).json({ message: 'Nie znaleziono grupy mięśniowej' });
       return;
     }
 
     res.json(muscleGroup);
-  } catch (err: any) {
-    res.status(500).json({ message: "Błąd serwera", error: err.message });
+  } catch {
+    res.status(500).json({ message: 'Błąd serwera' });
   }
 };

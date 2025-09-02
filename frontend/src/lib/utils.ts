@@ -1,4 +1,6 @@
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
+import type { Equipment } from '@/types/equipment';
+import type { MuscleGroup } from '@/types/muscle-group';
 import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -67,4 +69,40 @@ export function getSignupErrorInputField(error: string): string {
     default:
       return 'root';
   }
+}
+
+export function apiResponseToMultiSelectOptions(
+  items: Equipment[] | MuscleGroup[] | undefined,
+): { label: string; value: string; image?: string }[] {
+  if (!items) return [];
+
+  return items.map((item) => ({
+    label: item.name,
+    value: item._id,
+    image: item.image,
+  }));
+}
+
+export function objectToFormData<
+  T extends Record<string, string | File | string[] | undefined | null>,
+>(obj: T): FormData {
+  const formData = new FormData();
+
+  for (const key in obj) {
+    if (!Object.hasOwn(obj, key)) continue;
+
+    const value = obj[key];
+
+    if (value === undefined || value === null) continue;
+
+    if (Array.isArray(value)) {
+      formData.append(key, JSON.stringify(value));
+    } else if (value instanceof File) {
+      formData.append(key, value);
+    } else {
+      formData.append(key, value);
+    }
+  }
+
+  return formData;
 }
