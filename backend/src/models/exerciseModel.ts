@@ -1,19 +1,16 @@
-import mongoose, { Types } from "mongoose";
-import { AdvancedLevel, advancedLevelValues } from "../constants/advancedLevel";
-import { IMuscleGroup } from "../models/muscleGroup";
-import { IEquipment } from "../models/equipmentModel";
-import { IUser } from "../models/userModel";
-import {
-  PrivacySettings,
-  privacySettingsValues,
-} from "../constants/privacySettings";
+import mongoose, { Types } from 'mongoose';
+import { AdvancedLevel, advancedLevelValues } from '../constants/advancedLevel';
+import { IMuscleGroup } from '../models/muscleGroup';
+import { IEquipment } from '../models/equipmentModel';
+import { IUser } from '../models/userModel';
+import { PrivacySettings, privacySettingsValues } from '../constants/privacySettings';
 
 export interface IExercise extends mongoose.Document {
   author: Types.ObjectId | IUser;
   name: string;
-  description?: string;
-  image?: string;
-  video?: string;
+  description: string;
+  image: string;
+  video: string;
   likes: number;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
@@ -30,7 +27,7 @@ const exerciseSchema = new mongoose.Schema(
   {
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     name: {
@@ -39,16 +36,24 @@ const exerciseSchema = new mongoose.Schema(
       required: true,
     },
     description: {
-      maxLength: 850,
       type: String,
+      required: true,
+      validate: {
+        validator: function (v: string) {
+          const normalized = v.replace(/\r\n/g, '\n');
+
+          return normalized.length <= 850;
+        },
+        message: 'Opis może mieć maksymalnie 850 znaków',
+      },
     },
     image: {
       type: String,
-      default: "",
+      required: true,
     },
     video: {
       type: String,
-      default: "",
+      required: true,
     },
     likes: {
       type: Number,
@@ -69,14 +74,14 @@ const exerciseSchema = new mongoose.Schema(
     muscleGroup: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "MuscleGroup",
+        ref: 'MuscleGroup',
         required: true,
       },
     ],
     equipment: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Equipment",
+        ref: 'Equipment',
         required: true,
       },
     ],
@@ -90,6 +95,6 @@ const exerciseSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const Exercise = mongoose.model<IExercise>("Exercise", exerciseSchema);
+const Exercise = mongoose.model<IExercise>('Exercise', exerciseSchema);
 
 export default Exercise;

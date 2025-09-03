@@ -7,3 +7,12 @@ export const AUTH = {
   refresh: 'auth/refresh',
   me: 'auth/me',
 } as const;
+
+export const EXERCISE = {
+  base: 'exercises',
+} as const;
+
+export const UTILS = {
+  equipment: 'equipment',
+  muscleGroups: 'muscleGroup',
+} as const;
