@@ -2,6 +2,9 @@ package com.example.gymeaze.viewmodel
 
 import android.app.Application
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.ExerciseRepository
@@ -15,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 enum class ExerciseCreatorStep { BASIC, EXTRA, SUMMARY }
+
 data class ExerciseCreatorState(
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -31,26 +35,24 @@ data class ExerciseCreatorState(
     val availableHashtags: List<Hashtag> = emptyList(),
     val availableMuscleGroups: List<MuscleGroup> = emptyList(),
     val availableEquipment: List<Equipment> = emptyList(),
-    val isLoadingData: Boolean = false
+    val isLoadingData: Boolean = false,
+    val currentStep: ExerciseCreatorStep = ExerciseCreatorStep.BASIC
 ) {
-
     val basicValid get() = name.isNotBlank() && imageUri != null && videoUri != null
     val extraValid get() = description.isNotBlank() &&
             description.length <= 850 &&
             selectedMuscleGroups.isNotEmpty() &&
             selectedEquipment.isNotEmpty() &&
             selectedHashtags.size <= 50
-
 }
 
-class ExerciseCreatorViewModel(application: Application, private val userPreferences: UserPreferences) : AndroidViewModel(application) {
-    private val repo = ExerciseRepository(application, userPreferences)
+class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(application) {
+    private val repo = ExerciseRepository(application)
 
     private val _uiState = MutableStateFlow(ExerciseCreatorState())
     val uiState: StateFlow<ExerciseCreatorState> = _uiState.asStateFlow()
 
-    var step: ExerciseCreatorStep = ExerciseCreatorStep.BASIC
-        private set
+    val step: ExerciseCreatorStep get() = _uiState.value.currentStep
 
     init {
         loadInitialData()
@@ -102,18 +104,25 @@ class ExerciseCreatorViewModel(application: Application, private val userPrefere
     fun setEquipment(list: List<Equipment>) {
         _uiState.value = _uiState.value.copy(selectedEquipment = list)
     }
-    fun nextStep()
-    { step = when(step) {
-        ExerciseCreatorStep.BASIC -> ExerciseCreatorStep.EXTRA
-        ExerciseCreatorStep.EXTRA -> ExerciseCreatorStep.SUMMARY
-        ExerciseCreatorStep.SUMMARY -> ExerciseCreatorStep.SUMMARY
-    }}
 
-    fun prevStep() { step = when (step) {
-        ExerciseCreatorStep.BASIC -> ExerciseCreatorStep.BASIC
-        ExerciseCreatorStep.EXTRA -> ExerciseCreatorStep.BASIC
-        ExerciseCreatorStep.SUMMARY -> ExerciseCreatorStep.EXTRA
-    } }
+
+    fun nextStep() {
+        val newStep = when (_uiState.value.currentStep) {
+            ExerciseCreatorStep.BASIC -> ExerciseCreatorStep.EXTRA
+            ExerciseCreatorStep.EXTRA -> ExerciseCreatorStep.SUMMARY
+            ExerciseCreatorStep.SUMMARY -> ExerciseCreatorStep.SUMMARY
+        }
+        _uiState.value = _uiState.value.copy(currentStep = newStep)
+    }
+
+    fun prevStep() {
+        val newStep = when (_uiState.value.currentStep) {
+            ExerciseCreatorStep.BASIC -> ExerciseCreatorStep.BASIC
+            ExerciseCreatorStep.EXTRA -> ExerciseCreatorStep.BASIC
+            ExerciseCreatorStep.SUMMARY -> ExerciseCreatorStep.EXTRA
+        }
+        _uiState.value = _uiState.value.copy(currentStep = newStep)
+    }
 
     fun create() {
         val s = _uiState.value
@@ -142,12 +151,11 @@ class ExerciseCreatorViewModel(application: Application, private val userPrefere
         _uiState.value = ExerciseCreatorState(
             availableMuscleGroups = _uiState.value.availableMuscleGroups,
             availableEquipment = _uiState.value.availableEquipment,
-            availableHashtags = _uiState.value.availableHashtags
+            availableHashtags = _uiState.value.availableHashtags,
+            currentStep = ExerciseCreatorStep.BASIC //
         )
-        step = ExerciseCreatorStep.BASIC
     }
 
     fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
     fun clearSuccess() { _uiState.value = _uiState.value.copy(success = false) }
-
 }

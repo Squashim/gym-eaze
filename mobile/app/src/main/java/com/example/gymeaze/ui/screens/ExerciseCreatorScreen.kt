@@ -93,30 +93,51 @@ fun ExerciseCreatorScreen(
                 .padding(pad)
                 .padding(horizontal = 16.dp)
         ) {
-            Stepper(viewModel.step)
+
+            Box(
+                modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp)
+                ) {
+                    Stepper(ui.currentStep)
+                }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            when (viewModel.step) {
-                ExerciseCreatorStep.BASIC -> StepBasic(ui, viewModel)
-                ExerciseCreatorStep.EXTRA -> StepExtra(ui, viewModel)
-                ExerciseCreatorStep.SUMMARY -> StepSummary(ui)
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                when (ui.currentStep) {
+                    ExerciseCreatorStep.BASIC -> StepBasic(ui, viewModel)
+                    ExerciseCreatorStep.EXTRA -> StepExtra(ui, viewModel)
+                    ExerciseCreatorStep.SUMMARY -> StepSummary(ui)
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp)
+            ) {
 
-            BottomBar(
-                step = viewModel.step,
-                isLoading = ui.isLoading,
-                canProceed = when (viewModel.step) {
-                    ExerciseCreatorStep.BASIC -> ui.basicValid
-                    ExerciseCreatorStep.EXTRA -> ui.extraValid
-                    ExerciseCreatorStep.SUMMARY -> true
-                },
-                onPrev = viewModel::prevStep,
-                onNext = viewModel::nextStep,
-                onCreate = viewModel::create
-            )
+                BottomBar(
+                    step = ui.currentStep,
+                    isLoading = ui.isLoading,
+                    canProceed = when (ui.currentStep) {
+                        ExerciseCreatorStep.BASIC -> ui.basicValid
+                        ExerciseCreatorStep.EXTRA -> ui.extraValid
+                        ExerciseCreatorStep.SUMMARY -> true
+                    },
+                    onPrev = viewModel::prevStep,
+                    onNext = viewModel::nextStep,
+                    onCreate = viewModel::create
+                )
+            }
         }
     }
 
@@ -279,7 +300,8 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column {
@@ -366,7 +388,8 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column {
@@ -439,6 +462,9 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             availableHashtags = ui.availableHashtags,
             maxHashtags = 50
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
     }
 }
 
@@ -447,7 +473,8 @@ private fun StepSummary(ui: ExerciseCreatorState) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
@@ -540,6 +567,9 @@ private fun StepSummary(ui: ExerciseCreatorState) {
             hasImage = ui.imageUri != null,
             hasVideo = ui.videoUri != null
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
     }
 }
 
@@ -900,7 +930,7 @@ private fun UploadCard(
 
     Card(
         modifier = modifier
-            .height(200.dp)
+            .height(220.dp)
             .clickable { launcher.launch(mime) }
             .border(1.dp, getOnSurfaceColor().copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
@@ -909,17 +939,17 @@ private fun UploadCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = getPrimaryColor())
-            Spacer(Modifier.height(8.dp))
+            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = getPrimaryColor(), modifier = Modifier.size(28.dp))
+            Spacer(Modifier.height(6.dp))
             Text(title, color = getOnSurfaceColor(), fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
             Text(subtitle, color = getOnSurfaceSecondaryColor(), fontSize = 12.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
             Text(hint, color = getOnSurfaceSecondaryColor(), fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 12.sp)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             if (selected) Text("✓ Plik wybrany", color = getPrimaryColor(), fontSize = 12.sp)
         }
     }

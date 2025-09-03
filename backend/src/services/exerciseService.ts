@@ -5,6 +5,7 @@ import mongoose, { FilterQuery, Types } from 'mongoose';
 import User from '../models/userModel';
 import { CreateExerciseData, ExerciseFilters, UpdateExerciseData } from '../types/exercise';
 import { PrivacySettings } from '../constants/privacySettings';
+import { findOrCreateHashtags, incrementUsageCount } from '../services/HashtagService';
 
 export const createExercise = async (
   data: CreateExerciseData,
@@ -15,8 +16,18 @@ export const createExercise = async (
 
   const { imageUrl, videoUrl } = await uploadExerciseMedia(imageBuffer, videoBuffer);
 
+ 
+  let hashtagIds: Types.ObjectId[] = [];
+  if (data.hashtags && data.hashtags.length > 0) {
+    const hashtags = await findOrCreateHashtags(data.hashtags);
+    hashtagIds = hashtags.map(h => h._id as Types.ObjectId);
+    
+    await incrementUsageCount(hashtagIds.map(id => id.toString()));
+  }
+
   const exercise = new Exercise({
     ...data,
+    hashtags: hashtagIds,
     image: imageUrl,
     video: videoUrl,
   });
@@ -71,6 +82,17 @@ export const updateExercise = async (
     if (uploaded.videoUrl) videoUrl = uploaded.videoUrl;
   }
 
+  let hashtagIds = exercise.hashtags;
+  if (data.hashtags !== undefined) {
+    if (data.hashtags.length > 0) {
+      const hashtags = await findOrCreateHashtags(data.hashtags);
+      hashtagIds = hashtags.map(h => h._id as Types.ObjectId);
+      await incrementUsageCount(hashtagIds.map(id => id.toString()));
+    } else {
+      hashtagIds = [];
+    }
+  }
+
   Object.assign(exercise, {
     name: data.name || exercise.name,
     description: data.description || exercise.description,
@@ -78,7 +100,7 @@ export const updateExercise = async (
     advancedLevel: data.advancedLevel || exercise.advancedLevel,
     muscleGroup: data.muscleGroup || exercise.muscleGroup,
     equipment: data.equipment || exercise.equipment,
-    hashtags: data.hashtags || exercise.hashtags,
+    hashtags: hashtagIds,
     image: imageUrl,
     video: videoUrl,
     updatedAt: new Date(),
@@ -194,8 +216,9 @@ export const getExercisesService = async (
     query.visibility = PrivacySettings.public;
   }
 
-  if (filters.muscleGroups) query['muscleGroup.type'] = { $in: filters.muscleGroups };
-  if (filters.equipment) query['equipment.type'] = { $in: filters.equipment };
+  // Fixed filter queries
+  if (filters.muscleGroups) query.muscleGroup = { $in: filters.muscleGroups };
+  if (filters.equipment) query.equipment = { $in: filters.equipment };
   if (filters.hashtags) query.hashtags = { $in: filters.hashtags };
   if (filters.difficulty) query.advancedLevel = filters.difficulty;
 

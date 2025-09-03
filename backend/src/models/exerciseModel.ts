@@ -2,6 +2,7 @@ import mongoose, { Types } from 'mongoose';
 import { AdvancedLevel, advancedLevelValues } from '../constants/advancedLevel';
 import { IMuscleGroup } from '../models/muscleGroup';
 import { IEquipment } from '../models/equipmentModel';
+import { IHashtag } from '../models/HashtagModel';
 import { IUser } from '../models/userModel';
 import { PrivacySettings, privacySettingsValues } from '../constants/privacySettings';
 
@@ -14,11 +15,9 @@ export interface IExercise extends mongoose.Document {
   likes: number;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
-  muscleGroup: {
-    type: Types.ObjectId | IMuscleGroup;
-  }[];
-  equipment: { type: Types.ObjectId | IEquipment }[];
-  hashtags?: string[];
+  muscleGroup: (Types.ObjectId | IMuscleGroup)[];
+  equipment: (Types.ObjectId | IEquipment)[];
+  hashtags: (Types.ObjectId | IHashtag)[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,7 +40,6 @@ const exerciseSchema = new mongoose.Schema(
       validate: {
         validator: function (v: string) {
           const normalized = v.replace(/\r\n/g, '\n');
-
           return normalized.length <= 850;
         },
         message: 'Opis może mieć maksymalnie 850 znaków',
@@ -87,8 +85,8 @@ const exerciseSchema = new mongoose.Schema(
     ],
     hashtags: [
       {
-        type: String,
-        maxLength: 35,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Hashtag',
       },
     ],
   },

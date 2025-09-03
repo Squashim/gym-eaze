@@ -19,7 +19,6 @@ export const addExercise = async (req: Request, res: Response) => {
 
   try {
     const {
-      author,
       name,
       description,
       visibility,
@@ -28,6 +27,14 @@ export const addExercise = async (req: Request, res: Response) => {
       equipment,
       hashtags,
     } = exerciseReq.body;
+
+    // Get author from authenticated user
+    const authReq = req as AuthRequest;
+    const author = authReq.userId;
+
+    if (!author) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
 
     const imageFile = exerciseReq.files?.image?.[0];
     const videoFile = exerciseReq.files?.video?.[0];
@@ -61,6 +68,7 @@ export const addExercise = async (req: Request, res: Response) => {
       return res.status(400).json({ message: error.message });
     }
 
+    console.error('Error creating exercise:', error);
     return res.status(500).json({
       message: 'Błąd dodawania ćwiczenia',
     });
@@ -82,6 +90,7 @@ export const deleteExercise = async (req: AuthRequest, res: Response) => {
     if (err instanceof Error && err.message === 'NOT_FOUND') {
       return res.status(404).json({ message: 'Ćwiczenie nie znalezione' });
     }
+    console.error('Error deleting exercise:', err);
     res.status(500).json({ message: 'Błąd serwera' });
   }
 };
@@ -132,6 +141,7 @@ export const updateExercise = async (req: AuthRequest, res: Response) => {
     if (error instanceof Error && error.message === 'NOT_FOUND') {
       return res.status(404).json({ message: 'Ćwiczenie nie znalezione' });
     }
+    console.error('Error updating exercise:', error);
     res.status(500).json({ message: 'Błąd edytowania ćwiczenia' });
   }
 };
@@ -251,7 +261,7 @@ export const getFavoriteExercises = async (req: AuthRequest, res: Response) => {
     if (error instanceof Error) {
       return res.status(500).json({ message: error.message });
     } else {
-      return res.status(500).json({ message: 'Błąd serwera' });
+      return res.status(500).json({ message: 'Błąд serwera' });
     }
   }
 };

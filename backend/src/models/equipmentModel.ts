@@ -4,6 +4,7 @@ export interface IEquipment extends mongoose.Document {
   name: string;
   image: string;
   imageCredit: string;
+  description?: string;
 }
 
 const equipmentSchema = new mongoose.Schema({
@@ -18,6 +19,10 @@ const equipmentSchema = new mongoose.Schema({
   imageCredit: {
     type: String,
     required: true,
+  },
+  description: {
+    type: String,
+    maxLength: 500,
   }
 });
 

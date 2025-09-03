@@ -39,8 +39,8 @@ interface ExerciseApiService {
         @Part("visibility") visibility: RequestBody,
         @Part image: MultipartBody.Part,
         @Part video: MultipartBody.Part,
-        @Part("muscleGroup") muscleGroup: List<RequestBody>,
-        @Part("equipment") equipment: List<RequestBody>,
-        @Part("hashtags") hashtags: List<RequestBody>,
+        @Part("muscleGroup") muscleGroup: Array<RequestBody>,
+        @Part("equipment") equipment: Array<RequestBody>,
+        @Part("hashtags") hashtags: Array<RequestBody>,
     ): Response<ResponseBody>
 }

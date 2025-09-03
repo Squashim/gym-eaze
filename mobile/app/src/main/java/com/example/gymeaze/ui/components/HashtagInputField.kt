@@ -44,6 +44,27 @@ fun HashtagInputField(
         OutlinedTextField(
             value = inputText,
             onValueChange = { newValue ->
+                if (newValue.contains('\n')) {
+                    val cleanValue = newValue.replace('\n', ' ').trim()
+                    if (cleanValue.trim().isNotBlank()) {
+                        addHashtag(cleanValue.trim(), selectedHashtags, onHashtagsChange, maxHashtags)
+                        inputText = ""
+                    } else {
+                        inputText = cleanValue
+                    }
+                    return@OutlinedTextField
+                }
+
+                if (newValue.contains(",")) {
+                    val parts = newValue.split(",")
+                    val newHashtag = parts[0].trim()
+                    if (newHashtag.isNotBlank()) {
+                        addHashtag(newHashtag, selectedHashtags, onHashtagsChange, maxHashtags)
+                    }
+                    inputText = parts.drop(1).joinToString(",").trimStart()
+                    return@OutlinedTextField
+                }
+
                 val filtered = newValue.filter { it.isLetterOrDigit() || it == ',' }.lowercase()
                 inputText = filtered
             },
@@ -62,28 +83,17 @@ fun HashtagInputField(
                 cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(
-                onDone = {
+                onNext = {
                     if (inputText.isNotBlank()) {
                         addHashtag(inputText.trim(), selectedHashtags, onHashtagsChange, maxHashtags)
                         inputText = ""
                     }
-                    keyboardController?.hide()
                 }
-            )
+            ),
+            singleLine = true
         )
-
-        LaunchedEffect(inputText) {
-            if (inputText.contains(",")) {
-                val parts = inputText.split(",")
-                val newHashtag = parts[0].trim()
-                if (newHashtag.isNotBlank()) {
-                    addHashtag(newHashtag, selectedHashtags, onHashtagsChange, maxHashtags)
-                }
-                inputText = parts.drop(1).joinToString(",").trimStart()
-            }
-        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -177,7 +187,7 @@ private fun addHashtag(
     if (cleanInput.length < 2 || cleanInput.length > 30) return
 
     val newHashtag = Hashtag(
-        _id = "", //generowane przez backend
+        _id = "", // generowane przez backend
         name = cleanInput,
         description = null,
         category = null,

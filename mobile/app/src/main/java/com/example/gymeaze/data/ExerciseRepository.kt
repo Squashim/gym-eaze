@@ -27,7 +27,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 
-class ExerciseRepository(private val context: Context, userPreferences1: UserPreferences) {
+class ExerciseRepository(private val context: Context) {
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -116,7 +116,6 @@ class ExerciseRepository(private val context: Context, userPreferences1: UserPre
         }
     }
 
-
     suspend fun createExercise(
         name: String,
         description: String,
@@ -129,11 +128,6 @@ class ExerciseRepository(private val context: Context, userPreferences1: UserPre
         hashtags: List<String>
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val userId = userPreferences.userId.first()
-            if (userId.isNullOrEmpty()) {
-                return@withContext Result.failure(Exception("Brak ID użytkownika"))
-            }
-
             val accessToken = userPreferences.accessToken.first()
             if (accessToken.isNullOrBlank()) {
                 return@withContext Result.failure(IllegalStateException(context.getString(R.string.unauthorized)))
@@ -154,7 +148,6 @@ class ExerciseRepository(private val context: Context, userPreferences1: UserPre
             val text = "text/plain".toMediaType()
             val nameBody: RequestBody = name.toRequestBody(text)
             val descriptionBody: RequestBody = description.toRequestBody(text)
-            val authorBody = userId.toRequestBody(text)
             val advancedBody: RequestBody = mapDifficultyToBackend(difficulty).toRequestBody(text)
             val visibilityBody: RequestBody = mapVisibilityToBackend(isPublic).toRequestBody(text)
 
@@ -169,10 +162,11 @@ class ExerciseRepository(private val context: Context, userPreferences1: UserPre
                 videoFile.asRequestBody("video/*".toMediaTypeOrNull())
             )
 
-            val mgBodies: List<RequestBody> = muscleGroups.map { id: String -> id.toRequestBody(text) }
-            val eqBodies: List<RequestBody> = equipment.map { id: String -> id.toRequestBody(text) }
-            val tagBodies: List<RequestBody> = hashtags.map { tag: String -> tag.toRequestBody(text) }
+            val mgBodies: Array<RequestBody> = muscleGroups.map { id: String -> id.toRequestBody(text) }.toTypedArray()
+            val eqBodies: Array<RequestBody> = equipment.map { id: String -> id.toRequestBody(text) }.toTypedArray()
+            val tagBodies: Array<RequestBody> = hashtags.map { tag: String -> tag.toRequestBody(text) }.toTypedArray()
 
+            val authorBody: RequestBody = "".toRequestBody(text)
 
             val res = api.createExercise(
                 auth = "Bearer $accessToken",

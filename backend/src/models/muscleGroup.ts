@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export interface IMuscleGroup extends mongoose.Document {
   name: string;
   image: string;
+  description?: string;
 }
 
 const muscleGroupSchema = new mongoose.Schema({
@@ -13,6 +14,10 @@ const muscleGroupSchema = new mongoose.Schema({
   image: {
     type: String,
     required: true,
+  },
+  description: {
+    type: String,
+    maxLength: 500,
   },
 });
 
