@@ -33,7 +33,6 @@ import { useMemo, type PropsWithChildren } from 'react';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { exerciseCreatorConstants } from '@/constants/forms';
 import { useExercise } from '@/hooks/use-exercise';
-import { useUser } from '@/context/user';
 import type { CreateExercisePayload } from '@/types/exercise';
 
 const ExerciseCreator = () => {
@@ -43,12 +42,10 @@ const ExerciseCreator = () => {
     totalSteps: exerciseCreatorConstants.steps.length,
   });
   const { createExercise } = useExercise();
-  const { user } = useUser();
   const { handleSubmit } = form;
 
   const onSubmit = (formData: ExerciseSchema) => {
     const formattedData = {
-      author: user!._id,
       ...formData.stepOne,
       ...formData.stepTwo,
     } as CreateExercisePayload;

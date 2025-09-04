@@ -2,7 +2,6 @@ import type { AdvancedLevel } from '@/constants/advanced-level';
 import type { Visibility } from '@/constants/visibility';
 
 type BaseExercise<TImage = string, TVideo = string> = {
-  author: string;
   name: string;
   description: string;
   image: TImage;
