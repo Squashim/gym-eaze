@@ -1,16 +1,17 @@
 package com.example.gymeaze.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,7 @@ fun <T> MultiSelectDropdown(
     onSelectionChange: (List<T>) -> Unit,
     itemDisplayText: (T) -> String,
     modifier: Modifier = Modifier,
+    placeholder: String,
     isLoading: Boolean = false
 ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -45,7 +47,7 @@ fun <T> MultiSelectDropdown(
 
         OutlinedTextField(
             value = if (selectedItems.isEmpty()) {
-                "Wybierz pozycje..."
+                placeholder
             } else {
                 "${selectedItems.size} wybranych"
             },
@@ -81,9 +83,9 @@ fun <T> MultiSelectDropdown(
 
         if (selectedItems.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 120.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().height(40.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(selectedItems) { item ->
                     SelectedItemChip(
@@ -116,9 +118,7 @@ private fun SelectedItemChip(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = getPrimaryColor().copy(alpha = 0.1f),
-        modifier = Modifier
-            .border(1.dp, getPrimaryColor().copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+        color = getSecondaryColor(),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -126,14 +126,14 @@ private fun SelectedItemChip(
         ) {
             Text(
                 text = text,
-                color = getPrimaryColor(),
+                color = getOnSecondaryColor(),
                 fontSize = 12.sp
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "×",
-                color = getPrimaryColor(),
-                fontSize = 16.sp,
+                color = getOnSecondaryColor(),
+                fontSize = 18.sp,
                 modifier = Modifier
                     .clickable { onRemove() }
                     .padding(2.dp)
@@ -149,82 +149,140 @@ private fun <T> MultiSelectDialog(
     selectedItems: List<T>,
     onSelectionChange: (List<T>) -> Unit,
     onDismiss: () -> Unit,
-    itemDisplayText: (T) -> String
+    itemDisplayText: (T) -> String,
+    maxSelected: Int = 8
 ) {
+    var searchText by remember { mutableStateOf("") }
+    val filteredItems = availableItems.filter {
+        itemDisplayText(it).contains(searchText, ignoreCase = true)
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 400.dp),
+                .heightIn(max = 500.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = getOnSurfaceColor()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor(),
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Zamknij",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    placeholder = { Text("Szukaj…") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Szukaj",
+                            tint = getOnSurfaceSecondaryColor(),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = getPrimaryColor(),
+                        unfocusedBorderColor = getInputBorderColor(),
+                        cursorColor = getPrimaryColor(),
+                        focusedTextColor = getOnSurfaceColor(),
+                        unfocusedTextColor = getOnSurfaceColor()
+                    )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(availableItems) { item ->
-                        val isSelected = selectedItems.contains(item)
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (isSelected) {
-                                        onSelectionChange(selectedItems - item)
-                                    } else {
-                                        onSelectionChange(selectedItems + item)
-                                    }
-                                }
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = isSelected,
-                                onCheckedChange = { checked ->
-                                    if (checked) {
-                                        onSelectionChange(selectedItems + item)
-                                    } else {
-                                        onSelectionChange(selectedItems - item)
-                                    }
-                                },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = getPrimaryColor(),
-                                    uncheckedColor = getOnSurfaceSecondaryColor()
-                                )
+                if(filteredItems.isEmpty()){
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = getOnSurfaceSecondaryColor(),
+                                modifier = Modifier.size(40.dp)
                             )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = itemDisplayText(item),
-                                color = getOnSurfaceColor(),
+                                text = "Nie znaleziono żadnych wyników",
+                                color = getOnSurfaceSecondaryColor(),
                                 fontSize = 14.sp
                             )
                         }
                     }
-                }
+                }else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 255.dp)
+                    ) {
+                        items(filteredItems) { item ->
+                            val isSelected = selectedItems.contains(item)
+                            val canSelectMore = selectedItems.size < maxSelected || isSelected
 
-                Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = canSelectMore) {
+                                        if (isSelected) {
+                                            onSelectionChange(selectedItems - item)
+                                        } else if(canSelectMore){
+                                            onSelectionChange(selectedItems + item)
+                                        }
+                                    }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isSelected,
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            if(canSelectMore) onSelectionChange(selectedItems + item)
+                                        } else {
+                                            onSelectionChange(selectedItems - item)
+                                        }
+                                    },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = getPrimaryColor(),
+                                        uncheckedColor = getOnSurfaceSecondaryColor()
+                                    )
+                                )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Zamknij", color = getPrimaryColor())
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    text = itemDisplayText(item),
+                                    color = if (canSelectMore) getOnSurfaceColor() else getOnSurfaceSecondaryColor(),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                     }
                 }
             }

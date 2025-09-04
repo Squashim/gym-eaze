@@ -42,6 +42,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
+import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
@@ -93,6 +95,12 @@ fun HomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = getBackgroundColor()
                 )
+            )
+        },
+        bottomBar = {
+            GymEazeBottomNavigationBar(
+                selectedRoute = "auth",
+                onItemSelected = { /* Logika nawigacji */ }
             )
         },
         containerColor = getBackgroundColor()

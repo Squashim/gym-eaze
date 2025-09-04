@@ -2,15 +2,12 @@ package com.example.gymeaze.viewmodel
 
 import android.app.Application
 import android.net.Uri
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.constants.AdvancedLevel
+import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.data.ExerciseRepository
-import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.models.Equipment
-import com.example.gymeaze.data.models.Hashtag
 import com.example.gymeaze.data.models.MuscleGroup
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,13 +23,12 @@ data class ExerciseCreatorState(
     val name: String = "",
     val imageUri: Uri? = null,
     val videoUri: Uri? = null,
-    val difficulty: String = "easy",
-    val isPublic: Boolean = true,
+    val difficulty: String = AdvancedLevel.NONE,
+    val isPublic: String = PrivacySettings.PUBLIC,
     val description: String = "",
     val selectedMuscleGroups: List<MuscleGroup> = emptyList(),
     val selectedEquipment: List<Equipment> = emptyList(),
-    val selectedHashtags: List<Hashtag> = emptyList(),
-    val availableHashtags: List<Hashtag> = emptyList(),
+    val hashtags: List<String> = emptyList(),
     val availableMuscleGroups: List<MuscleGroup> = emptyList(),
     val availableEquipment: List<Equipment> = emptyList(),
     val isLoadingData: Boolean = false,
@@ -43,7 +39,7 @@ data class ExerciseCreatorState(
             description.length <= 850 &&
             selectedMuscleGroups.isNotEmpty() &&
             selectedEquipment.isNotEmpty() &&
-            selectedHashtags.size <= 50
+            hashtags.size <= 50
 }
 
 class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(application) {
@@ -64,17 +60,14 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
 
             val muscleGroupsResult = repo.getMuscleGroups()
             val equipmentResult = repo.getEquipment()
-            val hashtagsResult = repo.getPopularHashtags(50)
 
             _uiState.value = _uiState.value.copy(
                 isLoadingData = false,
                 availableMuscleGroups = muscleGroupsResult.getOrNull() ?: emptyList(),
                 availableEquipment = equipmentResult.getOrNull() ?: emptyList(),
-                availableHashtags = hashtagsResult.getOrNull() ?: emptyList(),
                 error = when {
                     muscleGroupsResult.isFailure -> "Błąd pobierania grup mięśniowych: ${muscleGroupsResult.exceptionOrNull()?.message}"
                     equipmentResult.isFailure -> "Błąd pobierania sprzętu: ${equipmentResult.exceptionOrNull()?.message}"
-                    hashtagsResult.isFailure -> "Błąd pobierania hashtagów: ${hashtagsResult.exceptionOrNull()?.message}"
                     else -> null
                 }
             )
@@ -85,16 +78,20 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
     fun setImage(u: Uri?) { _uiState.value = _uiState.value.copy(imageUri = u) }
     fun setVideo(u: Uri?) { _uiState.value = _uiState.value.copy(videoUri = u) }
     fun setDifficulty(v: String) { _uiState.value = _uiState.value.copy(difficulty = v) }
-    fun setPublic(v: Boolean) { _uiState.value = _uiState.value.copy(isPublic = v) }
+    fun setPublic(isChecked: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            isPublic = if (isChecked) PrivacySettings.PUBLIC else PrivacySettings.PRIVATE
+        )
+    }
     fun setDescription(v: String) { _uiState.value = _uiState.value.copy(description = v.take(850)) }
 
-    fun setHashtags(list: List<Hashtag>) {
+    fun setHashtags(list: List<String>) {
         val validatedList = list.take(50).filter { hashtag ->
-            hashtag.name.length >= 2 &&
-                    hashtag.name.length <= 30 &&
-                    hashtag.name.all { it.isLetterOrDigit() }
+            hashtag.length >= 2 &&
+                    hashtag.length <= 30 &&
+                    hashtag.all { it.isLetterOrDigit() }
         }
-        _uiState.value = _uiState.value.copy(selectedHashtags = validatedList)
+        _uiState.value = _uiState.value.copy(hashtags = validatedList)
     }
 
     fun setMuscleGroups(list: List<MuscleGroup>) {
@@ -135,9 +132,9 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
                 videoUri = s.videoUri!!,
                 difficulty = s.difficulty,
                 isPublic = s.isPublic,
-                muscleGroups = s.selectedMuscleGroups.map { it._id },
+                muscleGroup = s.selectedMuscleGroups.map { it._id },
                 equipment = s.selectedEquipment.map { it._id },
-                hashtags = s.selectedHashtags.map { it.name }
+                hashtags = s.hashtags
             )
             _uiState.value = if (res.isSuccess) {
                 _uiState.value.copy(isLoading = false, success = true)
@@ -151,8 +148,7 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
         _uiState.value = ExerciseCreatorState(
             availableMuscleGroups = _uiState.value.availableMuscleGroups,
             availableEquipment = _uiState.value.availableEquipment,
-            availableHashtags = _uiState.value.availableHashtags,
-            currentStep = ExerciseCreatorStep.BASIC //
+            currentStep = ExerciseCreatorStep.BASIC
         )
     }
 

@@ -7,6 +7,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -15,8 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -33,6 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.constants.AdvancedLevel
+import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.MultiSelectDropdown
 import com.example.gymeaze.ui.theme.*
@@ -50,7 +52,13 @@ fun ExerciseCreatorScreen(
     val ui by viewModel.uiState.collectAsState()
     var showExitDialog by remember {mutableStateOf(false)}
 
-    LaunchedEffect(ui.success) { if (ui.success) onCreated() }
+    LaunchedEffect(ui.success) {
+        if (ui.success){
+            onCreated()
+            viewModel.clearSuccess()
+            viewModel.clearData()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -196,40 +204,42 @@ private fun ExitConfirmationDialog(
             )
         },
         confirmButton = {
-            Button(
-                onClick = onConfirm,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFDC3545)
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth(0.45f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "Przerwij",
-                    color = Color.White,
-                    fontWeight = FontWeight.Medium
-                )
+                OutlinedButton(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Powrót",
+                        color = getOnSurfaceColor(),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Button(
+                    onClick = onConfirm,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = getErrorColor()
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Przerwij",
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         },
-        dismissButton = {
-            OutlinedButton(
-                onClick = onDismiss,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent
-                ),
-                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f)),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth(0.45f)
-            ) {
-                Text(
-                    text = "Powrót do kreatora",
-                    color = getOnSurfaceColor(),
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
     )
 }
 
@@ -243,7 +253,7 @@ private fun Stepper(step: ExerciseCreatorStep) {
         fun node(idx: Int, label: String) {
             val active = step.ordinal == idx
             val done = step.ordinal > idx
-            val bg = if (active || done) getPrimaryColor() else getSurfaceVariantColor()
+            val bg = if (active || done) getPrimaryColor() else getNavBarUnselectedColor()
             Surface(
                 shape = RoundedCornerShape(18.dp),
                 color = bg
@@ -272,7 +282,7 @@ private fun Stepper(step: ExerciseCreatorStep) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             node(0, "Podstawowe\ndane")
         }
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically)
@@ -282,7 +292,7 @@ private fun Stepper(step: ExerciseCreatorStep) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             node(1, "Dodatkowe\ninformacje")
         }
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically)
@@ -347,10 +357,11 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
 
         Column {
             Text("Poziom trudności*", color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
-            Spacer(Modifier.height(12.dp))
-            DifficultyRow("Początkujący", ui.difficulty == "easy") { vm.setDifficulty("easy") }
-            DifficultyRow("Średniozaawansowany", ui.difficulty == "medium") { vm.setDifficulty("medium") }
-            DifficultyRow("Zaawansowany", ui.difficulty == "hard") { vm.setDifficulty("hard") }
+            Spacer(Modifier.height(8.dp))
+            DifficultyRow(AdvancedLevel.NONE, ui.difficulty == AdvancedLevel.NONE) { vm.setDifficulty(AdvancedLevel.NONE)}
+            DifficultyRow(AdvancedLevel.EASY, ui.difficulty == AdvancedLevel.EASY) { vm.setDifficulty(AdvancedLevel.EASY) }
+            DifficultyRow(AdvancedLevel.MEDIUM, ui.difficulty == AdvancedLevel.MEDIUM) { vm.setDifficulty(AdvancedLevel.MEDIUM) }
+            DifficultyRow(AdvancedLevel.HARD, ui.difficulty == AdvancedLevel.HARD) { vm.setDifficulty(AdvancedLevel.HARD) }
         }
 
 
@@ -369,7 +380,7 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
                 )
             }
             Switch(
-                checked = ui.isPublic,
+                checked = ui.isPublic == PrivacySettings.PUBLIC,
                 onCheckedChange = vm::setPublic,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = getOnPrimaryColor(),
@@ -431,35 +442,33 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            MultiSelectDropdown(
-                label = "Grupy mięśniowe*",
-                selectedItems = ui.selectedMuscleGroups,
-                availableItems = ui.availableMuscleGroups,
-                onSelectionChange = vm::setMuscleGroups,
-                itemDisplayText = { it.name },
-                isLoading = ui.isLoadingData,
-                modifier = Modifier.weight(1f)
-            )
 
-            MultiSelectDropdown(
-                label = "Sprzęt ćwiczeniowy*",
-                selectedItems = ui.selectedEquipment,
-                availableItems = ui.availableEquipment,
-                onSelectionChange = vm::setEquipment,
-                itemDisplayText = { it.name },
-                isLoading = ui.isLoadingData,
-                modifier = Modifier.weight(1f)
-            )
-        }
+        MultiSelectDropdown(
+            label = "Grupy mięśniowe*",
+            selectedItems = ui.selectedMuscleGroups,
+            availableItems = ui.availableMuscleGroups,
+            onSelectionChange = vm::setMuscleGroups,
+            itemDisplayText = { it.name },
+            isLoading = ui.isLoadingData,
+            placeholder = "Wybierz grupy mięśniowe...",
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        MultiSelectDropdown(
+            label = "Sprzęt ćwiczeniowy*",
+            selectedItems = ui.selectedEquipment,
+            availableItems = ui.availableEquipment,
+            onSelectionChange = vm::setEquipment,
+            itemDisplayText = { it.name },
+            isLoading = ui.isLoadingData,
+            placeholder = "Wybierz sprzęt...",
+            modifier = Modifier.fillMaxWidth()
+        )
+
 
         HashtagInputField(
-            selectedHashtags = ui.selectedHashtags,
+            selectedHashtags = ui.hashtags,
             onHashtagsChange = vm::setHashtags,
-            availableHashtags = ui.availableHashtags,
             maxHashtags = 50
         )
 
@@ -485,7 +494,7 @@ private fun StepSummary(ui: ExerciseCreatorState) {
         )
 
         SummaryField(
-            label = "Nazwa ćwiczenia",
+            label = "Nazwa ćwiczenia:",
             value = ui.name
         )
 
@@ -515,58 +524,48 @@ private fun StepSummary(ui: ExerciseCreatorState) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 VisibilityBadge(
-                    isPublic = ui.isPublic
+                    isPublic = ui.isPublic === PrivacySettings.PUBLIC
                 )
             }
         }
 
         ExpandableSummaryField(
-            label = "Opis ćwiczenia",
+            label = "Opis ćwiczenia:",
             value = ui.description
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Grupy mięśniowe",
-                    color = getOnSurfaceColor(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                TagGroup(
-                    items = ui.selectedMuscleGroups.map { it.name }
-                )
-            }
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Wymagany sprzęt",
-                    color = getOnSurfaceColor(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                TagGroup(
-                    items = ui.selectedEquipment.map { it.name }
-                )
-            }
-        }
-
-        if (ui.selectedHashtags.isNotEmpty()) {
-            ExpandableTagField(
-                label = "Hashtagi",
-                items = ui.selectedHashtags.map { "#${it.name}" }
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Grupy mięśniowe:",
+                color = getOnSurfaceColor(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            TagGroup(
+                items = ui.selectedMuscleGroups.map { it.name }
             )
         }
 
-        FileStatusSection(
-            hasImage = ui.imageUri != null,
-            hasVideo = ui.videoUri != null
-        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Wymagany sprzęt:",
+                color = getOnSurfaceColor(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            TagGroup(
+                items = ui.selectedEquipment.map({it.name})
+            )
+        }
+
+        if (ui.hashtags.isNotEmpty()) {
+            ExpandableTagField(
+                items = ui.hashtags.map { "#${it}" }
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -641,11 +640,12 @@ private fun ExpandableSummaryField(
 
 @Composable
 private fun DifficultyBadge(difficulty: String) {
-    val (text, color) = when (difficulty) {
-        "easy" -> "easy" to Color(0xFF4CAF50)
-        "medium" -> "medium" to Color(0xFFFF9800)
-        "hard" -> "hard" to Color(0xFFF44336)
-        else -> "easy" to Color(0xFF4CAF50)
+    val (text, color, textColor) = when (difficulty) {
+        AdvancedLevel.NONE -> Triple(AdvancedLevel.NONE, getSurfaceVariantColor(), getOnSurfaceColor())
+        AdvancedLevel.EASY -> Triple(AdvancedLevel.EASY, getPrimaryColor(), getOnPrimaryColor())
+        AdvancedLevel.MEDIUM -> Triple(AdvancedLevel.MEDIUM, getYellowColor(), getOnYellowColor())
+        AdvancedLevel.HARD -> Triple(AdvancedLevel.HARD, getErrorColor().copy(alpha = 0.1f), getErrorColor())
+        else -> Triple(AdvancedLevel.NONE, getSurfaceVariantColor(), getOnSurfaceColor())
     }
 
     Surface(
@@ -655,7 +655,7 @@ private fun DifficultyBadge(difficulty: String) {
     ) {
         Text(
             text = text,
-            color = Color.White,
+            color = textColor,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -666,14 +666,14 @@ private fun DifficultyBadge(difficulty: String) {
 @Composable
 private fun VisibilityBadge(isPublic: Boolean) {
     val (text, color) = if (isPublic) {
-        "public" to getPrimaryColor()
+        PrivacySettings.PUBLIC to getOnSurfaceColor()
     } else {
-        "private" to Color(0xFF9E9E9E)
+        PrivacySettings.PRIVATE to Color(0xFF9E9E9E)
     }
 
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = color.copy(alpha = 0.1f),
+        color = getSurfaceColor(),
         modifier = Modifier
             .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
             .padding(vertical = 2.dp)
@@ -701,11 +701,11 @@ private fun VisibilityBadge(isPublic: Boolean) {
 
 @Composable
 private fun TagGroup(items: List<String>) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+    LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.heightIn(max = 120.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 120.dp)
     ) {
         items(items) { item ->
             TagChip(text = item)
@@ -715,11 +715,10 @@ private fun TagGroup(items: List<String>) {
 
 @Composable
 private fun ExpandableTagField(
-    label: String,
     items: List<String>
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    val displayItems = if (isExpanded) items else items.take(4)
+    val displayItems = if (isExpanded) items else items.take(6)
 
     Column {
         Row(
@@ -728,12 +727,12 @@ private fun ExpandableTagField(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = label,
+                text = "Hasztagi",
                 color = getOnSurfaceColor(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
-            if (items.size > 4) {
+            if (items.size > 6) {
                 Icon(
                     imageVector = if (isExpanded)
                         Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
@@ -748,7 +747,7 @@ private fun ExpandableTagField(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 120.dp),
+            columns = GridCells.Adaptive(minSize = 100.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.heightIn(max = if (isExpanded) 200.dp else 80.dp)
@@ -758,10 +757,10 @@ private fun ExpandableTagField(
             }
         }
 
-        if (!isExpanded && items.size > 4) {
+        if (!isExpanded && items.size > 6) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "i ${items.size - 4} więcej...",
+                text = "+${items.size - 6} więcej",
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 12.sp
             )
@@ -773,13 +772,13 @@ private fun ExpandableTagField(
 private fun TagChip(text: String) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = getSurfaceVariantColor(),
-        modifier = Modifier.padding(vertical = 2.dp)
+        color = getSecondaryColor(),
+        modifier = Modifier.padding(vertical = 2.dp).wrapContentWidth()
     ) {
         Text(
             text = text,
-            color = getOnSurfaceColor(),
-            fontSize = 11.sp,
+            color = getOnSecondaryColor(),
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             maxLines = 1,
@@ -800,68 +799,11 @@ private fun HashtagChip(text: String) {
         Text(
             text = text,
             color = getPrimaryColor(),
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
-private fun FileStatusSection(
-    hasImage: Boolean,
-    hasVideo: Boolean
-) {
-    Column {
-        Text(
-            text = "Status plików",
-            color = getOnSurfaceColor(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            FileStatusItem(
-                label = "Obraz",
-                isSelected = hasImage,
-                modifier = Modifier.weight(1f)
-            )
-            FileStatusItem(
-                label = "Wideo",
-                isSelected = hasVideo,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun FileStatusItem(
-    label: String,
-    isSelected: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.Cancel,
-            contentDescription = null,
-            tint = if (isSelected) Color(0xFF4CAF50) else Color(0xFFF44336),
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = if (isSelected) "$label wybrany" else "Brak ${label.lowercase()}u",
-            color = getOnSurfaceSecondaryColor(),
-            fontSize = 12.sp
         )
     }
 }
@@ -886,10 +828,11 @@ private fun BottomBar(
                 onClick = onPrev,
                 modifier = Modifier.weight(1f),
                 enabled = !isLoading,
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent
                 ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
             ) { Text("Cofnij", color = getOnSurfaceColor()) }
         }
 
@@ -960,8 +903,7 @@ private fun DifficultyRow(text: String, selected: Boolean, onSelect: () -> Unit)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onSelect() }
-            .padding(vertical = 4.dp),
+            .clickable { onSelect() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
@@ -972,7 +914,7 @@ private fun DifficultyRow(text: String, selected: Boolean, onSelect: () -> Unit)
                 unselectedColor = getOnSurfaceSecondaryColor()
             )
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(4.dp))
         Text(text, color = getOnSurfaceColor())
     }
 }

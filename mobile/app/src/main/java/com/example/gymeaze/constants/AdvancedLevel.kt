@@ -1,7 +1,8 @@
 package com.example.gymeaze.constants
 
 object AdvancedLevel {
-    const val EASY = "easy"
-    const val MEDIUM = "medium"
-    const val HARD = "hard"
+    const val NONE = "Nie wybrano"
+    const val EASY = "Początkujący"
+    const val MEDIUM = "Średniozaawansowany"
+    const val HARD = "Zaawansowany"
 }

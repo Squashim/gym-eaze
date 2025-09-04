@@ -12,28 +12,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gymeaze.data.models.Hashtag
 import com.example.gymeaze.ui.theme.*
 
 @Composable
 fun HashtagInputField(
-    selectedHashtags: List<Hashtag>,
-    onHashtagsChange: (List<Hashtag>) -> Unit,
-    availableHashtags: List<Hashtag>,
+    selectedHashtags: List<String>,
+    onHashtagsChange: (List<String>) -> Unit,
     modifier: Modifier = Modifier,
     maxHashtags: Int = 50
 ) {
     var inputText by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(modifier = modifier) {
         Text(
-            text = "Hashtagi",
+            text = "Hasztagi",
             color = getOnSurfaceColor(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
@@ -70,11 +66,11 @@ fun HashtagInputField(
             },
             placeholder = {
                 Text(
-                    text = "Dodaj hashtagi, np. biceps, triceps - użyj Entera lub przecinka",
+                    text = "Dodaj hasztagi np. biceps, triceps",
                     color = getOnSurfaceSecondaryColor()
                 )
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().heightIn(56.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = getPrimaryColor(),
                 unfocusedBorderColor = getInputBorderColor(),
@@ -98,7 +94,7 @@ fun HashtagInputField(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Hashtag może zawierać tylko małe litery i cyfry. Możesz dodać do $maxHashtags hashtagów.",
+            text = "Hasztag może zawierać tylko małe litery i cyfry. Możesz dodać do $maxHashtags hashtagów.",
             color = getOnSurfaceSecondaryColor(),
             fontSize = 12.sp,
             lineHeight = 16.sp
@@ -112,7 +108,7 @@ fun HashtagInputField(
             ) {
                 items(selectedHashtags) { hashtag ->
                     HashtagChip(
-                        text = hashtag.name,
+                        text = hashtag,
                         onRemove = {
                             onHashtagsChange(selectedHashtags - hashtag)
                         }
@@ -124,7 +120,7 @@ fun HashtagInputField(
         if (selectedHashtags.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "${selectedHashtags.size}/$maxHashtags hashtagów",
+                text = "${selectedHashtags.size}/$maxHashtags hasztagów",
                 color = if (selectedHashtags.size >= maxHashtags)
                     MaterialTheme.colorScheme.error else getOnSurfaceSecondaryColor(),
                 fontSize = 12.sp
@@ -158,7 +154,7 @@ private fun HashtagChip(
             Text(
                 text = "×",
                 color = getPrimaryColor(),
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .clickable { onRemove() }
@@ -170,8 +166,8 @@ private fun HashtagChip(
 
 private fun addHashtag(
     input: String,
-    currentHashtags: List<Hashtag>,
-    onHashtagsChange: (List<Hashtag>) -> Unit,
+    currentHashtags: List<String>,
+    onHashtagsChange: (List<String>) -> Unit,
     maxHashtags: Int
 ) {
     if (currentHashtags.size >= maxHashtags) return
@@ -179,20 +175,12 @@ private fun addHashtag(
     val cleanInput = input.lowercase().trim()
     if (cleanInput.isEmpty()) return
 
-    val exists = currentHashtags.any { it.name.equals(cleanInput, ignoreCase = true) }
+    val exists = currentHashtags.any { it.equals(cleanInput, ignoreCase = true) }
     if (exists) return
 
     if (!cleanInput.all { it.isLetterOrDigit() }) return
 
     if (cleanInput.length < 2 || cleanInput.length > 30) return
 
-    val newHashtag = Hashtag(
-        _id = "", // generowane przez backend
-        name = cleanInput,
-        description = null,
-        category = null,
-        usageCount = 0
-    )
-
-    onHashtagsChange(currentHashtags + newHashtag)
+    onHashtagsChange(currentHashtags + cleanInput)
 }
