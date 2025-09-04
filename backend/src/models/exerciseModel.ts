@@ -2,7 +2,6 @@ import mongoose, { Types } from 'mongoose';
 import { AdvancedLevel, advancedLevelValues } from '../constants/advancedLevel';
 import { IMuscleGroup } from '../models/muscleGroup';
 import { IEquipment } from '../models/equipmentModel';
-import { IHashtag } from '../models/HashtagModel';
 import { IUser } from '../models/userModel';
 import { PrivacySettings, privacySettingsValues } from '../constants/privacySettings';
 
@@ -17,7 +16,7 @@ export interface IExercise extends mongoose.Document {
   advancedLevel: AdvancedLevel;
   muscleGroup: (Types.ObjectId | IMuscleGroup)[];
   equipment: (Types.ObjectId | IEquipment)[];
-  hashtags: (Types.ObjectId | IHashtag)[];
+  hashtags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,8 +84,8 @@ const exerciseSchema = new mongoose.Schema(
     ],
     hashtags: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Hashtag',
+        type: String,
+        maxLength: 35,
       },
     ],
   },

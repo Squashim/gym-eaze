@@ -1,10 +1,9 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface IEquipment extends mongoose.Document {
   name: string;
   image: string;
   imageCredit: string;
-  description?: string;
 }
 
 const equipmentSchema = new mongoose.Schema({
@@ -20,12 +19,8 @@ const equipmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  description: {
-    type: String,
-    maxLength: 500,
-  }
 });
 
-const Equipment = mongoose.model<IEquipment>("Equipment", equipmentSchema);
+const Equipment = mongoose.model<IEquipment>('Equipment', equipmentSchema);
 
 export default Equipment;
