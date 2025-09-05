@@ -9,6 +9,8 @@ import com.example.gymeaze.data.api.ExerciseApiService
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.util.AuthErrorMapper
+import com.example.gymeaze.util.AuthInterceptor
+import com.example.gymeaze.util.TokenAuthenticator
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -28,13 +30,19 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 
+
 class ExerciseRepository(private val context: Context) {
+
+    private val userPreferences = UserPreferences(context)
+    private val authRepository = AuthRepository(context)
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
     private val httpClient = OkHttpClient.Builder()
         .addInterceptor(logging)
+        .addInterceptor(AuthInterceptor(userPreferences))
+        .authenticator(TokenAuthenticator(userPreferences, authRepository))
         .build()
 
     private val api: ExerciseApiService by lazy {
@@ -46,7 +54,7 @@ class ExerciseRepository(private val context: Context) {
             .create(ExerciseApiService::class.java)
     }
 
-    private val userPreferences = UserPreferences(context)
+
 
     private val MAX_IMAGE_BYTES = 5L * 1024L * 1024L
     private val MAX_VIDEO_BYTES = 20L * 1024L * 1024L
@@ -93,11 +101,6 @@ class ExerciseRepository(private val context: Context) {
         hashtags: List<String>
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val accessToken = userPreferences.accessToken.first()
-            if (accessToken.isNullOrBlank()) {
-                return@withContext Result.failure(IllegalStateException(context.getString(R.string.unauthorized)))
-            }
-
             val imageSuffix = guessSuffix(imageUri)
             val videoSuffix = guessSuffix(videoUri)
 
@@ -159,7 +162,6 @@ class ExerciseRepository(private val context: Context) {
 
 
             val res = api.createExercise(
-                auth = "Bearer $accessToken",
                 name = nameBody,
                 description = descriptionBody,
                 advancedLevel = advancedBody,
@@ -187,11 +189,13 @@ class ExerciseRepository(private val context: Context) {
                 Result.failure(IllegalStateException(msg))
             }
         } catch (e: HttpException) {
+            if (e.code() == 401) {
+                Result.failure(Exception("Sesja wygasła. Zaloguj się ponownie"))
+        } else {
             val raw = e.response()?.errorBody()?.string()
-            val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, e.code())
-            Result.failure(IllegalStateException(msg))
-        } catch (e: Exception) {
-            Result.failure(e)
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, e.code())
+                Result.failure(IllegalStateException(msg))
+            }
         }
     }
 

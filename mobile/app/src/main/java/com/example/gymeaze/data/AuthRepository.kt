@@ -244,26 +244,28 @@ class AuthRepository(private val context: Context){
     fun getGoogleSignInHelper() = googleSignInHelper
 
     suspend fun refreshAccessToken(): Result<String> {
-        return try {
-            val refreshToken = userPreferences.refreshToken.first()
-            if (refreshToken.isNullOrEmpty()) {
-                return Result.failure(Exception(context.getString(R.string.no_refresh_token)))
-            }
+        return withContext(Dispatchers.IO) {
+            try {
+                val refreshToken = userPreferences.refreshToken.first()
+                if (refreshToken.isNullOrEmpty()) {
+                    return@withContext Result.failure(Exception(context.getString(R.string.no_refresh_token)))
+                }
 
-            val response = api.refreshToken(RefreshTokenRequest(refreshToken))
-            if(response.isSuccessful && response.body() != null) {
-                val newAccessToken = response.body()!!.accessToken
-                userPreferences.saveTokens(newAccessToken, refreshToken)
-                Result.success(newAccessToken)
-            } else {
+                val response = api.refreshToken(RefreshTokenRequest(refreshToken))
+                if (response.isSuccessful && response.body() != null) {
+                    val newAccessToken = response.body()!!.accessToken
+                    userPreferences.saveTokens(newAccessToken, refreshToken)
+                    Result.success(newAccessToken)
+                } else {
+                    logout()
+                    Result.failure(Exception("Refresh token wygasł - użytkownik został wylogowany"))
+                }
+            } catch (e: Exception) {
                 logout()
-                Result.failure(Exception(context.getString(R.string.refresh_token_expired)))
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
-
 
     suspend fun logout(): Result<String> {
         return try {

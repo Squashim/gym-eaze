@@ -23,7 +23,6 @@ interface ExerciseApiService {
     @Multipart
     @POST("/api/exercises")
     suspend fun createExercise(
-        @Header("Authorization") auth: String,
         @Part("name") name: RequestBody,
         @Part("description") description: RequestBody,
         @Part("advancedLevel") advancedLevel: RequestBody,

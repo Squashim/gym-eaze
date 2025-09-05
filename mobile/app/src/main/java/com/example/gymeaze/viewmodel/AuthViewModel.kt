@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.AuthRepository
+import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -76,8 +77,35 @@ data class AuthUiState(
 }
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
+
+    init {
+        checkTokenValidityOnStartup()
+    }
+
+    private fun checkTokenValidityOnStartup() {
+        viewModelScope.launch {
+            try {
+                val isLoggedIn = userPreferences.isLoggedIn.first()
+                val accessToken = userPreferences.accessToken.first()
+
+                if (isLoggedIn && !accessToken.isNullOrEmpty()) {
+                    val result = authRepository.getCurrentUser()
+
+                    if (result.isFailure) {
+                        val refreshResult = authRepository.refreshAccessToken()
+
+                        if (refreshResult.isFailure) {
+                            logout()
+                        }
+                    }
+                }
+            } catch(e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
     private val authRepository = AuthRepository(application.applicationContext)
-    private val userPreferences = authRepository.getPreferences()
+    private val userPreferences = UserPreferences(application.applicationContext)
 
     private val privateUiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = privateUiState.asStateFlow()
