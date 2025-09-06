@@ -35,7 +35,6 @@ data class AuthUiState(
     val confirmPassword: String = "",
     val usernameOrEmail: String = "",
     val errorMessage: String? = null,
-    val isLoggedIn: Boolean = false,
 
     val registerErrors: ValidationErrors = ValidationErrors(),
     val loginErrors: ValidationErrors = ValidationErrors(),
@@ -76,11 +75,25 @@ data class AuthUiState(
                 password.isNotBlank()
 }
 
+sealed class LogoutEvent {
+    object TokenExpired : LogoutEvent()
+    object Manual : LogoutEvent()
+}
+
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val authRepository = AuthRepository(application.applicationContext)
+    private val userPreferences = UserPreferences(application.applicationContext)
 
     init {
         checkTokenValidityOnStartup()
     }
+
+    private val _isCheckingToken = MutableStateFlow(true)
+    val isCheckingToken: StateFlow<Boolean> = _isCheckingToken.asStateFlow()
+
+    private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
+    val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
 
     private fun checkTokenValidityOnStartup() {
         viewModelScope.launch {
@@ -90,22 +103,20 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
                 if (isLoggedIn && !accessToken.isNullOrEmpty()) {
                     val result = authRepository.getCurrentUser()
-
                     if (result.isFailure) {
                         val refreshResult = authRepository.refreshAccessToken()
-
                         if (refreshResult.isFailure) {
-                            logout()
+                            logout(manual = false)
                         }
                     }
                 }
             } catch(e: Exception) {
                 e.printStackTrace()
+            } finally {
+                _isCheckingToken.value = false 
             }
         }
     }
-    private val authRepository = AuthRepository(application.applicationContext)
-    private val userPreferences = UserPreferences(application.applicationContext)
 
     private val privateUiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = privateUiState.asStateFlow()
@@ -269,8 +280,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
             if(result.isSuccess) {
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = true
+                    isLoading = false
                 )
             } else {
                 privateUiState.value = privateUiState.value.copy(
@@ -299,8 +309,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
             if (result.isSuccess){
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = true
+                    isLoading = false
                 )
             } else{
                 privateUiState.value = privateUiState.value.copy(
@@ -324,8 +333,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 when {
                     googleResult.success -> {
                         privateUiState.value = privateUiState.value.copy(
-                            isLoading = false,
-                            isLoggedIn = true
+                            isLoading = false
                         )
                     }
 
@@ -366,8 +374,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             if (result.isSuccess) {
                 privateShowAccountLinking.value = false
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = true
+                    isLoading = false
                 )
             } else{
                 privateLinkingError.value = result.exceptionOrNull()?.message
@@ -401,11 +408,16 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun logout() {
+    fun logout(manual: Boolean = true) {
         viewModelScope.launch {
             authRepository.logout()
             privateUiState.value = AuthUiState() //Stan poczatkowy
+            _logoutEvent.value = if (manual) LogoutEvent.Manual else LogoutEvent.TokenExpired
         }
+    }
+
+    fun clearLogoutEvent() {
+        _logoutEvent.value = null
     }
 
     fun toggleTheme() {

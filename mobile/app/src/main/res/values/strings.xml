@@ -93,7 +93,7 @@
 
     <string name="exercise_create_success">Pomyślnie dodano ćwiczenie</string>
 
-    <string name="nav_home">Strona główna</string>
+    <string name="nav_exercises">Ćwiczenia</string>
     <string name="nav_workouts">Treningi</string>
     <string name="nav_community">Społeczność</string>
     <string name="nav_profile">Profil</string>

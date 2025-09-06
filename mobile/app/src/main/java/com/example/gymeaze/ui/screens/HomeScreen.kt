@@ -35,6 +35,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -59,9 +63,11 @@ import java.util.Locale
 fun HomeScreen(
     username: String,
     onLogout: () -> Unit,
-    onExerciseCreatorClick: () -> Unit
+    onExerciseCreatorClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
+    var selectedRoute by remember { mutableStateOf("profile") }
 
     Scaffold(
         topBar = {
@@ -81,8 +87,7 @@ fun HomeScreen(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Logout",
                             tint = getOnSurfaceColor(),
-                            modifier = Modifier
-                                .size(20.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -99,37 +104,40 @@ fun HomeScreen(
         },
         bottomBar = {
             GymEazeBottomNavigationBar(
-                selectedRoute = "auth",
-                onItemSelected = { /* Logika nawigacji */ }
+                selectedRoute = selectedRoute,
+                onItemSelected = { route -> selectedRoute = route }
             )
         },
         containerColor = getBackgroundColor()
-    ) {
-        paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(getBackgroundColor()),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                WelcomeSection(username = username, currentDate = currentDate)
-            }
-
-            item {
-                QuickStatsSection()
-            }
-
-            item {
-                QuickActionSection(
-                    onExerciseCreatorClick = onExerciseCreatorClick
-                )
-            }
-
-            item {
-                RecentActivitySection()
+    ) { paddingValues ->
+        when (selectedRoute) {
+            "exercises" -> ExerciseScreen(onSettingsClick)
+            "workouts" -> TrainingsPlanScreen(onSettingsClick)
+            "community" -> CommunityScreen(onSettingsClick)
+            "profile" -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .background(getBackgroundColor()),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        WelcomeSection(username = username, currentDate = currentDate)
+                    }
+                    item {
+                        QuickStatsSection()
+                    }
+                    item {
+                        QuickActionSection(
+                            onExerciseCreatorClick = onExerciseCreatorClick
+                        )
+                    }
+                    item {
+                        RecentActivitySection()
+                    }
+                }
             }
         }
     }
@@ -462,7 +470,8 @@ fun HomeScreenPreview() {
         HomeScreen(
             username = "Test",
             onLogout = {},
-            onExerciseCreatorClick = {}
+            onExerciseCreatorClick = {},
+            onSettingsClick = {}
         )
     }
 }
