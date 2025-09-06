@@ -14,11 +14,12 @@ type StepActionsProps = {
   exitLabel: string;
   submitLabel: string;
   submittingLabel?: string;
+  isSubmitting: boolean;
+  submitDisabled?: boolean;
   refs: {
     submitRef?: Ref<HTMLButtonElement>;
     cancelRef?: Ref<HTMLButtonElement>;
   };
-  isSubmitting: boolean;
 };
 
 const StepActions = ({
@@ -29,6 +30,7 @@ const StepActions = ({
   exitLabel,
   submitLabel,
   submittingLabel = 'Wysyłanie...',
+  submitDisabled = false,
   refs,
   isSubmitting,
 }: StepActionsProps) => {
@@ -92,7 +94,12 @@ const StepActions = ({
         )}
 
         {isLastStep && (
-          <Button disabled={isSubmitting} ref={refs.submitRef} size="lg" type="submit">
+          <Button
+            disabled={isSubmitting || submitDisabled}
+            ref={refs.submitRef}
+            size="lg"
+            type="submit"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" />
