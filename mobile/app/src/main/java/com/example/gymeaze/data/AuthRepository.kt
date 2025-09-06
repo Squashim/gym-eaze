@@ -279,10 +279,6 @@ class AuthRepository(private val context: Context){
             userPreferences.clearUserData()
             userPreferences.setLoggedIn(false)
 
-            withContext(Dispatchers.Main){
-                Toast.makeText(context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
-            }
-
             Result.success(context.getString(R.string.logout_success))
         } catch(e: Exception) {
             userPreferences.clearTokens()
@@ -330,4 +326,18 @@ class AuthRepository(private val context: Context){
         }
     }
     fun getPreferences() = userPreferences
+
+    suspend fun clearUserSession(): Result<String> {
+        return try {
+            userPreferences.clearTokens()
+            userPreferences.clearUserData()
+            userPreferences.setLoggedIn(false)
+            Result.success("Session cleared")
+        } catch(e: Exception) {
+            userPreferences.clearTokens()
+            userPreferences.clearUserData()
+            userPreferences.setLoggedIn(false)
+            Result.failure(e)
+        }
+    }
 }

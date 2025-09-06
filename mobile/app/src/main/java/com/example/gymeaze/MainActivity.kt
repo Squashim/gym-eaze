@@ -38,7 +38,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import com.example.gymeaze.viewmodel.LogoutEvent
 
-// ... reszta importów ...
 
 class MainActivity : ComponentActivity() {
 

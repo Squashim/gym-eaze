@@ -106,7 +106,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     if (result.isFailure) {
                         val refreshResult = authRepository.refreshAccessToken()
                         if (refreshResult.isFailure) {
-                            logout(manual = false)
+                            handleTokenExpiration()
                         }
                     }
                 }
@@ -408,11 +408,23 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun handleTokenExpiration() {
+        viewModelScope.launch {
+            authRepository.clearUserSession()
+            privateUiState.value = AuthUiState()
+            _logoutEvent.value = LogoutEvent.TokenExpired
+        }
+    }
+
     fun logout(manual: Boolean = true) {
         viewModelScope.launch {
-            authRepository.logout()
-            privateUiState.value = AuthUiState() //Stan poczatkowy
-            _logoutEvent.value = if (manual) LogoutEvent.Manual else LogoutEvent.TokenExpired
+            if (manual) {
+                authRepository.logout()
+                _logoutEvent.value = LogoutEvent.Manual
+            } else {
+                handleTokenExpiration()
+            }
+            privateUiState.value = AuthUiState()
         }
     }
 
