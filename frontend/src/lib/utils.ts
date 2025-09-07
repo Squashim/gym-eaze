@@ -3,6 +3,7 @@ import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
 import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
+import type { FieldValues } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -105,4 +106,82 @@ export function objectToFormData<
   }
 
   return formData;
+}
+
+export function extractDirtyFieldsData<
+  TFormData extends FieldValues,
+  TPayload extends Record<string, unknown>,
+>(dirtyFields: Partial<Record<keyof TFormData, unknown>>, formData: TFormData): TPayload {
+  const formattedData = {} as TPayload;
+
+  (Object.keys(dirtyFields) as (keyof TFormData)[]).forEach((stepKey) => {
+    const stepDirty = dirtyFields[stepKey];
+
+    if (stepDirty && typeof stepDirty === 'object' && stepDirty !== null) {
+      (Object.keys(stepDirty) as (keyof typeof stepDirty)[]).forEach((fieldKey) => {
+        if (stepDirty && typeof stepDirty === 'object' && fieldKey in stepDirty) {
+          const fieldValue = (stepDirty as Record<string, unknown>)[fieldKey];
+          if (fieldValue) {
+            const stepData = formData[stepKey];
+            if (stepData && typeof stepData === 'object' && stepData !== null) {
+              const sourceValue: unknown = (stepData as Record<string, unknown>)[
+                fieldKey as string
+              ];
+              if (sourceValue !== undefined) {
+                (formattedData as Record<string, unknown>)[fieldKey as string] = sourceValue;
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+
+  return formattedData;
+}
+
+export function areFilesEqual(file1: File | null, file2: File | null): boolean {
+  if (file1 === null && file2 === null) return true;
+  if (file1 === null || file2 === null) return false;
+  return file1.name === file2.name && file1.size === file2.size && file1.type === file2.type;
+}
+
+function getExtensionMimeType(ext: string | undefined): string {
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'webp':
+      return 'image/webp';
+    case 'mp4':
+      return 'video/mp4';
+    case 'webm':
+      return 'video/webm';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+function getFileInfoFromUrl(url: string): { filename: string; mimeType: string } {
+  const pathname = new URL(url).pathname;
+  let filename = pathname.split('/').pop() || 'plik';
+  const haveParts = filename.includes('_');
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+
+  if (haveParts) {
+    const parts = filename.split('_');
+    const baseName = parts.shift() || 'plik';
+    filename = `${baseName}.${ext}`;
+  }
+  const mimeType = getExtensionMimeType(ext);
+  return { filename, mimeType };
+}
+
+export async function urlToFile(url: string): Promise<File> {
+  const { filename, mimeType } = getFileInfoFromUrl(url);
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new File([blob], filename, { type: mimeType || blob.type });
 }

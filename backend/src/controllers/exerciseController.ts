@@ -16,19 +16,13 @@ import { ExerciseRequest } from '../types/exercise';
 
 export const addExercise = async (req: Request, res: Response) => {
   const exerciseReq = req as ExerciseRequest;
+  const authReq = req as AuthRequest;
 
   try {
-    const {
-      author,
-      name,
-      description,
-      visibility,
-      advancedLevel,
-      muscleGroup,
-      equipment,
-      hashtags,
-    } = exerciseReq.body;
+    const { name, description, visibility, advancedLevel, muscleGroup, equipment, hashtags } =
+      exerciseReq.body;
 
+    const userId = authReq.userId;
     const imageFile = exerciseReq.files?.image?.[0];
     const videoFile = exerciseReq.files?.video?.[0];
 
@@ -42,7 +36,7 @@ export const addExercise = async (req: Request, res: Response) => {
 
     const exercise = await createExercise(
       {
-        author,
+        author: userId!,
         name: trimmedName,
         description: trimmedDescription,
         visibility,
@@ -98,8 +92,8 @@ export const updateExercise = async (req: AuthRequest, res: Response) => {
     const imageFile = exerciseReq.files?.image?.[0];
     const videoFile = exerciseReq.files?.video?.[0];
 
-    const trimmedName = name.trim();
-    const trimmedDescription = description.trim();
+    const trimmedName = name?.trim() || undefined;
+    const trimmedDescription = description?.trim() || undefined;
     const muscleGroupArray = parseField(muscleGroup);
     const equipmentArray = parseField(equipment);
     const hashtagsArray = parseField(hashtags);
@@ -112,9 +106,9 @@ export const updateExercise = async (req: AuthRequest, res: Response) => {
         description: trimmedDescription,
         visibility,
         advancedLevel,
-        muscleGroup: muscleGroupArray,
-        equipment: equipmentArray,
-        hashtags: hashtagsArray,
+        muscleGroup: muscleGroupArray.length ? muscleGroupArray : undefined,
+        equipment: equipmentArray.length ? muscleGroupArray : undefined,
+        hashtags: hashtagsArray.length ? muscleGroupArray : undefined,
       },
       imageFile?.buffer,
       videoFile?.buffer,
