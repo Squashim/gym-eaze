@@ -38,6 +38,28 @@ const users = [
     email: "gymeaze.admin@gmail.com",
     password: "Admin12345678!",
     role: UserRole.admin,
+    profileDetails: {
+      profilePicture: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
+      description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
+      goal: Goal.calorieBurn,
+    },
+    badges: [
+      {
+        badge: new Types.ObjectId('6887b71977991eea1a365c96'),
+        isPinnded: true,
+        awardedAt: new Date(),
+      },
+      {
+        badge: new Types.ObjectId('6887b73a2078947c7f327f80'),
+        isPinned: false,
+        awardedAt: new Date(),
+      },
+      {
+        badge: new Types.ObjectId('6887b63aa3234565c7b5392b'),
+        isPinned: true,
+        awardedAt: new Date(),
+      },
+    ],
   },
   /*
   {

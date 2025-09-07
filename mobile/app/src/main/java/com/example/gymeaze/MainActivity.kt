@@ -1,20 +1,12 @@
 package com.example.gymeaze
 
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,9 +16,9 @@ import com.example.gymeaze.ui.screens.AuthScreen
 import com.example.gymeaze.ui.screens.ExerciseCreatorScreen
 import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
-import com.example.gymeaze.ui.screens.ProfileEditScreen
-import com.example.gymeaze.ui.screens.SettingsScreen
-import com.example.gymeaze.ui.screens.ThemeSelectionScreen
+import com.example.gymeaze.ui.screens.profile.ProfileEditScreen
+import com.example.gymeaze.ui.screens.profile.SettingsScreen
+import com.example.gymeaze.ui.screens.profile.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
@@ -36,7 +28,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import com.example.gymeaze.data.repository.UserRepository
 import com.example.gymeaze.viewmodel.LogoutEvent
+import com.example.gymeaze.viewmodel.UserViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +40,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val authViewModel: AuthViewModel = viewModel()
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
+            val userViewModel: UserViewModel = viewModel()
+
 
             val googleSignInLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartActivityForResult()
@@ -117,11 +113,17 @@ class MainActivity : ComponentActivity() {
                             showSettings -> {
                                 SettingsScreen(
                                     onReturnClick = authViewModel::hideSettingsScreen,
-                                    onThemeClick = authViewModel::showThemeSelectionScreen
+                                    onThemeClick = authViewModel::showThemeSelectionScreen,
+                                    isUserLoggedIn = isUserLoggedIn,
+                                    onLogoutClick = if (isUserLoggedIn) { { authViewModel.logout() } } else null,
+                                    onPrivacySettingsClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
+                                    onHelpClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
+                                    onNotificationsClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
                                 )
                             }
                             showProfileEdit -> {
                                 ProfileEditScreen(
+                                    viewModel = userViewModel,
                                     onReturnClick = authViewModel::hideProfileEditScreen,
                                     onCancelClick = authViewModel::cancelProfileSetup,
                                     onSaveClick = authViewModel::completeProfileSetup
@@ -165,7 +167,8 @@ class MainActivity : ComponentActivity() {
                                     username = username,
                                     onLogout = { authViewModel.logout() },
                                     onExerciseCreatorClick = authViewModel::showExerciseCreatorScreen,
-                                    onSettingsClick = { }
+                                    onSettingsClick = authViewModel::showSettingsScreen,
+                                    onEditProfileClick = { authViewModel.showProfileEditScreen() }
                                 )
                             }
                         }

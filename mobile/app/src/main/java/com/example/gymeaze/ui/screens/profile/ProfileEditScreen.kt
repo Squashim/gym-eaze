@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens
+package com.example.gymeaze.ui.screens.profile
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -26,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,12 +41,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.gymeaze.R
+import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.theme.*
-import kotlinx.coroutines.selects.select
-import kotlin.math.exp
-
+import com.example.gymeaze.viewmodel.UserViewModel
 enum class ProfileTab {
     PROFILE_INFO,
     LOGIN_DATA,
@@ -52,6 +57,7 @@ enum class ProfileTab {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileEditScreen(
+    viewModel: UserViewModel? = null,
     onReturnClick: () -> Unit,
     onCancelClick: () -> Unit,
     onSaveClick: () -> Unit,
@@ -59,8 +65,6 @@ fun ProfileEditScreen(
     onNavigationItemSelected: (String) -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(ProfileTab.PROFILE_INFO) }
-    var biography by remember { mutableStateOf("")}
-    var selectedGoal by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -94,8 +98,7 @@ fun ProfileEditScreen(
             )
         },
         containerColor = getBackgroundColor()
-    ) {
-        paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,12 +117,11 @@ fun ProfileEditScreen(
             ) {
                 when(selectedTab) {
                     ProfileTab.PROFILE_INFO -> {
-                        ProfileInfoContent(
-                            biography = biography,
-                            onBiographyChange = {biography = it},
-                            selectedGoal = selectedGoal,
-                            onGoalChange = { selectedGoal = it}
-                        )
+                        if (viewModel != null) {
+                            ProfileInfoContent(viewModel = viewModel)
+                        } else {
+                            ProfileInfoContentPreview()
+                        }
                     }
                     ProfileTab.LOGIN_DATA -> {
                         LoginDataContent()
@@ -231,12 +233,30 @@ private fun ProfileTabs(
 }
 
 @Composable
-private fun ProfileInfoContent(
-    biography: String,
-    onBiographyChange: (String) -> Unit,
-    selectedGoal: String,
-    onGoalChange: (String) -> Unit
+fun ProfileInfoContent(
+    viewModel: UserViewModel
 ) {
+    val userProfile by viewModel.userProfile.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    // Lokalny stan pól
+    var biography by remember { mutableStateOf(userProfile?.description.orEmpty()) }
+    var selectedGoal by remember { mutableStateOf(userProfile?.goal.orEmpty()) }
+    val pinnedBadges = userProfile?.pinnedBadges.orEmpty()
+
+    // Fetch danych przy pierwszym renderze
+    LaunchedEffect(Unit) {
+        viewModel.fetchUserProfile()
+    }
+
+    // Aktualizuj pola gdy dane się załadują
+    LaunchedEffect(userProfile) {
+        userProfile?.let { profile ->
+            biography = profile.description.orEmpty()
+            selectedGoal = profile.goal.orEmpty()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -244,27 +264,69 @@ private fun ProfileInfoContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        ProfilePictureSection()
+        ProfilePictureSection(profilePictureUrl = userProfile?.profilePicture.orEmpty())
 
         BiographySection(
             biography = biography,
-            onBiographyChange = onBiographyChange
+            onBiographyChange = { newValue ->
+                biography = newValue
+            }
         )
 
         TrainingGoalSection(
             selectedGoal = selectedGoal,
-            onGoalChange = onGoalChange
+            onGoalChange = { newGoal ->
+                selectedGoal = newGoal
+            } ,
+            isGoalPublic = userProfile?.isGoalPublic ?: true,
         )
 
-        BadgesSection()
+        BadgesSection(pinnedBadges = pinnedBadges)
+
+        // Wyświetlenie błędu jeśli jest
+        error?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+// Preview version bez ViewModel
+@Composable
+private fun ProfileInfoContentPreview() {
+    var biography by remember { mutableStateOf("") }
+    var selectedGoal by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        ProfilePictureSection(profilePictureUrl = "")
+
+        BiographySection(
+            biography = biography,
+            onBiographyChange = { biography = it }
+        )
+
+        TrainingGoalSection(
+            selectedGoal = selectedGoal,
+            isGoalPublic =  true, // <-- tutaj dodajemy flagę
+            onGoalChange = { selectedGoal = it }
+        )
+
+        BadgesSection(pinnedBadges = emptyList())
     }
 }
 
 @Composable
-private fun ProfilePictureSection() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+private fun ProfilePictureSection(profilePictureUrl: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.profile_picture),
             color = getOnSurfaceColor(),
@@ -282,22 +344,28 @@ private fun ProfilePictureSection() {
                     .clip(CircleShape)
                     .background(getSurfaceColor())
                     .border(1.dp, getOnSurfaceSecondaryColor().copy(alpha = 0.3f), CircleShape)
-                    .clickable {
-                        //TODO Implementacja wyboru zdjecia
-                    },
+                    .clickable { /*TODO: Wybór zdjęcia*/ },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = getOnSurfaceSecondaryColor(),
-                    modifier = Modifier
-                        .size(24.dp)
-                )
+                if (profilePictureUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = profilePictureUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = getOnSurfaceSecondaryColor(),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Text(
-                text = stringResource(R.string.no_picture_selected),
+                text = if (profilePictureUrl.isNotEmpty()) "" else stringResource(R.string.no_picture_selected),
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 14.sp
             )
@@ -364,6 +432,7 @@ private fun BiographySection(
 @Composable
 private fun TrainingGoalSection(
     selectedGoal: String,
+    isGoalPublic: Boolean, // <-- dodajemy flagę
     onGoalChange: (String) -> Unit
 ) {
     Column(
@@ -381,11 +450,10 @@ private fun TrainingGoalSection(
             )
 
             Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
+                imageVector = if (isGoalPublic) Icons.Default.Public else Icons.Default.Lock,
+                contentDescription = if (isGoalPublic) "Public goal" else "Private goal",
                 tint = getOnSurfaceSecondaryColor(),
-                modifier = Modifier
-                    .size(16.dp)
+                modifier = Modifier.size(16.dp)
             )
         }
 
@@ -415,7 +483,7 @@ private fun TrainingGoalSection(
                     tint = getOnSurfaceSecondaryColor(),
                     modifier = Modifier
                         .clickable {
-                            //TODO Implementacja wyboru celu treningowego
+                            // TODO: Implementacja wyboru celu treningowego
                         }
                         .size(24.dp)
                 )
@@ -424,11 +492,10 @@ private fun TrainingGoalSection(
     }
 }
 
+
 @Composable
-private fun BadgesSection() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+private fun BadgesSection(pinnedBadges: List<Badge>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -448,35 +515,50 @@ private fun BadgesSection() {
             )
         }
 
-        OutlinedButton(
-            onClick = {
-                //TODO Implementacja przypiecia odznak
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.Transparent
-            ),
-            border = BorderStroke(
-                color = getOnSurfaceColor().copy(alpha = 0.5f),
-                width = 1.dp
-            )
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        if (pinnedBadges.isEmpty()) {
+            OutlinedButton(
+                onClick = { /*TODO: przypięcie odznak*/ },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = getOnSurfaceColor(),
-                    modifier = Modifier.size(20.dp)
-                )
-
-                Text(
-                    text = stringResource(R.string.no_pinned_badges),
-                    color = getOnSurfaceColor()
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = getOnSurfaceColor(),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.no_pinned_badges),
+                        color = getOnSurfaceColor()
+                    )
+                }
+            }
+        } else {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(pinnedBadges) { badge ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AsyncImage(
+                            model = badge.image,
+                            contentDescription = badge.title,
+                            modifier = Modifier.size(50.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                        Text(
+                            text = badge.title,
+                            color = getOnSurfaceColor(),
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
         }
 
@@ -487,7 +569,6 @@ private fun BadgesSection() {
         )
     }
 }
-
 @Composable
 private fun LoginDataContent() {
     Column(

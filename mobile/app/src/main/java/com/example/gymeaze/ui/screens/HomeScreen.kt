@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Schedule
@@ -29,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,6 +56,7 @@ import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.AuthViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -64,42 +67,16 @@ fun HomeScreen(
     username: String,
     onLogout: () -> Unit,
     onExerciseCreatorClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onEditProfileClick: () -> Unit
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "GymEaze",
-                        color = getOnSurfaceColor(),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    TextButton(
-                        onClick = onLogout
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Logout",
-                            tint = getOnSurfaceColor(),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Wyloguj",
-                            color = getOnSurfaceColor(),
-                            fontSize = 14.sp
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = getBackgroundColor()
-                )
+            GymEazeTopAppBar(
+                onSettingsClick = onSettingsClick
             )
         },
         bottomBar = {
@@ -124,7 +101,11 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        WelcomeSection(username = username, currentDate = currentDate)
+                        WelcomeSection(
+                            username = username,
+                            currentDate = currentDate,
+                            onEditProfileClick = onEditProfileClick
+                        )
                     }
                     item {
                         QuickStatsSection()
@@ -144,7 +125,11 @@ fun HomeScreen(
 }
 
 @Composable
-private fun WelcomeSection(username: String, currentDate: String) {
+private fun WelcomeSection(
+    username: String,
+    currentDate: String,
+    onEditProfileClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -162,13 +147,31 @@ private fun WelcomeSection(username: String, currentDate: String) {
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Witaj, $username! \uD83D\uDC4B",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = getOnSurfaceColor(),
-                textAlign = TextAlign.Center
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Witaj, $username! \uD83D\uDC4B",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getOnSurfaceColor(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                IconButton(
+                    onClick = onEditProfileClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edytuj profil",
+                        tint = getOnSurfaceSecondaryColor(),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -349,7 +352,7 @@ private fun QuickActionSection(
 }
 
 @Composable
-private fun ActionButton(
+fun ActionButton(
     title: String,
     subtitle: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -463,15 +466,3 @@ private fun RecentActivitySection() {
     }
 }
 
-@Preview(showBackground = true )
-@Composable
-fun HomeScreenPreview() {
-    GymEazeTheme {
-        HomeScreen(
-            username = "Test",
-            onLogout = {},
-            onExerciseCreatorClick = {},
-            onSettingsClick = {}
-        )
-    }
-}

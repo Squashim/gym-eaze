@@ -1,4 +1,5 @@
-import { getUserFavoritesService, getUserLikesService } from '../services/userService';
+import { goalValues } from '../constants/goals';
+import {getUserFavoritesService, getUserLikesService, getUserProfileDetailsService, updateUserProfileDetailsService} from '../services/userService';
 import { AuthRequest } from '../types/auth';
 import { Response } from 'express';
 
@@ -37,3 +38,51 @@ export const getUserFavorites = async (req: AuthRequest, res: Response) => {
     }
   }
 };
+
+export const getUserProfileDetails = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Brak autoryzacji użytkownika" });
+    }
+
+    const profileDetails = await getUserProfileDetailsService(userId);
+    return res.json(profileDetails);
+  } catch (error: any) {
+    console.error("Błąd w getUserProfileDetails:", error);
+    return res.status(500).json({ message: error.message || "Błąd serwera" });
+  }
+};
+
+export const updateUserProfileDetails = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Brak autoryzacji użytkownika" });
+    }
+
+    const { description, goal, pinnedBadges } = req.body;
+
+    // Walidacja goal
+    if (goal && !goalValues.includes(goal)) {
+      return res.status(400).json({ message: "Niepoprawny cel" });
+    }
+
+    // Trimowanie opisu
+    const trimmedDescription = description?.trim() || "";
+
+    const updated = await updateUserProfileDetailsService(
+      userId,
+      trimmedDescription,
+      goal,
+      pinnedBadges,
+      req.file
+    );
+
+    return res.json(updated);
+  } catch (error: any) {
+    console.error("Błąd w updateUserProfileDetails:", error);
+    return res.status(500).json({ message: error.message || "Błąd serwera" });
+  }
+};
+

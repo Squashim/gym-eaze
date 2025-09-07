@@ -38,6 +38,7 @@ class UserPreferences (private val context: Context) {
         preferences[USER_ID]
     }
 
+
     val firstLogin: Flow<Boolean> = context.dataStore.data.map {
             preferences -> preferences[IS_FIRST_LOGIN] ?: true
     }
@@ -60,6 +61,12 @@ class UserPreferences (private val context: Context) {
         dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN] = accessToken
             preferences[REFRESH_TOKEN] = refreshToken
+        }
+    }
+
+    suspend fun saveAccessToken(accessToken: String) {
+        dataStore.edit { preferences ->
+            preferences[ACCESS_TOKEN] = accessToken
         }
     }
 

@@ -1,10 +1,11 @@
-package com.example.gymeaze.data
+package com.example.gymeaze.data.repository
 
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
+import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.ExerciseApiService
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.MuscleGroup
@@ -13,7 +14,6 @@ import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -29,7 +29,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-
 
 class ExerciseRepository(private val context: Context) {
 
@@ -104,11 +103,11 @@ class ExerciseRepository(private val context: Context) {
             val imageSuffix = guessSuffix(imageUri)
             val videoSuffix = guessSuffix(videoUri)
 
-            if(imageSuffix !in listOf(".png", ".webp", ".jpg", ".jpeg")){
+            if (imageSuffix !in listOf(".png", ".webp", ".jpg", ".jpeg")) {
                 return@withContext Result.failure(IllegalArgumentException("Dozwolone rozszerzenia zdjęcia to .png, .webp, .jpg"))
             }
 
-            if(videoSuffix !in listOf(".mp4", ".webm")){
+            if (videoSuffix !in listOf(".mp4", ".webm")) {
                 return@withContext Result.failure(IllegalArgumentException("Dozwolone rozszerzenia filmiku to .mp4, .webm"))
             }
 
@@ -132,14 +131,14 @@ class ExerciseRepository(private val context: Context) {
             val advancedBody: RequestBody = difficulty.toRequestBody(text)
             val visibilityBody: RequestBody = isPublic.toRequestBody(text)
 
-            val imageMime = when(imageSuffix){
+            val imageMime = when (imageSuffix) {
                 ".png" -> "image/png"
                 ".jpg" -> "image/jpg"
                 ".webp" -> "image/webp"
                 else -> "application/octet-stream"
             }
 
-            val videoMime = when(videoSuffix){
+            val videoMime = when (videoSuffix) {
                 ".mp4" -> "video/mp4"
                 ".webm" -> "video/webm"
                 else -> "application/octet-stream"
@@ -176,8 +175,12 @@ class ExerciseRepository(private val context: Context) {
             imageFile.delete(); videoFile.delete()
 
             if (res.isSuccessful) {
-                withContext(Dispatchers.Main){
-                    Toast.makeText(context, context.getString(R.string.exercise_create_success), Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.exercise_create_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 //TODO: przekieruj do widoku ze szczegolami stworzonego cwiczenia
@@ -191,8 +194,8 @@ class ExerciseRepository(private val context: Context) {
         } catch (e: HttpException) {
             if (e.code() == 401) {
                 Result.failure(Exception("Sesja wygasła. Zaloguj się ponownie"))
-        } else {
-            val raw = e.response()?.errorBody()?.string()
+            } else {
+                val raw = e.response()?.errorBody()?.string()
                 val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, e.code())
                 Result.failure(IllegalStateException(msg))
             }

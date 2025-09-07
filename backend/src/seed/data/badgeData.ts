@@ -93,7 +93,7 @@ const badges = [
     _id: "6887b63aa3234565c7b5392b",
     title: "Trener w akccji - 1 utworzony trening",
     description: "Twój pierwszy trening jest już utworzony. Świetna robota",
-    image: "https://ibb.co/vCksp4Gb",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Trainings",
       target: 1,
@@ -145,7 +145,7 @@ const badges = [
     _id: "6887b71977991eea1a365c96",
     title: "Kreator ruchu - 1 utworzone ćwiczenie",
     description: "Twoje pierwsze autorskie ćwiczenie jest już gotowe",
-    image: "https://ibb.co/Ngv75Zc1",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Exercises",
       target: 1,
@@ -186,7 +186,7 @@ const badges = [
     _id: "6887b73a2078947c7f327f80",
     title: "Pierwszy głos - 1 utworzony post",
     description: "Zabierasz głos w społeczności - świetny początek!",
-    image: "https://ibb.co/XxSg20fQ",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Posts",
       target: 1,

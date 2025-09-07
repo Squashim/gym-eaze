@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
-import com.example.gymeaze.data.ExerciseRepository
+import com.example.gymeaze.data.repository.ExerciseRepository
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.MuscleGroup
 import kotlinx.coroutines.flow.MutableStateFlow

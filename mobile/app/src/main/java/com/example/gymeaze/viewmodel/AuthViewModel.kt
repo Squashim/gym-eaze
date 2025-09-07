@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
-import com.example.gymeaze.data.AuthRepository
+import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -113,7 +113,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             } catch(e: Exception) {
                 e.printStackTrace()
             } finally {
-                _isCheckingToken.value = false 
+                _isCheckingToken.value = false
             }
         }
     }
@@ -200,6 +200,29 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 loginErrors = newLoginErrors,
                 touchedFields = currentState.touchedFields + "password"
             )
+        }
+    }
+
+    suspend fun ensureValidToken(): Boolean {
+        return try {
+            val isLoggedIn = userPreferences.isLoggedIn.first()
+            val accessToken = userPreferences.accessToken.first()
+
+            if (!isLoggedIn || accessToken.isNullOrEmpty()) {
+                return false
+            }
+
+            val result = authRepository.getCurrentUser()
+            if (result.isFailure) {
+                val refreshResult = authRepository.refreshAccessToken()
+                if (refreshResult.isFailure) {
+                    handleTokenExpiration()
+                    return false
+                }
+            }
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 
