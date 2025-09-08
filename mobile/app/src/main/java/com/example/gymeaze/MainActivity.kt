@@ -40,7 +40,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val authViewModel: AuthViewModel = viewModel()
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
-            val userViewModel: UserViewModel = viewModel()
+            //val userViewModel: UserViewModel = viewModel()
+            val userViewModel: UserViewModel = viewModel {
+                UserViewModel(
+                    application = application,
+                    onTokenExpired = { authViewModel.logout(manual = false) }
+                )
+            }
 
 
             val googleSignInLauncher = rememberLauncherForActivityResult(

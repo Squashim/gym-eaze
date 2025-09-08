@@ -40,7 +40,7 @@ const badges = [
     _id: "6887b49a91d45c094c4d468d",
     title: "4-letni weteran",
     description: "Cztery lata z GymEaze- przykład dla innych",
-    image: "https://ibb.co/LD5yZNPm",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Days",
       target: 4,
@@ -50,7 +50,7 @@ const badges = [
     _id: "6887b4a86ded2a8bbf369396",
     title: "5 lat konsekwencji",
     description: "Pół dekady zaangażowania. Jesteś legendą",
-    image: "https://ibb.co/vCd62KNs",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Days",
       target: 5,
@@ -62,7 +62,7 @@ const badges = [
     _id: "6887b6111f7d7d53800b2f86",
     title: "Pierwsza dziesiątka - 10 motywatorów",
     description: "Gratulacje! Masz już pierwszych fanów",
-    image: "https://ibb.co/hFhGwDBM",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Followers",
       target: 10,
@@ -72,7 +72,7 @@ const badges = [
     _id: "6887b61df9e7b4515c87c154",
     title: "Pół setki mocy - 50 motywatorów",
     description: "Jesteś inspiracją - coraz więcej osób Cię śledzi",
-    image: "https://ibb.co/vv3LwCJL",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Followers",
       target: 50,
@@ -82,7 +82,7 @@ const badges = [
     _id: "6887b62a0b6d756908a8e1b4",
     title: "Fitness influencer - 100 motywatorów",
     description: "Setka za Tobą! Twoja forma robi wrażenie",
-    image: "https://ibb.co/NgkyztjH",
+    image: "https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg",
     requirements: {
       action: "Followers",
       target: 100,

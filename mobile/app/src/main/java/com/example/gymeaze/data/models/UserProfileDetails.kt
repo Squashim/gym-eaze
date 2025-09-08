@@ -11,8 +11,12 @@ data class UserProfileDetails(
 )
 
 data class Badge(
+    val id: String = "",
     val title: String = "",
     val description: String = "",
     val image: String = ""
 )
 
+data class UpdateProfileResponse(
+    val message: String
+)

@@ -43,8 +43,8 @@
     <string name="picture_requirements">Maksymalny rozmiar zdjęcia to 5MB. Obsługiwane typy: .jpg, .png, .webp.</string>
     <string name="biography">Biogram</string>
     <string name="biography_placeholder">Napisz coś o sobie...</string>
-    <string name="biography_limit">Maksymalnie 250 znaków</string>
-    <string name="biography_limit_current">%d/250 znaków</string>
+    <string name="biography_limit">Maksymalnie 150 znaków</string>
+    <string name="biography_limit_current">%d/150 znaków</string>
     <string name="training_goal">Cel treningowy</string>
     <string name="select_training_goal">Wybierz swój cel treningowy</string>
     <string name="pinned_badges">Przypięte odznaki</string>

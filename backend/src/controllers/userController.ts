@@ -1,5 +1,5 @@
 import { goalValues } from '../constants/goals';
-import {getUserFavoritesService, getUserLikesService, getUserProfileDetailsService, updateUserProfileDetailsService} from '../services/userService';
+import {getUserBadgesService, getUserFavoritesService, getUserLikesService, getUserProfileDetailsService, updateUserProfileDetailsService} from '../services/userService';
 import { AuthRequest } from '../types/auth';
 import { Response } from 'express';
 
@@ -63,12 +63,10 @@ export const updateUserProfileDetails = async (req: AuthRequest, res: Response) 
 
     const { description, goal, pinnedBadges } = req.body;
 
-    // Walidacja goal
     if (goal && !goalValues.includes(goal)) {
       return res.status(400).json({ message: "Niepoprawny cel" });
     }
 
-    // Trimowanie opisu
     const trimmedDescription = description?.trim() || "";
 
     const updated = await updateUserProfileDetailsService(
@@ -82,6 +80,22 @@ export const updateUserProfileDetails = async (req: AuthRequest, res: Response) 
     return res.json(updated);
   } catch (error: any) {
     console.error("Błąd w updateUserProfileDetails:", error);
+    return res.status(500).json({ message: error.message || "Błąd serwera" });
+  }
+};
+
+export const getUserBadges = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Brak autoryzacji użytkownika" });
+    }
+
+    const badges = await getUserBadgesService(userId);
+    return res.json(badges);
+  } catch (error: any) {
+    console.error("Błąd w getUserBadges:", error);
     return res.status(500).json({ message: error.message || "Błąd serwera" });
   }
 };

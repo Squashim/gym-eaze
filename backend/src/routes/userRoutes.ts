@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middlewares/authMiddleware';
-import {getUserFavorites, getUserLikes, getUserProfileDetails, updateUserProfileDetails} from '../controllers/userController';
+import {getUserBadges, getUserFavorites, getUserLikes, getUserProfileDetails, updateUserProfileDetails} from '../controllers/userController';
 import { checkProfilePictureSize, handleProfileMulterError, uploadProfileImage} from '../middlewares/userMiddleware';
 
 const router = express.Router();
@@ -18,5 +18,7 @@ router.patch(
   checkProfilePictureSize,
   updateUserProfileDetails
 );
+
+router.get("/badges", authenticate, getUserBadges);
 
 export default router;

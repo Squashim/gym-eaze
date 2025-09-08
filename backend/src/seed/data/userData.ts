@@ -59,6 +59,21 @@ const users = [
         isPinned: true,
         awardedAt: new Date(),
       },
+      {
+        badge: new Types.ObjectId('6887b62a0b6d756908a8e1b4'),
+        isPinned: false,
+        awardedAt: new Date(),
+      },
+      {
+        badge: new Types.ObjectId('6887b61df9e7b4515c87c154'),
+        isPinned: false,
+        awardedAt: new Date(),
+      },
+      {
+        badge: new Types.ObjectId('6887b4a86ded2a8bbf369396'),
+        isPinned: false,
+        awardedAt: new Date(),
+      },
     ],
   },
   /*

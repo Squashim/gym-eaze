@@ -34,6 +34,7 @@ export const getUserProfileDetailsService = async (userId: string) => {
     user.badges
       ?.filter(b => b.isPinned && b.badge)
       .map(b => ({
+        id: (b.badge as IBadge)._id,
         title: (b.badge as IBadge).title || "",
         description: (b.badge as IBadge).description || "",
         image: (b.badge as IBadge).image || ""
@@ -62,7 +63,6 @@ export const updateUserProfileDetailsService = async (
     throw new Error("Użytkownik nie znaleziony");
   }
 
-  // Upload zdjęcia profilowego
   let profilePicture = user.profileDetails?.profilePicture || "";
   if (file) {
     const uploaded = await uploadExerciseMedia(file.buffer, undefined);
@@ -71,7 +71,6 @@ export const updateUserProfileDetailsService = async (
     }
   }
 
-  // Aktualizacja pinned badges (limit 5)
   if (Array.isArray(pinnedBadges)) {
     if (pinnedBadges.length > 5) {
       throw new Error("Możesz przypiąć maksymalnie 5 odznak");
@@ -83,10 +82,9 @@ export const updateUserProfileDetailsService = async (
     });
   }
 
-  // Aktualizacja szczegółów profilu
   user.profileDetails = {
     ...user.profileDetails,
-    description,
+    description: description || user.profileDetails?.description || "",
     goal: (goal as Goal) ?? user.profileDetails?.goal,
     profilePicture,
   };
@@ -94,4 +92,27 @@ export const updateUserProfileDetailsService = async (
   await user.save();
 
   return { message: "Profil zaktualizowany pomyślnie" };
+};
+
+export const getUserBadgesService = async (userId: string) => {
+  const user = await User.findById(userId).populate({
+    path: "badges.badge",
+    model: Badge
+  });
+
+  if (!user) {
+    throw new Error("Nie znaleziono użytkownika");
+  }
+
+  const allBadges =
+    user.badges
+      ?.filter(b => b.badge)
+      .map(b => ({
+        id: (b.badge as IBadge)._id,
+        title: (b.badge as IBadge).title,
+        description: (b.badge as IBadge).description,
+        image: (b.badge as IBadge).image
+      })) || [];
+
+  return allBadges;
 };
