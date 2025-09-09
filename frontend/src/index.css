@@ -48,7 +48,7 @@
   --font-sans: 'Inter', sans-serif;
   --radius: 0.625rem;
   --navbar-height: 4rem;
-  --background: oklch(88.46% 0.00326 15.523);
+  --background: oklch(97.767% 0.00211 14.29);
   --foreground: oklch(0.145 0 0);
   --card: oklch(97.015% 0.00011 271.152);
   --card-foreground: oklch(0.145 0 0);
@@ -142,10 +142,32 @@
     scrollbar-color: var(--accent-foreground) var(--card);
   }
 
-  .bg-dots {
+  .dark .bg-dots {
     background-image:
       radial-gradient(circle, var(--border) 2px, transparent 2px),
       linear-gradient(45deg, var(--background), var(--input)),
+      radial-gradient(circle at 80% -10%, var(--secondary) 0%, transparent 15%),
+      radial-gradient(circle at 10% 50%, var(--secondary) 10%, transparent 30%),
+      radial-gradient(circle at 100% 80%, var(--secondary) 0%, transparent 15%);
+    background-size:
+      20px 20px,
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      100% 100%;
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0;
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  }
+
+  .bg-dots {
+    background-image:
+      radial-gradient(circle, var(--border) 2px, transparent 2px),
+      linear-gradient(45deg, var(--background), color-mix(in oklch, var(--input) 50%, transparent)),
       radial-gradient(circle at 80% -10%, var(--secondary) 0%, transparent 15%),
       radial-gradient(circle at 10% 50%, var(--secondary) 10%, transparent 30%),
       radial-gradient(circle at 100% 80%, var(--secondary) 0%, transparent 15%);

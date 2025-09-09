@@ -12,7 +12,7 @@ import { validateExerciseFiles, ExerciseValidationError } from '../utils/exercis
 import * as exerciseService from '../services/exerciseService';
 import { AuthRequest } from '../types/auth';
 import { parseField } from '../utils/parsers';
-import { ExerciseRequest } from '../types/exercise';
+import { ExerciseQuery, ExerciseRequest } from '../types/exercise';
 
 export const addExercise = async (req: Request, res: Response) => {
   const exerciseReq = req as ExerciseRequest;
@@ -200,15 +200,9 @@ export const getExerciseById = async (req: AuthRequest, res: Response) => {
 export const getExercises = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
-    const { sortBy = 'latest', page = '1', pageSize = '10', ...filters } = req.query;
 
-    const exercises = await getExercisesService(
-      filters,
-      sortBy as 'popular' | 'top-rated' | 'latest',
-      Number(page),
-      Number(pageSize),
-      userId,
-    );
+    const { filters = {}, sortBy = 'latest', page = 1, pageSize = 9 }: ExerciseQuery = req.body;
+    const exercises = await getExercisesService(filters, sortBy, page, pageSize, userId);
 
     return res.json(exercises);
   } catch (error) {

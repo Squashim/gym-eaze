@@ -772,7 +772,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
               }}
             >
               {selectedValues.length > 0 ? (
-                <div className="flex justify-between w-full">
+                <div className="flex justify-between w-full" data-container="badges">
                   <div
                     className={cn(
                       'flex items-center gap-1',
@@ -925,7 +925,10 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between w-full mx-auto">
+                <div
+                  className="flex items-center justify-between w-full mx-auto"
+                  data-container="badges"
+                >
                   <span className="text-sm text-muted-foreground mx-3">{placeholder}</span>
                   <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
                 </div>
@@ -937,15 +940,30 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
             aria-label="Dostępne opcje"
             aria-multiselectable="true"
             className={cn(
-              'w-auto p-0 scrollbar',
+              'w-auto p-0',
               getPopoverAnimationClass(),
               screenSize === 'mobile' && 'w-[85vw] max-w-[280px]',
-              screenSize === 'tablet' && 'w-[70vw] max-w-md',
+              screenSize === 'tablet' && 'w-[50vw] max-w-md',
               screenSize === 'desktop' && 'min-w-[300px]',
               popoverClassName,
             )}
             id={listboxId}
             onEscapeKeyDown={() => setIsPopoverOpen(false)}
+            onInteractOutside={(e) => {
+              const target = e.target as HTMLElement;
+              const child = target.firstChild as HTMLElement;
+
+              if (
+                target instanceof HTMLSpanElement ||
+                (target instanceof HTMLButtonElement &&
+                  target.dataset?.['slot'] !== 'sheet-close') ||
+                target instanceof SVGElement ||
+                target.dataset['container'] === 'badges' ||
+                (child && child.dataset?.['slot'] === 'badge')
+              ) {
+                e.preventDefault();
+              }
+            }}
             role="listbox"
             style={{
               animationDuration: `${animationConfig?.duration || animation}s`,
@@ -1067,7 +1085,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                     </CommandGroup>
                   ))
                 ) : (
-                  <CommandGroup>
+                  <CommandGroup className="overflow-y-scroll scrollbar max-h-70">
                     {filteredOptions.map((option) => {
                       const isSelected = selectedValues.includes(option.value);
                       return (

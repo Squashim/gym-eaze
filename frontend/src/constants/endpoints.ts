@@ -10,6 +10,7 @@ export const AUTH = {
 
 export const EXERCISE = {
   base: 'exercises',
+  search: 'exercises/search',
   byId: (id: string) => `exercises/${id}`,
 } as const;
 

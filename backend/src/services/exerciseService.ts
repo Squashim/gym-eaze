@@ -3,7 +3,13 @@ import { uploadExerciseMedia } from '../config/cloudinary';
 import { validateExerciseData, validateExercisePatchData } from '../utils/exerciseValidation';
 import mongoose, { FilterQuery, Types } from 'mongoose';
 import User from '../models/userModel';
-import { CreateExerciseData, ExerciseFilters, UpdateExerciseData } from '../types/exercise';
+import {
+  CreateExerciseData,
+  ExerciseFilters,
+  PageSize,
+  SortBy,
+  UpdateExerciseData,
+} from '../types/exercise';
 import { PrivacySettings } from '../constants/privacySettings';
 
 export const createExercise = async (
@@ -181,55 +187,68 @@ export const getExerciseByIdService = async (
 
 export const getExercisesService = async (
   filters: ExerciseFilters,
-  sortBy: 'popular' | 'top-rated' | 'latest',
+  sortBy: SortBy,
   page: number,
-  pageSize: number,
+  pageSize: PageSize,
   userId?: string,
-): Promise<IExercise[]> => {
+) => {
   const query: FilterQuery<IExercise> = {};
 
+  query.visibility = PrivacySettings.public;
   if (userId) {
-    query.$or = [{ visibility: PrivacySettings.public }, { author: userId }];
-  } else {
-    query.visibility = PrivacySettings.public;
+    query.author = { $ne: userId };
   }
 
-  if (filters.muscleGroups) query['muscleGroup.type'] = { $in: filters.muscleGroups };
-  if (filters.equipment) query['equipment.type'] = { $in: filters.equipment };
-  if (filters.hashtags) query.hashtags = { $in: filters.hashtags };
-  if (filters.difficulty) query.advancedLevel = filters.difficulty;
+  const andFilters: FilterQuery<IExercise>[] = [];
+
+  if (filters.search?.trim()) {
+    andFilters.push({ name: { $regex: filters.search.trim(), $options: 'i' } });
+  }
+
+  if (filters.muscleGroups?.length) andFilters.push({ muscleGroup: { $in: filters.muscleGroups } });
+  if (filters.equipment?.length) andFilters.push({ equipment: { $in: filters.equipment } });
+  if (filters.hashtags?.length) andFilters.push({ hashtags: { $in: filters.hashtags } });
+  if (filters.difficulty) andFilters.push({ advancedLevel: filters.difficulty });
 
   if (filters.followers && userId) {
     const user = await User.findById(userId).select('followedUsers').lean();
-    if (user) {
-      query.author = { $in: user.followedUsers };
-    }
+    const followedUsers = user?.followedUsers ?? [];
+
+    andFilters.push({ author: { $in: followedUsers } });
   }
 
-  if (filters.favorites && userId) {
-    const user = await User.findById(userId).select('favorites.exercises').lean();
-    if (user) {
-      query._id = { $in: user.favorites.exercises };
-    }
+  if (andFilters.length) {
+    query.$and = andFilters;
   }
 
   type SortType = Partial<Record<keyof IExercise, 1 | -1>>;
   let sort: SortType = {};
-
-  if (sortBy === 'latest') {
-    sort = { createdAt: -1 };
-  } else if (sortBy === 'popular') {
-    const since = new Date();
-    since.setDate(since.getDate() - 1);
-    query.createdAt = { $gte: since };
-    sort = { likes: -1 };
-  } else if (sortBy === 'top-rated') {
-    sort = { likes: -1 };
+  switch (sortBy) {
+    case 'latest':
+      sort = { createdAt: -1 };
+      break;
+    case 'popular': {
+      const since = new Date();
+      since.setDate(since.getDate() - 1);
+      query.createdAt = { $gte: since };
+      sort = { likes: -1 };
+      break;
+    }
+    case 'top-rated':
+      sort = { likes: -1 };
+      break;
+    default:
+      sort = { createdAt: -1 };
   }
 
   const skip = (page - 1) * pageSize;
 
-  return Exercise.find(query).sort(sort).skip(skip).limit(pageSize);
+  const [items, total] = await Promise.all([
+    Exercise.find(query).sort(sort).skip(skip).limit(pageSize),
+    Exercise.countDocuments(query),
+  ]);
+
+  return { items, total, page, pageSize };
 };
 
 export const getExercisesByUserService = async (

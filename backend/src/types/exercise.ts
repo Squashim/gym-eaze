@@ -21,12 +21,22 @@ export type CreateExerciseData = {
 };
 
 export type ExerciseFilters = {
+  search?: string;
   muscleGroups?: string[];
   equipment?: string[];
   hashtags?: string[];
   difficulty?: AdvancedLevel;
-  followers?: string[];
-  favorites?: string[];
+  followers?: boolean;
+};
+
+export type SortBy = 'popular' | 'top-rated' | 'latest';
+export type PageSize = 9 | 18 | 36;
+
+export type ExerciseQuery = {
+  filters?: ExerciseFilters;
+  sortBy: SortBy;
+  page: number;
+  pageSize: PageSize;
 };
 
 export type UpdateExerciseData = Partial<CreateExerciseData>;

@@ -7,6 +7,7 @@ import Error from './pages/error';
 import { GoogleLinkProvider } from './context/google-link';
 import AuthGuard from './guards/auth-guard';
 import ExerciseCreator from './components/features/exercises/exercise-creator';
+import ExerciseBrowser from './components/features/exercises/exercise-browser';
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
       <Route element={<AuthGuard allow="all" />}>
         <Route element={<Welcome />} index path="/" />
         <Route element={<div>Posty</div>} path="/social/browse" />
-        <Route element={<div>Ćwiczenia</div>} path="/exercises/browse" />
+        <Route element={<ExerciseBrowser />} path="/exercises/browse" />
         <Route element={<div>Pomoc</div>} path="/help" />
       </Route>
 
