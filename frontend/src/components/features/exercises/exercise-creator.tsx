@@ -15,36 +15,122 @@ import { FileInput } from '@/components/ui/file-input';
 import { exerciseSchema, type ExerciseSchema } from '@/schemas/exercise-schema';
 import Typography from '@/components/ui/typography';
 import { Switch } from '@/components/ui/switch';
-import { UseStepForm } from '@/hooks/use-step-form';
+import { useStepForm } from '@/hooks/use-step-form';
 import Stepper from '@/components/ui/stepper';
 import StepActions from '@/components/ui/step-actions';
 import { Textarea } from '@/components/ui/textarea';
 import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
-import { apiResponseToMultiSelectOptions, cn } from '@/lib/utils';
+import { apiResponseToMultiSelectOptions, cn, extractDirtyFieldsData } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedLevel } from '@/constants/advanced-level';
-import useGetEquipment from '@/hooks/use-get-equipment';
-import useGetMuscleGroups from '@/hooks/use-get-muscle-groups';
+import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
+import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-groups';
 import type { MuscleGroup } from '@/types/muscle-group';
 import type { Equipment } from '@/types/equipment';
-import { useMemo, type PropsWithChildren } from 'react';
+import { useEffect, useMemo, type PropsWithChildren } from 'react';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { exerciseCreatorConstants } from '@/constants/forms';
-import { useExercise } from '@/hooks/use-exercise';
-import type { CreateExercisePayload } from '@/types/exercise';
+import { useExercise } from '@/hooks/query/exercises/use-exercise';
+import { useUser } from '@/context/user';
+import type { CreateExercisePayload, UpdateExercisePayload } from '@/types/exercise';
+import { useParams } from 'react-router-dom';
+import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
+import { Loader2 } from 'lucide-react';
+import { Visibility } from '@/constants/visibility';
+import { useSequentialGuards } from '@/guards/use-sequential-guards';
+import useFormFiles from '@/hooks/use-form-files';
 
-const ExerciseCreator = () => {
-  const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = UseStepForm({
+type ExerciseCreatorProps = {
+  mode: 'create' | 'edit';
+};
+
+
+const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
+  const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: exerciseSchema,
     defaultValues: exerciseCreatorConstants.defaultValues,
     totalSteps: exerciseCreatorConstants.steps.length,
   });
-  const { createExercise } = useExercise();
+
+  const { createExercise, updateExercise } = useExercise();
+  const { user } = useUser();
   const { handleSubmit } = form;
 
-  const onSubmit = (formData: ExerciseSchema) => {
+  const isEditMode = mode === 'edit';
+  const { id } = useParams();
+  const {
+    data: exerciseData,
+    isLoading,
+    isError,
+  } = useGetExercise(id!, {
+    enabled: isEditMode && Boolean(id),
+  });
+
+  const guards = useMemo(
+    () => [
+      {
+        check: () => {
+          if (!isEditMode) return true;
+          if (isLoading) return 'wait';
+          return !isError && !!exerciseData;
+        },
+        redirectTo: '/exercises',
+        errorMessage: 'Identyfikator ćwiczenia jest niepoprawny.',
+      },
+      {
+        check: () => {
+          if (!isEditMode) return true;
+          if (isLoading) return 'wait';
+          return exerciseData?.author === user?._id;
+        },
+        redirectTo: `/exercises/${exerciseData?._id}`,
+        errorMessage: 'Nie masz uprawnień do edytowania tego ćwiczenia.',
+      },
+    ],
+    [isEditMode, isLoading, isError, exerciseData, user],
+  );
+  const { passed: guardsPassed, ready: guardsReady } = useSequentialGuards(guards);
+  const {
+    imageFile: defaultImageFile,
+    videoFile: defaultVideoFile,
+    isLoading: isFilesLoading,
+    compareFiles,
+  } = useFormFiles({
+    imageUrl: exerciseData?.image,
+    videoUrl: exerciseData?.video,
+    enabled: isEditMode && Boolean(exerciseData),
+  });
+
+  useEffect(() => {
+    if (!guardsPassed || !exerciseData || !defaultImageFile || !defaultVideoFile || isError) return;
+
+    const fillForm = () => {
+      form.reset({
+        stepOne: {
+          name: exerciseData.name,
+          image: defaultImageFile,
+          video: defaultVideoFile,
+          advancedLevel: exerciseData.advancedLevel,
+          visibility: exerciseData.visibility,
+        },
+        stepTwo: {
+          description: exerciseData.description,
+          muscleGroup: exerciseData.muscleGroup,
+          equipment: exerciseData.equipment,
+          hashtags: exerciseData.hashtags || [],
+        },
+      });
+    };
+
+    void fillForm();
+  }, [guardsPassed, exerciseData, defaultImageFile, defaultVideoFile, isError, form]);
+
+  const imageFile = form.watch('stepOne.image');
+  const videoFile = form.watch('stepOne.video');
+
+  const handleCreate = (formData: ExerciseSchema) => {
     const formattedData = {
       ...formData.stepOne,
       ...formData.stepTwo,
@@ -53,37 +139,82 @@ const ExerciseCreator = () => {
     createExercise.mutate(formattedData);
   };
 
+  const fileComparison = useMemo(() => {
+    return compareFiles(imageFile, videoFile);
+  }, [imageFile, videoFile, compareFiles]);
+
+  const { isImageDefault, isVideoDefault } = fileComparison;
+
+  const handleUpdate = (formData: ExerciseSchema) => {
+    const dirtyFields = form.formState.dirtyFields;
+
+    const formattedData = extractDirtyFieldsData<ExerciseSchema, UpdateExercisePayload>(
+      dirtyFields,
+      formData,
+    );
+
+    if (!isImageDefault) {
+      formattedData.image = formData.stepOne.image;
+    }
+
+    if (!isVideoDefault) {
+      formattedData.video = formData.stepOne.video;
+    }
+
+    updateExercise.mutate({ id: id!, payload: formattedData });
+  };
+
+  const onSubmit = (formData: ExerciseSchema) => {
+    if (isEditMode) {
+      handleUpdate(formData);
+    } else {
+      handleCreate(formData);
+    }
+  };
+
   useUnsavedChangesWarning(form.formState.isDirty);
 
   return (
     <div className="flex flex-col gap-6 max-w-lg md:max-w-3xl w-full mx-auto my-4">
-      <Typography variant="h1">Kreator ćwiczenia</Typography>
+      <Typography variant="h1">{isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}</Typography>
       <Stepper step={step} steps={exerciseCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-center">
         <CardContent className="w-full">
-          <Form {...form}>
-            <form
-              className="grid gap-y-4 md:grid-cols-2 md:gap-x-6"
-              onKeyDown={handleKeyDown}
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              {step === 0 && <ExerciseCreatorStepOne />}
-              {step === 1 && <ExerciseCreatorStepTwo />}
-              {step === 2 && <ExerciseCreatorStepThree />}
+          {isEditMode && (isLoading || isFilesLoading || !guardsReady || !guardsPassed) ? (
+            <>
+              <Loader2 className="mx-auto mb-4 animate-spin" size={32} />
+              <Typography className="text-center" variant="p">
+                Ładowanie danych ćwiczenia...
+              </Typography>
+            </>
+          ) : (
+            <Form {...form}>
+              <form
+                className="grid gap-y-4 md:grid-cols-2 md:gap-x-6"
+                onKeyDown={handleKeyDown}
+                onSubmit={handleSubmit(onSubmit)}
+              >
+                {step === 0 && <ExerciseCreatorStepOne />}
+                {step === 1 && <ExerciseCreatorStepTwo />}
+                {step === 2 && <ExerciseCreatorStepThree />}
 
-              <StepActions
-                exitLabel="Wyjdź z kreatora"
-                isSubmitting={createExercise.isPending}
-                nextStep={nextStep}
-                prevStep={prevStep}
-                refs={refs}
-                step={step}
-                submitLabel="Stwórz ćwiczenie"
-                submittingLabel="Tworzenie..."
-                totalSteps={totalSteps}
-              />
-            </form>
-          </Form>
+                <StepActions
+                  exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
+                  isSubmitting={createExercise.isPending || updateExercise.isPending}
+                  nextStep={nextStep}
+                  prevStep={prevStep}
+                  refs={refs}
+                  step={step}
+                  submitDisabled={
+                    isEditMode && !form.formState.isDirty && isImageDefault && isVideoDefault
+                  }
+                  submitLabel={isEditMode ? 'Edytuj ćwiczenie' : 'Stwórz ćwiczenie'}
+                  submittingLabel={isEditMode ? 'Edytowanie...' : 'Tworzenie...'}
+                  totalSteps={totalSteps}
+                />
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -185,9 +316,9 @@ const ExerciseCreatorStepOne = () => {
             <FormControl className="mt-1">
               <RadioGroup
                 className="flex flex-col "
-                defaultValue={field.value}
                 name={field.name}
                 onValueChange={field.onChange}
+                value={field.value}
               >
                 {Object.entries(AdvancedLevel).map(([key, value]) => (
                   <FormItem className="flex items-center gap-3" key={key}>
@@ -216,9 +347,11 @@ const ExerciseCreatorStepOne = () => {
             </div>
             <FormControl>
               <Switch
-                checked={field.value === 'Publiczny'}
+                checked={field.value === Visibility.public}
                 name={field.name}
-                onCheckedChange={(checked) => field.onChange(checked ? 'Publiczny' : 'Prywatny')}
+                onCheckedChange={(checked) =>
+                  field.onChange(checked ? Visibility.public : Visibility.private)
+                }
               />
             </FormControl>
           </FormItem>
@@ -265,7 +398,7 @@ const ExerciseCreatorStepTwo = () => {
             <FormLabel className="font-semibold">Grupy mięśniowe*</FormLabel>
             <FormControl>
               <MultiSelect
-                defaultValue={field.value}
+                defaultValue={isMuscleGroupsLoading ? [] : field.value}
                 disabled={isMuscleGroupsLoading}
                 maxCount={3}
                 onValueChange={field.onChange}
@@ -286,7 +419,7 @@ const ExerciseCreatorStepTwo = () => {
             <FormLabel className="font-semibold">Sprzęt ćwiczeniowy*</FormLabel>
             <FormControl>
               <MultiSelect
-                defaultValue={field.value}
+                defaultValue={isEquipmentLoading ? [] : field.value}
                 disabled={isEquipmentLoading}
                 hideSelectAll
                 maxCount={3}

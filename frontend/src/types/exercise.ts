@@ -15,9 +15,12 @@ type BaseExercise<TImage = string, TVideo = string> = {
 
 export type Exercise = BaseExercise<string, string> & {
   _id: string;
+  author: string;
   likes: number;
   createdAt: string;
   updatedAt: string;
 };
 
 export type CreateExercisePayload = BaseExercise<File, File>;
+
+export type UpdateExercisePayload = Partial<CreateExercisePayload>;

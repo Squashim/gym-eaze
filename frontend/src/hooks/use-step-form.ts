@@ -9,7 +9,7 @@ interface UseStepFormProps<TSchema extends ZodTypeAny> {
   totalSteps: number;
 }
 
-export function UseStepForm<TSchema extends ZodTypeAny>({
+export function useStepForm<TSchema extends ZodTypeAny>({
   schema,
   defaultValues,
   totalSteps,
