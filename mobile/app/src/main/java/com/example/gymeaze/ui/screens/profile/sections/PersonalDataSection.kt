@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +28,10 @@ import com.example.gymeaze.viewmodel.UserViewModel
 fun PersonalDataSection(
     viewModel: UserViewModel? = null
 ) {
+    LaunchedEffect(viewModel) {
+        viewModel?.fetchUserPersonalData()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,6 +47,13 @@ fun PersonalDataSection(
 private fun EditPersonalDataSection(
     viewModel: UserViewModel? = null
 ) {
+    val firstName by viewModel?.firstName?.collectAsState("") ?: remember { mutableStateOf("") }
+    val lastName by viewModel?.lastName?.collectAsState("") ?: remember { mutableStateOf("") }
+    val selectedCountry by viewModel?.selectedCountry?.collectAsState() ?: remember { mutableStateOf(null) }
+    val isPersonalDataPublic by viewModel?.isPersonalDetailsPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
+    val isLoading by viewModel?.personalDataLoading?.collectAsState(false) ?: remember { mutableStateOf(false) }
+    val error by viewModel?.personalDataError?.collectAsState() ?: remember { mutableStateOf(null) }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -56,8 +69,8 @@ private fun EditPersonalDataSection(
             )
 
             Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
+                imageVector = if (isPersonalDataPublic) Icons.Default.Public else Icons.Default.Lock,
+                contentDescription = if (isPersonalDataPublic) "Public badges" else "Private badges",
                 tint = getOnSurfaceSecondaryColor(),
                 modifier = Modifier.size(16.dp)
             )
@@ -70,42 +83,81 @@ private fun EditPersonalDataSection(
             lineHeight = 20.sp
         )
 
+        error?.let { errorMessage ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(12.dp),
+                    fontSize = 14.sp
+                )
+            }
+        }
+
         PersonalDataField(
-            label = stringResource(R.string.username),
-            value = "", // TODO: Pobrac z ViewModel
+            label = stringResource(R.string.name),
+            value = firstName,
+            enabled = !isLoading,
             onValueChange = { newValue ->
-                // TODO: aktualizacja w ViewModel
-                //viewModel?.updateFirstName(newValue)
+                viewModel?.updateFirstName(newValue)
             }
         )
 
         PersonalDataField(
             label = stringResource(R.string.surname),
-            value = "", // TODO: Pobrac z ViewModel
+            value = lastName,
+            enabled = !isLoading,
             onValueChange = { newValue ->
-                // TODO: aktualizacja w ViewModel
-                //viewModel?.updateLastName(newValue)
+                viewModel?.updateLastName(newValue)
             }
         )
 
-        CountryField(viewModel = viewModel)
+        CountryField(
+            viewModel = viewModel,
+            enabled = !isLoading,
+            selectedCountry = selectedCountry
+        )
 
         Button(
             onClick = {
-                // TODO: Implementacja zapisywania zmian przez viewModel
-                //viewModel?.updatePersonalData()
+                viewModel?.updatePersonalData()
             },
             modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
                 containerColor = getOnSurfaceColor()
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.save_changes),
-                color = getBackgroundColor(),
-                fontSize = 16.sp
-            )
+            if (isLoading) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = getBackgroundColor(),
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = "Zapisywanie...",
+                        color = getBackgroundColor(),
+                        fontSize = 16.sp
+                    )
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.save_changes),
+                    color = getBackgroundColor(),
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
@@ -114,15 +166,9 @@ private fun EditPersonalDataSection(
 private fun PersonalDataField(
     label: String,
     value: String,
+    enabled: Boolean = true,
     onValueChange: (String) -> Unit
 ) {
-    var fieldValue by remember { mutableStateOf(value) }
-
-    // Aktualizuj lokalny stan gdy wartość się zmieni
-    LaunchedEffect(value) {
-        fieldValue = value
-    }
-
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -134,17 +180,17 @@ private fun PersonalDataField(
         )
 
         OutlinedTextField(
-            value = fieldValue,
-            onValueChange = { newValue ->
-                fieldValue = newValue
-                onValueChange(newValue)
-            },
+            value = value,
+            onValueChange = onValueChange,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = getPrimaryColor(),
                 unfocusedBorderColor = getInputBorderColor(),
                 focusedTextColor = getOnSurfaceColor(),
                 unfocusedTextColor = getOnSurfaceColor(),
+                disabledTextColor = getOnSurfaceSecondaryColor(),
+                disabledBorderColor = getInputBorderColor().copy(alpha = 0.5f),
                 cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
@@ -155,19 +201,15 @@ private fun PersonalDataField(
 
 @Composable
 private fun CountryField(
-    viewModel: UserViewModel? = null
+    viewModel: UserViewModel? = null,
+    enabled: Boolean = true,
+    selectedCountry: String? = null
 ) {
-    var selectedCountry by remember { mutableStateOf("Podaj kraj zamieszkania") } // TODO: pobrac z viewmodel
     var expanded by remember { mutableStateOf(false) }
 
-    // TODO: Pobierz z viewModel gdy będzie dostępny
-    LaunchedEffect(viewModel) {
-        viewModel?.let {
-            // selectedCountry = it.getCurrentCountry() ?: "Podaj kraj zamieszkania"
-        }
-    }
+    val displayText = selectedCountry ?: "Podaj kraj zamieszkania"
 
-    // Tymczasowe TODO: pobrac z API
+    //TUTAJ POBIERAJ Z ENUMA ---------------------------------------------------------------
     val countries = listOf(
         "Polska",
         "Wielka Brytania",
@@ -192,51 +234,53 @@ private fun CountryField(
 
         Box {
             OutlinedTextField(
-                value = selectedCountry,
+                value = displayText,
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { expanded = true },
+                    .let { if (enabled) it.clickable { expanded = true } else it },
                 enabled = false,
                 colors = OutlinedTextFieldDefaults.colors(
-                    disabledBorderColor = getInputBorderColor(),
-                    disabledTextColor = if (selectedCountry == "Podaj kraj zamieszkania")
+                    disabledBorderColor = if (enabled) getInputBorderColor() else getInputBorderColor().copy(alpha = 0.5f),
+                    disabledTextColor = if (selectedCountry == null)
                         getOnSurfaceSecondaryColor() else getOnSurfaceColor()
                 ),
                 shape = RoundedCornerShape(8.dp),
                 trailingIcon = {
-                    Icon(
-                        imageVector = if (expanded)
-                            Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = getOnSurfaceSecondaryColor(),
-                        modifier = Modifier.clickable { expanded = !expanded }
-                    )
+                    if (enabled) {
+                        Icon(
+                            imageVector = if (expanded)
+                                Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = getOnSurfaceSecondaryColor(),
+                            modifier = Modifier.clickable { expanded = !expanded }
+                        )
+                    }
                 }
             )
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(getSurfaceColor())
-            ) {
-                countries.forEach { country ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = country,
-                                color = getOnSurfaceColor()
-                            )
-                        },
-                        onClick = {
-                            selectedCountry = country
-                            expanded = false
-                            // TODO: aktualizacja w viewmodel
-                            //viewModel?.updateCountry(country)
-                        }
-                    )
+            if (enabled) {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(getSurfaceColor())
+                ) {
+                    countries.forEach { country ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = country,
+                                    color = getOnSurfaceColor()
+                                )
+                            },
+                            onClick = {
+                                viewModel?.updateCountry(country)
+                                expanded = false
+                            }
+                        )
+                    }
                 }
             }
         }

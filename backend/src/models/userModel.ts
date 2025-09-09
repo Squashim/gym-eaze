@@ -198,8 +198,7 @@ const userSchema = new mongoose.Schema<IUser>(
       },
       country: {
         type: String,
-        enum: countries.map((c) => c.code),
-        default: 'PL',
+        default: 'Nie wybrano',
       },
     },
 

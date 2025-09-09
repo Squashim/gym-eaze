@@ -6,9 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -54,7 +51,7 @@ fun BadgeSelectionDialog(
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f)
                 .padding(16.dp),
-            shape = RoundedCornerShape(8.dp), // Zmieniono na lekko zaokrąglone rogi
+            shape = RoundedCornerShape(8.dp),
             color = getSurfaceColor()
         ) {
             Column(
@@ -84,101 +81,132 @@ fun BadgeSelectionDialog(
                     }
                 }
 
-                Text(
-                    text = "Możesz wybrać maksymalnie 5 odznak do przypięcia (${selectedBadgeIds.size}/5)",
-                    fontSize = 14.sp,
-                    color = getOnSurfaceSecondaryColor(),
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                if (isLoading || availableBadges.isNotEmpty()) {
+                    Text(
+                        text = "Możesz wybrać maksymalnie 5 odznak do przypięcia (${selectedBadgeIds.size}/5)",
+                        fontSize = 14.sp,
+                        color = getOnSurfaceSecondaryColor(),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
 
-                // Lista odznak
-                if (availableBadges.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Ładowanie odznak...",
-                                fontSize = 16.sp,
-                                color = getOnSurfaceSecondaryColor(),
-                                textAlign = TextAlign.Center
-                            )
+                when {
+                    isLoading -> {
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Ładowanie odznak...",
+                                    fontSize = 16.sp,
+                                    color = getOnSurfaceSecondaryColor(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
-                    ) {
-                        items(count = availableBadges.size) { index ->
-                            val badge = availableBadges[index]
-                            val isSelected = selectedBadgeIds.contains(badge.id)
-                            val canSelect = selectedBadgeIds.size < 5 || isSelected
+                    availableBadges.isEmpty() -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Brak dostępnych odznak",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = getOnSurfaceColor(),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Zdobywaj odznaki uczestnicząc w treningach i osiągając cele!",
+                                    fontSize = 14.sp,
+                                    color = getOnSurfaceSecondaryColor(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(bottom = 16.dp)
+                        ) {
+                            items(count = availableBadges.size) { index ->
+                                val badge = availableBadges[index]
+                                val isSelected = selectedBadgeIds.contains(badge.id)
+                                val canSelect = selectedBadgeIds.size < 5 || isSelected
 
-                            BadgeSelectionItem(
-                                badge = badge,
-                                isSelected = isSelected,
-                                onSelectionChange = { shouldBeSelected ->
-                                    if (shouldBeSelected) {
-                                        if (selectedBadgeIds.size < 5) {
-                                            selectedBadgeIds = selectedBadgeIds + badge.id
+                                BadgeSelectionItem(
+                                    badge = badge,
+                                    isSelected = isSelected,
+                                    onSelectionChange = { shouldBeSelected ->
+                                        if (shouldBeSelected) {
+                                            if (selectedBadgeIds.size < 5) {
+                                                selectedBadgeIds = selectedBadgeIds + badge.id
+                                            }
+                                        } else {
+                                            selectedBadgeIds = selectedBadgeIds - badge.id
                                         }
-                                    } else {
-                                        selectedBadgeIds = selectedBadgeIds - badge.id
-                                    }
-                                },
-                                canSelect = canSelect
-                            )
+                                    },
+                                    canSelect = canSelect
+                                )
+                            }
                         }
                     }
                 }
 
-                // Przyciski - kwadratowe z lekko zaokrąglonymi rogami
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        enabled = !isLoading,
-                        shape = RoundedCornerShape(8.dp) // Kwadratowe z lekko zaokrąglonymi rogami
+                if (isLoading || availableBadges.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Anuluj")
-                    }
+                        OutlinedButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.weight(1f),
+                            enabled = !isLoading,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Anuluj")
+                        }
 
-                    Button(
-                        onClick = {
-                            val selectedBadges = availableBadges.filter { badge ->
-                                selectedBadgeIds.contains(badge.id)
+                        Button(
+                            onClick = {
+                                val selectedBadges = availableBadges.filter { badge ->
+                                    selectedBadgeIds.contains(badge.id)
+                                }
+                                onConfirm(selectedBadges)
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = !isLoading,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = getPrimaryColor()
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = Color.White
+                                )
+                            } else {
+                                Text(
+                                    text = "Potwierdź",
+                                    color = Color.White
+                                )
                             }
-                            onConfirm(selectedBadges)
-                        },
-                        modifier = Modifier.weight(1f),
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = getPrimaryColor()
-                        ),
-                        shape = RoundedCornerShape(8.dp) // Kwadratowe z lekko zaokrąglonymi rogami
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                color = Color.White
-                            )
-                        } else {
-                            Text(
-                                text = "Potwierdź",
-                                color = Color.White
-                            )
                         }
                     }
                 }

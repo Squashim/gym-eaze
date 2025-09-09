@@ -3,6 +3,9 @@ import Badge from "../models/badgeModel"; // Dodaj ten import
 import cloudinary, { uploadExerciseMedia } from "../config/cloudinary";
 import User, { IUser } from "../models/userModel";
 import { Goal } from "../constants/goals";
+import bcrypt from 'bcryptjs';
+import countries, { CountryCode } from "../constants/countries";
+import { Gender } from "../constants/genders";
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select("likes");
@@ -116,3 +119,183 @@ export const getUserBadgesService = async (userId: string) => {
 
   return allBadges;
 };
+
+interface UpdateUserInput {
+  username?: string;
+  password?: string;
+}
+
+export const updateUserService = async (userId: string, data: UpdateUserInput) => {
+  const { username, password } = data;
+
+  const updateData: Partial<IUser> = {};
+
+  if (username) {
+    if (username.length < 6 || username.length > 16) {
+      throw new Error('USERNAME_LENGTH');
+    }
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser && existingUser._id.toString() !== userId) {
+      throw new Error('USERNAME_EXISTS');
+    }
+
+    updateData.username = username;
+  }
+
+  if (password) {
+    if (password.length < 14 || password.length > 32) {
+      throw new Error('PASSWORD_LENGTH');
+    }
+
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+./])[A-Za-z\d!@#$%^&*()_+./]{14,}$/;
+    if (!passwordRegex.test(password)) {
+      throw new Error('INVALID_PASSWORD');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    updateData.password = hashedPassword;
+  }
+
+  // 🔑 faktyczna aktualizacja w bazie
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+  return updatedUser;
+};
+
+export const deleteUserService = async (userId: string) => {
+  const deletedUser = await User.findByIdAndDelete(userId);
+
+  if (!deletedUser) {
+    throw new Error('USER_NOT_FOUND');
+  }
+
+  return deletedUser;
+};
+
+export const getUserPersonalDataService = async (userId: string) => {
+  const user = await User.findById(userId).select("personalDetails privacySettings");
+
+  if (!user) {
+    throw new Error("Użytkownik nie znaleziony");
+  }
+
+  return {
+    firstName: user.personalDetails?.firstName || "",
+    lastName: user.personalDetails?.lastName || "",
+    country: user.personalDetails?.country || "",
+    isPersonalDetailsPublic: user.privacySettings.isPersonalDetailsPublic,
+  };
+};
+
+interface UpdatePersonalDataInput {
+  firstName?: string;
+  lastName?: string;
+  country?: CountryCode;
+}
+
+export const updateUserPersonalDataService = async (
+  userId: string,
+  data: UpdatePersonalDataInput
+): Promise<boolean> => {
+
+  const nameRegex = /^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]+$/; 
+
+  if (data.firstName) {
+    if (data.firstName.length > 25) {
+      throw new Error("Imię nie może być dłuższe niż 25 znaków");
+    }
+    if (!nameRegex.test(data.firstName)) {
+      throw new Error("Imię może zawierać tylko litery");
+    }
+  }
+
+  if (data.lastName) {
+    if (data.lastName.length > 25) {
+      throw new Error("Nazwisko nie może być dłuższe niż 25 znaków");
+    }
+    if (!nameRegex.test(data.lastName)) {
+      throw new Error("Nazwisko może zawierać tylko litery)");
+    }
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("Użytkownik nie znaleziony");
+  }
+
+  user.personalDetails = {
+    firstName: data.firstName ?? user.personalDetails?.firstName ?? "",
+    lastName: data.lastName ?? user.personalDetails?.lastName ?? "",
+    country: data.country ?? user.personalDetails?.country ?? "",
+  };
+
+  await user.save();
+
+  return true;
+};
+
+export const getUserFitnessDataService = async (userId: string) => {
+  const user = await User.findById(userId).select("fitnessDetails privacySettings");
+
+  if (!user) {
+    throw new Error("Użytkownik nie znaleziony");
+  }
+
+  return {
+    age: user.fitnessDetails?.age ?? null,
+    height: user.fitnessDetails?.height ?? null,
+    weight: user.fitnessDetails?.weight ?? null,
+    gender: user.fitnessDetails?.gender ?? null,
+    isFitnessDetailsPublic: user.privacySettings.isFitnessDetailsPublic,
+  };
+};
+
+interface UpdateFitnessDataInput {
+  age?: number;
+  height?: number;
+  weight?: number;
+  gender?: Gender;
+}
+
+export const updateUserFitnessDataService = async (
+  userId: string,
+  data: UpdateFitnessDataInput
+): Promise<boolean> => {
+
+  const age = data.age !== undefined ? Number(data.age) : undefined;
+  const height = data.height !== undefined ? Number(data.height) : undefined;
+  const weight = data.weight !== undefined ? Number(data.weight) : undefined;
+  const gender = data.gender;
+
+  if (age !== undefined && (age < 0 || age > 120)) {
+    throw new Error("Nieprawidłowy wiek");
+  }
+
+  if (height !== undefined && (height < 50 || height > 300)) {
+    throw new Error("Nieprawidłowy wzrost");
+  }
+
+  if (weight !== undefined && (weight < 10 || weight > 500)) {
+    throw new Error("Nieprawidłowa waga");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("Użytkownik nie znaleziony");
+  }
+
+  user.fitnessDetails = {
+    age: age ?? user.fitnessDetails?.age ?? 0,
+    height: height ?? user.fitnessDetails?.height ?? 0,
+    weight: weight ?? user.fitnessDetails?.weight ?? 0,
+    gender: gender ?? user.fitnessDetails?.gender ?? Gender.none,
+  };
+
+  await user.save();
+
+  return true;
+};
+
+
+

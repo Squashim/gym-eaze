@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middlewares/authMiddleware';
-import {getUserBadges, getUserFavorites, getUserLikes, getUserProfileDetails, updateUserProfileDetails} from '../controllers/userController';
+import {deleteUser, getUserBadges, getUserFavorites, getUserFitnessData, getUserLikes, getUserPersonalData, getUserProfileDetails, updateUser, updateUserFitnessData, updateUserPersonalData, updateUserProfileDetails} from '../controllers/userController';
 import { checkProfilePictureSize, handleProfileMulterError, uploadProfileImage} from '../middlewares/userMiddleware';
 
 const router = express.Router();
@@ -8,10 +8,10 @@ const router = express.Router();
 router.get("/likes", authenticate, getUserLikes);
 router.get("/favorites", authenticate, getUserFavorites);
 
-router.get("/profile/profileDetails", authenticate, getUserProfileDetails);
+router.get("/profile/profile-details", authenticate, getUserProfileDetails);
 
 router.patch(
-  "/profile/profileDetails",
+  "/profile/profile-details",
   authenticate,
   uploadProfileImage,
   handleProfileMulterError,
@@ -20,5 +20,16 @@ router.patch(
 );
 
 router.get("/badges", authenticate, getUserBadges);
+
+router.patch('/login-details', authenticate, updateUser);
+
+router.delete('/', authenticate, deleteUser);
+
+router.get("/profile/personal-details", authenticate, getUserPersonalData);
+
+router.patch("/profile/personal-details", authenticate, updateUserPersonalData);
+
+router.get("/profile/fitness-details", authenticate, getUserFitnessData);
+router.patch("/profile/fitness-details", authenticate, updateUserFitnessData);
 
 export default router;

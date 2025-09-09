@@ -1,6 +1,9 @@
 package com.example.gymeaze.data.models
 
+import com.google.gson.annotations.SerializedName
 
+
+// Profile Info
 data class UserProfileDetails(
     val profilePicture: String = "",
     val description: String = "",
@@ -19,4 +22,55 @@ data class Badge(
 
 data class UpdateProfileResponse(
     val message: String
+)
+
+// Login Details
+data class UpdateLoginRequest(
+     val username: String?,
+     val password: String?
+)
+
+data class UpdateLoginResponse(
+    val message: String,
+    val error: String? = null
+)
+
+// Personal Details
+data class UserPersonalData(
+    val firstName: String,
+    val lastName: String,
+    val country: String?,
+    val isPersonalDetailsPublic: Boolean
+)
+
+data class UpdatePersonalDataRequest(
+    val firstName: String,
+    val lastName: String,
+    val country: String?
+)
+
+data class UpdatePersonalDataResponse(
+    val message: String,
+    val data: UserPersonalData?
+)
+
+// Fitness Details
+data class UserFitnessData(
+    val gender: String?,
+    val age: Int?,
+    val height: Int?,
+    val weight: Int?,
+    val isFitnessDetailsPublic: Boolean = true
+)
+
+data class UpdateFitnessDataRequest(
+    val gender: String?,
+    val age: Int?,
+    val height: Int?,
+    val weight: Int?
+)
+
+data class UpdateFitnessDataResponse(
+    val message: String,
+    val updatedAt: String
 )

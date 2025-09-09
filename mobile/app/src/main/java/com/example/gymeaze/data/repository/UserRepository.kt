@@ -6,7 +6,15 @@ import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.UpdateFitnessDataRequest
+import com.example.gymeaze.data.models.UpdateFitnessDataResponse
+import com.example.gymeaze.data.models.UpdateLoginRequest
+import com.example.gymeaze.data.models.UpdateLoginResponse
+import com.example.gymeaze.data.models.UpdatePersonalDataRequest
+import com.example.gymeaze.data.models.UpdatePersonalDataResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
+import com.example.gymeaze.data.models.UserFitnessData
+import com.example.gymeaze.data.models.UserPersonalData
 import com.example.gymeaze.data.models.UserProfileDetails
 import com.example.gymeaze.util.ApiUtils
 import com.example.gymeaze.util.AuthErrorMapper
@@ -138,4 +146,144 @@ class UserRepository(private val context: Context) {
         }
     }
 
+    suspend fun updateLoginData(
+        username: String? = null,
+        password: String? = null
+    ): Result<UpdateLoginResponse> = withContext(Dispatchers.IO) {
+        try {
+            val request = UpdateLoginRequest(username, password)
+
+            val response = api.updateLoginData(request)
+            val body = response.body()
+
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException("Network error: ${e.message}", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteAccount(): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.deleteAccount()
+
+            return@withContext if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserPersonalData(): Result<UserPersonalData> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getUserPersonalData()
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateUserPersonalData(
+        firstName: String,
+        lastName: String,
+        country: String?
+    ): Result<UpdatePersonalDataResponse> = withContext(Dispatchers.IO) {
+        try {
+            val request = UpdatePersonalDataRequest(
+                firstName = firstName,
+                lastName = lastName,
+                country = country
+            )
+
+            val response = api.updateUserPersonalData(request)
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserFitnessData(): Result<UserFitnessData> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getUserFitnessData()
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateUserFitnessData(
+        gender: String?,
+        age: Int?,
+        height: Int?,
+        weight: Int?
+    ): Result<UpdateFitnessDataResponse> = withContext(Dispatchers.IO) {
+        try {
+            val request = UpdateFitnessDataRequest(
+                gender = gender,
+                age = age,
+                height = height,
+                weight = weight
+            )
+
+            val response = api.updateUserFitnessData(request)
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException("Błąd sieni: ${e.message}", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

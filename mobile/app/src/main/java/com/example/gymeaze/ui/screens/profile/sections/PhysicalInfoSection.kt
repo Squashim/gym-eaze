@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +27,17 @@ import com.example.gymeaze.viewmodel.UserViewModel
 fun PhysicalInfoSection(
     viewModel: UserViewModel? = null
 ) {
+    val selectedGender by viewModel?.selectedGender?.collectAsState() ?: remember { mutableStateOf(null) }
+    val age by viewModel?.age?.collectAsState() ?: remember { mutableStateOf("") }
+    val height by viewModel?.height?.collectAsState() ?: remember { mutableStateOf("") }
+    val weight by viewModel?.weight?.collectAsState() ?: remember { mutableStateOf("") }
+    val isLoading by viewModel?.fitnessDataLoading?.collectAsState() ?: remember { mutableStateOf(false) }
+    val error by viewModel?.fitnessDataError?.collectAsState() ?: remember { mutableStateOf(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel?.fetchUserFitnessData()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,14 +45,39 @@ fun PhysicalInfoSection(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        EditPhysicalInfoSection(viewModel = viewModel)
+        // Wyświetl błąd jeśli istnieje
+        error?.let { errorMessage ->
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        } else {
+            EditPhysicalInfoSection(
+                viewModel = viewModel,
+                selectedGender = selectedGender,
+                age = age,
+                height = height,
+                weight = weight
+            )
+        }
     }
 }
 
+
 @Composable
 private fun EditPhysicalInfoSection(
-    viewModel: UserViewModel? = null
+    viewModel: UserViewModel? = null,
+    selectedGender: String?,
+    age: String,
+    height: String,
+    weight: String
 ) {
+    val isFitnessDataPublic by viewModel?.isFitnessDetailsPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -55,8 +93,8 @@ private fun EditPhysicalInfoSection(
             )
 
             Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
+                imageVector = if (isFitnessDataPublic) Icons.Default.Public else Icons.Default.Lock,
+                contentDescription = if (isFitnessDataPublic) "Public badges" else "Private badges",
                 tint = getOnSurfaceSecondaryColor(),
                 modifier = Modifier.size(16.dp)
             )
@@ -69,42 +107,41 @@ private fun EditPhysicalInfoSection(
             lineHeight = 20.sp
         )
 
-        GenderSection(viewModel = viewModel)
+        GenderSection(
+            viewModel = viewModel,
+            selectedGender = selectedGender
+        )
 
         PhysicalDataField(
             label = stringResource(R.string.age),
-            value = "", // TODO: pobrac z viewmodel
+            value = age,
             onValueChange = { newValue ->
-                // TODO: aktualizacja w viewmodel
-                //viewModel?.updateAge(newValue)
+                viewModel?.updateAge(newValue)
             },
             keyboardType = KeyboardType.Number
         )
 
         PhysicalDataField(
             label = stringResource(R.string.height_cm),
-            value = "", // TODO: pobrac z viewmodel
+            value = height,
             onValueChange = { newValue ->
-                // TODO: aktualizacja w viewmodel
-                //viewModel?.updateHeight(newValue)
+                viewModel?.updateHeight(newValue)
             },
             keyboardType = KeyboardType.Number
         )
 
         PhysicalDataField(
             label = stringResource(R.string.weight_kg),
-            value = "", // TODO: pobrac z viewmodel
+            value = weight,
             onValueChange = { newValue ->
-                // TODO: aktualizacja w viewmodel
-                //viewModel?.updateWeight(newValue)
+                viewModel?.updateWeight(newValue)
             },
             keyboardType = KeyboardType.Number
         )
 
         Button(
             onClick = {
-                // TODO: Implementacja zapisywania zmian przez viewModel
-                //viewModel?.updatePhysicalInfo()
+                viewModel?.updateFitnessData()
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
@@ -123,18 +160,9 @@ private fun EditPhysicalInfoSection(
 
 @Composable
 private fun GenderSection(
-    viewModel: UserViewModel? = null
+    viewModel: UserViewModel? = null,
+    selectedGender: String?
 ) {
-    // TODO: pobrac z viewmodel
-    var selectedGender by remember { mutableStateOf("prefer_not_to_say") } // "male", "female", "prefer_not_to_say"
-
-    // TODO: Pobierz z viewModel gdy będzie dostępny
-    LaunchedEffect(viewModel) {
-        viewModel?.let {
-            // selectedGender = it.getCurrentGender() ?: "prefer_not_to_say"
-        }
-    }
-
     Column(
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -147,31 +175,25 @@ private fun GenderSection(
 
         GenderOption(
             text = stringResource(R.string.prefer_not_to_say_default),
-            isSelected = selectedGender == "prefer_not_to_say",
+            isSelected = selectedGender == "Nie wybrano" || selectedGender == null,
             onClick = {
-                selectedGender = "prefer_not_to_say"
-                // TODO: aktualizacja w viewmodel
-                //viewModel?.updateGender("prefer_not_to_say")
+                viewModel?.updateGender("Nie wybrano")
             }
         )
 
         GenderOption(
             text = stringResource(R.string.male),
-            isSelected = selectedGender == "male",
+            isSelected = selectedGender == "Mężczyzna",
             onClick = {
-                selectedGender = "male"
-                // TODO: aktualizacja w viewmodel
-                //viewModel?.updateGender("male")
+                viewModel?.updateGender("Mężczyzna")
             }
         )
 
         GenderOption(
             text = stringResource(R.string.female),
-            isSelected = selectedGender == "female",
+            isSelected = selectedGender == "Kobieta",
             onClick = {
-                selectedGender = "female"
-                // TODO: aktualizacja w viewmodel
-                //viewModel?.updateGender("female")
+                viewModel?.updateGender("Kobieta")
             }
         )
     }
@@ -217,7 +239,6 @@ private fun PhysicalDataField(
 ) {
     var fieldValue by remember { mutableStateOf(value) }
 
-    // Aktualizuj lokalny stan gdy wartość się zmieni
     LaunchedEffect(value) {
         fieldValue = value
     }
