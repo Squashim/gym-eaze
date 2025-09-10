@@ -40,7 +40,8 @@ function App() {
       <Route element={<AuthGuard allow="logged-in" />}>
         <Route element={<Home />} index path="home" />
 
-        <Route element={<ExerciseCreator />} path="exercises/create" />
+        <Route element={<ExerciseCreator mode="create" />} path="exercises/create" />
+        <Route element={<ExerciseCreator mode="edit" />} path="exercises/:id/edit" />
       </Route>
 
       <Route element={<AuthGuard allow="logged-in" role="admin" />}>

@@ -8,6 +8,8 @@ const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm'];
 const VIDEO_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
+const MAX_DESCRIPTION_LENGTH = 850;
+
 const imageValidator = z
   .instanceof(File, { message: 'Obraz jest wymagany.' })
   .refine((file) => file.size <= IMAGE_MAX_SIZE, 'Obraz musi być mniejszy niż 5MB.')
@@ -40,7 +42,15 @@ const exerciseStepTwoSchema = z.object({
   description: z
     .string()
     .min(1, 'Opis ćwiczenia jest wymagany.')
-    .max(850, 'Opis ćwiczenia nie może być dłuższy niż 850 znaków.'),
+    .refine(
+      (val) => {
+        const normalizedLength = val.replace(/\r\n|\r/g, '\n').length;
+        return normalizedLength <= MAX_DESCRIPTION_LENGTH;
+      },
+      {
+        message: 'Opis ćwiczenia nie może być dłuższy niż 850 znaków.',
+      },
+    ),
   muscleGroup: z
     .array(z.string())
     .min(1, 'Wybierz przynajmniej jedną grupę mięśniową.')
