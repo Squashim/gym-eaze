@@ -12,10 +12,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 
 @Composable
@@ -29,7 +31,7 @@ fun HashtagInputField(
 
     Column(modifier = modifier) {
         Text(
-            text = "Hasztagi",
+            text = stringResource(R.string.hashtags_label),
             color = getOnSurfaceColor(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
@@ -66,7 +68,7 @@ fun HashtagInputField(
             },
             placeholder = {
                 Text(
-                    text = "Dodaj hasztagi np. biceps, triceps",
+                    text = stringResource(R.string.hashtags_placeholder),
                     color = getOnSurfaceSecondaryColor()
                 )
             },
@@ -94,7 +96,7 @@ fun HashtagInputField(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Hasztag może zawierać tylko małe litery i cyfry. Możesz dodać do $maxHashtags hashtagów.",
+            text = stringResource(R.string.hashtags_instructions, maxHashtags),
             color = getOnSurfaceSecondaryColor(),
             fontSize = 12.sp,
             lineHeight = 16.sp
@@ -120,15 +122,16 @@ fun HashtagInputField(
         if (selectedHashtags.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "${selectedHashtags.size}/$maxHashtags hasztagów",
+                text = stringResource(R.string.hashtags_counter, selectedHashtags.size, maxHashtags),
                 color = if (selectedHashtags.size >= maxHashtags)
-                    MaterialTheme.colorScheme.error else getOnSurfaceSecondaryColor(),
+                    getErrorColor() else getOnSurfaceSecondaryColor(),
                 fontSize = 12.sp
             )
         }
     }
 }
 
+// Rest of the code remains the same...
 @Composable
 private fun HashtagChip(
     text: String,

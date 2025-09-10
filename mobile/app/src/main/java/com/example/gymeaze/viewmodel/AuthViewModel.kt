@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 data class ValidationErrors(
     val username: String? = null,
     val email: String? = null,
@@ -26,6 +25,7 @@ data class ValidationErrors(
     val confirmPassword: String? = null,
     val usernameOrEmail: String? = null
 )
+
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isRegistering: Boolean = true, //true - rejestracja, false - logowanie
@@ -192,7 +192,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
         } else {
             val newLoginErrors = currentState.loginErrors.copy(
-                password = if(password.isBlank()) "Hasło jest wymagane" else null
+                password = if(password.isBlank()) getApplication<Application>().getString(R.string.error_password_required) else null
             )
 
             privateUiState.value = currentState.copy(
@@ -253,7 +253,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun validateAllFields(): Boolean{
-       val currentState = privateUiState.value
+        val currentState = privateUiState.value
 
         if(currentState.isRegistering) {
             val errors = ValidationErrors(
@@ -273,7 +273,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             val errors = ValidationErrors(
                 usernameOrEmail = Validation.validateUsernameOrEmail(currentState.usernameOrEmail),
-                password = if (currentState.password.isBlank()) "Hasło jest wymagane" else null
+                password = if (currentState.password.isBlank()) getApplication<Application>().getString(R.string.error_password_required) else null
             )
 
             privateUiState.value = currentState.copy(
@@ -370,14 +370,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     else -> {
                         privateUiState.value = privateUiState.value.copy(
                             isLoading = false,
-                            errorMessage = googleResult.error ?: "Google login failed"
+                            errorMessage = googleResult.error ?: getApplication<Application>().getString(R.string.error_google_login_general, "Unknown error")
                         )
                     }
                 }
             } else {
                 privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Google login error: ${result.exceptionOrNull()?.message}"
+                    errorMessage = getApplication<Application>().getString(R.string.error_google_login_general, result.exceptionOrNull()?.message ?: "Unknown error")
                 )
             }
         }
@@ -426,7 +426,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             loginWithGoogle(authCode);
         } else{
             privateUiState.value = privateUiState.value.copy(
-                errorMessage = result.exceptionOrNull()?.message ?: "Google Sing-In failed"
+                errorMessage = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_google_signin_failed)
             )
         }
     }
@@ -459,7 +459,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val currentTheme = userPreferences.isDarkTheme.first()
             userPreferences.setDarkTheme(!currentTheme)
-            }
+        }
     }
 
     fun clearFirstLogin(){

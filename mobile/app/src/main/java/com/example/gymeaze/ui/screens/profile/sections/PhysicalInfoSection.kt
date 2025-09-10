@@ -49,7 +49,7 @@ fun PhysicalInfoSection(
         error?.let { errorMessage ->
             Text(
                 text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
+                color = getErrorColor(),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -78,6 +78,7 @@ private fun EditPhysicalInfoSection(
     weight: String
 ) {
     val isFitnessDataPublic by viewModel?.isFitnessDetailsPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
+    var showPhysicalInfoDialog by remember { mutableStateOf(false) }
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -94,9 +95,23 @@ private fun EditPhysicalInfoSection(
 
             Icon(
                 imageVector = if (isFitnessDataPublic) Icons.Default.Public else Icons.Default.Lock,
-                contentDescription = if (isFitnessDataPublic) "Public badges" else "Private badges",
+                contentDescription = if (isFitnessDataPublic)
+                    stringResource(R.string.public_badges_desc) else stringResource(R.string.private_badges_desc),
                 tint = getOnSurfaceSecondaryColor(),
                 modifier = Modifier.size(16.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = stringResource(R.string.physical_info_desc),
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable{
+                        showPhysicalInfoDialog = true
+                    }
             )
         }
 
@@ -145,7 +160,8 @@ private fun EditPhysicalInfoSection(
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = getOnSurfaceColor()
+                contentColor = getOnPrimaryColor(),
+                containerColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -156,6 +172,12 @@ private fun EditPhysicalInfoSection(
             )
         }
     }
+
+    if (showPhysicalInfoDialog) {
+        PhysicalInfoDialog(
+            onDismiss = {showPhysicalInfoDialog = false}
+        )
+    }
 }
 
 @Composable
@@ -163,6 +185,10 @@ private fun GenderSection(
     viewModel: UserViewModel? = null,
     selectedGender: String?
 ) {
+    val notSelectedValue = stringResource(R.string.gender_not_selected_value)
+    val maleValue = stringResource(R.string.gender_male_value)
+    val femaleValue = stringResource(R.string.gender_female_value)
+
     Column(
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -175,25 +201,25 @@ private fun GenderSection(
 
         GenderOption(
             text = stringResource(R.string.prefer_not_to_say_default),
-            isSelected = selectedGender == "Nie wybrano" || selectedGender == null,
+            isSelected = selectedGender == notSelectedValue || selectedGender == null,
             onClick = {
-                viewModel?.updateGender("Nie wybrano")
+                viewModel?.updateGender(notSelectedValue)
             }
         )
 
         GenderOption(
             text = stringResource(R.string.male),
-            isSelected = selectedGender == "Mężczyzna",
+            isSelected = selectedGender == maleValue,
             onClick = {
-                viewModel?.updateGender("Mężczyzna")
+                viewModel?.updateGender(maleValue)
             }
         )
 
         GenderOption(
             text = stringResource(R.string.female),
-            isSelected = selectedGender == "Kobieta",
+            isSelected = selectedGender == femaleValue,
             onClick = {
-                viewModel?.updateGender("Kobieta")
+                viewModel?.updateGender(femaleValue)
             }
         )
     }

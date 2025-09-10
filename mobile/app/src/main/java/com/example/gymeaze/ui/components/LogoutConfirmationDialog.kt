@@ -17,11 +17,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnPrimaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
@@ -48,7 +50,7 @@ fun LogoutConfirmationDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Wylogowanie",
+                    text = stringResource(R.string.logout_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor(),
@@ -58,7 +60,7 @@ fun LogoutConfirmationDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Czy na pewno chcesz się wylogować?",
+                    text = stringResource(R.string.logout_confirmation_message),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     textAlign = TextAlign.Center,
@@ -76,7 +78,7 @@ fun LogoutConfirmationDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Anuluj",
+                            text = stringResource(R.string.cancel),
                             color = getOnSurfaceColor()
                         )
                     }
@@ -89,7 +91,7 @@ fun LogoutConfirmationDialog(
                         )
                     ) {
                         Text(
-                            text = "Wyloguj",
+                            text = stringResource(R.string.logout_button),
                             color = getOnPrimaryColor()
                         )
                     }

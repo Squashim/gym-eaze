@@ -104,11 +104,11 @@ class ExerciseRepository(private val context: Context) {
             val videoSuffix = guessSuffix(videoUri)
 
             if (imageSuffix !in listOf(".png", ".webp", ".jpg", ".jpeg")) {
-                return@withContext Result.failure(IllegalArgumentException("Dozwolone rozszerzenia zdjęcia to .png, .webp, .jpg"))
+                return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_allowed_image_extensions)))
             }
 
             if (videoSuffix !in listOf(".mp4", ".webm")) {
-                return@withContext Result.failure(IllegalArgumentException("Dozwolone rozszerzenia filmiku to .mp4, .webm"))
+                return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_allowed_video_extensions)))
             }
 
             val imageFile = uriToTempFile(imageUri, "exercise_image", imageSuffix)
@@ -116,11 +116,11 @@ class ExerciseRepository(private val context: Context) {
 
             if (imageFile.length() > MAX_IMAGE_BYTES) {
                 imageFile.delete(); videoFile.delete()
-                return@withContext Result.failure(IllegalArgumentException("Maksymalny rozmiar obrazu to 5MB"))
+                return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_max_image_size)))
             }
             if (videoFile.length() > MAX_VIDEO_BYTES) {
                 imageFile.delete(); videoFile.delete()
-                return@withContext Result.failure(IllegalArgumentException("Maksymalny rozmiar filmiku to 20MB"))
+                return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_max_video_size)))
             }
 
             val text = "text/plain".toMediaType()
@@ -193,7 +193,7 @@ class ExerciseRepository(private val context: Context) {
             }
         } catch (e: HttpException) {
             if (e.code() == 401) {
-                Result.failure(Exception("Sesja wygasła. Zaloguj się ponownie"))
+                Result.failure(Exception(context.getString(R.string.session_expired_login_again)))
             } else {
                 val raw = e.response()?.errorBody()?.string()
                 val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, e.code())

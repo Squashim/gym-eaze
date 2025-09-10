@@ -19,8 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
@@ -53,8 +55,10 @@ fun ExerciseScreen(
         ) {
             BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
             Text(
-                text = "Ćwiczenia",
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 32.dp),
+                text = stringResource(R.string.exercises),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 32.dp),
                 color = getOnSurfaceColor(),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold

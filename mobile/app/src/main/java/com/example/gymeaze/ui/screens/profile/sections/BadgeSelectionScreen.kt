@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.ui.theme.*
 
@@ -51,8 +53,9 @@ fun BadgeSelectionDialog(
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f)
                 .padding(16.dp),
-            shape = RoundedCornerShape(8.dp),
-            color = getSurfaceColor()
+            shape = RoundedCornerShape(16.dp),
+            color = getCardBackgroundColor(),
+            shadowElevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
@@ -66,7 +69,7 @@ fun BadgeSelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Wybierz odznaki",
+                        text = stringResource(R.string.select_badges_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -75,7 +78,7 @@ fun BadgeSelectionDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = stringResource(R.string.close),
                             tint = getOnSurfaceSecondaryColor()
                         )
                     }
@@ -83,7 +86,7 @@ fun BadgeSelectionDialog(
 
                 if (isLoading || availableBadges.isNotEmpty()) {
                     Text(
-                        text = "Możesz wybrać maksymalnie 5 odznak do przypięcia (${selectedBadgeIds.size}/5)",
+                        text = stringResource(R.string.badges_selection_limit, selectedBadgeIds.size),
                         fontSize = 14.sp,
                         color = getOnSurfaceSecondaryColor(),
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -92,7 +95,6 @@ fun BadgeSelectionDialog(
 
                 when {
                     isLoading -> {
-
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -100,10 +102,12 @@ fun BadgeSelectionDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                CircularProgressIndicator()
+                                CircularProgressIndicator(
+                                    color = getPrimaryColor()
+                                )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Ładowanie odznak...",
+                                    text = stringResource(R.string.loading_badges),
                                     fontSize = 16.sp,
                                     color = getOnSurfaceSecondaryColor(),
                                     textAlign = TextAlign.Center
@@ -120,7 +124,7 @@ fun BadgeSelectionDialog(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "Brak dostępnych odznak",
+                                    text = stringResource(R.string.no_badges_available),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = getOnSurfaceColor(),
@@ -128,7 +132,7 @@ fun BadgeSelectionDialog(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Zdobywaj odznaki uczestnicząc w treningach i osiągając cele!",
+                                    text = stringResource(R.string.earn_badges_message),
                                     fontSize = 14.sp,
                                     color = getOnSurfaceSecondaryColor(),
                                     textAlign = TextAlign.Center
@@ -177,9 +181,13 @@ fun BadgeSelectionDialog(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f),
                             enabled = !isLoading,
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = getOnSurfaceColor()
+                            ),
+                            border = BorderStroke(1.dp, getInputBorderColor())
                         ) {
-                            Text("Anuluj")
+                            Text(stringResource(R.string.cancel))
                         }
 
                         Button(
@@ -192,19 +200,20 @@ fun BadgeSelectionDialog(
                             modifier = Modifier.weight(1f),
                             enabled = !isLoading,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = getPrimaryColor()
+                                containerColor = getPrimaryColor(),
+                                contentColor = getOnPrimaryColor()
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
-                                    color = Color.White
+                                    color = getOnPrimaryColor()
                                 )
                             } else {
                                 Text(
-                                    text = "Potwierdź",
-                                    color = Color.White
+                                    text = stringResource(R.string.confirm_button),
+                                    color = getOnPrimaryColor()
                                 )
                             }
                         }
@@ -237,7 +246,10 @@ private fun BadgeSelectionItem(
             BorderStroke(2.dp, getPrimaryColor())
         } else {
             BorderStroke(1.dp, getOnSurfaceSecondaryColor().copy(alpha = 0.2f))
-        }
+        },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 4.dp else 2.dp
+        )
     ) {
         Box {
             Row(
@@ -292,8 +304,8 @@ private fun BadgeSelectionItem(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Wybrane",
-                            tint = Color.White,
+                            contentDescription = stringResource(R.string.selected),
+                            tint = getOnPrimaryColor(),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -317,7 +329,7 @@ private fun BadgeSelectionItem(
                     modifier = Modifier
                         .matchParentSize()
                         .background(
-                            Color.Black.copy(alpha = 0.3f),
+                            getOnSurfaceColor().copy(alpha = 0.1f),
                             RoundedCornerShape(12.dp)
                         )
                 )

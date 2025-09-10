@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens.profile.sections
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -54,6 +55,8 @@ private fun EditPersonalDataSection(
     val isLoading by viewModel?.personalDataLoading?.collectAsState(false) ?: remember { mutableStateOf(false) }
     val error by viewModel?.personalDataError?.collectAsState() ?: remember { mutableStateOf(null) }
 
+    var showPersonalInfoDialog by remember { mutableStateOf(false) }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -70,9 +73,23 @@ private fun EditPersonalDataSection(
 
             Icon(
                 imageVector = if (isPersonalDataPublic) Icons.Default.Public else Icons.Default.Lock,
-                contentDescription = if (isPersonalDataPublic) "Public badges" else "Private badges",
+                contentDescription = if (isPersonalDataPublic)
+                    stringResource(R.string.public_badges_desc) else stringResource(R.string.private_badges_desc),
                 tint = getOnSurfaceSecondaryColor(),
                 modifier = Modifier.size(16.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = stringResource(R.string.personal_data_info),
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable{
+                        showPersonalInfoDialog = true
+                    }
             )
         }
 
@@ -87,13 +104,14 @@ private fun EditPersonalDataSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
+                    containerColor = getErrorColor().copy(alpha = 0.1f)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.3f))
             ) {
                 Text(
                     text = errorMessage,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    color = getErrorColor(),
                     modifier = Modifier.padding(12.dp),
                     fontSize = 14.sp
                 )
@@ -131,7 +149,8 @@ private fun EditPersonalDataSection(
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
-                containerColor = getOnSurfaceColor()
+                containerColor = getPrimaryColor(),
+                contentColor = getOnPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -142,23 +161,29 @@ private fun EditPersonalDataSection(
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        color = getBackgroundColor(),
+                        color = getOnPrimaryColor(),
                         strokeWidth = 2.dp
                     )
                     Text(
-                        text = "Zapisywanie...",
-                        color = getBackgroundColor(),
+                        text = stringResource(R.string.saving),
+                        color = getOnPrimaryColor(),
                         fontSize = 16.sp
                     )
                 }
             } else {
                 Text(
                     text = stringResource(R.string.save_changes),
-                    color = getBackgroundColor(),
+                    color = getOnPrimaryColor(),
                     fontSize = 16.sp
                 )
             }
         }
+    }
+
+    if (showPersonalInfoDialog) {
+        PersonalInfoDialog(
+            onDismiss = {showPersonalInfoDialog = false}
+        )
     }
 }
 
@@ -207,20 +232,9 @@ private fun CountryField(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val displayText = selectedCountry ?: "Podaj kraj zamieszkania"
+    val displayText = selectedCountry ?: stringResource(R.string.select_country_placeholder)
 
-    //TUTAJ POBIERAJ Z ENUMA ---------------------------------------------------------------
-    val countries = listOf(
-        "Polska",
-        "Wielka Brytania",
-        "Niemcy",
-        "Hiszpania",
-        "Francja",
-        "Czechy",
-        "Włochy",
-        "Słowacja",
-        "Litwa"
-    )
+    val countries = Countries.values().map {it.displayName}
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -278,7 +292,13 @@ private fun CountryField(
                             onClick = {
                                 viewModel?.updateCountry(country)
                                 expanded = false
-                            }
+                            },
+                            modifier = Modifier
+                                .background(
+                                    if(country == selectedCountry)
+                                        getPrimaryColor().copy(alpha = 0.1f)
+                                    else getCardBackgroundColor()
+                                )
                         )
                     }
                 }

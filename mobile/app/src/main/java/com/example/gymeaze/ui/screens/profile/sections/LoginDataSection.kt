@@ -9,14 +9,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,6 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
@@ -51,7 +51,7 @@ fun LoginDataSection(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (isUpdateSuccessful == true) {
-            SuccessMessage(message = "Login data updated successfully!")
+            SuccessMessage(message = stringResource(R.string.login_data_updated_success))
         }
 
         error?.let { errorMessage ->
@@ -79,8 +79,8 @@ private fun SuccessMessage(message: String) {
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(8.dp),
-        color = Color.Green.copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, Color.Green.copy(alpha = 0.5f))
+        color = getPrimaryColor().copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, getPrimaryColor().copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -88,14 +88,14 @@ private fun SuccessMessage(message: String) {
         ) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Success",
-                tint = Color.Green,
+                contentDescription = stringResource(R.string.success),
+                tint = getPrimaryColor(),
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = message,
-                color = Color.Green,
+                color = getPrimaryColor(),
                 fontSize = 14.sp
             )
         }
@@ -109,8 +109,8 @@ private fun ErrorMessage(message: String) {
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(8.dp),
-        color = Color.Red.copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f))
+        color = getErrorColor().copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -118,14 +118,14 @@ private fun ErrorMessage(message: String) {
         ) {
             Icon(
                 imageVector = Icons.Default.Error,
-                contentDescription = "Error",
-                tint = Color.Red,
+                contentDescription = stringResource(R.string.error),
+                tint = getErrorColor(),
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = message,
-                color = Color.Red,
+                color = getErrorColor(),
                 fontSize = 14.sp
             )
         }
@@ -178,13 +178,14 @@ private fun EditLoginDataSection(
         modifier = Modifier
             .fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
-            containerColor = getOnSurfaceColor()
+            containerColor = getPrimaryColor(),
+            contentColor = getOnPrimaryColor()
         ),
         shape = RoundedCornerShape(8.dp)
     ) {
         Text(
             text = stringResource(R.string.save_changes),
-            color = getBackgroundColor(),
+            color = getOnPrimaryColor(),
             fontSize = 16.sp
         )
     }
@@ -199,22 +200,19 @@ private fun UsernameField(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Current username: $currentUsername",
+                text = stringResource(R.string.current_username, currentUsername),
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 14.sp
-
             )
-
         }
 
         Text(
-            text = stringResource(R.string.edit_login_data),
+            text = stringResource(R.string.username),
             color = getOnSurfaceColor(),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
@@ -236,7 +234,6 @@ private fun UsernameField(
             shape = RoundedCornerShape(8.dp),
             singleLine = true
         )
-
     }
 }
 
@@ -271,7 +268,7 @@ private fun NewPasswordField(
                         imageVector = if(isPasswordVisible)
                             Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = if(isPasswordVisible)
-                            "Hide password" else "Show password",
+                            stringResource(R.string.hide_password) else stringResource(R.string.show_password),
                         tint = getOnSurfaceSecondaryColor()
                     )
                 }
@@ -321,7 +318,7 @@ private fun ConfirmNewPasswordField(
                         imageVector = if (isPasswordVisible)
                             Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = if (isPasswordVisible)
-                            "Hide password" else "Show password",
+                            stringResource(R.string.hide_password) else stringResource(R.string.show_password),
                         tint = getOnSurfaceSecondaryColor()
                     )
                 }
@@ -353,23 +350,36 @@ private fun DeleteAccountSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFB71C1C).copy(alpha = 0.1f)
+            containerColor = getErrorColor().copy(alpha = 0.08f)
         ),
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, Color(0xFFB71C1C).copy(alpha = 0.3f))
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.3f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = stringResource(R.string.delete_account),
-                color = Color(0xFFB71C1C),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = getErrorColor(),
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Text(
+                    text = stringResource(R.string.delete_account),
+                    color = getErrorColor(),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
             Text(
                 text = stringResource(R.string.delete_account_description),
@@ -384,7 +394,8 @@ private fun DeleteAccountSection(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFB71C1C)
+                    containerColor = getErrorColor(),
+                    contentColor = getOnPrimaryColor()
                 ),
                 shape = RoundedCornerShape(8.dp),
                 enabled = !isDeleting
@@ -392,21 +403,22 @@ private fun DeleteAccountSection(
                 if (isDeleting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        color = Color.White,
+                        color = getOnPrimaryColor(),
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
                 Text(
-                    text = if (isDeleting) "Usuwanie..." else stringResource(R.string.delete_account),
-                    color = Color.White,
-                    fontSize = 16.sp
+                    text = if (isDeleting) stringResource(R.string.deleting) else stringResource(R.string.delete_account),
+                    color = getOnPrimaryColor(),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
     }
 
-    // Dialog potwierdzenia usunięcia konta
+    // Poprawiony dialog potwierdzenia usunięcia konta
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -414,49 +426,109 @@ private fun DeleteAccountSection(
                     viewModel?.hideDeleteDialog()
                 }
             },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = getErrorColor(),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
             title = {
                 Text(
-                    text = "Usuń konto",
-                    color = Color(0xFFB71C1C),
-                    fontWeight = FontWeight.Bold
+                    text = stringResource(R.string.delete_account_dialog_title),
+                    color = getOnSurfaceColor(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
             },
             text = {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    Text(
-                        text = "Ta akcja jest nieodwracalna. Wszystkie Twoje dane zostaną trwale usunięte.",
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = getErrorColor().copy(alpha = 0.1f),
+                        border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.3f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.warning_title),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = getErrorColor()
+                            )
+                            Text(
+                                text = stringResource(R.string.delete_account_warning_message),
+                                fontSize = 14.sp,
+                                lineHeight = 18.sp,
+                                color = getOnSurfaceColor()
+                            )
+                        }
+                    }
 
-                    Text(
-                        text = "Aby potwierdzić, wpisz swoją nazwę użytkownika: ${currentUser?.username}",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.confirm_username_prompt),
+                            fontSize = 14.sp,
+                            color = getOnSurfaceColor()
+                        )
 
-                    OutlinedTextField(
-                        value = confirmUsername,
-                        onValueChange = { viewModel?.updateConfirmUsername(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Nazwa użytkownika") },
-                        enabled = !isDeleting,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFB71C1C),
-                            unfocusedBorderColor = Color.Gray
-                        ),
-                        singleLine = true
-                    )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = getSurfaceColor(),
+                            border = BorderStroke(1.dp, getPrimaryColor())
+                        ) {
+                            Text(
+                                text = currentUser?.username ?: "",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = getPrimaryColor()
+                            )
+                        }
+
+                        OutlinedTextField(
+                            value = confirmUsername,
+                            onValueChange = { viewModel?.updateConfirmUsername(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(
+                                    stringResource(R.string.enter_username_placeholder),
+                                    color = getOnSurfaceSecondaryColor()
+                                )
+                            },
+                            enabled = !isDeleting,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = getErrorColor(),
+                                unfocusedBorderColor = getInputBorderColor(),
+                                focusedTextColor = getOnSurfaceColor(),
+                                unfocusedTextColor = getOnSurfaceColor(),
+                                cursorColor = getErrorColor()
+                            ),
+                            singleLine = true,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
 
                     // Pokazuj błąd jeśli istnieje
                     deleteError?.let { error ->
-                        Text(
-                            text = error,
-                            color = Color(0xFFB71C1C),
-                            fontSize = 12.sp
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = getErrorColor().copy(alpha = 0.1f)
+                        ) {
+                            Text(
+                                text = error,
+                                color = getErrorColor(),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
                     }
                 }
             },
@@ -466,34 +538,49 @@ private fun DeleteAccountSection(
                         viewModel?.deleteAccount()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFB71C1C)
+                        containerColor = getErrorColor(),
+                        contentColor = getOnPrimaryColor()
                     ),
-                    enabled = !isDeleting && confirmUsername.isNotEmpty()
+                    enabled = !isDeleting && confirmUsername.isNotEmpty() &&
+                            confirmUsername == currentUser?.username,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     if (isDeleting) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
-                            color = Color.White,
+                            color = getOnPrimaryColor(),
                             strokeWidth = 2.dp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                     Text(
-                        text = if (isDeleting) "Usuwanie..." else "Usuń konto",
-                        color = Color.White
+                        text = if (isDeleting) stringResource(R.string.deleting) else stringResource(R.string.delete_account_confirm),
+                        color = getOnPrimaryColor(),
+                        fontWeight = FontWeight.Medium
                     )
                 }
             },
             dismissButton = {
-                TextButton(
+                OutlinedButton(
                     onClick = {
                         viewModel?.hideDeleteDialog()
                     },
-                    enabled = !isDeleting
+                    enabled = !isDeleting,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = getOnSurfaceColor()
+                    ),
+                    border = BorderStroke(1.dp, getInputBorderColor()),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Anuluj")
+                    Text(stringResource(R.string.cancel))
                 }
-            }
+            },
+            containerColor = getCardBackgroundColor(),
+            shape = RoundedCornerShape(16.dp),
+            properties = DialogProperties(
+                dismissOnBackPress = !isDeleting,
+                dismissOnClickOutside = !isDeleting
+            )
         )
     }
 }

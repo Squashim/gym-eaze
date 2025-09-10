@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.UpdateLoginRequest
 import com.example.gymeaze.data.models.UpdateLoginResponse
@@ -100,7 +101,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         val confirmedUsername = _confirmUsername.value
 
         if (confirmedUsername != currentUsername) {
-            _deleteError.value = "Nazwa użytkownika nie jest poprawna"
+            _deleteError.value = getApplication<Application>().getString(R.string.error_username_incorrect)
             return
         }
 
@@ -113,7 +114,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _deleteError.value = "Sesja wygasła. Zaloguj się ponownie."
+                _deleteError.value = getApplication<Application>().getString(R.string.error_session_expired_login_again)
                 _isDeleting.value = false
                 return@launch
             }
@@ -129,7 +130,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 //     popUpTo(0) { inclusive = true }
                 // }
             } else {
-                _deleteError.value = result.exceptionOrNull()?.message ?: "Nie udało się usunąć konta"
+                _deleteError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_account_deletion_failed)
             }
 
             _isDeleting.value = false
@@ -156,7 +157,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                     uri.scheme == "content" -> ".jpg"
                     else -> {
                         inputStream.close()
-                        return Result.failure(IllegalArgumentException("Nieobsługiwany format obrazu. MIME: $mimeType, URI: $uriString"))
+                        return Result.failure(IllegalArgumentException(getApplication<Application>().getString(R.string.error_unsupported_image_format, mimeType, uriString)))
                     }
                 }
 
@@ -168,17 +169,17 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
                 if (file.length() > 5L * 1024L * 1024L) {
                     file.delete()
-                    return Result.failure(IllegalArgumentException("Maksymalny rozmiar obrazu to 5MB (aktualnie: ${file.length() / 1024 / 1024}MB)"))
+                    return Result.failure(IllegalArgumentException(getApplication<Application>().getString(R.string.error_image_too_large, file.length() / 1024 / 1024)))
                 }
 
                 if (file.length() < 100) {
                     file.delete()
-                    return Result.failure(IllegalArgumentException("Plik jest za mały aby być obrazem (${file.length()} bajtów)"))
+                    return Result.failure(IllegalArgumentException(getApplication<Application>().getString(R.string.error_file_too_small, file.length())))
                 }
 
                 Result.success(file)
             } else {
-                Result.failure(IllegalArgumentException("Nie można odczytać pliku z URI"))
+                return Result.failure(IllegalArgumentException(getApplication<Application>().getString(R.string.error_cannot_read_file)))
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -216,7 +217,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _newUsername.value = result.getOrNull()?.username ?: ""
                 _error.value = null
             } else {
-                _error.value = result.exceptionOrNull()?.message ?: "Error fetching user data"
+                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fetching_user_data)
             }
 
             _isLoading.value = false
@@ -227,7 +228,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         viewModelScope.launch {
             val authRepository = AuthRepository(getApplication())
             authRepository.clearUserSession()
-            _error.value = "Session expired. Please log in again."
+            _error.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
 
             // Wywołaj callback do AuthViewModel
             onTokenExpired?.invoke()
@@ -243,7 +244,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _error.value = "Session expired. Please log in again."
+                _error.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
                 _isLoading.value = false
                 handleTokenExpiration()
                 return@launch
@@ -255,7 +256,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _userProfile.value = result.getOrNull()
                 _error.value = null
             } else {
-                _error.value = result.exceptionOrNull()?.message ?: "Unknown error occurred"
+                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 _userProfile.value = null
             }
 
@@ -277,7 +278,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _error.value = "Session expired. Please log in again."
+                _error.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
                 _isLoading.value = false
                 return@launch
             }
@@ -288,7 +289,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             // POPRAWKA: Walidacja tylko gdy lista nie jest pusta
             if (badgesToUse.size > 5) {
-                _error.value = "Maksymalnie można przypiąć 5 odznak"
+                _error.value = getApplication<Application>().getString(R.string.error_max_five_badges)
                 _isLoading.value = false
                 return@launch
             }
@@ -298,7 +299,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _selectedImageUri.value?.let { uri ->
                     val imageResult = validateAndConvertImage(uri)
                     if (imageResult.isFailure) {
-                        _error.value = imageResult.exceptionOrNull()?.message ?: "Błąd walidacji obrazu"
+                        _error.value = imageResult.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_image_validation)
                         _isLoading.value = false
                         return@launch
                     }
@@ -322,7 +323,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _selectedPinnedBadges.value = badgesToUse // Zapisz nowy stan (może być pusty)
                 fetchUserProfile() // Odśwież dane z serwera
             } else {
-                _error.value = result.exceptionOrNull()?.message ?: "Błąd podczas aktualizacji profilu"
+                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_profile_update_failed)
             }
 
             _isLoading.value = false
@@ -344,7 +345,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                     println("DEBUG: ViewModel - Badge: ID='${badge.id}', title='${badge.title}'")
                 }
             } else {
-                val error = result.exceptionOrNull()?.message ?: "Błąd podczas pobierania odznak"
+                val error = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fetching_badges)
                 _error.value = error
                 println("DEBUG: ViewModel - Error fetching badges: $error")
                 result.exceptionOrNull()?.printStackTrace()
@@ -377,7 +378,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             // Odśwież token
             val refreshResult = authRepository.refreshAccessToken()
             if (refreshResult.isFailure) {
-                _error.value = "Session expired"
+                _error.value = getApplication<Application>().getString(R.string.error_session_expired)
                 _isLoading.value = false
                 handleTokenExpiration()
                 return@launch
@@ -386,7 +387,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             // Pobierz aktualne dane użytkownika
             val currentUserResult = authRepository.getCurrentUser()
             if (currentUserResult.isFailure) {
-                _error.value = "Failed to fetch user data"
+                _error.value = getApplication<Application>().getString(R.string.error_fetch_user_data_failed)
                 _isLoading.value = false
                 return@launch
             }
@@ -400,7 +401,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val shouldUpdatePassword = _newPassword.value.isNotEmpty()
 
             if (!shouldUpdateUsername && !shouldUpdatePassword) {
-                _error.value = "No changes to save"
+                _error.value = getApplication<Application>().getString(R.string.error_no_changes_to_save)
                 _isLoading.value = false
                 return@launch
             }
@@ -420,7 +421,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _confirmPassword.value = ""
             } else {
                 _isUpdateSuccessful.value = false
-                _error.value = result.exceptionOrNull()?.message ?: "Error updating login data"
+                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_login_data_update_failed)
             }
 
             _isLoading.value = false
@@ -433,30 +434,29 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         confirmPassword: String
     ): String? {
         if (newUsername.isEmpty() && newPassword.isEmpty()) {
-            return "Wprowadź co najmniej jedną zmianę"
+            return getApplication<Application>().getString(R.string.error_enter_at_least_one_change)
         }
 
         // Username validation if provided
         if (newUsername.isNotEmpty()) {
             if (newUsername.length < 6) {
-                return "\n" +
-                        "Nazwa użytkownika musi mieć co najmniej 6 znaków"
+                return getApplication<Application>().getString(R.string.error_username_min_chars)
             }
             if (newUsername.length > 32) {
-                return "Nazwa użytkownika nie może przekraczać 16 znaków"
+                return getApplication<Application>().getString(R.string.error_username_max_chars)
             }
         }
 
         // Password validation if provided
         if (newPassword.isNotEmpty()) {
             if (newPassword.length < 14) {
-                return "Hasło musi mieć co najmniej 14 znaków"
+                return getApplication<Application>().getString(R.string.error_password_min_chars)
             }
             if (newPassword.length > 32) {
-                return "Hasło może mieć maksymalnie 32 znaki"
+                return getApplication<Application>().getString(R.string.error_password_max_chars)
             }
             if (newPassword != confirmPassword) {
-                return "Hasła nie pasują"
+                return getApplication<Application>().getString(R.string.error_passwords_no_match)
             }
         }
 
@@ -530,7 +530,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _personalDataError.value = "Session expired. Please log in again."
+                _personalDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
                 _personalDataLoading.value = false
                 handleTokenExpiration()
                 return@launch
@@ -551,7 +551,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
                 _personalDataError.value = null
             } else {
-                _personalDataError.value = result.exceptionOrNull()?.message ?: "Unknown error occurred"
+                _personalDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 _personalData.value = null
             }
 
@@ -566,12 +566,12 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
         // Walidacja
         if (currentFirstName.isBlank()) {
-            _personalDataError.value = "Imię nie może być puste"
+            _personalDataError.value = getApplication<Application>().getString(R.string.error_first_name_required)
             return
         }
 
         if (currentLastName.isBlank()) {
-            _personalDataError.value = "Nazwisko nie może być puste"
+            _personalDataError.value = getApplication<Application>().getString(R.string.error_last_name_required)
             return
         }
 
@@ -583,7 +583,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _personalDataError.value = "Session expired. Please log in again."
+                _personalDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
                 _personalDataLoading.value = false
                 return@launch
             }
@@ -599,7 +599,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 // Opcjonalnie: odśwież dane
                 fetchUserPersonalData()
             } else {
-                _personalDataError.value = result.exceptionOrNull()?.message ?: "Błąd podczas aktualizacji danych"
+                _personalDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_personal_data_update_failed)
             }
 
             _personalDataLoading.value = false
@@ -656,7 +656,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _fitnessDataError.value = "Session expired. Please log in again."
+                _fitnessDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
                 _fitnessDataLoading.value = false
                 handleTokenExpiration()
                 return@launch
@@ -677,7 +677,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
                 _fitnessDataError.value = null
             } else {
-                _fitnessDataError.value = result.exceptionOrNull()?.message ?: "Unknown error occurred"
+                _fitnessDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 _fitnessData.value = null
             }
 
@@ -699,7 +699,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             val refreshResult = authRepository.refreshAccessToken()
 
             if (refreshResult.isFailure) {
-                _fitnessDataError.value = "Session expired. Please log in again."
+                _fitnessDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
                 _fitnessDataLoading.value = false
                 return@launch
             }
@@ -715,7 +715,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _fitnessDataError.value = null
                 fetchUserFitnessData()
             } else {
-                _fitnessDataError.value = result.exceptionOrNull()?.message ?: "Błąd podczas aktualizacji danych"
+                _fitnessDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fitness_data_update_failed)
             }
 
             _fitnessDataLoading.value = false

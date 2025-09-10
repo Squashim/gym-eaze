@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
                         is LogoutEvent.TokenExpired -> {
                             Toast.makeText(
                                 context,
-                                "Sesja wygasła. Zaloguj się ponownie.",
+                                context.getString(R.string.session_expired_login_again),
                                 Toast.LENGTH_LONG
                             ).show()
                         }

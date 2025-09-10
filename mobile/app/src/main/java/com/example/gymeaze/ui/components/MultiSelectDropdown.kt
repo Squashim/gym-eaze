@@ -16,10 +16,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 
 @Composable
@@ -49,7 +51,7 @@ fun <T> MultiSelectDropdown(
             value = if (selectedItems.isEmpty()) {
                 placeholder
             } else {
-                "${selectedItems.size} wybranych"
+                stringResource(R.string.items_selected_count, selectedItems.size)
             },
             onValueChange = { },
             modifier = Modifier
@@ -183,7 +185,7 @@ private fun <T> MultiSelectDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = stringResource(R.string.close),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -194,13 +196,13 @@ private fun <T> MultiSelectDialog(
                 OutlinedTextField(
                     value = searchText,
                     onValueChange = { searchText = it },
-                    placeholder = { Text("Szukaj…") },
+                    placeholder = { Text(stringResource(R.string.search_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Szukaj",
+                            contentDescription = stringResource(R.string.search),
                             tint = getOnSurfaceSecondaryColor(),
                             modifier = Modifier.size(20.dp)
                         )
@@ -232,7 +234,7 @@ private fun <T> MultiSelectDialog(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Nie znaleziono żadnych wyników",
+                                text = stringResource(R.string.no_results_found),
                                 color = getOnSurfaceSecondaryColor(),
                                 fontSize = 14.sp
                             )

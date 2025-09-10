@@ -46,6 +46,7 @@ import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import androidx.compose.runtime.setValue
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -107,7 +108,7 @@ fun SettingsScreen(
                 // Motyw aplikacji - zawsze dostępny
                 SettingsItem(
                     icon = Icons.Default.FormatPaint,
-                    title = stringResource(R.string.theme), // "Motyw aplikacji"
+                    title = stringResource(R.string.theme),
                     onClick = onThemeClick
                 )
 
@@ -117,7 +118,7 @@ fun SettingsScreen(
                     onPrivacySettingsClick?.let { callback ->
                         SettingsItem(
                             icon = Icons.Default.Lock,
-                            title = "Ustawienia prywatności",
+                            title = stringResource(R.string.privacy_settings),
                             onClick = callback
                         )
                     }
@@ -125,7 +126,7 @@ fun SettingsScreen(
                     onHelpClick?.let { callback ->
                         SettingsItem(
                             icon = Icons.Default.Help,
-                            title = "Jak zdobywać odznaki?",
+                            title = stringResource(R.string.how_to_earn_badges),
                             onClick = callback
                         )
                     }
@@ -133,7 +134,7 @@ fun SettingsScreen(
                     onNotificationsClick?.let { callback ->
                         SettingsItem(
                             icon = Icons.Default.Notifications,
-                            title = "Powiadomienia",
+                            title = stringResource(R.string.notifications),
                             onClick = callback
                         )
                     }
@@ -146,7 +147,7 @@ fun SettingsScreen(
 
                 SettingsItem(
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
-                    title = "Wyloguj się",
+                    title = stringResource(R.string.logout),
                     onClick = { showLogoutDialog = true },
                     isLogoutButton = true
                 )

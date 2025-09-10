@@ -4,6 +4,7 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.data.repository.ExerciseRepository
@@ -66,8 +67,14 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
                 availableMuscleGroups = muscleGroupsResult.getOrNull() ?: emptyList(),
                 availableEquipment = equipmentResult.getOrNull() ?: emptyList(),
                 error = when {
-                    muscleGroupsResult.isFailure -> "Błąd pobierania grup mięśniowych: ${muscleGroupsResult.exceptionOrNull()?.message}"
-                    equipmentResult.isFailure -> "Błąd pobierania sprzętu: ${equipmentResult.exceptionOrNull()?.message}"
+                    muscleGroupsResult.isFailure -> getApplication<Application>().getString(
+                        R.string.error_loading_muscle_groups,
+                        muscleGroupsResult.exceptionOrNull()?.message ?: ""
+                    )
+                    equipmentResult.isFailure -> getApplication<Application>().getString(
+                        R.string.error_loading_equipment,
+                        equipmentResult.exceptionOrNull()?.message ?: ""
+                    )
                     else -> null
                 }
             )
@@ -101,7 +108,6 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
     fun setEquipment(list: List<Equipment>) {
         _uiState.value = _uiState.value.copy(selectedEquipment = list)
     }
-
 
     fun nextStep() {
         val newStep = when (_uiState.value.currentStep) {
@@ -139,7 +145,10 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
             _uiState.value = if (res.isSuccess) {
                 _uiState.value.copy(isLoading = false, success = true)
             } else {
-                _uiState.value.copy(isLoading = false, error = res.exceptionOrNull()?.message ?: "Błąd")
+                _uiState.value.copy(
+                    isLoading = false,
+                    error = res.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_exercise_creation_failed)
+                )
             }
         }
     }

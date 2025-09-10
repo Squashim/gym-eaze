@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
@@ -121,20 +122,21 @@ fun ProfileInfoSection(
             modifier = Modifier
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = getOnSurfaceColor()
+                containerColor = getPrimaryColor(),
+                contentColor = getOnPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
-                    color = Color.White
+                    color = getOnPrimaryColor()
                 )
             } else {
 
                 Text(
                     text = stringResource(R.string.save_changes),
-                    color = getBackgroundColor(),
+                    color = getOnPrimaryColor(),
                     fontSize = 16.sp
                 )
             }
@@ -143,7 +145,7 @@ fun ProfileInfoSection(
         error?.let {
             Text(
                 text = it,
-                color = Color.Red,
+                color = getErrorColor(),
                 fontSize = 14.sp
             )
         }
@@ -225,9 +227,9 @@ private fun ProfilePictureSection(
                 ) {
                     Text(
                         text = when {
-                            selectedImageUri != null -> "Wybrano nowe zdjęcie"
-                            profilePictureUrl.isNotEmpty() -> "Zmień zdjęcie"
-                            else -> "Dodaj zdjęcie"
+                            selectedImageUri != null -> stringResource(R.string.new_photo_selected)
+                            profilePictureUrl.isNotEmpty() -> stringResource(R.string.change_photo)
+                            else -> stringResource(R.string.add_photo)
                         },
                         fontSize = 14.sp
                     )
@@ -235,8 +237,8 @@ private fun ProfilePictureSection(
             } else {
                 Text(
                     text = when {
-                        selectedImageUri != null -> "Wybrano nowe zdjęcie"
-                        profilePictureUrl.isNotEmpty() -> "Zmień zdjęcie"
+                        selectedImageUri != null -> stringResource(R.string.new_photo_selected)
+                        profilePictureUrl.isNotEmpty() -> stringResource(R.string.change_photo)
                         else -> stringResource(R.string.no_picture_selected)
                     },
                     color = getOnSurfaceSecondaryColor(),
@@ -310,6 +312,7 @@ private fun TrainingGoalSection(
     onGoalChange: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showInfoDialog by remember {mutableStateOf(false)}
 
     val goalOptions = listOf(
         Goals.NONE,
@@ -343,11 +346,26 @@ private fun TrainingGoalSection(
 
             Icon(
                 imageVector = if (isGoalPublic) Icons.Default.Public else Icons.Default.Lock,
-                contentDescription = if (isGoalPublic) "Public goal" else "Private goal",
+                contentDescription = if (isGoalPublic)
+                    stringResource(R.string.public_goal_desc) else stringResource(R.string.private_goal_desc),
                 tint = getOnSurfaceSecondaryColor(),
                 modifier = Modifier.size(16.dp)
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = stringResource(R.string.training_goal_info),
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable{
+                        showInfoDialog = true
+                    }
+            )
         }
+
 
         Box {
             Card(
@@ -404,7 +422,7 @@ private fun TrainingGoalSection(
                     .fillMaxWidth(0.9f)
                     .heightIn(max = 300.dp)
                     .background(
-                        color = getSurfaceColor(),
+                        color = getCardBackgroundColor(),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
@@ -434,7 +452,7 @@ private fun TrainingGoalSection(
                                 color = if (selectedGoal == goal) {
                                     getPrimaryColor().copy(alpha = 0.1f)
                                 } else {
-                                    Color.Transparent
+                                    getCardBackgroundColor()
                                 }
                             )
                             .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -451,6 +469,12 @@ private fun TrainingGoalSection(
             }
         }
     }
+
+    if(showInfoDialog) {
+        TrainingGoalInfoDialog(
+            onDismiss = {showInfoDialog = false}
+        )
+    }
 }
 
 @Composable
@@ -463,6 +487,7 @@ private fun BadgesSection(
     isLoading: Boolean = false
 ) {
     var showBadgeSelectionDialog by remember { mutableStateOf(false) }
+    var showBadgesInfoDialog by remember { mutableStateOf(false) }
 
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -479,9 +504,23 @@ private fun BadgesSection(
 
             Icon(
                 imageVector = if (isBadgesDetailsPublic) Icons.Default.Public else Icons.Default.Lock,
-                contentDescription = if (isBadgesDetailsPublic) "Public badges" else "Private badges",
+                contentDescription = if (isBadgesDetailsPublic)
+                    stringResource(R.string.public_badges_desc) else stringResource(R.string.private_badges_desc),
                 tint = getOnSurfaceSecondaryColor(),
                 modifier = Modifier.size(16.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = stringResource(R.string.pinned_badges_info),
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable{
+                        showBadgesInfoDialog = true
+                    }
             )
         }
 
@@ -489,7 +528,9 @@ private fun BadgesSection(
             OutlinedButton(
                 onClick = { showBadgeSelectionDialog = true },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = getOnSurfaceColor()
+                ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f)),
                 enabled = !isLoading
             ) {
@@ -568,7 +609,7 @@ private fun BadgesSection(
                     enabled = !isLoading
                 ) {
                     Text(
-                        text = "Zarządzaj odznakami",
+                        text = stringResource(R.string.manage_badges),
                         color = getPrimaryColor()
                     )
                 }
@@ -589,6 +630,12 @@ private fun BadgesSection(
                 showBadgeSelectionDialog = false
             },
             isLoading = isLoading
+        )
+    }
+
+    if (showBadgesInfoDialog) {
+        BadgesInfoDialog(
+            onDismiss = {showBadgesInfoDialog = false}
         )
     }
 }

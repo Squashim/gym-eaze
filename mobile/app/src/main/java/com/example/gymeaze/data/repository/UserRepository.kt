@@ -3,6 +3,7 @@ package com.example.gymeaze.data.repository
 import android.content.Context
 import android.net.Uri
 import com.example.gymeaze.BuildConfig
+import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Badge
@@ -74,7 +75,7 @@ class UserRepository(private val context: Context) {
             }
 
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -126,7 +127,7 @@ class UserRepository(private val context: Context) {
 
         } catch (e: IOException) {
             profileImageFile?.delete()
-            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             profileImageFile?.delete()
             Result.failure(e)
@@ -139,7 +140,7 @@ class UserRepository(private val context: Context) {
             if (response.isSuccessful) {
                 Result.success(response.body() ?: emptyList())
             } else {
-                Result.failure(Exception("Failed to fetch badges"))
+                Result.failure(Exception(context.getString(R.string.error_fetch_badges_failed)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -165,7 +166,7 @@ class UserRepository(private val context: Context) {
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Network error: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -183,7 +184,7 @@ class UserRepository(private val context: Context) {
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -202,7 +203,7 @@ class UserRepository(private val context: Context) {
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -231,7 +232,7 @@ class UserRepository(private val context: Context) {
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -250,7 +251,7 @@ class UserRepository(private val context: Context) {
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Błąd sieci: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -281,7 +282,7 @@ class UserRepository(private val context: Context) {
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Result.failure(IllegalStateException("Błąd sieni: ${e.message}", e))
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }

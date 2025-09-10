@@ -301,7 +301,7 @@ class AuthRepository(private val context: Context){
                     Result.success(newAccessToken)
                 } else {
                     logout()
-                    Result.failure(Exception("Refresh token wygasł - użytkownik został wylogowany"))
+                    Result.failure(Exception(context.getString(R.string.refresh_token_expired_logout)))
                 }
             } catch (e: Exception) {
                 logout()

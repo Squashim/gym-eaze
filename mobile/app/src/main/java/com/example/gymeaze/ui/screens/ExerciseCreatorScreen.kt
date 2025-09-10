@@ -28,11 +28,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.ui.components.HashtagInputField
@@ -65,7 +67,7 @@ fun ExerciseCreatorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Kreator ćwiczenia",
+                        text = stringResource(R.string.exercise_creator),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -74,7 +76,7 @@ fun ExerciseCreatorScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.back),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -83,7 +85,7 @@ fun ExerciseCreatorScreen(
                     IconButton(onClick = {showExitDialog = true}) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Anuluj tworzenie",
+                            contentDescription = stringResource(R.string.cancel_creation),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -104,15 +106,14 @@ fun ExerciseCreatorScreen(
 
             Box(
                 modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .padding(top = 8.dp)
-                ) {
-                    Stepper(ui.currentStep)
-                }
+            ) {
+                Stepper(ui.currentStep)
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
-
 
             Box(
                 modifier = Modifier
@@ -152,7 +153,7 @@ fun ExerciseCreatorScreen(
     if (ui.error != null) {
         AlertDialog(
             onDismissRequest = viewModel::clearError,
-            title = { Text("Błąd") },
+            title = { Text(stringResource(R.string.error)) },
             text = { Text(ui.error!!) },
             confirmButton = {
                 TextButton(onClick = viewModel::clearError) {
@@ -174,7 +175,6 @@ fun ExerciseCreatorScreen(
     }
 }
 
-
 @Composable
 private fun ExitConfirmationDialog(
     onDismiss: () -> Unit,
@@ -186,7 +186,7 @@ private fun ExitConfirmationDialog(
         shape = RoundedCornerShape(20.dp),
         title = {
             Text(
-                text = "Czy na pewno chcesz przerwać tworzenie ćwiczenia?",
+                text = stringResource(R.string.exit_creation_confirmation_title),
                 color = getOnSurfaceColor(),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -196,7 +196,7 @@ private fun ExitConfirmationDialog(
         },
         text = {
             Text(
-                text = "Wszystkie niezapisane zmiany zostaną utracone, a rozpoczęty proces tworzenia nowego ćwiczenia zostanie anulowany. Dotychczas wprowadzone infromacje nie zostaną zapisane i nie będzie możliwości ich odzyskania po wyjściu z tego ekranu.",
+                text = stringResource(R.string.exit_creation_confirmation_message),
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -218,7 +218,7 @@ private fun ExitConfirmationDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Powrót",
+                        text = stringResource(R.string.return_button),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.Medium
                     )
@@ -233,7 +233,7 @@ private fun ExitConfirmationDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Przerwij",
+                        text = stringResource(R.string.interrupt),
                         color = Color.White,
                         fontWeight = FontWeight.Medium
                     )
@@ -280,7 +280,7 @@ private fun Stepper(step: ExerciseCreatorStep) {
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            node(0, "Podstawowe\ndane")
+            node(0, stringResource(R.string.basic_data_step))
         }
         HorizontalDivider(
             modifier = Modifier
@@ -290,7 +290,7 @@ private fun Stepper(step: ExerciseCreatorStep) {
             color = getInputBorderColor()
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            node(1, "Dodatkowe\ninformacje")
+            node(1, stringResource(R.string.additional_info_step))
         }
         HorizontalDivider(
             modifier = Modifier
@@ -300,7 +300,7 @@ private fun Stepper(step: ExerciseCreatorStep) {
             color = getInputBorderColor()
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            node(2, "Podsumowanie")
+            node(2, stringResource(R.string.summary_step))
         }
     }
 }
@@ -315,12 +315,12 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column {
-            Text("Nazwa ćwiczenia*", color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.exercise_name_required), color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = ui.name,
                 onValueChange = vm::setName,
-                placeholder = { Text("Podaj nazwę ćwiczenia", color = getOnSurfaceSecondaryColor()) },
+                placeholder = { Text(stringResource(R.string.enter_exercise_name), color = getOnSurfaceSecondaryColor()) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -336,18 +336,18 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             UploadCard(
-                title = "Obraz poglądowy ćwiczenia*",
-                subtitle = "Kliknij, aby przesłać",
-                hint = "Maksymalny rozmiar obrazu to 5MB. Obsługiwane typy: .jpg, .png, .webp.",
+                title = stringResource(R.string.exercise_image_required),
+                subtitle = stringResource(R.string.click_to_upload),
+                hint = stringResource(R.string.image_upload_requirements),
                 selected = ui.imageUri != null,
                 onPick = vm::setImage,
                 mime = "image/*",
                 modifier = Modifier.weight(1f)
             )
             UploadCard(
-                title = "Filmik instruktażowy*",
-                subtitle = "Kliknij, aby przesłać",
-                hint = "Maksymalny rozmiar filmiku to 20MB. Obsługiwane typy: .mp4, .webm.",
+                title = stringResource(R.string.instructional_video_required),
+                subtitle = stringResource(R.string.click_to_upload),
+                hint = stringResource(R.string.video_upload_requirements),
                 selected = ui.videoUri != null,
                 onPick = vm::setVideo,
                 mime = "video/*",
@@ -356,7 +356,7 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
         }
 
         Column {
-            Text("Poziom trudności*", color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.difficulty_level_required), color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(8.dp))
             DifficultyRow(AdvancedLevel.NONE, ui.difficulty == AdvancedLevel.NONE) { vm.setDifficulty(AdvancedLevel.NONE)}
             DifficultyRow(AdvancedLevel.EASY, ui.difficulty == AdvancedLevel.EASY) { vm.setDifficulty(AdvancedLevel.EASY) }
@@ -364,16 +364,15 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             DifficultyRow(AdvancedLevel.HARD, ui.difficulty == AdvancedLevel.HARD) { vm.setDifficulty(AdvancedLevel.HARD) }
         }
 
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text("Publiczne ćwiczenie*", color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.public_exercise_required), color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
                 Text(
-                    "Inni użytkownicy będą mogli znaleźć i używać tego ćwiczenia.",
+                    stringResource(R.string.public_exercise_description),
                     color = getOnSurfaceSecondaryColor(),
                     fontSize = 12.sp,
                     lineHeight = 16.sp
@@ -405,7 +404,7 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
     ) {
         Column {
             Text(
-                text = "Opis ćwiczenia*",
+                text = stringResource(R.string.exercise_description_required),
                 color = getOnSurfaceColor(),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -416,7 +415,7 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
                 onValueChange = vm::setDescription,
                 placeholder = {
                     Text(
-                        text = "Opisz ćwiczenie i sposób wykonania np.\nKrok 1. Ustaw się w pozycji pompki...\nKrok 2. Zegnij ramiona...\n...",
+                        text = stringResource(R.string.exercise_description_placeholder),
                         color = getOnSurfaceSecondaryColor()
                     )
                 },
@@ -433,7 +432,7 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
                 shape = RoundedCornerShape(8.dp),
                 supportingText = {
                     Text(
-                        text = "Maksymalna długość opisu to 850 znaków.",
+                        text = stringResource(R.string.max_description_length),
                         color = getOnSurfaceSecondaryColor(),
                         fontSize = 12.sp
                     )
@@ -442,29 +441,27 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             )
         }
 
-
         MultiSelectDropdown(
-            label = "Grupy mięśniowe*",
+            label = stringResource(R.string.muscle_groups_required),
             selectedItems = ui.selectedMuscleGroups,
             availableItems = ui.availableMuscleGroups,
             onSelectionChange = vm::setMuscleGroups,
             itemDisplayText = { it.name },
             isLoading = ui.isLoadingData,
-            placeholder = "Wybierz grupy mięśniowe...",
+            placeholder = stringResource(R.string.select_muscle_groups),
             modifier = Modifier.fillMaxWidth()
         )
 
         MultiSelectDropdown(
-            label = "Sprzęt ćwiczeniowy*",
+            label = stringResource(R.string.exercise_equipment_required),
             selectedItems = ui.selectedEquipment,
             availableItems = ui.availableEquipment,
             onSelectionChange = vm::setEquipment,
             itemDisplayText = { it.name },
             isLoading = ui.isLoadingData,
-            placeholder = "Wybierz sprzęt...",
+            placeholder = stringResource(R.string.select_equipment),
             modifier = Modifier.fillMaxWidth()
         )
-
 
         HashtagInputField(
             selectedHashtags = ui.hashtags,
@@ -473,7 +470,6 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-
     }
 }
 
@@ -487,14 +483,14 @@ private fun StepSummary(ui: ExerciseCreatorState) {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
-            text = "Sprawdź poprawność danych",
+            text = stringResource(R.string.verify_data_correctness),
             color = getOnSurfaceColor(),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
 
         SummaryField(
-            label = "Nazwa ćwiczenia:",
+            label = stringResource(R.string.exercise_name_colon),
             value = ui.name
         )
 
@@ -504,7 +500,7 @@ private fun StepSummary(ui: ExerciseCreatorState) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Poziom trudności:",
+                    text = stringResource(R.string.difficulty_level_colon),
                     color = getOnSurfaceColor(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -517,7 +513,7 @@ private fun StepSummary(ui: ExerciseCreatorState) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Widoczność ćwiczenia:",
+                    text = stringResource(R.string.exercise_visibility_colon),
                     color = getOnSurfaceColor(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -530,14 +526,13 @@ private fun StepSummary(ui: ExerciseCreatorState) {
         }
 
         ExpandableSummaryField(
-            label = "Opis ćwiczenia:",
+            label = stringResource(R.string.exercise_description_colon),
             value = ui.description
         )
 
-
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Grupy mięśniowe:",
+                text = stringResource(R.string.muscle_groups_colon),
                 color = getOnSurfaceColor(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
@@ -550,7 +545,7 @@ private fun StepSummary(ui: ExerciseCreatorState) {
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Wymagany sprzęt:",
+                text = stringResource(R.string.required_equipment_colon),
                 color = getOnSurfaceColor(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
@@ -568,10 +563,8 @@ private fun StepSummary(ui: ExerciseCreatorState) {
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
     }
 }
-
 
 @Composable
 private fun SummaryField(
@@ -618,7 +611,7 @@ private fun ExpandableSummaryField(
                 Icon(
                     imageVector = if (isExpanded)
                         Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (isExpanded) "Zwiń" else "Rozwiń",
+                    contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                     tint = getOnSurfaceSecondaryColor(),
                     modifier = Modifier
                         .size(20.dp)
@@ -727,7 +720,7 @@ private fun ExpandableTagField(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Hasztagi",
+                text = stringResource(R.string.hashtags),
                 color = getOnSurfaceColor(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
@@ -736,7 +729,7 @@ private fun ExpandableTagField(
                 Icon(
                     imageVector = if (isExpanded)
                         Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (isExpanded) "Zwiń" else "Rozwiń",
+                    contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                     tint = getOnSurfaceSecondaryColor(),
                     modifier = Modifier
                         .size(20.dp)
@@ -760,7 +753,7 @@ private fun ExpandableTagField(
         if (!isExpanded && items.size > 6) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "+${items.size - 6} więcej",
+                text = stringResource(R.string.more_hashtags, items.size - 6),
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 12.sp
             )
@@ -833,7 +826,7 @@ private fun BottomBar(
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
-            ) { Text("Cofnij", color = getOnSurfaceColor()) }
+            ) { Text(stringResource(R.string.go_back), color = getOnSurfaceColor()) }
         }
 
         Button(
@@ -851,7 +844,7 @@ private fun BottomBar(
                 )
             } else {
                 Text(
-                    text = if (step == ExerciseCreatorStep.SUMMARY) "Stwórz ćwiczenie" else "Kolejny etap",
+                    text = if (step == ExerciseCreatorStep.SUMMARY) stringResource(R.string.create_exercise) else stringResource(R.string.next_step),
                     color = getOnPrimaryColor()
                 )
             }
@@ -893,7 +886,7 @@ private fun UploadCard(
             Spacer(Modifier.height(8.dp))
             Text(hint, color = getOnSurfaceSecondaryColor(), fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 12.sp)
             Spacer(Modifier.height(6.dp))
-            if (selected) Text("✓ Plik wybrany", color = getPrimaryColor(), fontSize = 12.sp)
+            if (selected) Text(stringResource(R.string.file_selected), color = getPrimaryColor(), fontSize = 12.sp)
         }
     }
 }
@@ -918,4 +911,3 @@ private fun DifficultyRow(text: String, selected: Boolean, onSelect: () -> Unit)
         Text(text, color = getOnSurfaceColor())
     }
 }
-
