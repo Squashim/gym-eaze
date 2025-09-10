@@ -225,26 +225,26 @@ export const getExercisesService = async (
   let sort: SortType = {};
   switch (sortBy) {
     case 'latest':
-      sort = { createdAt: -1 };
+      sort = { createdAt: -1, _id: -1 };
       break;
     case 'popular': {
       const since = new Date();
       since.setDate(since.getDate() - 1);
       query.createdAt = { $gte: since };
-      sort = { likes: -1 };
+      sort = { likes: -1, _id: -1 };
       break;
     }
     case 'top-rated':
-      sort = { likes: -1 };
+      sort = { likes: -1, _id: -1 };
       break;
     default:
-      sort = { createdAt: -1 };
+      sort = { createdAt: -1, _id: -1 };
   }
 
   const skip = (page - 1) * pageSize;
 
   const [items, total] = await Promise.all([
-    Exercise.find(query).sort(sort).skip(skip).limit(pageSize),
+    Exercise.find(query).sort(sort).skip(skip).limit(pageSize).populate('muscleGroup', 'name'),
     Exercise.countDocuments(query),
   ]);
 

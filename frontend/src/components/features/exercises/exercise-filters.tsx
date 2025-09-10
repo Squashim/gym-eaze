@@ -51,8 +51,16 @@ const ExerciseFilters = ({
   const [searchText, setSearchText] = useState(filters.search ?? '');
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const debouncedSearch = useDebounce(searchText, 350);
-  const { data: muscleGroups, isLoading: isMuscleGroupsLoading } = useGetMuscleGroups();
-  const { data: equipment, isLoading: isEquipmentLoading } = useGetEquipment();
+  const {
+    data: muscleGroups,
+    isLoading: isMuscleGroupsLoading,
+    isError: isMuscleGroupError,
+  } = useGetMuscleGroups();
+  const {
+    data: equipment,
+    isLoading: isEquipmentLoading,
+    isError: isEquipmentError,
+  } = useGetEquipment();
 
   useEffect(() => {
     const count = Object.entries(filters).reduce((acc, [key, value]) => {
@@ -132,14 +140,22 @@ const ExerciseFilters = ({
                 Grupy mięśniowe:
               </Typography>
               <MultiSelect
-                defaultValue={isMuscleGroupsLoading ? [] : (filters.muscleGroups ?? [])}
-                disabled={isMuscleGroupsLoading}
+                defaultValue={
+                  isMuscleGroupsLoading || isMuscleGroupError ? [] : (filters.muscleGroups ?? [])
+                }
+                disabled={isMuscleGroupsLoading || isMuscleGroupError}
                 hideSelectAll={true}
                 maxCount={3}
                 modalPopover={true}
                 onValueChange={(value) => setFilters({ muscleGroups: value })}
                 options={apiResponseToMultiSelectOptions(muscleGroups)}
-                placeholder={isMuscleGroupsLoading ? 'Ładowanie...' : 'Wybierz grupy mięśniowe...'}
+                placeholder={
+                  isMuscleGroupsLoading
+                    ? 'Ładowanie...'
+                    : isMuscleGroupError
+                      ? 'Błąd pobierania danych...'
+                      : 'Wybierz grupy mięśniowe...'
+                }
               />
             </div>
 
@@ -148,14 +164,22 @@ const ExerciseFilters = ({
                 Sprzęt ćwiczeniowy:
               </Typography>
               <MultiSelect
-                defaultValue={isEquipmentLoading ? [] : (filters.equipment ?? [])}
-                disabled={isEquipmentLoading}
+                defaultValue={
+                  isEquipmentLoading || isEquipmentError ? [] : (filters.equipment ?? [])
+                }
+                disabled={isEquipmentLoading || isEquipmentError}
                 hideSelectAll={true}
                 maxCount={3}
                 modalPopover={true}
                 onValueChange={(value) => setFilters({ equipment: value })}
                 options={apiResponseToMultiSelectOptions(equipment)}
-                placeholder={isEquipmentLoading ? 'Ładowanie...' : 'Wybierz sprzęt...'}
+                placeholder={
+                  isEquipmentLoading
+                    ? 'Ładowanie...'
+                    : isEquipmentError
+                      ? 'Błąd pobierania danych...'
+                      : 'Wybierz sprzęt...'
+                }
               />
             </div>
 
@@ -249,9 +273,11 @@ const ExerciseFilters = ({
               Sortuj według:
             </Typography>
             <Select onValueChange={(value) => setSortBy(value as SortBy)} value={sortBy}>
-              <SelectTrigger>
-                <ArrowUpDown />
-                <SelectValue />
+              <SelectTrigger className="w-52">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown />
+                  <SelectValue />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="latest">Najnowsze</SelectItem>
@@ -264,7 +290,7 @@ const ExerciseFilters = ({
 
         <HorizontalScrollFilter
           filters={filters}
-          isLoading={isMuscleGroupsLoading}
+          isLoading={isMuscleGroupsLoading || isMuscleGroupError}
           items={muscleGroups}
           label="Szukaj według grup mięśniowych"
           setFilters={setFilters}
@@ -273,7 +299,7 @@ const ExerciseFilters = ({
 
         <HorizontalScrollFilter
           filters={filters}
-          isLoading={isEquipmentLoading}
+          isLoading={isEquipmentLoading || isEquipmentError}
           items={equipment}
           label="Szukaj według sprzętu treningowego"
           setFilters={setFilters}

@@ -18,6 +18,7 @@ type ReusablePaginationProps = {
   currentPage: number;
   pageSize: number;
   totalPages: number;
+  scrollToRef?: React.RefObject<HTMLHeadingElement | null>;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: PageSize) => void;
 };
@@ -26,6 +27,7 @@ const ReusablePagination = ({
   currentPage,
   totalPages,
   pageSize,
+  scrollToRef,
   onPageChange,
   onPageSizeChange,
 }: ReusablePaginationProps) => {
@@ -62,10 +64,19 @@ const ReusablePagination = ({
     return rangeWithDots;
   };
 
+  const handleScrollToRef = () => {
+    if (scrollToRef?.current) {
+      requestAnimationFrame(() => {
+        scrollToRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  };
+
   const handlePreviousPage = (e: MouseEvent) => {
     e.preventDefault();
     if (currentPage > 1) {
       onPageChange(currentPage - 1);
+      handleScrollToRef();
     }
   };
 
@@ -73,6 +84,7 @@ const ReusablePagination = ({
     e.preventDefault();
     if (currentPage < totalPages) {
       onPageChange(currentPage + 1);
+      handleScrollToRef();
     }
   };
 
@@ -80,6 +92,7 @@ const ReusablePagination = ({
     e.preventDefault();
     if (page !== currentPage) {
       onPageChange(page);
+      handleScrollToRef();
     }
   };
 

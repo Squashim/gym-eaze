@@ -1,14 +1,7 @@
 import { cn } from '@/lib/utils';
-import type { ElementType, ReactNode } from 'react';
+import type { ComponentPropsWithRef, ElementType } from 'react';
 
 type Variant = keyof typeof typographyVariants;
-
-type TypographyProps = {
-  as?: ElementType;
-  variant: Variant;
-  className?: string;
-  children: ReactNode;
-};
 
 const typographyVariants = {
   h1: 'scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance',
@@ -32,10 +25,19 @@ const typographyElementMap: Record<Variant, ElementType> = {
   muted: 'span',
 };
 
-function Typography({ variant = 'p', as, className, children }: TypographyProps) {
-  const Component: ElementType = as || typographyElementMap[variant];
+type TypographyProps<T extends ElementType = 'p'> = {
+  as?: T;
+  variant?: Variant;
+} & ComponentPropsWithRef<T>;
 
-  return <Component className={cn(typographyVariants[variant], className)}>{children}</Component>;
+function Typography({ variant = 'p', as, className, children, ...props }: TypographyProps) {
+  const Component = as || typographyElementMap[variant];
+
+  return (
+    <Component className={cn(typographyVariants[variant], className)} {...props}>
+      {children}
+    </Component>
+  );
 }
 
 export default Typography;

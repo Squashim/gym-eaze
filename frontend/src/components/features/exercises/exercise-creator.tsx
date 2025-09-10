@@ -41,6 +41,7 @@ import { Loader2 } from 'lucide-react';
 import { Visibility } from '@/constants/visibility';
 import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
+import usePageTitle from '@/hooks/use-page-title';
 
 type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
@@ -101,6 +102,8 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     enabled: isEditMode && Boolean(exerciseData),
   });
 
+  usePageTitle(isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia');
+
   useEffect(() => {
     if (!guardsPassed || !exerciseData || !defaultImageFile || !defaultVideoFile || isError) return;
 
@@ -115,7 +118,7 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
         },
         stepTwo: {
           description: exerciseData.description,
-          muscleGroup: exerciseData.muscleGroup,
+          muscleGroup: exerciseData.muscleGroup.map((mg) => mg._id),
           equipment: exerciseData.equipment,
           hashtags: exerciseData.hashtags || [],
         },
