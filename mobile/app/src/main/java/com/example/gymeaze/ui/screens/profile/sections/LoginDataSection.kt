@@ -40,7 +40,6 @@ fun LoginDataSection(
 
     val context = LocalContext.current
 
-    // Single loading check for the entire screen
     if (isLoading) {
         LoadingScreen()
     } else {
@@ -56,7 +55,6 @@ fun LoginDataSection(
         }
     }
 
-    // Effects
     DisposableEffect(Unit) {
         onDispose {
             viewModel?.resetUserState()

@@ -101,7 +101,10 @@ fun ProfileEditScreen(
                 when (selectedTab) {
                     ProfileTab.PROFILE_INFO -> {
                         if (viewModel != null) {
-                            ProfileInfoSection(viewModel = viewModel)
+                            ProfileInfoSection(
+                                viewModel = viewModel,
+                                onNavigateToAuth = onNavigateToAuth
+                            )
                         }
                     }
                     ProfileTab.LOGIN_DATA -> {
@@ -111,10 +114,16 @@ fun ProfileEditScreen(
                         )
                     }
                     ProfileTab.PERSONAL_DATA -> {
-                        PersonalDataSection(viewModel = viewModel)
+                        PersonalDataSection(
+                            viewModel = viewModel,
+                            onNavigateToAuth = onNavigateToAuth
+                        )
                     }
                     ProfileTab.PHYSICAL_INFO -> {
-                        PhysicalInfoSection(viewModel = viewModel)
+                        PhysicalInfoSection(
+                            viewModel = viewModel,
+                            onNavigateToAuth = onNavigateToAuth
+                        )
                     }
                 }
             }

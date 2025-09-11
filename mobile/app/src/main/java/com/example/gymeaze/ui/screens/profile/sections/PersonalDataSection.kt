@@ -31,12 +31,21 @@ import com.example.gymeaze.viewmodel.UserViewModel
 
 @Composable
 fun PersonalDataSection(
-    viewModel: UserViewModel? = null
+    viewModel: UserViewModel? = null,
+    onNavigateToAuth: () -> Unit
 ) {
+    val navigateToAuth by viewModel?.navigateToAuth?.collectAsState() ?: remember { mutableStateOf(false) }
     val isLoading by viewModel?.personalDataLoading?.collectAsState(false) ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel?.fetchUserPersonalData()
+    }
+
+    LaunchedEffect(navigateToAuth) {
+        if (navigateToAuth) {
+            viewModel?.resetNavigation()
+            onNavigateToAuth()
+        }
     }
 
     if (isLoading) {
@@ -69,7 +78,6 @@ private fun EditPersonalDataSection(
     var showPersonalInfoDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Show toast on success
     LaunchedEffect(success) {
         success?.let { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()

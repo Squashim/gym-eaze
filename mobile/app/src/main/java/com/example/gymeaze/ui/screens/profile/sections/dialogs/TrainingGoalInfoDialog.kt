@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 
 @Composable
 fun TrainingGoalInfoDialog(
+    isGoalPublic : Boolean = true,
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -66,10 +68,11 @@ fun TrainingGoalInfoDialog(
                     )
 
                     Icon(
-                        imageVector = Icons.Default.Public,
-                        contentDescription = stringResource(R.string.public_goal_desc),
+                        imageVector = if (isGoalPublic) Icons.Default.Public else Icons.Default.Lock,
+                        contentDescription = if (isGoalPublic)
+                            stringResource(R.string.public_badges_desc) else stringResource(R.string.private_badges_desc),
                         tint = getOnSurfaceSecondaryColor(),
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 

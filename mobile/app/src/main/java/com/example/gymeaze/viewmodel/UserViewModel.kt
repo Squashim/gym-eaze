@@ -31,6 +31,17 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
     private val userRepository = UserRepository(application)
 
+    private fun handleTokenExpiration() {
+        viewModelScope.launch {
+            val authRepository = AuthRepository(getApplication())
+            authRepository.clearUserSession()
+            _error.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
+
+            onTokenExpired?.invoke()
+        }
+    }
+    // PROFILE INFO -------------------------------------------------------------
+
     private val _userProfile = MutableStateFlow<UserProfileDetails?>(null)
     val userProfile: StateFlow<UserProfileDetails?> = _userProfile
 
@@ -43,18 +54,37 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     private val _selectedPinnedBadges = MutableStateFlow<List<Badge>>(emptyList())
     val selectedPinnedBadges: StateFlow<List<Badge>> = _selectedPinnedBadges
     fun setSelectedImage(uri: Uri?) {
         _selectedImageUri.value = uri
     }
 
-    private val _currentUser = MutableStateFlow<User?>(null)
-    val currentUser: StateFlow<User?> = _currentUser
+    fun resetToSavedState() {
+        _userProfile.value?.let { profile ->
+            _selectedPinnedBadges.value = profile.pinnedBadges
+        }
+        _selectedImageUri.value = null
+        _error.value = null
+    }
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
+    fun onScreenExit() {
+        resetToSavedState()
+    }
 
+    fun setSelectedPinnedBadges(badges: List<Badge>) {
+        _selectedPinnedBadges.value = badges
+    }
+
+
+    fun initializeProfileData() {
+        fetchUserProfile()
+        fetchUserBadges()
+        fetchCurrentUser()
+    }
     private suspend fun validateAndConvertImage(uri: Uri): Result<File> {
         return try {
             val context = getApplication<Application>()
@@ -104,18 +134,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             Result.failure(e)
         }
     }
-
-    private fun handleTokenExpiration() {
-        viewModelScope.launch {
-            val authRepository = AuthRepository(getApplication())
-            authRepository.clearUserSession()
-            _error.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-
-            // Wywołaj callback do AuthViewModel
-            onTokenExpired?.invoke()
-        }
-    }
-
     fun fetchUserProfile() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -126,8 +144,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (refreshResult.isFailure) {
                 _error.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-                _isLoading.value = false
+                _isLoading.value = true
                 handleTokenExpiration()
+                _navigateToAuth.value = true
                 return@launch
             }
 
@@ -154,6 +173,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
+            _success.value = null
 
             val authRepository = AuthRepository(getApplication())
             val refreshResult = authRepository.refreshAccessToken()
@@ -164,11 +184,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 return@launch
             }
 
-            // POPRAWKA: Jeśli pinnedBadges jest null, użyj selectedPinnedBadges
-            // Jeśli pinnedBadges to pusta lista, zostaw pustą listę (pozwoli to na wyczyszczenie)
             val badgesToUse = pinnedBadges ?: _selectedPinnedBadges.value
 
-            // POPRAWKA: Walidacja tylko gdy lista nie jest pusta
+
             if (badgesToUse.size > 5) {
                 _error.value = getApplication<Application>().getString(R.string.error_max_five_badges)
                 _isLoading.value = false
@@ -188,21 +206,20 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 }
             }
 
-            // DEBUG: Dodaj logi do sprawdzenia
-            println("DEBUG: Saving ${badgesToUse.size} badges to server")
-            println("DEBUG: Badge objects: ${badgesToUse.map { "${it.id} - ${it.title}" }}")
 
             val result = userRepository.updateProfileDetails(
                 description = description,
                 goal = goal,
-                pinnedBadges = badgesToUse, // POPRAWKA: Przekazuj Badge obiekty, nie IDs
+                pinnedBadges = badgesToUse,
                 profileImageFile = profileImageFile
             )
 
             if (result.isSuccess) {
                 _selectedImageUri.value = null
-                _selectedPinnedBadges.value = badgesToUse // Zapisz nowy stan (może być pusty)
-                fetchUserProfile() // Odśwież dane z serwera
+                _selectedPinnedBadges.value = badgesToUse
+                _error.value = null
+                _success.value = getApplication<Application>().getString(R.string.profile_data_updated_successfully)
+                fetchUserProfile()
             } else {
                 _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_profile_update_failed)
             }
@@ -214,51 +231,26 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     fun fetchUserBadges() {
         viewModelScope.launch {
             _error.value = null
-            println("DEBUG: ViewModel - Starting fetchUserBadges()")
 
             val result = userRepository.getUserBadges()
 
             if (result.isSuccess) {
                 val badges = result.getOrNull() ?: emptyList()
                 _availableBadges.value = badges
-                println("DEBUG: ViewModel - Successfully fetched ${badges.size} badges")
-                badges.forEach { badge ->
-                    println("DEBUG: ViewModel - Badge: ID='${badge.id}', title='${badge.title}'")
-                }
             } else {
                 val error = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fetching_badges)
                 _error.value = error
-                println("DEBUG: ViewModel - Error fetching badges: $error")
                 result.exceptionOrNull()?.printStackTrace()
             }
         }
-    }
-    fun resetToSavedState() {
-        _userProfile.value?.let { profile ->
-            _selectedPinnedBadges.value = profile.pinnedBadges
-        }
-        _selectedImageUri.value = null
-        _error.value = null
-    }
-
-    fun onScreenExit() {
-        resetToSavedState()
-    }
-
-    fun setSelectedPinnedBadges(badges: List<Badge>) {
-        _selectedPinnedBadges.value = badges
-    }
-
-
-    fun initializeProfileData() {
-        fetchUserProfile()
-        fetchUserBadges()
-        fetchCurrentUser()
     }
 
     // LOGIN DETAILS -------------------------------------------------------------
     private val _currentUsername = MutableStateFlow("")
     val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser
 
     private val _newUsername = MutableStateFlow("")
     val newUsername: StateFlow<String> = _newUsername.asStateFlow()
@@ -280,6 +272,12 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
     private val _showDeleteDialog = MutableStateFlow(false)
     val showDeleteDialog: StateFlow<Boolean> = _showDeleteDialog.asStateFlow()
+
+    private val _isBadgesDetailsPublic = MutableStateFlow(true)
+    val isBadgesDetailsPublic: StateFlow<Boolean> = _isBadgesDetailsPublic
+
+    private val _isGoalPublic = MutableStateFlow(true)
+    val isGoalPublic: StateFlow<Boolean> = _isGoalPublic
 
     private val _confirmUsername = MutableStateFlow("")
     val confirmUsername: StateFlow<String> = _confirmUsername.asStateFlow()
@@ -401,7 +399,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _currentUser.value = user
                 _currentUsername.value = user?.username ?: ""
 
-                // Synchronizuj newUsername z currentUsername
                 if (_newUsername.value.isEmpty() || _newUsername.value == _currentUsername.value) {
                     _newUsername.value = user?.username ?: ""
                 }
@@ -438,8 +435,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (refreshResult.isFailure) {
                 _loginDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-                _loginDataLoading.value = false
+                _loginDataLoading.value = true
                 handleTokenExpiration()
+                _navigateToAuth.value = true
                 return@launch
             }
 
@@ -461,12 +459,10 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 _loginDataError.value = null
                 _loginDataSuccess.value = getApplication<Application>().getString(R.string.login_data_updated_successfully)
 
-                // Aktualizuj currentUsername jeśli zmieniono nazwę użytkownika
                 if (shouldUpdateUsername) {
                     _currentUsername.value = _newUsername.value
                 }
 
-                // Resetuj tylko pola hasła, nie nazwę użytkownika
                 _newPassword.value = ""
                 _confirmPassword.value = ""
             } else {
@@ -493,8 +489,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (refreshResult.isFailure) {
                 _deleteError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-                _isDeleting.value = false
+                _isDeleting.value = true
                 handleTokenExpiration()
+                _navigateToAuth.value = true
                 return@launch
             }
 
@@ -563,8 +560,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (refreshResult.isFailure) {
                 _personalDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-                _personalDataLoading.value = false
+                _personalDataLoading.value = true
                 handleTokenExpiration()
+                _navigateToAuth.value = true
                 return@launch
             }
 
@@ -573,8 +571,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             if (result.isSuccess) {
                 val data = result.getOrNull()
                 _personalData.value = data
-
-                // Zaktualizuj pola formularza
                 _firstName.value = data?.firstName ?: ""
                 _lastName.value = data?.lastName ?: ""
                 _selectedCountry.value = data?.country
@@ -656,6 +652,17 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _fitnessDataSuccess = MutableStateFlow<String?>(null)
     val fitnessDataSuccess: StateFlow<String?> = _fitnessDataSuccess.asStateFlow()
 
+    private val _success = MutableStateFlow<String?>(null)
+    val success: StateFlow<String?> = _success.asStateFlow()
+
+    fun setSuccess(message: String) {
+        _success.value = message
+    }
+
+    fun resetSuccess() {
+        _success.value = null
+    }
+
     fun updateGender(gender: String?) {
         _selectedGender.value = gender
     }
@@ -686,8 +693,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (refreshResult.isFailure) {
                 _fitnessDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-                _fitnessDataLoading.value = false
+                _fitnessDataLoading.value = true
                 handleTokenExpiration()
+                _navigateToAuth.value = true
                 return@launch
             }
 

@@ -1,5 +1,7 @@
 package com.example.gymeaze.ui.screens.profile.sections
+
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -25,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +38,7 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.profile.sections.dialogs.BadgesInfoDialog
 import com.example.gymeaze.ui.screens.profile.sections.dialogs.TrainingGoalInfoDialog
 import com.example.gymeaze.ui.theme.*
@@ -42,18 +46,39 @@ import com.example.gymeaze.viewmodel.UserViewModel
 
 @Composable
 fun ProfileInfoSection(
-    viewModel: UserViewModel
+    viewModel: UserViewModel,
+    onNavigateToAuth: () -> Unit
 ) {
+    val navigateToAuth by viewModel?.navigateToAuth?.collectAsState() ?: remember { mutableStateOf(false) }
     val userProfile by viewModel.userProfile.collectAsState()
     val availableBadges by viewModel.availableBadges.collectAsState()
     val selectedPinnedBadges by viewModel.selectedPinnedBadges.collectAsState()
     val error by viewModel.error.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
+    val success by viewModel.success.collectAsState()
 
     var biography by remember { mutableStateOf(userProfile?.description.orEmpty()) }
     var selectedGoal by remember { mutableStateOf(userProfile?.goal.orEmpty()) }
 
+    val isBadgesDetailsPublic by viewModel?.isBadgesDetailsPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
+    val isGoalPublic by viewModel?.isGoalPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(success) {
+        success?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.resetSuccess()
+        }
+    }
+
+    LaunchedEffect(navigateToAuth) {
+        if (navigateToAuth) {
+            viewModel?.resetNavigation()
+            onNavigateToAuth()
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -76,78 +101,86 @@ fun ProfileInfoSection(
         }
     }
 
-    Column(
+    if (isLoading) {
+        LoadingScreen()
+    } else {
+        Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        ProfilePictureSection(
-            profilePictureUrl = userProfile?.profilePicture.orEmpty(),
-            selectedImageUri = selectedImageUri,
-            onImageSelected = { uri -> viewModel.setSelectedImage(uri) }
-        )
 
-        BiographySection(
-            biography = biography,
-            onBiographyChange = { newValue -> biography = newValue }
-        )
-
-        TrainingGoalSection(
-            selectedGoal = selectedGoal,
-            onGoalChange = { newGoal -> selectedGoal = newGoal },
-            isGoalPublic = userProfile?.isGoalPublic ?: true,
-        )
-
-        BadgesSection(
-            pinnedBadges = selectedPinnedBadges,
-            isBadgesDetailsPublic = userProfile?.isBadgesDetailsPublic ?: true,
-            availableBadges = availableBadges,
-            currentlyPinnedBadges = userProfile?.pinnedBadges ?: emptyList(),
-            onBadgesSelected = { badges ->
-                viewModel.setSelectedPinnedBadges(badges)
-            },
-            isLoading = isLoading
-        )
-
-        Button(
-            onClick = {
-                viewModel.updateProfile(
-                    description = biography,
-                    goal = if (selectedGoal == Goals.NONE) null else selectedGoal,
-                    pinnedBadges = selectedPinnedBadges
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = getPrimaryColor(),
-                contentColor = getOnPrimaryColor()
-            ),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = getOnPrimaryColor()
-                )
-            } else {
-
+        error?.let { errorMessage ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = getErrorColor().copy(alpha = 0.1f)
+                ),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.3f))
+            ) {
                 Text(
-                    text = stringResource(R.string.save_changes),
-                    color = getOnPrimaryColor(),
-                    fontSize = 16.sp
+                    text = errorMessage,
+                    color = getErrorColor(),
+                    modifier = Modifier.padding(12.dp),
+                    fontSize = 14.sp
                 )
             }
         }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                ProfilePictureSection(
+                    profilePictureUrl = userProfile?.profilePicture.orEmpty(),
+                    selectedImageUri = selectedImageUri,
+                    onImageSelected = { uri -> viewModel.setSelectedImage(uri) }
+                )
 
-        error?.let {
-            Text(
-                text = it,
-                color = getErrorColor(),
-                fontSize = 14.sp
-            )
+                BiographySection(
+                    biography = biography,
+                    onBiographyChange = { newValue -> biography = newValue }
+                )
+
+                TrainingGoalSection(
+                    selectedGoal = selectedGoal,
+                    onGoalChange = { newGoal -> selectedGoal = newGoal },
+                    isGoalPublic = userProfile?.isGoalPublic ?: true,
+                )
+
+                BadgesSection(
+                    pinnedBadges = selectedPinnedBadges,
+                    isBadgesDetailsPublic = userProfile?.isBadgesDetailsPublic ?: true,
+                    availableBadges = availableBadges,
+                    currentlyPinnedBadges = userProfile?.pinnedBadges ?: emptyList(),
+                    onBadgesSelected = { badges ->
+                        viewModel.setSelectedPinnedBadges(badges)
+                    },
+                    isLoading = isLoading
+                )
+
+                Button(
+                    onClick = {
+                        viewModel.updateProfile(
+                            description = biography,
+                            goal = if (selectedGoal == Goals.NONE) null else selectedGoal,
+                            pinnedBadges = selectedPinnedBadges
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = getPrimaryColor(),
+                        contentColor = getOnPrimaryColor()
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(text = stringResource(R.string.save_changes))
+                }
+            }
         }
     }
 }
@@ -472,6 +505,7 @@ private fun TrainingGoalSection(
 
     if(showInfoDialog) {
         TrainingGoalInfoDialog(
+            isGoalPublic = isGoalPublic,
             onDismiss = { showInfoDialog = false }
         )
     }
@@ -488,7 +522,6 @@ private fun BadgesSection(
 ) {
     var showBadgeSelectionDialog by remember { mutableStateOf(false) }
     var showBadgesInfoDialog by remember { mutableStateOf(false) }
-
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
@@ -600,7 +633,6 @@ private fun BadgesSection(
                     }
                 }
 
-                // Jeden przycisk do zarządzania odznakami
                 OutlinedButton(
                     onClick = { showBadgeSelectionDialog = true },
                     modifier = Modifier.fillMaxWidth(),
@@ -635,6 +667,7 @@ private fun BadgesSection(
 
     if (showBadgesInfoDialog) {
         BadgesInfoDialog(
+            isBadgesDetailsPublic = isBadgesDetailsPublic,
             onDismiss = { showBadgesInfoDialog = false }
         )
     }

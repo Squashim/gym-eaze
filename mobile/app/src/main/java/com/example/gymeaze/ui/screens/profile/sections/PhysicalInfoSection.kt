@@ -30,12 +30,21 @@ import com.example.gymeaze.viewmodel.UserViewModel
 
 @Composable
 fun PhysicalInfoSection(
-    viewModel: UserViewModel? = null
+    viewModel: UserViewModel? = null,
+    onNavigateToAuth: () -> Unit
 ) {
+    val navigateToAuth by viewModel?.navigateToAuth?.collectAsState() ?: remember { mutableStateOf(false) }
     val isLoading by viewModel?.fitnessDataLoading?.collectAsState() ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel?.fetchUserFitnessData()
+    }
+
+    LaunchedEffect(navigateToAuth) {
+        if (navigateToAuth) {
+            viewModel?.resetNavigation()
+            onNavigateToAuth()
+        }
     }
 
     if (isLoading) {

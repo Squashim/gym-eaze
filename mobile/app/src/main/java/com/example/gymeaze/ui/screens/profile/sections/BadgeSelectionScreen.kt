@@ -15,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,7 +61,6 @@ fun BadgeSelectionDialog(
                     .fillMaxSize()
                     .padding(24.dp)
             ) {
-                // Nagłówek
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -259,7 +257,6 @@ private fun BadgeSelectionItem(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Obraz odznaki
                 AsyncImage(
                     model = badge.image,
                     contentDescription = badge.title,
@@ -269,7 +266,6 @@ private fun BadgeSelectionItem(
                     contentScale = ContentScale.Crop
                 )
 
-                // Tekst content
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -291,14 +287,13 @@ private fun BadgeSelectionItem(
                     )
                 }
 
-                // Ikona zaznaczenia - zmieniono na zielony kwadrat
                 if (isSelected) {
                     Box(
                         modifier = Modifier
                             .size(32.dp)
                             .background(
                                 getPrimaryColor(),
-                                RoundedCornerShape(8.dp) // Kwadrat z lekko zaokrąglonymi rogami
+                                RoundedCornerShape(8.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -323,7 +318,6 @@ private fun BadgeSelectionItem(
                 }
             }
 
-            // Overlay jeśli nie można wybrać
             if (!canSelect && !isSelected) {
                 Box(
                     modifier = Modifier

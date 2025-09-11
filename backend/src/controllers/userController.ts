@@ -68,6 +68,9 @@ export const updateUserProfileDetails = async (req: AuthRequest, res: Response) 
     }
 
     const trimmedDescription = description?.trim() || "";
+    if (trimmedDescription.length > 150) {
+      return res.status(400).json({ message: "Opis może mieć maksymalnie 150 znaków" });
+    }
 
     const updated = await updateUserProfileDetailsService(
       userId,
