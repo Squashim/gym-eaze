@@ -2,6 +2,7 @@ package com.example.gymeaze.viewmodel
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -33,18 +34,14 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _userProfile = MutableStateFlow<UserProfileDetails?>(null)
     val userProfile: StateFlow<UserProfileDetails?> = _userProfile
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
-
     private val _selectedImageUri = MutableStateFlow<Uri?>(null)
     val selectedImageUri: StateFlow<Uri?> = _selectedImageUri
 
     private val _availableBadges = MutableStateFlow<List<Badge>>(emptyList())
     val availableBadges: StateFlow<List<Badge>> = _availableBadges
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _selectedPinnedBadges = MutableStateFlow<List<Badge>>(emptyList())
     val selectedPinnedBadges: StateFlow<List<Badge>> = _selectedPinnedBadges
@@ -55,87 +52,8 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser
 
-    private val _newUsername = MutableStateFlow("")
-    val newUsername: StateFlow<String> = _newUsername.asStateFlow()
-
-    private val _newPassword = MutableStateFlow("")
-    val newPassword: StateFlow<String> = _newPassword.asStateFlow()
-
-    private val _confirmPassword = MutableStateFlow("")
-    val confirmPassword: StateFlow<String> = _confirmPassword.asStateFlow()
-
-    private val _isUpdateSuccessful = MutableStateFlow<Boolean?>(null)
-    val isUpdateSuccessful: StateFlow<Boolean?> = _isUpdateSuccessful.asStateFlow()
-
-    // Nowe zmienne dla usuwania konta
-    private val _showDeleteDialog = MutableStateFlow(false)
-    val showDeleteDialog = _showDeleteDialog.asStateFlow()
-
-    private val _confirmUsername = MutableStateFlow("")
-    val confirmUsername = _confirmUsername.asStateFlow()
-
-    private val _isDeleting = MutableStateFlow(false)
-    val isDeleting = _isDeleting.asStateFlow()
-
-    private val _deleteError = MutableStateFlow<String?>(null)
-    val deleteError = _deleteError.asStateFlow()
-
-    fun showDeleteDialog() {
-        _showDeleteDialog.value = true
-        _confirmUsername.value = ""
-        _deleteError.value = null
-    }
-
-    fun hideDeleteDialog() {
-        _showDeleteDialog.value = false
-        _confirmUsername.value = ""
-        _deleteError.value = null
-    }
-
-    fun updateConfirmUsername(username: String) {
-        _confirmUsername.value = username
-    }
-
-    fun deleteAccount() {
-        val currentUsername = _currentUser.value?.username ?: return
-        val confirmedUsername = _confirmUsername.value
-
-        if (confirmedUsername != currentUsername) {
-            _deleteError.value = getApplication<Application>().getString(R.string.error_username_incorrect)
-            return
-        }
-
-        viewModelScope.launch {
-            _isDeleting.value = true
-            _deleteError.value = null
-
-            // Odśwież token przed usunięciem konta
-            val authRepository = AuthRepository(getApplication())
-            val refreshResult = authRepository.refreshAccessToken()
-
-            if (refreshResult.isFailure) {
-                _deleteError.value = getApplication<Application>().getString(R.string.error_session_expired_login_again)
-                _isDeleting.value = false
-                return@launch
-            }
-
-            val result = userRepository.deleteAccount()
-
-            if (result.isSuccess) {
-                // Wyloguj użytkownika po pomyślnym usunięciu konta
-                authRepository.logout()
-                hideDeleteDialog()
-                // Tutaj możesz dodać nawigację do ekranu logowania
-                // navController.navigate("login") {
-                //     popUpTo(0) { inclusive = true }
-                // }
-            } else {
-                _deleteError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_account_deletion_failed)
-            }
-
-            _isDeleting.value = false
-        }
-    }
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     private suspend fun validateAndConvertImage(uri: Uri): Result<File> {
         return try {
@@ -184,43 +102,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         } catch (e: Exception) {
             e.printStackTrace()
             Result.failure(e)
-        }
-    }
-
-
-    fun updateNewUsername(username: String) {
-        _newUsername.value = username
-    }
-
-    fun updateNewPassword(password: String) {
-        _newPassword.value = password
-    }
-
-    fun updateConfirmPassword(password: String) {
-        _confirmPassword.value = password
-    }
-
-    fun clearUpdateSuccessState() {
-        _isUpdateSuccessful.value = null
-    }
-    fun fetchCurrentUser() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-
-            val authRepository = AuthRepository(getApplication())
-            val result = authRepository.getCurrentUser()
-
-            if (result.isSuccess) {
-                _currentUser.value = result.getOrNull()
-                // Pre-fill username field
-                _newUsername.value = result.getOrNull()?.username ?: ""
-                _error.value = null
-            } else {
-                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fetching_user_data)
-            }
-
-            _isLoading.value = false
         }
     }
 
@@ -376,80 +257,93 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     }
 
     // LOGIN DETAILS -------------------------------------------------------------
+    private val _currentUsername = MutableStateFlow("")
+    val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
 
-    fun updateLoginData() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-            _isUpdateSuccessful.value = null
+    private val _newUsername = MutableStateFlow("")
+    val newUsername: StateFlow<String> = _newUsername.asStateFlow()
 
-            // Validate input
-            val validationError = validateLoginDataChanges(
-                _newUsername.value,
-                _newPassword.value,
-                _confirmPassword.value
-            )
+    private val _newPassword = MutableStateFlow("")
+    val newPassword: StateFlow<String> = _newPassword.asStateFlow()
 
-            if (validationError != null) {
-                _error.value = validationError
-                _isLoading.value = false
-                return@launch
-            }
+    private val _confirmPassword = MutableStateFlow("")
+    val confirmPassword: StateFlow<String> = _confirmPassword.asStateFlow()
 
-            // Utwórz instancję AuthRepository z kontekstem
-            val authRepository = AuthRepository(getApplication())
+    private val _loginDataError = MutableStateFlow<String?>(null)
+    val loginDataError: StateFlow<String?> = _loginDataError.asStateFlow()
 
-            // Odśwież token
-            val refreshResult = authRepository.refreshAccessToken()
-            if (refreshResult.isFailure) {
-                _error.value = getApplication<Application>().getString(R.string.error_session_expired)
-                _isLoading.value = false
-                handleTokenExpiration()
-                return@launch
-            }
+    private val _loginDataLoading = MutableStateFlow(false)
+    val loginDataLoading: StateFlow<Boolean> = _loginDataLoading.asStateFlow()
 
-            // Pobierz aktualne dane użytkownika
-            val currentUserResult = authRepository.getCurrentUser()
-            if (currentUserResult.isFailure) {
-                _error.value = getApplication<Application>().getString(R.string.error_fetch_user_data_failed)
-                _isLoading.value = false
-                return@launch
-            }
+    private val _loginDataSuccess = MutableStateFlow<String?>(null)
+    val loginDataSuccess: StateFlow<String?> = _loginDataSuccess.asStateFlow()
 
-            val currentUser = currentUserResult.getOrNull()
-            val currentUsername = currentUser?.username ?: ""
+    private val _showDeleteDialog = MutableStateFlow(false)
+    val showDeleteDialog: StateFlow<Boolean> = _showDeleteDialog.asStateFlow()
 
-            // Sprawdź czy username się faktycznie zmienia
-            val shouldUpdateUsername = _newUsername.value.isNotEmpty() &&
-                    _newUsername.value != currentUsername
-            val shouldUpdatePassword = _newPassword.value.isNotEmpty()
+    private val _confirmUsername = MutableStateFlow("")
+    val confirmUsername: StateFlow<String> = _confirmUsername.asStateFlow()
 
-            if (!shouldUpdateUsername && !shouldUpdatePassword) {
-                _error.value = getApplication<Application>().getString(R.string.error_no_changes_to_save)
-                _isLoading.value = false
-                return@launch
-            }
+    private val _isDeleting = MutableStateFlow(false)
+    val isDeleting: StateFlow<Boolean> = _isDeleting.asStateFlow()
 
-            val result = userRepository.updateLoginData(
-                username = if (shouldUpdateUsername) _newUsername.value else null,
-                password = if (shouldUpdatePassword) _newPassword.value else null
-            )
+    private val _deleteError = MutableStateFlow<String?>(null)
+    val deleteError: StateFlow<String?> = _deleteError.asStateFlow()
 
-            if (result.isSuccess) {
-                _isUpdateSuccessful.value = true
-                _error.value = null
-                // Refresh user data
-                fetchCurrentUser()
-                // Clear password fields
-                _newPassword.value = ""
-                _confirmPassword.value = ""
-            } else {
-                _isUpdateSuccessful.value = false
-                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_login_data_update_failed)
-            }
+    // W UserViewModel dodaj:
+    private val _navigateToAuth = MutableStateFlow(false)
+    val navigateToAuth: StateFlow<Boolean> = _navigateToAuth.asStateFlow()
 
-            _isLoading.value = false
-        }
+    fun resetNavigation() {
+        _navigateToAuth.value = false
+    }
+
+    fun updateNewUsername(username: String) {
+        _newUsername.value = username
+    }
+
+    fun updateNewPassword(password: String) {
+        _newPassword.value = password
+    }
+
+    fun updateConfirmPassword(password: String) {
+        _confirmPassword.value = password
+    }
+
+    fun updateConfirmUsername(username: String) {
+        _confirmUsername.value = username
+    }
+
+    fun showDeleteDialog() {
+        _showDeleteDialog.value = true
+        _confirmUsername.value = ""
+        _deleteError.value = null
+    }
+
+    fun hideDeleteDialog() {
+        _showDeleteDialog.value = false
+        _confirmUsername.value = ""
+        _deleteError.value = null
+    }
+
+    fun resetLoginDataError() {
+        _loginDataError.value = null
+    }
+
+    fun resetLoginDataSuccess() {
+        _loginDataSuccess.value = null
+    }
+
+    fun resetUserState() {
+        _currentUser.value = null
+        _currentUsername.value = ""
+        _newUsername.value = ""
+        _newPassword.value = ""
+        _confirmPassword.value = ""
+        _loginDataError.value = null
+        _loginDataSuccess.value = null
+        _showDeleteDialog.value = false
+        _confirmUsername.value = ""
     }
 
     private fun validateLoginDataChanges(
@@ -457,11 +351,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         newPassword: String,
         confirmPassword: String
     ): String? {
-        if (newUsername.isEmpty() && newPassword.isEmpty()) {
-            return getApplication<Application>().getString(R.string.error_enter_at_least_one_change)
-        }
-
-        // Username validation if provided
         if (newUsername.isNotEmpty()) {
             if (newUsername.length < 6) {
                 return getApplication<Application>().getString(R.string.error_username_min_chars)
@@ -471,7 +360,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             }
         }
 
-        // Password validation if provided
         if (newPassword.isNotEmpty()) {
             if (newPassword.length < 14) {
                 return getApplication<Application>().getString(R.string.error_password_min_chars)
@@ -482,11 +370,147 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             if (newPassword != confirmPassword) {
                 return getApplication<Application>().getString(R.string.error_passwords_no_match)
             }
+            if (!newPassword.any { it.isUpperCase() }) {
+                return getApplication<Application>().getString(R.string.error_password_uppercase)
+            }
+            if (!newPassword.any { it.isLowerCase() }) {
+                return getApplication<Application>().getString(R.string.error_password_lowercase)
+            }
+            if (!newPassword.any { it.isDigit() }) {
+                return getApplication<Application>().getString(R.string.error_password_number)
+            }
+            if (!newPassword.any { "!@#$%^&*()_+./".contains(it) }) {
+                return getApplication<Application>().getString(R.string.error_password_special)
+            }
         }
 
         return null
     }
 
+    fun fetchCurrentUser() {
+        viewModelScope.launch {
+            _loginDataLoading.value = true
+            _error.value = null
+            _loginDataError.value = null
+
+            val authRepository = AuthRepository(getApplication())
+            val result = authRepository.getCurrentUser()
+
+            if (result.isSuccess) {
+                val user = result.getOrNull()
+                _currentUser.value = user
+                _currentUsername.value = user?.username ?: ""
+
+                // Synchronizuj newUsername z currentUsername
+                if (_newUsername.value.isEmpty() || _newUsername.value == _currentUsername.value) {
+                    _newUsername.value = user?.username ?: ""
+                }
+
+                _error.value = null
+                _loginDataError.value = null
+            } else {
+                _error.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fetching_user_data)
+            }
+
+            _loginDataLoading.value = false
+        }
+    }
+
+    fun updateLoginData() {
+        viewModelScope.launch {
+            _loginDataLoading.value = true
+            _loginDataError.value = null
+
+            val validationError = validateLoginDataChanges(
+                _newUsername.value,
+                _newPassword.value,
+                _confirmPassword.value
+            )
+
+            if (validationError != null) {
+                _loginDataError.value = validationError
+                _loginDataLoading.value = false
+                return@launch
+            }
+
+            val authRepository = AuthRepository(getApplication())
+            val refreshResult = authRepository.refreshAccessToken()
+
+            if (refreshResult.isFailure) {
+                _loginDataError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
+                _loginDataLoading.value = false
+                handleTokenExpiration()
+                return@launch
+            }
+
+            val shouldUpdateUsername = _newUsername.value.isNotEmpty() && _newUsername.value != _currentUsername.value
+            val shouldUpdatePassword = _newPassword.value.isNotEmpty()
+
+            if (!shouldUpdateUsername && !shouldUpdatePassword) {
+                _loginDataError.value = getApplication<Application>().getString(R.string.error_no_changes_to_save)
+                _loginDataLoading.value = false
+                return@launch
+            }
+
+            val result = userRepository.updateLoginData(
+                username = if (shouldUpdateUsername) _newUsername.value else null,
+                password = if (shouldUpdatePassword) _newPassword.value else null
+            )
+
+            if (result.isSuccess) {
+                _loginDataError.value = null
+                _loginDataSuccess.value = getApplication<Application>().getString(R.string.login_data_updated_successfully)
+
+                // Aktualizuj currentUsername jeśli zmieniono nazwę użytkownika
+                if (shouldUpdateUsername) {
+                    _currentUsername.value = _newUsername.value
+                }
+
+                // Resetuj tylko pola hasła, nie nazwę użytkownika
+                _newPassword.value = ""
+                _confirmPassword.value = ""
+            } else {
+                _loginDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_login_data_update_failed)
+            }
+
+            _loginDataLoading.value = false
+        }
+    }
+
+    fun deleteAccount() {
+        viewModelScope.launch {
+            _isDeleting.value = true
+            _deleteError.value = null
+
+            if (_confirmUsername.value != _currentUsername.value) {
+                _deleteError.value = getApplication<Application>().getString(R.string.error_username_mismatch)
+                _isDeleting.value = false
+                return@launch
+            }
+
+            val authRepository = AuthRepository(getApplication())
+            val refreshResult = authRepository.refreshAccessToken()
+
+            if (refreshResult.isFailure) {
+                _deleteError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
+                _isDeleting.value = false
+                handleTokenExpiration()
+                return@launch
+            }
+
+            val result = userRepository.deleteAccount()
+
+            if (result.isSuccess) {
+                authRepository.logout()
+                hideDeleteDialog()
+                _navigateToAuth.value = true
+            } else {
+                _deleteError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_account_deletion_failed)
+            }
+
+            _isDeleting.value = false
+        }
+    }
 
     // PERSONAL DETAILS -------------------------------------------------------------
     private val _personalData = MutableStateFlow<UserPersonalData?>(null)

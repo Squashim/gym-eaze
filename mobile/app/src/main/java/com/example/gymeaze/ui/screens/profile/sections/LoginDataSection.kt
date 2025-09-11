@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens.profile.sections
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,8 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
@@ -16,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,109 +25,60 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 
 @Composable
 fun LoginDataSection(
-    viewModel: UserViewModel? = null
+    viewModel: UserViewModel? = null,
+    onNavigateToAuth: () -> Unit
 ) {
-    val currentUser by viewModel?.currentUser?.collectAsState() ?: remember { mutableStateOf(null) }
-    val newUsername by viewModel?.newUsername?.collectAsState() ?: remember { mutableStateOf("") }
-    val newPassword by viewModel?.newPassword?.collectAsState() ?: remember { mutableStateOf("") }
-    val confirmPassword by viewModel?.confirmPassword?.collectAsState() ?: remember { mutableStateOf("") }
-    val isUpdateSuccessful by viewModel?.isUpdateSuccessful?.collectAsState() ?: remember { mutableStateOf(null) }
-    val error by viewModel?.error?.collectAsState() ?: remember { mutableStateOf(null) }
+    val navigateToAuth by viewModel?.navigateToAuth?.collectAsState() ?: remember { mutableStateOf(false) }
+    val success by viewModel?.loginDataSuccess?.collectAsState() ?: remember { mutableStateOf(null) }
+    val isLoading by viewModel?.loginDataLoading?.collectAsState(false) ?: remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    val context = LocalContext.current
+
+    // Single loading check for the entire screen
+    if (isLoading) {
+        LoadingScreen()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            EditLoginDataSection(viewModel = viewModel,  isLoading = isLoading)
+            DeleteAccountSection(viewModel = viewModel)
+        }
+    }
+
+    // Effects
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel?.resetUserState()
+        }
+    }
+
+    LaunchedEffect(navigateToAuth) {
+        if (navigateToAuth) {
+            viewModel?.resetNavigation()
+            onNavigateToAuth()
+        }
+    }
+
+    LaunchedEffect(viewModel) {
         viewModel?.fetchCurrentUser()
+        viewModel?.resetLoginDataError()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (isUpdateSuccessful == true) {
-            SuccessMessage(message = stringResource(R.string.login_data_updated_success))
-        }
-
-        error?.let { errorMessage ->
-            ErrorMessage(message = errorMessage)
-        }
-
-        EditLoginDataSection(
-            viewModel = viewModel,
-            currentUsername = currentUser?.username ?: "",
-            newUsername = newUsername,
-            newPassword = newPassword,
-            confirmPassword = confirmPassword
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        DeleteAccountSection(viewModel = viewModel)
-    }
-}
-
-@Composable
-private fun SuccessMessage(message: String) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp),
-        color = getPrimaryColor().copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, getPrimaryColor().copy(alpha = 0.5f))
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = stringResource(R.string.success),
-                tint = getPrimaryColor(),
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = message,
-                color = getPrimaryColor(),
-                fontSize = 14.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun ErrorMessage(message: String) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp),
-        color = getErrorColor().copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.5f))
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Error,
-                contentDescription = stringResource(R.string.error),
-                tint = getErrorColor(),
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = message,
-                color = getErrorColor(),
-                fontSize = 14.sp
-            )
+    LaunchedEffect(success) {
+        success?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel?.resetLoginDataSuccess()
         }
     }
 }
@@ -135,82 +86,111 @@ private fun ErrorMessage(message: String) {
 @Composable
 private fun EditLoginDataSection(
     viewModel: UserViewModel? = null,
-    currentUsername: String,
-    newUsername: String,
-    newPassword: String,
-    confirmPassword: String
+    isLoading: Boolean = false
 ) {
-    Text(
-        text = stringResource(R.string.edit_login_data),
-        color = getOnSurfaceColor(),
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Medium
-    )
-    Text(
-        text = stringResource(R.string.edit_login_data_description),
-        color = getOnSurfaceSecondaryColor(),
-        fontSize = 14.sp,
-        lineHeight = 20.sp
-    )
-
-    UsernameField(
-        viewModel = viewModel,
-        currentUsername = currentUsername,
-        newUsername = newUsername
-    )
-
-    NewPasswordField(
-        viewModel = viewModel,
-        newPassword = newPassword
-    )
-
-    ConfirmNewPasswordField(
-        viewModel = viewModel,
-        confirmPassword = confirmPassword
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Button(
-        onClick = {
-            viewModel?.updateLoginData()
-        },
-        modifier = Modifier
-            .fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = getPrimaryColor(),
-            contentColor = getOnPrimaryColor()
-        ),
-        shape = RoundedCornerShape(8.dp)
+    val newUsername by viewModel?.newUsername?.collectAsState("") ?: remember { mutableStateOf("") }
+    val newPassword by viewModel?.newPassword?.collectAsState("") ?: remember { mutableStateOf("") }
+    val confirmPassword by viewModel?.confirmPassword?.collectAsState("") ?: remember { mutableStateOf("") }
+    val error by viewModel?.loginDataError?.collectAsState() ?: remember { mutableStateOf(null) }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.save_changes),
-            color = getOnPrimaryColor(),
-            fontSize = 16.sp
+            text = stringResource(R.string.edit_login_data),
+            color = getOnSurfaceColor(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium
         )
+
+        Text(
+            text = stringResource(R.string.edit_login_data_description),
+            color = getOnSurfaceSecondaryColor(),
+            fontSize = 14.sp,
+            lineHeight = 20.sp
+        )
+
+        error?.let { errorMessage ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = getErrorColor().copy(alpha = 0.1f)
+                ),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.3f))
+            ) {
+                Text(
+                    text = errorMessage,
+                    color = getErrorColor(),
+                    modifier = Modifier.padding(12.dp),
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        UsernameField(
+            viewModel = viewModel,
+            enabled = !isLoading
+        )
+
+        NewPasswordField(
+            viewModel = viewModel,
+            newPassword = newPassword,
+            enabled = !isLoading
+        )
+
+        ConfirmNewPasswordField(
+            viewModel = viewModel,
+            confirmPassword = confirmPassword,
+            enabled = !isLoading
+        )
+
+        Button(
+            onClick = {
+                viewModel?.updateLoginData()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = getPrimaryColor(),
+                contentColor = getOnPrimaryColor()
+            ),
+            shape = RoundedCornerShape(8.dp),
+            enabled = !isLoading
+        ) {
+            if (isLoading) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = getOnPrimaryColor(),
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = stringResource(R.string.saving),
+                        color = getOnPrimaryColor(),
+                        fontSize = 16.sp
+                    )
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.save_changes),
+                    color = getOnPrimaryColor(),
+                    fontSize = 16.sp
+                )
+            }
+        }
     }
 }
-
 @Composable
 private fun UsernameField(
     viewModel: UserViewModel? = null,
-    currentUsername: String,
-    newUsername: String
+    enabled: Boolean = true
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.current_username, currentUsername),
-                color = getOnSurfaceSecondaryColor(),
-                fontSize = 14.sp
-            )
-        }
+    val currentUsername by viewModel?.currentUsername?.collectAsState("") ?: remember { mutableStateOf("") }
+    val newUsername by viewModel?.newUsername?.collectAsState("") ?: remember { mutableStateOf("") }
 
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.username),
             color = getOnSurfaceColor(),
@@ -223,16 +203,25 @@ private fun UsernameField(
             onValueChange = {
                 viewModel?.updateNewUsername(it)
             },
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = getPrimaryColor(),
                 unfocusedBorderColor = getInputBorderColor(),
                 focusedTextColor = getOnSurfaceColor(),
                 unfocusedTextColor = getOnSurfaceColor(),
+                disabledTextColor = getOnSurfaceSecondaryColor(),
+                disabledBorderColor = getInputBorderColor().copy(alpha = 0.5f),
                 cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
-            singleLine = true
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = if (newUsername.isEmpty()) currentUsername else stringResource(R.string.enter_new_username),
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
         )
     }
 }
@@ -240,9 +229,10 @@ private fun UsernameField(
 @Composable
 private fun NewPasswordField(
     viewModel: UserViewModel? = null,
-    newPassword: String
+    newPassword: String,
+    enabled: Boolean = true
 ) {
-    var isPasswordVisible by remember { mutableStateOf(false)}
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -256,21 +246,22 @@ private fun NewPasswordField(
 
         OutlinedTextField(
             value = newPassword,
-            onValueChange = {
-                viewModel?.updateNewPassword(it)
-            },
+            onValueChange = { viewModel?.updateNewPassword(it) },
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isPasswordVisible)
                 VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                    Icon(
-                        imageVector = if(isPasswordVisible)
-                            Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if(isPasswordVisible)
-                            stringResource(R.string.hide_password) else stringResource(R.string.show_password),
-                        tint = getOnSurfaceSecondaryColor()
-                    )
+                if (enabled) {
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            imageVector = if (isPasswordVisible)
+                                Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = if (isPasswordVisible)
+                                stringResource(R.string.hide_password) else stringResource(R.string.show_password),
+                            tint = getOnSurfaceSecondaryColor()
+                        )
+                    }
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
@@ -278,11 +269,19 @@ private fun NewPasswordField(
                 unfocusedBorderColor = getInputBorderColor(),
                 focusedTextColor = getOnSurfaceColor(),
                 unfocusedTextColor = getOnSurfaceColor(),
+                disabledTextColor = getOnSurfaceSecondaryColor(),
+                disabledBorderColor = getInputBorderColor().copy(alpha = 0.5f),
                 cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.enter_new_password),
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
         )
     }
 }
@@ -290,9 +289,10 @@ private fun NewPasswordField(
 @Composable
 private fun ConfirmNewPasswordField(
     viewModel: UserViewModel? = null,
-    confirmPassword: String
+    confirmPassword: String,
+    enabled: Boolean = true
 ) {
-    var isPasswordVisible by remember { mutableStateOf(false)}
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -306,21 +306,22 @@ private fun ConfirmNewPasswordField(
 
         OutlinedTextField(
             value = confirmPassword,
-            onValueChange = {
-                viewModel?.updateConfirmPassword(it)
-            },
+            onValueChange = { viewModel?.updateConfirmPassword(it) },
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isPasswordVisible)
                 VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                    Icon(
-                        imageVector = if (isPasswordVisible)
-                            Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if (isPasswordVisible)
-                            stringResource(R.string.hide_password) else stringResource(R.string.show_password),
-                        tint = getOnSurfaceSecondaryColor()
-                    )
+                if (enabled) {
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            imageVector = if (isPasswordVisible)
+                                Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = if (isPasswordVisible)
+                                stringResource(R.string.hide_password) else stringResource(R.string.show_password),
+                            tint = getOnSurfaceSecondaryColor()
+                        )
+                    }
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
@@ -328,11 +329,19 @@ private fun ConfirmNewPasswordField(
                 unfocusedBorderColor = getInputBorderColor(),
                 focusedTextColor = getOnSurfaceColor(),
                 unfocusedTextColor = getOnSurfaceColor(),
+                disabledTextColor = getOnSurfaceSecondaryColor(),
+                disabledBorderColor = getInputBorderColor().copy(alpha = 0.5f),
                 cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.confirm_password_placeholder),
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
         )
     }
 }
@@ -345,7 +354,7 @@ private fun DeleteAccountSection(
     val confirmUsername by viewModel?.confirmUsername?.collectAsState() ?: remember { mutableStateOf("") }
     val isDeleting by viewModel?.isDeleting?.collectAsState() ?: remember { mutableStateOf(false) }
     val deleteError by viewModel?.deleteError?.collectAsState() ?: remember { mutableStateOf(null) }
-    val currentUser by viewModel?.currentUser?.collectAsState() ?: remember { mutableStateOf(null) }
+    val currentUsername by viewModel?.currentUsername?.collectAsState("") ?: remember { mutableStateOf("") }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -418,7 +427,6 @@ private fun DeleteAccountSection(
         }
     }
 
-    // Poprawiony dialog potwierdzenia usunięcia konta
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -485,7 +493,7 @@ private fun DeleteAccountSection(
                             border = BorderStroke(1.dp, getPrimaryColor())
                         ) {
                             Text(
-                                text = currentUser?.username ?: "",
+                                text = currentUsername,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
@@ -516,7 +524,6 @@ private fun DeleteAccountSection(
                         )
                     }
 
-                    // Pokazuj błąd jeśli istnieje
                     deleteError?.let { error ->
                         Surface(
                             shape = RoundedCornerShape(6.dp),
@@ -542,7 +549,7 @@ private fun DeleteAccountSection(
                         contentColor = getOnPrimaryColor()
                     ),
                     enabled = !isDeleting && confirmUsername.isNotEmpty() &&
-                            confirmUsername == currentUser?.username,
+                            confirmUsername == currentUsername,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     if (isDeleting) {

@@ -102,7 +102,7 @@ export const getUserBadges = async (req: AuthRequest, res: Response) => {
 
 export const updateUser = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.userId; 
+    const userId = req.userId;
     const { username, password } = req.body;
 
     if (!userId) {
@@ -113,21 +113,27 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({ message: 'Użytkownik zaktualizowany pomyślnie', user: updatedUser });
   } catch (error: any) {
-    if (error.message === 'USERNAME_EXISTS') {
-      return res.status(400).json({ error: 'Nazwa użytkownika już istnieje' });
+    switch (error.message) {
+      case 'USERNAME_EXISTS':
+        return res.status(400).json({ error: 'Nazwa użytkownika już istnieje' });
+      case 'USERNAME_LENGTH':
+        return res.status(400).json({ error: 'Długość nazwy użytkownika musi wynosić od 6 do 14 znaków' });
+      case 'PASSWORD_LENGTH':
+        return res.status(400).json({ error: 'Długość hasła musi wynosić od 14 do 32 znaków' });
+      case 'PASSWORD_UPPERCASE':
+        return res.status(400).json({ error: 'Hasło musi zawierać co najmniej jedną wielką literę' });
+      case 'PASSWORD_LOWERCASE':
+        return res.status(400).json({ error: 'Hasło musi zawierać co najmniej jedną małą literę' });
+      case 'PASSWORD_NUMBER':
+        return res.status(400).json({ error: 'Hasło musi zawierać co najmniej jedną cyfrę' });
+      case 'PASSWORD_SPECIAL':
+        return res.status(400).json({ error: 'Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&*()_+./)' });
+      default:
+        return res.status(500).json({ error: 'Błąd serwera' });
     }
-    if (error.message === 'USERNAME_LENGTH') {
-      return res.status(400).json({ error: 'Długość nazwy użytkownika musi wynosić od 6 do 16 znaków' });
-    }
-    if (error.message === 'PASSWORD_LENGTH') {
-      return res.status(400).json({ error: 'Długość hasła musi wynosić od 14 do 32 znaków' });
-    }
-    if (error.message === 'INVALID_PASSWORD') {
-      return res.status(400).json({ error: 'Hasło nie spełnia wymagań dotyczących złożoności' });
-    }
-    res.status(500).json({ error: 'Błąd serwera' });
   }
 };
+
 
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {

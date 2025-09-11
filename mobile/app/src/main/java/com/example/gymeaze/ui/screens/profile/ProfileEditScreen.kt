@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.screens.profile.sections.LoginDataSection
@@ -41,12 +42,12 @@ enum class ProfileTab {
 fun ProfileEditScreen(
     viewModel: UserViewModel? = null,
     onReturnClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    onSaveClick: () -> Unit,
+    onNavigateToAuth: () -> Unit,
     selectedRoute: String = "profile",
     onNavigationItemSelected: (String) -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(ProfileTab.PROFILE_INFO) }
+    val navController = rememberNavController()
 
     Scaffold(
         topBar = {
@@ -101,12 +102,13 @@ fun ProfileEditScreen(
                     ProfileTab.PROFILE_INFO -> {
                         if (viewModel != null) {
                             ProfileInfoSection(viewModel = viewModel)
-                        } else {
-                            ProfileInfoPreviewScreen()
                         }
                     }
                     ProfileTab.LOGIN_DATA -> {
-                        LoginDataSection(viewModel = viewModel)
+                        LoginDataSection(
+                            viewModel = viewModel,
+                            onNavigateToAuth = onNavigateToAuth
+                        )
                     }
                     ProfileTab.PERSONAL_DATA -> {
                         PersonalDataSection(viewModel = viewModel)
@@ -171,35 +173,6 @@ private fun ProfileTabs(
         HorizontalDivider(
             thickness = 1.dp,
             color = getOnSurfaceSecondaryColor().copy(alpha = 0.3f)
-        )
-    }
-}
-
-@Composable
-private fun ProfileInfoPreviewScreen() {
-    var biography by remember { mutableStateOf("") }
-    var selectedGoal by remember { mutableStateOf("") }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Profile Info Preview - Connect with ViewModel for full functionality",
-            color = getOnSurfaceSecondaryColor()
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileEditScreenPreview() {
-    GymEazeTheme {
-        ProfileEditScreen(
-            onReturnClick = {},
-            onCancelClick = {},
-            onSaveClick = {}
         )
     }
 }

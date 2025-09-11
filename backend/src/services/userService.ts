@@ -127,11 +127,10 @@ interface UpdateUserInput {
 
 export const updateUserService = async (userId: string, data: UpdateUserInput) => {
   const { username, password } = data;
-
   const updateData: Partial<IUser> = {};
 
   if (username) {
-    if (username.length < 6 || username.length > 16) {
+    if (username.length < 6 || username.length > 14) {
       throw new Error('USERNAME_LENGTH');
     }
 
@@ -148,17 +147,26 @@ export const updateUserService = async (userId: string, data: UpdateUserInput) =
       throw new Error('PASSWORD_LENGTH');
     }
 
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+./])[A-Za-z\d!@#$%^&*()_+./]{14,}$/;
-    if (!passwordRegex.test(password)) {
-      throw new Error('INVALID_PASSWORD');
+    if (!/[A-Z]/.test(password)) {
+      throw new Error('PASSWORD_UPPERCASE'); 
+    }
+
+    if (!/[a-z]/.test(password)) {
+      throw new Error('PASSWORD_LOWERCASE'); 
+    }
+
+    if (!/\d/.test(password)) {
+      throw new Error('PASSWORD_NUMBER');
+    }
+
+    if (!/[!@#$%^&*()_+./]/.test(password)) {
+      throw new Error('PASSWORD_SPECIAL'); 
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
     updateData.password = hashedPassword;
   }
 
-  // 🔑 faktyczna aktualizacja w bazie
   const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
   return updatedUser;
 };

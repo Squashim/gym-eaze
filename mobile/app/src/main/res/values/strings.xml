@@ -140,10 +140,13 @@
     <string name="edit_login_data">Edytuj dane logowania</string>
     <string name="edit_login_data_description">Wprowadź nowe dane, aby zaktualizować swoje konto.</string>
     <string name="new_password">Nowe hasło</string>
+    <string name="enter_new_username">Wpisz swoją nową nazwe użytkownika</string>
+    <string name="enter_new_password">Wpisz swoje nowe hasło</string>
     <string name="confirm_new_password">Potwierdź nowe hasło</string>
     <string name="save_changes">Zapisz zmiany</string>
 
     <string name="delete_account">Usuń konto</string>
+    <string name="confirm_password_placeholder">Potwierdź swoje hasło</string>
     <string name="delete_account_description">Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane zostaną trwale usunięte. Tej operacji nie można cofnąć. Uwaga! Jeśli jakiś użytkownik zapisał swój trening lub ćwiczenie w ulubionych nadal będzie mieć do niego dostęp.</string>
 
     <string name="edit_personal_data">Edytuj dane personalne</string>
@@ -287,6 +290,8 @@
     <string name="error_cannot_read_file">Nie można odczytać pliku z URI</string>
     <string name="error_fetching_user_data">Błąd pobierania danych użytkownika</string>
     <string name="error_session_expired_please_login">Sesja wygasła. Zaloguj się ponownie.</string>
+    <string name="error_username_mismatch">Błąd nazwy użytkownika</string>
+    <string name="account_deleted">Konto zostało usunięte</string>
     <string name="error_unknown_occurred">Nieznany błąd</string>
     <string name="error_max_five_badges">Maksymalnie można przypiąć 5 odznak</string>
     <string name="error_image_validation">Błąd walidacji obrazu</string>
@@ -302,6 +307,10 @@
     <string name="error_password_min_chars">Hasło musi mieć co najmniej 14 znaków</string>
     <string name="error_password_max_chars">Hasło może mieć maksymalnie 32 znaki</string>
     <string name="error_passwords_no_match">Hasła nie pasują</string>
+    <string name="error_password_uppercase">Hasło musi zawierać co najmniej jedną wielką literę (A-Z)</string>
+    <string name="error_password_lowercase">Hasło musi zawierać co najmniej jedną małą literę (a-z)</string>
+    <string name="error_password_number">Hasło musi zawierać co najmniej jedną cyfrę (0-9)</string>
+    <string name="error_password_special">Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&amp;*()_+./)</string>
     <string name="error_first_name_required">Imię nie może być puste</string>
     <string name="error_last_name_required">Nazwisko nie może być puste</string>
     <string name="error_personal_data_update_failed">Błąd podczas aktualizacji danych</string>
@@ -310,6 +319,7 @@
     <string name="enter_your_surname">Wprowadź swoje nazwisko</string>
     <string name="personal_data_updated_successfully">Dane personalne zostały zaktualizowane pomyślnie</string>
     <string name="fitness_data_updated_successfully">Dane fizyczne zostały zaktualizowane pomyślnie</string>
+    <string name="login_data_updated_successfully">Dane logowania zostały zaktualizowane pomyślnie</string>
     <string name="enter_your_age">Wprowadź swoj wiek</string>
     <string name="enter_your_height">Wprowadź swoj wzrost</string>
     <string name="enter_your_weight">Wprowadź swoją wagę</string>

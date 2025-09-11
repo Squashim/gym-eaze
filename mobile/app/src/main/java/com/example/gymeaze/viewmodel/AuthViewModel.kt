@@ -78,6 +78,7 @@ data class AuthUiState(
 sealed class LogoutEvent {
     object TokenExpired : LogoutEvent()
     object Manual : LogoutEvent()
+    object AccountDeleted : LogoutEvent()
 }
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
@@ -448,6 +449,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 handleTokenExpiration()
             }
             privateUiState.value = AuthUiState()
+        }
+    }
+
+    fun delete() {
+        viewModelScope.launch {
+            authRepository.clearUserSession()
+            privateUiState.value = AuthUiState()
+            privateUiState.value = AuthUiState()
+            _logoutEvent.value = LogoutEvent.AccountDeleted
         }
     }
 

@@ -85,6 +85,13 @@ class MainActivity : ComponentActivity() {
                         is LogoutEvent.Manual -> {
                             Toast.makeText(context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
                         }
+                        is LogoutEvent.AccountDeleted -> {
+                            Toast.makeText(
+                                context,
+                                "Konto zostało pomyślnie usunięte",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                     authViewModel.clearLogoutEvent()
                 }
@@ -131,8 +138,11 @@ class MainActivity : ComponentActivity() {
                                 ProfileEditScreen(
                                     viewModel = userViewModel,
                                     onReturnClick = authViewModel::hideProfileEditScreen,
-                                    onCancelClick = authViewModel::cancelProfileSetup,
-                                    onSaveClick = authViewModel::completeProfileSetup
+                                    onNavigateToAuth = {
+                                        authViewModel.delete()
+                                        authViewModel.hideProfileEditScreen()
+                                    },
+                                    selectedRoute = "profile"
                                 )
                             }
                             showExerciseCreator -> {
