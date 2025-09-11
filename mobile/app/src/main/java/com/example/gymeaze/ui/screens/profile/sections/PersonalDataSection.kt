@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.screens.profile.sections.dialogs.PersonalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 
@@ -182,7 +183,7 @@ private fun EditPersonalDataSection(
 
     if (showPersonalInfoDialog) {
         PersonalInfoDialog(
-            onDismiss = {showPersonalInfoDialog = false}
+            onDismiss = { showPersonalInfoDialog = false }
         )
     }
 }

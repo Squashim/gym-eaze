@@ -42,11 +42,11 @@ const checkAddedData = async () => {
 const seed = async () => {
   await connectToDB();
   try {
-    await seedBadges();
+    //await seedBadges();
     //await seedEquipment();
     //await seedMuscleGroups();
-    //await seedExercises();
-    await seedUsers();
+    await seedExercises();
+    //await seedUsers();
     //await seedPosts();
     //await seedTrainingPlans();
     //await seedComments();

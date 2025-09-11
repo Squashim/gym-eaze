@@ -1,22 +1,12 @@
-package com.example.gymeaze.ui.screens.profile.sections
+package com.example.gymeaze.ui.screens.profile.sections.dialogs
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Public
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,13 +17,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.gymeaze.R
-import com.example.gymeaze.ui.theme.getCardBackgroundColor
-import com.example.gymeaze.ui.theme.getInputBorderColor
-import com.example.gymeaze.ui.theme.getOnSurfaceColor
-import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
+import com.example.gymeaze.ui.theme.*
 
 @Composable
-fun TrainingGoalInfoDialog(
+fun BadgesInfoDialog(
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -44,7 +31,8 @@ fun TrainingGoalInfoDialog(
         )
     ) {
         Surface(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
             color = getCardBackgroundColor(),
@@ -54,20 +42,21 @@ fun TrainingGoalInfoDialog(
                 modifier = Modifier.padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.training_goal),
+                        text = stringResource(R.string.pinned_badges),
                         fontSize = 20.sp,
-                        color = getOnSurfaceColor(),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
                     )
 
                     Icon(
                         imageVector = Icons.Default.Public,
-                        contentDescription = stringResource(R.string.public_goal_desc),
+                        contentDescription = stringResource(R.string.public_badges_desc),
                         tint = getOnSurfaceSecondaryColor(),
                         modifier = Modifier.size(24.dp)
                     )
@@ -77,7 +66,7 @@ fun TrainingGoalInfoDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.training_goal_privacy_description),
+                        text = stringResource(R.string.badges_info_description),
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         color = getOnSurfaceColor(),
@@ -85,7 +74,7 @@ fun TrainingGoalInfoDialog(
                     )
 
                     Text(
-                        text = stringResource(R.string.training_goal_findability_note),
+                        text = stringResource(R.string.badges_privacy_info),
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         color = getOnSurfaceColor(),

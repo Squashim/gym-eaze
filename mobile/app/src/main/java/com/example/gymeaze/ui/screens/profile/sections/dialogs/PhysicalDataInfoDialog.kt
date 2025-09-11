@@ -1,5 +1,6 @@
-package com.example.gymeaze.ui.screens.profile.sections
+package com.example.gymeaze.ui.screens.profile.sections.dialogs
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -90,7 +91,7 @@ fun PhysicalInfoDialog(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = getOnSurfaceColor()
                         ),
-                        border = androidx.compose.foundation.BorderStroke(
+                        border = BorderStroke(
                             1.dp,
                             getInputBorderColor()
                         ),

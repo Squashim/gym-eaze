@@ -564,17 +564,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         val currentLastName = _lastName.value ?: ""
         val currentCountry = _selectedCountry.value
 
-        // Walidacja
-        if (currentFirstName.isBlank()) {
-            _personalDataError.value = getApplication<Application>().getString(R.string.error_first_name_required)
-            return
-        }
-
-        if (currentLastName.isBlank()) {
-            _personalDataError.value = getApplication<Application>().getString(R.string.error_last_name_required)
-            return
-        }
-
         viewModelScope.launch {
             _personalDataLoading.value = true
             _personalDataError.value = null
@@ -596,7 +585,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (result.isSuccess) {
                 _personalDataError.value = null
-                // Opcjonalnie: odśwież dane
                 fetchUserPersonalData()
             } else {
                 _personalDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_personal_data_update_failed)

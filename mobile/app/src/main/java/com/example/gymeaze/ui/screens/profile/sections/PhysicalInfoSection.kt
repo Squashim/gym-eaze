@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.screens.profile.sections.dialogs.PhysicalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 
@@ -175,7 +176,7 @@ private fun EditPhysicalInfoSection(
 
     if (showPhysicalInfoDialog) {
         PhysicalInfoDialog(
-            onDismiss = {showPhysicalInfoDialog = false}
+            onDismiss = { showPhysicalInfoDialog = false }
         )
     }
 }

@@ -7,8 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +35,8 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.ui.screens.profile.sections.dialogs.BadgesInfoDialog
+import com.example.gymeaze.ui.screens.profile.sections.dialogs.TrainingGoalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 
@@ -472,7 +472,7 @@ private fun TrainingGoalSection(
 
     if(showInfoDialog) {
         TrainingGoalInfoDialog(
-            onDismiss = {showInfoDialog = false}
+            onDismiss = { showInfoDialog = false }
         )
     }
 }
@@ -635,7 +635,7 @@ private fun BadgesSection(
 
     if (showBadgesInfoDialog) {
         BadgesInfoDialog(
-            onDismiss = {showBadgesInfoDialog = false}
+            onDismiss = { showBadgesInfoDialog = false }
         )
     }
 }
