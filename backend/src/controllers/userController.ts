@@ -170,7 +170,7 @@ export const updateUserPersonalData = async (req: AuthRequest, res: Response) =>
 
     await updateUserPersonalDataService(userId, { firstName, lastName, country });
 
-    res.json({ message: "Dane osobowe zaktualizowane pomyślnie" });
+    res.json({ message: "Dane personalne zaktualizowane pomyślnie" });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
@@ -202,7 +202,7 @@ export const updateUserFitnessData = async (req: AuthRequest, res: Response) => 
 
     await updateUserFitnessDataService(userId, { age, height, weight, gender });
 
-    res.json({ message: "Dane fitness zaktualizowane pomyślnie" });
+    res.json({ message: "Informacje fizyczne zaktualizowane pomyślnie" });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }

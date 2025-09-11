@@ -4,8 +4,8 @@ import cloudinary, { uploadExerciseMedia } from "../config/cloudinary";
 import User, { IUser } from "../models/userModel";
 import { Goal } from "../constants/goals";
 import bcrypt from 'bcryptjs';
-import countries, { CountryCode } from "../constants/countries";
 import { Gender } from "../constants/genders";
+import { Country } from "../constants/countries";
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select("likes");
@@ -191,15 +191,19 @@ export const getUserPersonalDataService = async (userId: string) => {
 interface UpdatePersonalDataInput {
   firstName?: string;
   lastName?: string;
-  country?: CountryCode;
+  country?: Country;
 }
+
 
 export const updateUserPersonalDataService = async (
   userId: string,
   data: UpdatePersonalDataInput
 ): Promise<boolean> => {
+  const nameRegex = /^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]+$/;
 
-  const nameRegex = /^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]+$/; 
+  const formatName = (value: string): string => {
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  };
 
   if (data.firstName) {
     if (data.firstName.length > 25) {
@@ -215,8 +219,12 @@ export const updateUserPersonalDataService = async (
       throw new Error("Nazwisko nie może być dłuższe niż 25 znaków");
     }
     if (!nameRegex.test(data.lastName)) {
-      throw new Error("Nazwisko może zawierać tylko litery)");
+      throw new Error("Nazwisko może zawierać tylko litery");
     }
+  }
+
+  if (data.country && !Object.values(Country).includes(data.country)) {
+    throw new Error("Niepoprawny kraj");
   }
 
   const user = await User.findById(userId);
@@ -225,15 +233,21 @@ export const updateUserPersonalDataService = async (
   }
 
   user.personalDetails = {
-    firstName: data.firstName ?? user.personalDetails?.firstName ?? "",
-    lastName: data.lastName ?? user.personalDetails?.lastName ?? "",
-    country: data.country ?? user.personalDetails?.country ?? "",
+    firstName: data.firstName
+      ? formatName(data.firstName)
+      : user.personalDetails?.firstName ?? "",
+    lastName: data.lastName
+      ? formatName(data.lastName)
+      : user.personalDetails?.lastName ?? "",
+    country: data.country ?? user.personalDetails?.country ?? Country.NONE,
   };
 
   await user.save();
 
   return true;
 };
+
+
 
 export const getUserFitnessDataService = async (userId: string) => {
   const user = await User.findById(userId).select("fitnessDetails privacySettings");
@@ -280,17 +294,22 @@ export const updateUserFitnessDataService = async (
     throw new Error("Nieprawidłowa waga");
   }
 
+  if (gender !== undefined && !Object.values(Gender).includes(gender)) {
+    throw new Error("Nieprawidłowa płeć");
+  }
+
   const user = await User.findById(userId);
   if (!user) {
     throw new Error("Użytkownik nie znaleziony");
   }
 
   user.fitnessDetails = {
-    age: age ?? user.fitnessDetails?.age ?? 0,
-    height: height ?? user.fitnessDetails?.height ?? 0,
-    weight: weight ?? user.fitnessDetails?.weight ?? 0,
+    age: age ?? user.fitnessDetails?.age,
+    height: height ?? user.fitnessDetails?.height,
+    weight: weight ?? user.fitnessDetails?.weight,
     gender: gender ?? user.fitnessDetails?.gender ?? Gender.none,
   };
+
 
   await user.save();
 

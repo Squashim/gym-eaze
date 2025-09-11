@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens.profile.sections
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,11 +18,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.profile.sections.dialogs.PersonalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
@@ -30,18 +33,24 @@ import com.example.gymeaze.viewmodel.UserViewModel
 fun PersonalDataSection(
     viewModel: UserViewModel? = null
 ) {
+    val isLoading by viewModel?.personalDataLoading?.collectAsState(false) ?: remember { mutableStateOf(false) }
+
     LaunchedEffect(viewModel) {
         viewModel?.fetchUserPersonalData()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        EditPersonalDataSection(viewModel = viewModel)
+    if (isLoading) {
+        LoadingScreen()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            EditPersonalDataSection(viewModel = viewModel)
+        }
     }
 }
 
@@ -55,8 +64,18 @@ private fun EditPersonalDataSection(
     val isPersonalDataPublic by viewModel?.isPersonalDetailsPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
     val isLoading by viewModel?.personalDataLoading?.collectAsState(false) ?: remember { mutableStateOf(false) }
     val error by viewModel?.personalDataError?.collectAsState() ?: remember { mutableStateOf(null) }
+    val success by viewModel?.personalDataSuccess?.collectAsState() ?: remember { mutableStateOf(null) }
 
     var showPersonalInfoDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Show toast on success
+    LaunchedEffect(success) {
+        success?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel?.resetPersonalDataSuccess()
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -122,6 +141,7 @@ private fun EditPersonalDataSection(
         PersonalDataField(
             label = stringResource(R.string.name),
             value = firstName,
+            placeholder = stringResource(R.string.enter_your_name),
             enabled = !isLoading,
             onValueChange = { newValue ->
                 viewModel?.updateFirstName(newValue)
@@ -132,6 +152,7 @@ private fun EditPersonalDataSection(
             label = stringResource(R.string.surname),
             value = lastName,
             enabled = !isLoading,
+            placeholder = stringResource(R.string.enter_your_surname),
             onValueChange = { newValue ->
                 viewModel?.updateLastName(newValue)
             }
@@ -183,6 +204,7 @@ private fun EditPersonalDataSection(
 
     if (showPersonalInfoDialog) {
         PersonalInfoDialog(
+            isPersonalDataPublic = isPersonalDataPublic,
             onDismiss = { showPersonalInfoDialog = false }
         )
     }
@@ -192,6 +214,7 @@ private fun EditPersonalDataSection(
 private fun PersonalDataField(
     label: String,
     value: String,
+    placeholder: String,
     enabled: Boolean = true,
     onValueChange: (String) -> Unit
 ) {
@@ -213,14 +236,20 @@ private fun PersonalDataField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = getPrimaryColor(),
                 unfocusedBorderColor = getInputBorderColor(),
-                focusedTextColor = getOnSurfaceColor(),
-                unfocusedTextColor = getOnSurfaceColor(),
+                focusedTextColor = if (value.isEmpty()) getOnSurfaceSecondaryColor() else getOnSurfaceColor(),
+                unfocusedTextColor = if (value.isEmpty()) getOnSurfaceSecondaryColor() else getOnSurfaceColor(),
                 disabledTextColor = getOnSurfaceSecondaryColor(),
                 disabledBorderColor = getInputBorderColor().copy(alpha = 0.5f),
                 cursorColor = getPrimaryColor()
             ),
             shape = RoundedCornerShape(8.dp),
-            singleLine = true
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
         )
     }
 }

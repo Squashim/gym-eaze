@@ -7,7 +7,7 @@ const uploadProfilePicture = multer({
     const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
     if (!allowedImageTypes.includes(file.mimetype)) {
-      return cb(new Error("Niepoprawny format zdjęcia. Dozwolone formaty: JPG, PNG, WebP"));
+      return cb(new Error("Niepoprawny format zdjęcia. Dozwolone formaty to: JPG, PNG oraz WebP"));
     }
 
     cb(null, true);
@@ -21,7 +21,7 @@ export const checkProfilePictureSize = (req: Request, res: Response, next: NextF
     const imageSizeLimit = 5 * 1024 * 1024; // 5MB
     if (file.size > imageSizeLimit) {
       return res.status(400).json({
-        message: "Zdjęcie jest zbyt duże (maksymalnie 5MB)",
+        message: "Zdjęcie jest zbyt duże (maksymalnie może mieć 5MB)",
       });
     }
   }

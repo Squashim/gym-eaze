@@ -352,6 +352,30 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             }
         }
     }
+    fun resetToSavedState() {
+        _userProfile.value?.let { profile ->
+            _selectedPinnedBadges.value = profile.pinnedBadges
+        }
+        _selectedImageUri.value = null
+        _error.value = null
+    }
+
+    fun onScreenExit() {
+        resetToSavedState()
+    }
+
+    fun setSelectedPinnedBadges(badges: List<Badge>) {
+        _selectedPinnedBadges.value = badges
+    }
+
+
+    fun initializeProfileData() {
+        fetchUserProfile()
+        fetchUserBadges()
+        fetchCurrentUser()
+    }
+
+    // LOGIN DETAILS -------------------------------------------------------------
 
     fun updateLoginData() {
         viewModelScope.launch {
@@ -463,29 +487,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         return null
     }
 
-    fun resetToSavedState() {
-        _userProfile.value?.let { profile ->
-            _selectedPinnedBadges.value = profile.pinnedBadges
-        }
-        _selectedImageUri.value = null
-        _error.value = null
-    }
-
-    fun onScreenExit() {
-        resetToSavedState()
-    }
-
-    fun setSelectedPinnedBadges(badges: List<Badge>) {
-        _selectedPinnedBadges.value = badges
-    }
-
-
-    fun initializeProfileData() {
-        fetchUserProfile()
-        fetchUserBadges()
-        fetchCurrentUser()
-    }
-
 
     // PERSONAL DETAILS -------------------------------------------------------------
     private val _personalData = MutableStateFlow<UserPersonalData?>(null)
@@ -509,6 +510,9 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _personalDataError = MutableStateFlow<String?>(null)
     val personalDataError: StateFlow<String?> = _personalDataError
 
+    private val _personalDataSuccess = MutableStateFlow<String?>(null)
+    val personalDataSuccess: StateFlow<String?> = _personalDataSuccess
+
     fun updateFirstName(newFirstName: String) {
         _firstName.value = newFirstName
     }
@@ -519,6 +523,10 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
     fun updateCountry(newCountry: String?) {
         _selectedCountry.value = newCountry
+    }
+
+    fun resetPersonalDataSuccess() {
+        _personalDataSuccess.value = null
     }
 
     fun fetchUserPersonalData() {
@@ -567,6 +575,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         viewModelScope.launch {
             _personalDataLoading.value = true
             _personalDataError.value = null
+            _personalDataSuccess.value = null
 
             val authRepository = AuthRepository(getApplication())
             val refreshResult = authRepository.refreshAccessToken()
@@ -585,6 +594,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (result.isSuccess) {
                 _personalDataError.value = null
+                _personalDataSuccess.value = getApplication<Application>().getString(R.string.personal_data_updated_successfully)
                 fetchUserPersonalData()
             } else {
                 _personalDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_personal_data_update_failed)
@@ -597,12 +607,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     // FITNESS DETAILS -------------------------------------------------------------
     private val _fitnessData = MutableStateFlow<UserFitnessData?>(null)
     val fitnessData: StateFlow<UserFitnessData?> = _fitnessData.asStateFlow()
-
-    private val _fitnessDataLoading = MutableStateFlow(false)
-    val fitnessDataLoading: StateFlow<Boolean> = _fitnessDataLoading.asStateFlow()
-
-    private val _fitnessDataError = MutableStateFlow<String?>(null)
-    val fitnessDataError: StateFlow<String?> = _fitnessDataError.asStateFlow()
 
     private val _selectedGender = MutableStateFlow<String?>(null)
     val selectedGender: StateFlow<String?> = _selectedGender.asStateFlow()
@@ -619,6 +623,15 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _weight = MutableStateFlow<String>("")
     val weight: StateFlow<String> = _weight.asStateFlow()
 
+    private val _fitnessDataLoading = MutableStateFlow(false)
+    val fitnessDataLoading: StateFlow<Boolean> = _fitnessDataLoading.asStateFlow()
+
+    private val _fitnessDataError = MutableStateFlow<String?>(null)
+    val fitnessDataError: StateFlow<String?> = _fitnessDataError.asStateFlow()
+
+    private val _fitnessDataSuccess = MutableStateFlow<String?>(null)
+    val fitnessDataSuccess: StateFlow<String?> = _fitnessDataSuccess.asStateFlow()
+
     fun updateGender(gender: String?) {
         _selectedGender.value = gender
     }
@@ -633,6 +646,10 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
     fun updateWeight(weight: String) {
         _weight.value = weight
+    }
+
+    fun resetFitnessDataSuccess() {
+        _fitnessDataSuccess.value = null
     }
 
     fun fetchUserFitnessData() {
@@ -656,7 +673,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
                 val data = result.getOrNull()
                 _fitnessData.value = data
 
-                // Zaktualizuj pola formularza
                 _selectedGender.value = data?.gender
                 _age.value = data?.age?.toString() ?: ""
                 _height.value = data?.height?.toString() ?: ""
@@ -682,6 +698,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         viewModelScope.launch {
             _fitnessDataLoading.value = true
             _fitnessDataError.value = null
+            _fitnessDataError.value = null
 
             val authRepository = AuthRepository(getApplication())
             val refreshResult = authRepository.refreshAccessToken()
@@ -701,6 +718,7 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             if (result.isSuccess) {
                 _fitnessDataError.value = null
+                _fitnessDataSuccess.value = getApplication<Application>().getString(R.string.fitness_data_updated_successfully)
                 fetchUserFitnessData()
             } else {
                 _fitnessDataError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_fitness_data_update_failed)

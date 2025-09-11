@@ -1,5 +1,7 @@
 package com.example.gymeaze.ui.screens.profile.sections
 
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,12 +16,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.profile.sections.dialogs.PhysicalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
@@ -28,59 +32,54 @@ import com.example.gymeaze.viewmodel.UserViewModel
 fun PhysicalInfoSection(
     viewModel: UserViewModel? = null
 ) {
-    val selectedGender by viewModel?.selectedGender?.collectAsState() ?: remember { mutableStateOf(null) }
-    val age by viewModel?.age?.collectAsState() ?: remember { mutableStateOf("") }
-    val height by viewModel?.height?.collectAsState() ?: remember { mutableStateOf("") }
-    val weight by viewModel?.weight?.collectAsState() ?: remember { mutableStateOf("") }
     val isLoading by viewModel?.fitnessDataLoading?.collectAsState() ?: remember { mutableStateOf(false) }
-    val error by viewModel?.fitnessDataError?.collectAsState() ?: remember { mutableStateOf(null) }
 
     LaunchedEffect(Unit) {
         viewModel?.fetchUserFitnessData()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        // Wyświetl błąd jeśli istnieje
-        error?.let { errorMessage ->
-            Text(
-                text = errorMessage,
-                color = getErrorColor(),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else {
-            EditPhysicalInfoSection(
-                viewModel = viewModel,
-                selectedGender = selectedGender,
-                age = age,
-                height = height,
-                weight = weight
-            )
+    if (isLoading) {
+        LoadingScreen()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            EditPhysicalInfoSection(viewModel = viewModel)
         }
     }
 }
 
-
 @Composable
 private fun EditPhysicalInfoSection(
     viewModel: UserViewModel? = null,
-    selectedGender: String?,
-    age: String,
-    height: String,
-    weight: String
 ) {
+    val selectedGender by viewModel?.selectedGender?.collectAsState() ?: remember { mutableStateOf(null) }
+    val age by viewModel?.age?.collectAsState() ?: remember { mutableStateOf("") }
+    val height by viewModel?.height?.collectAsState() ?: remember { mutableStateOf("") }
+    val weight by viewModel?.weight?.collectAsState() ?: remember { mutableStateOf("") }
+    val error by viewModel?.fitnessDataError?.collectAsState() ?: remember { mutableStateOf(null) }
+    val success by viewModel?.fitnessDataSuccess?.collectAsState() ?: remember { mutableStateOf(null) }
     val isFitnessDataPublic by viewModel?.isFitnessDetailsPublic?.collectAsState(true) ?: remember { mutableStateOf(true) }
+
     var showPhysicalInfoDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(success) {
+        success?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel?.resetFitnessDataSuccess()
+        }
+    }
+
     Column(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -123,6 +122,24 @@ private fun EditPhysicalInfoSection(
             lineHeight = 20.sp
         )
 
+        error?.let { errorMessage ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = getErrorColor().copy(alpha = 0.1f)
+                ),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, getErrorColor().copy(alpha = 0.3f))
+            ) {
+                Text(
+                    text = errorMessage,
+                    color = getErrorColor(),
+                    modifier = Modifier.padding(12.dp),
+                    fontSize = 14.sp
+                )
+            }
+        }
+
         GenderSection(
             viewModel = viewModel,
             selectedGender = selectedGender
@@ -131,6 +148,7 @@ private fun EditPhysicalInfoSection(
         PhysicalDataField(
             label = stringResource(R.string.age),
             value = age,
+            placeholder = stringResource(R.string.enter_your_age),
             onValueChange = { newValue ->
                 viewModel?.updateAge(newValue)
             },
@@ -140,6 +158,7 @@ private fun EditPhysicalInfoSection(
         PhysicalDataField(
             label = stringResource(R.string.height_cm),
             value = height,
+            placeholder = stringResource(R.string.enter_your_height),
             onValueChange = { newValue ->
                 viewModel?.updateHeight(newValue)
             },
@@ -149,6 +168,7 @@ private fun EditPhysicalInfoSection(
         PhysicalDataField(
             label = stringResource(R.string.weight_kg),
             value = weight,
+            placeholder = stringResource(R.string.enter_your_weight),
             onValueChange = { newValue ->
                 viewModel?.updateWeight(newValue)
             },
@@ -176,6 +196,7 @@ private fun EditPhysicalInfoSection(
 
     if (showPhysicalInfoDialog) {
         PhysicalInfoDialog(
+            isFitnessDataPublic = isFitnessDataPublic,
             onDismiss = { showPhysicalInfoDialog = false }
         )
     }
@@ -261,6 +282,7 @@ private fun GenderOption(
 private fun PhysicalDataField(
     label: String,
     value: String,
+    placeholder: String,
     onValueChange: (String) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
@@ -303,7 +325,13 @@ private fun PhysicalDataField(
             ),
             shape = RoundedCornerShape(8.dp),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
         )
     }
 }

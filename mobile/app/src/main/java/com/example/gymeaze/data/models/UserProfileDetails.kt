@@ -72,5 +72,5 @@ data class UpdateFitnessDataRequest(
 
 data class UpdateFitnessDataResponse(
     val message: String,
-    val updatedAt: String
+    val data: UserFitnessData
 )

@@ -306,4 +306,11 @@
     <string name="error_last_name_required">Nazwisko nie może być puste</string>
     <string name="error_personal_data_update_failed">Błąd podczas aktualizacji danych</string>
     <string name="error_fitness_data_update_failed">Błąd podczas aktualizacji danych</string>
+    <string name="enter_your_name">Wprowadź swoje imię</string>
+    <string name="enter_your_surname">Wprowadź swoje nazwisko</string>
+    <string name="personal_data_updated_successfully">Dane personalne zostały zaktualizowane pomyślnie</string>
+    <string name="fitness_data_updated_successfully">Dane fizyczne zostały zaktualizowane pomyślnie</string>
+    <string name="enter_your_age">Wprowadź swoj wiek</string>
+    <string name="enter_your_height">Wprowadź swoj wzrost</string>
+    <string name="enter_your_weight">Wprowadź swoją wagę</string>
 </resources>
