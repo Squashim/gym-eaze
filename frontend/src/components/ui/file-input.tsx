@@ -57,7 +57,7 @@ const FileInput = ({
   };
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('space-y-2 min-w-0', className)}>
       <div
         aria-disabled={disabled}
         className={cn(

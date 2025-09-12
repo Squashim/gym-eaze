@@ -12,7 +12,14 @@ export const EXERCISE = {
   base: 'exercises',
   search: 'exercises/search',
   byId: (id: string) => `exercises/${id}`,
+  toggleLike: (id: string) => `exercises/${id}/like`,
+  toggleFavorite: (id: string) => `exercises/${id}/favorite`,
 } as const;
+
+export const USER = {
+  likedItems: 'user/likes',
+  favoritedItems: 'user/favorites',
+};
 
 export const UTILS = {
   equipment: 'equipment',

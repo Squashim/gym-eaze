@@ -1,7 +1,7 @@
 import type { AdvancedLevel } from '@/constants/advanced-level';
 import { Badge } from './badge';
 import type { Visibility } from '@/constants/visibility';
-import { Globe2, Lock } from 'lucide-react';
+import { Globe2, Lock, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 function AdvancedLevelBadge({ advancedLevel }: { advancedLevel: AdvancedLevel }) {
@@ -33,4 +33,19 @@ const VisibilityBadge = ({ visibility, type }: VisibilityBadgeProps) => {
   );
 };
 
-export { AdvancedLevelBadge, VisibilityBadge };
+type LikesBadgeProps = {
+  likes: number;
+};
+
+const LikesBadge = ({ likes }: LikesBadgeProps) => {
+  return (
+    <Badge className="min-h-7 text-sm px-3" variant="accent">
+      <div>
+        <ThumbsUp className="size-4 mr-0.5" />
+      </div>
+      {likes}
+    </Badge>
+  );
+};
+
+export { AdvancedLevelBadge, VisibilityBadge, LikesBadge };

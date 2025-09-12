@@ -1,29 +1,40 @@
 import { EXERCISE as endpoints } from '@/constants/endpoints';
 import type {
+  BaseExerciseApiResponse,
   CreateExercisePayload,
-  Exercise as ExerciseApiResponse,
+  GetExerciseApiResponse,
+  GetExercisesApiResponse,
   UpdateExercisePayload,
 } from '@/types/exercise';
 import API from './api-client';
 import { objectToFormData } from '@/lib/utils';
 import type { ExerciseQueryParams, PaginatedResponse } from '@/types/filters';
+import type { ApiResponse } from '@/types/api';
 
-const create = async (payload: CreateExercisePayload): Promise<ExerciseApiResponse> => {
+const create = async (payload: CreateExercisePayload): Promise<BaseExerciseApiResponse> => {
   const formData = objectToFormData(payload);
-  const { data } = await API.post<ExerciseApiResponse>(endpoints.base, formData);
+  const { data } = await API.post<BaseExerciseApiResponse>(endpoints.base, formData);
   return data;
 };
 
-const update = async (id: string, payload: UpdateExercisePayload): Promise<ExerciseApiResponse> => {
+const update = async (
+  id: string,
+  payload: UpdateExercisePayload,
+): Promise<BaseExerciseApiResponse> => {
   const formData = objectToFormData(payload);
-  const { data } = await API.patch<ExerciseApiResponse>(endpoints.byId(id), formData);
+  const { data } = await API.patch<BaseExerciseApiResponse>(endpoints.byId(id), formData);
+  return data;
+};
+
+const remove = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.delete<ApiResponse>(endpoints.byId(id));
   return data;
 };
 
 const getAll = async (
   params: ExerciseQueryParams,
-): Promise<PaginatedResponse<ExerciseApiResponse>> => {
-  const { data } = await API.post<PaginatedResponse<ExerciseApiResponse>>(endpoints.search, {
+): Promise<PaginatedResponse<GetExercisesApiResponse>> => {
+  const { data } = await API.post<PaginatedResponse<GetExercisesApiResponse>>(endpoints.search, {
     filters: params.filters,
     page: params.page,
     pageSize: params.pageSize,
@@ -33,9 +44,19 @@ const getAll = async (
   return data;
 };
 
-const getById = async (id: string): Promise<ExerciseApiResponse> => {
-  const { data } = await API.get<ExerciseApiResponse>(endpoints.byId(id));
+const toggleLike = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.toggleLike(id));
   return data;
 };
 
-export { create, update, getById, getAll };
+const toggleFavorite = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.toggleFavorite(id));
+  return data;
+};
+
+const getById = async (id: string): Promise<GetExerciseApiResponse> => {
+  const { data } = await API.get<GetExerciseApiResponse>(endpoints.byId(id));
+  return data;
+};
+
+export { create, update, getById, getAll, toggleLike, toggleFavorite, remove };

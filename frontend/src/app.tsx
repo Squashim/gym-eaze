@@ -8,6 +8,7 @@ import { GoogleLinkProvider } from './context/google-link';
 import AuthGuard from './guards/auth-guard';
 import ExerciseCreator from './components/features/exercises/exercise-creator';
 import ExerciseBrowser from './components/features/exercises/exercise-browser';
+import ExerciseDetails from './components/features/exercises/exercise-details';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route element={<Welcome />} index path="/" />
         <Route element={<div>Posty</div>} path="/social/browse" />
         <Route element={<ExerciseBrowser />} path="/exercises/browse" />
+        <Route element={<ExerciseDetails />} path="/exercises/:id" />
         <Route element={<div>Pomoc</div>} path="/help" />
       </Route>
 

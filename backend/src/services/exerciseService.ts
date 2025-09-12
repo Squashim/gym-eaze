@@ -165,7 +165,13 @@ export const getExerciseByIdService = async (
   id: string,
   userId?: string,
 ): Promise<typeof exercise | null | 'forbidden'> => {
-  const exercise = await Exercise.findById(id).lean();
+  const exercise = await Exercise.findById(id)
+    .populate([
+      { path: 'muscleGroup' },
+      { path: 'equipment' },
+      { path: 'author', select: 'username profileDetails.profilePicture' },
+    ])
+    .lean();
 
   if (!exercise) {
     return null;

@@ -19,7 +19,6 @@ import { useStepForm } from '@/hooks/use-step-form';
 import Stepper from '@/components/ui/stepper';
 import StepActions from '@/components/ui/step-actions';
 import { Textarea } from '@/components/ui/textarea';
-import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
 import { apiResponseToMultiSelectOptions, cn, extractDirtyFieldsData } from '@/lib/utils';
@@ -75,14 +74,14 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
           if (isLoading) return 'wait';
           return !isError && !!exerciseData;
         },
-        redirectTo: '/exercises',
+        redirectTo: '/exercises/browse',
         errorMessage: 'Identyfikator ćwiczenia jest niepoprawny.',
       },
       {
         check: () => {
           if (!isEditMode) return true;
           if (isLoading) return 'wait';
-          return exerciseData?.author === user?._id;
+          return exerciseData?.author._id === user?._id;
         },
         redirectTo: `/exercises/${exerciseData?._id}`,
         errorMessage: 'Nie masz uprawnień do edytowania tego ćwiczenia.',
@@ -119,7 +118,7 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
         stepTwo: {
           description: exerciseData.description,
           muscleGroup: exerciseData.muscleGroup.map((mg) => mg._id),
-          equipment: exerciseData.equipment,
+          equipment: exerciseData.equipment.map((eq) => eq._id),
           hashtags: exerciseData.hashtags || [],
         },
       });
@@ -173,8 +172,6 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     }
   };
 
-  useUnsavedChangesWarning(form.formState.isDirty);
-
   return (
     <div className="flex flex-col gap-6 max-w-lg md:max-w-3xl w-full mx-auto my-4">
       <Typography variant="h1">{isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}</Typography>
@@ -200,7 +197,16 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
                 {step === 2 && <ExerciseCreatorStepThree />}
 
                 <StepActions
+                  dialog={{
+                    title: isEditMode
+                      ? 'Czy na pewno chcesz przerwać edycję ćwiczenia?'
+                      : 'Czy na pewno chcesz przerwać tworzenie ćwiczenia?',
+                    description:
+                      'Wszystkie niezapisane zmiany zostaną utracone i nie będzie możliwości ich odzyskania.',
+                    cancelLabel: isEditMode ? 'Powrót do edytora' : 'Powrót do kreatora',
+                  }}
                   exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
+                  isDirty={form.formState.isDirty}
                   isSubmitting={createExercise.isPending || updateExercise.isPending}
                   nextStep={nextStep}
                   prevStep={prevStep}

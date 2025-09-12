@@ -1,14 +1,38 @@
-import { useEffect } from 'react';
+import { useCallback, useState } from 'react';
+import { useBeforeUnload, useNavigate } from 'react-router-dom';
 
 export function useUnsavedChangesWarning(shouldWarn: boolean) {
-  useEffect(() => {
-    const handleClose = (e: BeforeUnloadEvent) => {
-      if (!shouldWarn) return;
-      e.preventDefault();
-      e.returnValue = '';
-    };
+  const [showDialog, setShowDialog] = useState(false);
+  const navigate = useNavigate();
 
-    window.addEventListener('beforeunload', handleClose);
-    return () => window.removeEventListener('beforeunload', handleClose);
-  }, [shouldWarn]);
+  useBeforeUnload(
+    useCallback(
+      (event: BeforeUnloadEvent) => {
+        if (shouldWarn) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      },
+      [shouldWarn],
+    ),
+  );
+
+  const tryNavigateBack = useCallback(() => {
+    if (shouldWarn) {
+      setShowDialog(true);
+    } else {
+      void navigate(-1);
+    }
+  }, [shouldWarn, navigate]);
+
+  const confirmNavigation = useCallback(() => {
+    setShowDialog(false);
+    void navigate(-1);
+  }, [navigate]);
+
+  const cancelNavigation = useCallback(() => {
+    setShowDialog(false);
+  }, []);
+
+  return { showDialog, confirmNavigation, cancelNavigation, tryNavigateBack };
 }

@@ -1,6 +1,5 @@
 import useGetExercises from '@/hooks/query/exercises/use-get-exercises';
 import Typography from '@/components/ui/typography';
-import type { Exercise } from '@/types/exercise';
 import ReusablePagination from '@/components/ui/reusable-pagination';
 import ExerciseFilters from './exercise-filters';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,12 +7,11 @@ import useFilterQuery from '@/hooks/use-filter-query';
 import type { ExerciseFilters as ExerciseFiltersType } from '@/types/filters';
 import { initialExerciseFilters } from '@/constants/filters';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AdvancedLevelBadge } from '@/components/ui/item-info-badges';
-import { ThumbsUp } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { AdvancedLevelBadge, LikesBadge } from '@/components/ui/item-info-badges';
 import { AdvancedLevel } from '@/constants/advanced-level';
 import usePageTitle from '@/hooks/use-page-title';
 import { useRef } from 'react';
+import type { GetExercisesApiResponse } from '@/types/exercise';
 
 const ExerciseBrowser = () => {
   const { params, setPage, setFilters, setPageSize, setSortBy, clearFilters } =
@@ -110,7 +108,7 @@ const EmptyExerciseCard = ({ isError }: { isError: boolean }) => {
   );
 };
 
-const ExerciseCard = (exercise: Exercise) => {
+const ExerciseCard = (exercise: GetExercisesApiResponse) => {
   const displayMuscleGroups = exercise.muscleGroup.map((mg) => mg.name).join(' • ');
   return (
     <a
@@ -128,12 +126,7 @@ const ExerciseCard = (exercise: Exercise) => {
               )}
             </div>
 
-            <Badge className="min-h-7 text-sm px-3" variant="accent">
-              <div>
-                <ThumbsUp className="size-4 mr-0.5" />
-              </div>
-              {exercise.likes}
-            </Badge>
+            <LikesBadge likes={exercise.likes} />
           </div>
 
           <div className="flex w-full aspect-[4/3] rounded-xl overflow-hidden">
