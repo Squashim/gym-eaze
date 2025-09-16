@@ -1,72 +1,71 @@
-import { IBadge }  from "../models/badgeModel";
-import Badge from "../models/badgeModel"; // Dodaj ten import
-import cloudinary, { uploadExerciseMedia } from "../config/cloudinary";
-import User, { IUser } from "../models/userModel";
-import { Goal } from "../constants/goals";
+import { IBadge } from '../models/badgeModel';
+import Badge from '../models/badgeModel';
+import { uploadExerciseMedia } from '../config/cloudinary';
+import User, { IUser } from '../models/userModel';
+import { Goal } from '../constants/goals';
 import bcrypt from 'bcryptjs';
-import { Gender } from "../constants/genders";
-import { Country } from "../constants/countries";
+import { Gender } from '../constants/genders';
+import { Country } from '../constants/countries';
 
 export const getUserLikesService = async (userId: string) => {
-  const user = await User.findById(userId).select("likes");
+  const user = await User.findById(userId).select('likes');
   if (!user) {
-    throw new Error("Nie znaleziono użytkownika");
+    throw new Error('Nie znaleziono użytkownika');
   }
   return user.likes;
 };
 
 export const getUserFavoritesService = async (userId: string) => {
-  const user = await User.findById(userId).select("favorites");
+  const user = await User.findById(userId).select('favorites');
   if (!user) {
-    throw new Error("Nie znaleziono użytkownika");
+    throw new Error('Nie znaleziono użytkownika');
   }
   return user.favorites;
 };
 
 export const getUserProfileDetailsService = async (userId: string) => {
   const user = await User.findById(userId).populate({
-    path: "badges.badge",
-    model: Badge
+    path: 'badges.badge',
+    model: Badge,
   });
 
   if (!user) {
-    throw new Error("Nie znaleziono użytkownika");
+    throw new Error('Nie znaleziono użytkownika');
   }
 
   const pinnedBadges =
     user.badges
-      ?.filter(b => b.isPinned && b.badge)
-      .map(b => ({
+      ?.filter((b) => b.isPinned && b.badge)
+      .map((b) => ({
         id: (b.badge as IBadge)._id,
-        title: (b.badge as IBadge).title || "",
-        description: (b.badge as IBadge).description || "",
-        image: (b.badge as IBadge).image || ""
+        title: (b.badge as IBadge).title || '',
+        description: (b.badge as IBadge).description || '',
+        image: (b.badge as IBadge).image || '',
       })) || [];
 
   return {
-    profilePicture: user.profileDetails?.profilePicture || "",
-    description: user.profileDetails?.description || "",
-    goal: user.profileDetails?.goal || "",
+    profilePicture: user.profileDetails?.profilePicture || '',
+    description: user.profileDetails?.description || '',
+    goal: user.profileDetails?.goal || '',
     pinnedBadges,
     isBadgesDetailsPublic: user.privacySettings?.isBadgesDetailsPublic ?? true,
-    isGoalPublic: user.privacySettings?.isGoalPublic ?? true
+    isGoalPublic: user.privacySettings?.isGoalPublic ?? true,
   };
 };
-
 
 export const updateUserProfileDetailsService = async (
   userId: string,
   description: string,
   goal: string | undefined,
   pinnedBadges: string[] | undefined,
-  file?: Express.Multer.File
+  file?: Express.Multer.File,
 ) => {
-  const user = await User.findById(userId).populate("badges.badge");
+  const user = await User.findById(userId).populate('badges.badge');
   if (!user) {
-    throw new Error("Użytkownik nie znaleziony");
+    throw new Error('Użytkownik nie znaleziony');
   }
 
-  let profilePicture = user.profileDetails?.profilePicture || "";
+  let profilePicture = user.profileDetails?.profilePicture || '';
   if (file) {
     const uploaded = await uploadExerciseMedia(file.buffer, undefined);
     if (uploaded.imageUrl) {
@@ -76,7 +75,7 @@ export const updateUserProfileDetailsService = async (
 
   if (Array.isArray(pinnedBadges)) {
     if (pinnedBadges.length > 5) {
-      throw new Error("Możesz przypiąć maksymalnie 5 odznak");
+      throw new Error('Możesz przypiąć maksymalnie 5 odznak');
     }
 
     (user.badges ?? []).forEach((b: any) => {
@@ -87,34 +86,34 @@ export const updateUserProfileDetailsService = async (
 
   user.profileDetails = {
     ...user.profileDetails,
-    description: description || user.profileDetails?.description || "",
+    description: description || user.profileDetails?.description || '',
     goal: (goal as Goal) ?? user.profileDetails?.goal,
     profilePicture,
   };
 
   await user.save();
 
-  return { message: "Profil zaktualizowany pomyślnie" };
+  return { message: 'Profil zaktualizowany pomyślnie' };
 };
 
 export const getUserBadgesService = async (userId: string) => {
   const user = await User.findById(userId).populate({
-    path: "badges.badge",
-    model: Badge
+    path: 'badges.badge',
+    model: Badge,
   });
 
   if (!user) {
-    throw new Error("Nie znaleziono użytkownika");
+    throw new Error('Nie znaleziono użytkownika');
   }
 
   const allBadges =
     user.badges
-      ?.filter(b => b.badge)
-      .map(b => ({
+      ?.filter((b) => b.badge)
+      .map((b) => ({
         id: (b.badge as IBadge)._id,
         title: (b.badge as IBadge).title,
         description: (b.badge as IBadge).description,
-        image: (b.badge as IBadge).image
+        image: (b.badge as IBadge).image,
       })) || [];
 
   return allBadges;
@@ -148,11 +147,11 @@ export const updateUserService = async (userId: string, data: UpdateUserInput) =
     }
 
     if (!/[A-Z]/.test(password)) {
-      throw new Error('PASSWORD_UPPERCASE'); 
+      throw new Error('PASSWORD_UPPERCASE');
     }
 
     if (!/[a-z]/.test(password)) {
-      throw new Error('PASSWORD_LOWERCASE'); 
+      throw new Error('PASSWORD_LOWERCASE');
     }
 
     if (!/\d/.test(password)) {
@@ -160,7 +159,7 @@ export const updateUserService = async (userId: string, data: UpdateUserInput) =
     }
 
     if (!/[!@#$%^&*()_+./]/.test(password)) {
-      throw new Error('PASSWORD_SPECIAL'); 
+      throw new Error('PASSWORD_SPECIAL');
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -182,16 +181,16 @@ export const deleteUserService = async (userId: string) => {
 };
 
 export const getUserPersonalDataService = async (userId: string) => {
-  const user = await User.findById(userId).select("personalDetails privacySettings");
+  const user = await User.findById(userId).select('personalDetails privacySettings');
 
   if (!user) {
-    throw new Error("Użytkownik nie znaleziony");
+    throw new Error('Użytkownik nie znaleziony');
   }
 
   return {
-    firstName: user.personalDetails?.firstName || "",
-    lastName: user.personalDetails?.lastName || "",
-    country: user.personalDetails?.country || "",
+    firstName: user.personalDetails?.firstName || '',
+    lastName: user.personalDetails?.lastName || '',
+    country: user.personalDetails?.country || '',
     isPersonalDetailsPublic: user.privacySettings.isPersonalDetailsPublic,
   };
 };
@@ -202,10 +201,9 @@ interface UpdatePersonalDataInput {
   country?: Country;
 }
 
-
 export const updateUserPersonalDataService = async (
   userId: string,
-  data: UpdatePersonalDataInput
+  data: UpdatePersonalDataInput,
 ): Promise<boolean> => {
   const nameRegex = /^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]+$/;
 
@@ -215,38 +213,36 @@ export const updateUserPersonalDataService = async (
 
   if (data.firstName) {
     if (data.firstName.length > 25) {
-      throw new Error("Imię nie może być dłuższe niż 25 znaków");
+      throw new Error('Imię nie może być dłuższe niż 25 znaków');
     }
     if (!nameRegex.test(data.firstName)) {
-      throw new Error("Imię może zawierać tylko litery");
+      throw new Error('Imię może zawierać tylko litery');
     }
   }
 
   if (data.lastName) {
     if (data.lastName.length > 25) {
-      throw new Error("Nazwisko nie może być dłuższe niż 25 znaków");
+      throw new Error('Nazwisko nie może być dłuższe niż 25 znaków');
     }
     if (!nameRegex.test(data.lastName)) {
-      throw new Error("Nazwisko może zawierać tylko litery");
+      throw new Error('Nazwisko może zawierać tylko litery');
     }
   }
 
   if (data.country && !Object.values(Country).includes(data.country)) {
-    throw new Error("Niepoprawny kraj");
+    throw new Error('Niepoprawny kraj');
   }
 
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error("Użytkownik nie znaleziony");
+    throw new Error('Użytkownik nie znaleziony');
   }
 
   user.personalDetails = {
     firstName: data.firstName
       ? formatName(data.firstName)
-      : user.personalDetails?.firstName ?? "",
-    lastName: data.lastName
-      ? formatName(data.lastName)
-      : user.personalDetails?.lastName ?? "",
+      : (user.personalDetails?.firstName ?? ''),
+    lastName: data.lastName ? formatName(data.lastName) : (user.personalDetails?.lastName ?? ''),
     country: data.country ?? user.personalDetails?.country ?? Country.NONE,
   };
 
@@ -255,13 +251,11 @@ export const updateUserPersonalDataService = async (
   return true;
 };
 
-
-
 export const getUserFitnessDataService = async (userId: string) => {
-  const user = await User.findById(userId).select("fitnessDetails privacySettings");
+  const user = await User.findById(userId).select('fitnessDetails privacySettings');
 
   if (!user) {
-    throw new Error("Użytkownik nie znaleziony");
+    throw new Error('Użytkownik nie znaleziony');
   }
 
   return {
@@ -282,33 +276,32 @@ interface UpdateFitnessDataInput {
 
 export const updateUserFitnessDataService = async (
   userId: string,
-  data: UpdateFitnessDataInput
+  data: UpdateFitnessDataInput,
 ): Promise<boolean> => {
-
   const age = data.age !== undefined ? Number(data.age) : undefined;
   const height = data.height !== undefined ? Number(data.height) : undefined;
   const weight = data.weight !== undefined ? Number(data.weight) : undefined;
   const gender = data.gender;
 
   if (age !== undefined && (age < 0 || age > 120)) {
-    throw new Error("Nieprawidłowy wiek");
+    throw new Error('Nieprawidłowy wiek');
   }
 
   if (height !== undefined && (height < 50 || height > 300)) {
-    throw new Error("Nieprawidłowy wzrost");
+    throw new Error('Nieprawidłowy wzrost');
   }
 
   if (weight !== undefined && (weight < 10 || weight > 500)) {
-    throw new Error("Nieprawidłowa waga");
+    throw new Error('Nieprawidłowa waga');
   }
 
   if (gender !== undefined && !Object.values(Gender).includes(gender)) {
-    throw new Error("Nieprawidłowa płeć");
+    throw new Error('Nieprawidłowa płeć');
   }
 
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error("Użytkownik nie znaleziony");
+    throw new Error('Użytkownik nie znaleziony');
   }
 
   user.fitnessDetails = {
@@ -318,11 +311,7 @@ export const updateUserFitnessDataService = async (
     gender: gender ?? user.fitnessDetails?.gender ?? Gender.none,
   };
 
-
   await user.save();
 
   return true;
 };
-
-
-

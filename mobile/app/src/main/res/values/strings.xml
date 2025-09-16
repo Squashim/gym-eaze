@@ -203,7 +203,7 @@
     <string name="hide_password">Ukryj hasło</string>
     <string name="deleting">Usuwanie…</string>
     <string name="delete_account_dialog_title">Usuń konto</string>
-    <string name="warning_title">⚠️ OSTRZEŻENIE</string>
+    <string name="warning_title">OSTRZEŻENIE</string>
     <string name="delete_account_warning_message">Ta akcja jest nieodwracalna. Wszystkie Twoje dane zostaną trwale usunięte.</string>
     <string name="confirm_username_prompt">Aby potwierdzić, wpisz swoją nazwę użytkownika:</string>
     <string name="enter_username_placeholder">Wpisz nazwę użytkownika</string>
