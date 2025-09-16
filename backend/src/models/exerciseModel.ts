@@ -14,10 +14,8 @@ export interface IExercise extends mongoose.Document {
   likes: number;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
-  muscleGroup: {
-    type: Types.ObjectId | IMuscleGroup;
-  }[];
-  equipment: { type: Types.ObjectId | IEquipment }[];
+  muscleGroup: (Types.ObjectId | IMuscleGroup)[];
+  equipment: (Types.ObjectId | IEquipment)[];
   hashtags?: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -41,7 +39,6 @@ const exerciseSchema = new mongoose.Schema(
       validate: {
         validator: function (v: string) {
           const normalized = v.replace(/\r\n/g, '\n');
-
           return normalized.length <= 850;
         },
         message: 'Opis może mieć maksymalnie 850 znaków',

@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { BadgeActions, badgeActionValues } from "../constants/badgeActions";
 
 export interface IBadge extends Document {
+  _id: Types.ObjectId;
   title: string;
   description: string;
   image: string;

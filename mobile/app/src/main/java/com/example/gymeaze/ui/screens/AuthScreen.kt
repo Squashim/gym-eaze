@@ -31,235 +31,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.AuthUiState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen(
-    uiState: AuthUiState,
-    onUsernameChange: (String) -> Unit,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onConfirmPasswordChange: (String) -> Unit,
-    onUsernameOrEmailChange: (String) -> Unit,
-    onToggleAuthMode: () -> Unit,
-    onRegister: () -> Unit,
-    onLogin: () -> Unit,
-    onGoogleLogin: () -> Unit,
-    onSettingsClick: () -> Unit
-) {
-
-    Scaffold(
-        topBar = {
-            GymEazeTopAppBar(onSettingsClick = onSettingsClick)
-        },
-        bottomBar = {
-            GymEazeBottomNavigationBar(
-                selectedRoute = "auth",
-                onItemSelected = { /* Logika nawigacji */ }
-            )
-        },
-        containerColor = getBackgroundColor()
-    ) { paddingValues ->
-        // Tło z gradientem
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            getGradientStartColor(),
-                            getGradientMiddleColor(),
-                            getGradientEndColor()
-                        ),
-                        radius = 1200f
-                    )
-                )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(R.string.join_us),
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = getOnSurfaceColor(),
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = stringResource(R.string.your_training_community_progress),
-                            fontSize = 14.sp,
-                            color = getOnSurfaceSecondaryColor(),
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                onClick = { if (!uiState.isRegistering) onToggleAuthMode() },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (uiState.isRegistering) getPrimaryColor() else getButtonOutlinedColor()
-                                ),
-                                shape = RoundedCornerShape(25.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.register),
-                                    color = if (uiState.isRegistering) getOnPrimaryColor() else getOnSurfaceColor()
-                                )
-                            }
-
-                            OutlinedButton(
-                                onClick = { if (uiState.isRegistering) onToggleAuthMode() },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (!uiState.isRegistering) getPrimaryColor() else Color.Transparent
-                                ),
-                                shape = RoundedCornerShape(25.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.login),
-                                    color = if (!uiState.isRegistering) getOnPrimaryColor() else getOnSurfaceColor()
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        if (uiState.isRegistering) {
-                            RegisterForm(
-                                username = uiState.username,
-                                email = uiState.email,
-                                password = uiState.password,
-                                confirmPassword = uiState.confirmPassword,
-                                onUsernameChange = onUsernameChange,
-                                onEmailChange = onEmailChange,
-                                onPasswordChange = onPasswordChange,
-                                onConfirmPasswordChange = onConfirmPasswordChange,
-                                onRegister = onRegister,
-                                isLoading = uiState.isLoading,
-                                usernameError = uiState.usernameError,
-                                emailError = uiState.emailError,
-                                passwordError = uiState.passwordError,
-                                confirmPasswordError = uiState.confirmPasswordError,
-                                isRegisterValid = uiState.isRegisterValid
-                            )
-                        } else {
-                            LoginForm(
-                                usernameOrEmail = uiState.usernameOrEmail,
-                                password = uiState.password,
-                                onUsernameOrEmailChange = onUsernameOrEmailChange,
-                                onPasswordChange = onPasswordChange,
-                                onLogin = onLogin,
-                                isLoading = uiState.isLoading,
-                                usernameOrEmailError = uiState.usernameOrEmailError,
-                                isLoginValid = uiState.isLoginValid
-                            )
-                        }
-
-                        uiState.errorMessage?.let { error ->
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(1.dp, getErrorColor(), RoundedCornerShape(8.dp))
-                                    .background(getErrorColor().copy(alpha = 0.1f), RoundedCornerShape(8.dp))
-                                    .padding(12.dp, 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Warning,
-                                    contentDescription = null,
-                                    tint = getErrorColor(),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = error,
-                                    color = getErrorColor(),
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = stringResource(R.string.or),
-                            color = getOnSurfaceSecondaryColor(),
-                            fontSize = 14.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Button(
-                            onClick = onGoogleLogin,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = getGoogleButtonColor()
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            enabled = !uiState.isLoading
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_google_logo),
-                                    contentDescription = stringResource(R.string.google_logo),
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.Unspecified
-                                )
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Text(
-                                    text = stringResource(R.string.continue_with_google),
-                                    color = getGoogleButtonTextColor(),
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-    }
-}
-@Composable
-private fun RegisterForm(
+fun RegisterForm(
     username: String,
     email: String,
     password: String,
@@ -308,7 +87,7 @@ private fun RegisterForm(
                         text = usernameError,
                         color = getErrorColor(),
                         fontSize = 12.sp
-                        )
+                    )
                 }
             },
             modifier = Modifier
@@ -499,9 +278,8 @@ private fun RegisterForm(
         }
     }
 }
-
 @Composable
-private fun LoginForm(
+fun LoginForm(
     usernameOrEmail: String,
     password: String,
     onUsernameOrEmailChange: (String) -> Unit,
@@ -627,8 +405,221 @@ private fun LoginForm(
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AuthScreen(
+    uiState: AuthUiState,
+    onUsernameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onUsernameOrEmailChange: (String) -> Unit,
+    onToggleAuthMode: () -> Unit,
+    onRegister: () -> Unit,
+    onLogin: () -> Unit,
+    onGoogleLogin: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    var selectedRoute by remember { mutableStateOf("profile") }
 
-@Preview(showBackground = true)
+    Scaffold(
+        topBar = {
+            GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+        },
+        bottomBar = {
+            GymEazeBottomNavigationBar(
+                selectedRoute = selectedRoute,
+                onItemSelected = { route -> selectedRoute = route }
+            )
+        },
+        containerColor = getBackgroundColor()
+    ){ paddingValues ->
+        when (selectedRoute) {
+            "exercises" -> ExerciseScreen(onSettingsClick)
+            "workouts" -> TrainingsPlanScreen(onSettingsClick)
+            "community" -> CommunityScreen(onSettingsClick)
+            "profile" -> {
+        Box(modifier = Modifier.fillMaxSize()) {
+            BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(R.string.join_us),
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = getOnSurfaceColor(),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.your_training_community_progress),
+                            fontSize = 14.sp,
+                            color = getOnSurfaceSecondaryColor(),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { if (!uiState.isRegistering) onToggleAuthMode() },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (uiState.isRegistering) getPrimaryColor() else getButtonOutlinedColor()
+                                ),
+                                shape = RoundedCornerShape(25.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.register),
+                                    color = if (uiState.isRegistering) getOnPrimaryColor() else getOnSurfaceColor()
+                                )
+                            }
+
+                            OutlinedButton(
+                                onClick = { if (uiState.isRegistering) onToggleAuthMode() },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (!uiState.isRegistering) getPrimaryColor() else Color.Transparent
+                                ),
+                                shape = RoundedCornerShape(25.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.login),
+                                    color = if (!uiState.isRegistering) getOnPrimaryColor() else getOnSurfaceColor()
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        if (uiState.isRegistering) {
+                            RegisterForm(
+                                username = uiState.username,
+                                email = uiState.email,
+                                password = uiState.password,
+                                confirmPassword = uiState.confirmPassword,
+                                onUsernameChange = onUsernameChange,
+                                onEmailChange = onEmailChange,
+                                onPasswordChange = onPasswordChange,
+                                onConfirmPasswordChange = onConfirmPasswordChange,
+                                onRegister = onRegister,
+                                isLoading = uiState.isLoading,
+                                usernameError = uiState.usernameError,
+                                emailError = uiState.emailError,
+                                passwordError = uiState.passwordError,
+                                confirmPasswordError = uiState.confirmPasswordError,
+                                isRegisterValid = uiState.isRegisterValid
+                            )
+                        } else {
+                            LoginForm(
+                                usernameOrEmail = uiState.usernameOrEmail,
+                                password = uiState.password,
+                                onUsernameOrEmailChange = onUsernameOrEmailChange,
+                                onPasswordChange = onPasswordChange,
+                                onLogin = onLogin,
+                                isLoading = uiState.isLoading,
+                                usernameOrEmailError = uiState.usernameOrEmailError,
+                                isLoginValid = uiState.isLoginValid
+                            )
+                        }
+
+                        uiState.errorMessage?.let { error ->
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(1.dp, getErrorColor(), RoundedCornerShape(8.dp))
+                                    .background(getErrorColor().copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                    .padding(12.dp, 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = getErrorColor(),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = error,
+                                    color = getErrorColor(),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.or),
+                            color = getOnSurfaceSecondaryColor(),
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = onGoogleLogin,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = getGoogleButtonColor()
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = !uiState.isLoading
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_google_logo),
+                                    contentDescription = stringResource(R.string.google_logo),
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Unspecified
+                                )
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Text(
+                                    text = stringResource(R.string.continue_with_google),
+                                    color = getGoogleButtonTextColor(),
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+}
 @Composable
 fun AuthScreenPreview() {
     GymEazeTheme {
@@ -655,5 +646,6 @@ fun AuthScreenPreview() {
             onSettingsClick = {}
         )
     }
-}
+}}}
+
 

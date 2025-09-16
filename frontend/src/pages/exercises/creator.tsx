@@ -47,12 +47,14 @@ type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
 };
 
+
 const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: exerciseSchema,
     defaultValues: exerciseCreatorConstants.defaultValues,
     totalSteps: exerciseCreatorConstants.steps.length,
   });
+
   const { createExercise, updateExercise } = useExercise();
   const { user } = useUser();
   const { handleSubmit } = form;

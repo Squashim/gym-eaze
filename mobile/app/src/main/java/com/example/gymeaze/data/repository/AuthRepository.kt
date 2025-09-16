@@ -1,9 +1,10 @@
-package com.example.gymeaze.data
+package com.example.gymeaze.data.repository
 
 import android.content.Context
 import android.widget.Toast
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
+import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.AuthApiService
 import com.example.gymeaze.data.models.AccountLinkingError
 import com.example.gymeaze.data.models.GoogleAuthLoginRequest
@@ -11,12 +12,13 @@ import com.example.gymeaze.data.models.GoogleLinkRequest
 import com.example.gymeaze.data.models.GoogleSignInResult
 import com.example.gymeaze.data.models.LoginRequest
 import com.example.gymeaze.data.models.LogoutRequest
-import com.example.gymeaze.data.models.RegisterRequest
 import com.example.gymeaze.data.models.RefreshTokenRequest
+import com.example.gymeaze.data.models.RegisterRequest
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.GoogleErrorMapper
 import com.example.gymeaze.util.GoogleSignInHelper
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -63,8 +65,8 @@ class AuthRepository(private val context: Context){
                     )
                     return@withContext Result.failure(Exception(userMessage))
                 }
-            } catch(_: IOException){
-                return@withContext  Result.failure(Exception(context.getString(R.string.network_error)))
+            } catch (_: IOException) {
+                return@withContext Result.failure(Exception(context.getString(R.string.network_error)))
             } catch (e: Exception) {
                 return@withContext Result.failure(e)
             }
@@ -74,10 +76,16 @@ class AuthRepository(private val context: Context){
     suspend fun login(usernameOrEmail: String, password: String): Result<Boolean> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = api.login(LoginRequest(login = usernameOrEmail, password = password, rememberMe = true))
+                val response = api.login(
+                    LoginRequest(
+                        login = usernameOrEmail,
+                        password = password,
+                        rememberMe = true
+                    )
+                )
                 if (response.isSuccessful) {
                     val body = response.body()
-                    if(body != null) {
+                    if (body != null) {
                         userPreferences.saveTokens(body.accessToken, body.refreshToken)
 
                         runCatching {
@@ -92,8 +100,12 @@ class AuthRepository(private val context: Context){
                         userPreferences.setLoggedIn(true)
                         userPreferences.setFirstLogin(body.isFirstLogin)
 
-                        withContext(Dispatchers.Main){
-                            Toast.makeText(context, context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.login_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     return@withContext Result.success(true)
@@ -106,10 +118,10 @@ class AuthRepository(private val context: Context){
                     )
                     Result.failure(Exception(userMessage))
                 }
-            }catch(_: IOException){
-              return@withContext  Result.failure(Exception(context.getString(R.string.network_error)))
+            } catch (_: IOException) {
+                return@withContext Result.failure(Exception(context.getString(R.string.network_error)))
             } catch (e: Exception) {
-                return@withContext  Result.failure(e)
+                return@withContext Result.failure(e)
             }
         }
     }
@@ -117,7 +129,7 @@ class AuthRepository(private val context: Context){
 
     suspend fun loginWithGoogle(googleAuthCode: String): Result<GoogleSignInResult> {
         return withContext(Dispatchers.IO) {
-            try{
+            try {
                 val request = GoogleAuthLoginRequest(code = googleAuthCode)
                 val response = api.googleAuth(request)
 
@@ -129,22 +141,31 @@ class AuthRepository(private val context: Context){
                         if (userResult.isSuccess) {
                             val user = userResult.getOrNull()!!
 
-                            userPreferences.saveTokens(authResponse.accessToken, authResponse.refreshToken)
+                            userPreferences.saveTokens(
+                                authResponse.accessToken,
+                                authResponse.refreshToken
+                            )
                             userPreferences.saveUserData(user._id, user.username, user.email)
                             userPreferences.setLoggedIn(true)
 
                             userPreferences.setFirstLogin(authResponse.isFirstLogin)
 
-                            withContext(Dispatchers.Main){
-                                Toast.makeText(context, context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.login_success),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
                             Result.success(GoogleSignInResult(success = true))
                         } else {
-                            Result.success(GoogleSignInResult(
-                                success = false,
-                                error = context.getString(R.string.error_google_user_data_fetch_failed)
-                            ))
+                            Result.success(
+                                GoogleSignInResult(
+                                    success = false,
+                                    error = context.getString(R.string.error_google_user_data_fetch_failed)
+                                )
+                            )
                         }
                     }
 
@@ -152,25 +173,32 @@ class AuthRepository(private val context: Context){
                         val errorBody = response.errorBody()?.string()
                         if (errorBody?.contains("linkRequired") == true) {
                             try {
-                                val gson = com.google.gson.Gson()
-                                val linkingError = gson.fromJson(errorBody, AccountLinkingError::class.java)
-                                Result.success(GoogleSignInResult(
-                                    success = false,
-                                    needsLinking = true,
-                                    email = linkingError.email,
-                                    token = linkingError.token
-                                ))
-                            } catch(_: Exception) {
-                                Result.success(GoogleSignInResult(
-                                    success = false,
-                                    error = context.getString(R.string.account_linking_required)
-                                ))
+                                val gson = Gson()
+                                val linkingError =
+                                    gson.fromJson(errorBody, AccountLinkingError::class.java)
+                                Result.success(
+                                    GoogleSignInResult(
+                                        success = false,
+                                        needsLinking = true,
+                                        email = linkingError.email,
+                                        token = linkingError.token
+                                    )
+                                )
+                            } catch (_: Exception) {
+                                Result.success(
+                                    GoogleSignInResult(
+                                        success = false,
+                                        error = context.getString(R.string.account_linking_required)
+                                    )
+                                )
                             }
                         } else {
-                            Result.success(GoogleSignInResult(
-                                success = false,
-                                error = context.getString(R.string.google_login_conflict)
-                            ))
+                            Result.success(
+                                GoogleSignInResult(
+                                    success = false,
+                                    error = context.getString(R.string.google_login_conflict)
+                                )
+                            )
                         }
                     }
 
@@ -181,18 +209,22 @@ class AuthRepository(private val context: Context){
                             errorBody,
                             response.code()
                         )
-                        Result.success(GoogleSignInResult(
-                            success = false,
-                            error = userMessage
-                        ))
+                        Result.success(
+                            GoogleSignInResult(
+                                success = false,
+                                error = userMessage
+                            )
+                        )
                     }
                 }
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 val userMessage = GoogleErrorMapper.mapGoogleAuthApiError(context, e.message)
-                Result.success(GoogleSignInResult(
-                    success = false,
-                    error = userMessage
-                ))
+                Result.success(
+                    GoogleSignInResult(
+                        success = false,
+                        error = userMessage
+                    )
+                )
             }
         }
     }
@@ -203,20 +235,27 @@ class AuthRepository(private val context: Context){
             try {
                 val response = api.linkGoogleAccount(GoogleLinkRequest(token, password, email))
 
-                if(response.isSuccessful && response.body() != null ) {
+                if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
 
                     val userResult = getUserWithToken(authResponse.accessToken)
                     if (userResult.isSuccess) {
                         val user = userResult.getOrNull()!!
 
-                        userPreferences.saveTokens(authResponse.accessToken, authResponse.refreshToken)
+                        userPreferences.saveTokens(
+                            authResponse.accessToken,
+                            authResponse.refreshToken
+                        )
                         userPreferences.saveUserData(user._id, user.username, user.email)
                         userPreferences.setLoggedIn(true)
                         userPreferences.setFirstLogin(authResponse.isFirstLogin)
 
-                        withContext(Dispatchers.Main){
-                            Toast.makeText(context, context.getString(R.string.link_accounts_success), Toast.LENGTH_SHORT).show()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.link_accounts_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                         Result.success(true)
@@ -230,11 +269,15 @@ class AuthRepository(private val context: Context){
                         401 -> context.getString(R.string.error_invalid_credentials)
                         404 -> context.getString(R.string.error_user_not_found)
                         409 -> context.getString(R.string.error_google_login_conflict)
-                        else -> GoogleErrorMapper.mapGoogleAuthApiError(context, errorBody, response.code())
+                        else -> GoogleErrorMapper.mapGoogleAuthApiError(
+                            context,
+                            errorBody,
+                            response.code()
+                        )
                     }
                     Result.failure(Exception(userMessage))
                 }
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 val userMessage = GoogleErrorMapper.mapGoogleAuthApiError(context, e.message)
                 Result.failure(Exception(userMessage))
             }
@@ -244,26 +287,28 @@ class AuthRepository(private val context: Context){
     fun getGoogleSignInHelper() = googleSignInHelper
 
     suspend fun refreshAccessToken(): Result<String> {
-        return try {
-            val refreshToken = userPreferences.refreshToken.first()
-            if (refreshToken.isNullOrEmpty()) {
-                return Result.failure(Exception(context.getString(R.string.no_refresh_token)))
-            }
+        return withContext(Dispatchers.IO) {
+            try {
+                val refreshToken = userPreferences.refreshToken.first()
+                if (refreshToken.isNullOrEmpty()) {
+                    return@withContext Result.failure(Exception(context.getString(R.string.no_refresh_token)))
+                }
 
-            val response = api.refreshToken(RefreshTokenRequest(refreshToken))
-            if(response.isSuccessful && response.body() != null) {
-                val newAccessToken = response.body()!!.accessToken
-                userPreferences.saveTokens(newAccessToken, refreshToken)
-                Result.success(newAccessToken)
-            } else {
+                val response = api.refreshToken(RefreshTokenRequest(refreshToken))
+                if (response.isSuccessful && response.body() != null) {
+                    val newAccessToken = response.body()!!.accessToken
+                    userPreferences.saveTokens(newAccessToken, refreshToken)
+                    Result.success(newAccessToken)
+                } else {
+                    logout()
+                    Result.failure(Exception(context.getString(R.string.refresh_token_expired_logout)))
+                }
+            } catch (e: Exception) {
                 logout()
-                Result.failure(Exception(context.getString(R.string.refresh_token_expired)))
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
-
 
     suspend fun logout(): Result<String> {
         return try {
@@ -276,10 +321,6 @@ class AuthRepository(private val context: Context){
             userPreferences.clearTokens()
             userPreferences.clearUserData()
             userPreferences.setLoggedIn(false)
-
-            withContext(Dispatchers.Main){
-                Toast.makeText(context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
-            }
 
             Result.success(context.getString(R.string.logout_success))
         } catch(e: Exception) {
@@ -328,4 +369,18 @@ class AuthRepository(private val context: Context){
         }
     }
     fun getPreferences() = userPreferences
+
+    suspend fun clearUserSession(): Result<String> {
+        return try {
+            userPreferences.clearTokens()
+            userPreferences.clearUserData()
+            userPreferences.setLoggedIn(false)
+            Result.success("Session cleared")
+        } catch(e: Exception) {
+            userPreferences.clearTokens()
+            userPreferences.clearUserData()
+            userPreferences.setLoggedIn(false)
+            Result.failure(e)
+        }
+    }
 }

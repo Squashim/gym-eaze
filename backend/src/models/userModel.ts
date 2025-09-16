@@ -49,10 +49,10 @@ export interface IUser extends Document {
     country: Country;
   };
   fitnessDetails?: {
-    height: number;
-    weight: number;
-    age: number;
-    gender: Gender;
+    height?: number;
+    weight?: number;
+    age?: number;
+    gender?: Gender;
   };
   privacySettings: {
     isPersonalDetailsPublic: boolean;
@@ -206,15 +206,12 @@ const userSchema = new mongoose.Schema<IUser>(
     fitnessDetails: {
       height: {
         type: Number,
-        default: 0,
       },
       weight: {
         type: Number,
-        default: 0,
       },
       age: {
         type: Number,
-        default: 0,
       },
       gender: {
         type: String,
