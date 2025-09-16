@@ -19,6 +19,12 @@ object AuthErrorMapper {
 
     private fun extractServerMessage(errorBody: String?): String? {
         val obj = parseJson(errorBody) ?: return null
+
+        if (obj.has("error") && obj.get("error").isJsonPrimitive){
+            val errorMsg = obj.get("error").asString
+            if (errorMsg.isNotBlank()) return errorMsg
+        }
+
         if (obj.has("message") && obj.get("message").isJsonPrimitive) {
             val msg = obj.get("message").asString
             if (msg.isNotBlank()) return msg

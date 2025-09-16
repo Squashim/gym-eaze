@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface IMuscleGroup extends mongoose.Document {
   name: string;
@@ -16,9 +16,6 @@ const muscleGroupSchema = new mongoose.Schema({
   },
 });
 
-const MuscleGroup = mongoose.model<IMuscleGroup>(
-  "MuscleGroup",
-  muscleGroupSchema,
-);
+const MuscleGroup = mongoose.model<IMuscleGroup>('MuscleGroup', muscleGroupSchema);
 
 export default MuscleGroup;

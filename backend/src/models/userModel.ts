@@ -1,5 +1,5 @@
 import mongoose, { Types } from 'mongoose';
-import countries, { CountryCode } from '../constants/countries';
+import { Country} from '../constants/countries';
 import { UserRole, userRoleValues } from '../constants/roles';
 import { Gender, genderValues } from '../constants/genders';
 import { Goal, goalValues } from '../constants/goals';
@@ -46,13 +46,13 @@ export interface IUser extends Document {
   personalDetails?: {
     firstName: string;
     lastName: string;
-    country: CountryCode;
+    country: Country;
   };
   fitnessDetails?: {
-    height: number;
-    weight: number;
-    age: number;
-    gender: Gender;
+    height?: number;
+    weight?: number;
+    age?: number;
+    gender?: Gender;
   };
   privacySettings: {
     isPersonalDetailsPublic: boolean;
@@ -198,23 +198,20 @@ const userSchema = new mongoose.Schema<IUser>(
       },
       country: {
         type: String,
-        enum: countries.map((c) => c.code),
-        default: 'PL',
+        enum: Country,
+        default: Country.NONE,
       },
     },
 
     fitnessDetails: {
       height: {
         type: Number,
-        default: 0,
       },
       weight: {
         type: Number,
-        default: 0,
       },
       age: {
         type: Number,
-        default: 0,
       },
       gender: {
         type: String,

@@ -19,10 +19,10 @@ app.use(
 );
 app.use(express.json());
 app.use('/api/auth', authRoutes);
-app.use("/api/exercises", exerciseRoutes);
-app.use("/api/equipment", equipmentRoutes);
-app.use("/api/muscleGroup", muscleGroupRoutes);
-app.use("/api/user", userRoutes);
+app.use('/api/exercises', exerciseRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/muscleGroup', muscleGroupRoutes);
+app.use('/api/user', userRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API działa 🚀');

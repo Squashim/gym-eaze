@@ -1,42 +1,53 @@
 package com.example.gymeaze
 
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.AccountLinkingDialog
+import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.AuthScreen
+import com.example.gymeaze.ui.screens.ExerciseCreatorScreen
+import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
-import com.example.gymeaze.ui.screens.ProfileEditScreen
-import com.example.gymeaze.ui.screens.SettingsScreen
-import com.example.gymeaze.ui.screens.ThemeSelectionScreen
+import com.example.gymeaze.ui.screens.profile.ProfileEditScreen
+import com.example.gymeaze.ui.screens.profile.SettingsScreen
+import com.example.gymeaze.ui.screens.profile.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
+import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 
-class MainActivity : ComponentActivity() {
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import com.example.gymeaze.data.repository.UserRepository
+import com.example.gymeaze.viewmodel.LogoutEvent
+import com.example.gymeaze.viewmodel.UserViewModel
 
-    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
+
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val authViewModel: AuthViewModel = viewModel()
+            val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
+            //val userViewModel: UserViewModel = viewModel()
+            val userViewModel: UserViewModel = viewModel {
+                UserViewModel(
+                    application = application,
+                    onTokenExpired = { authViewModel.logout(manual = false) }
+                )
+            }
+
 
             val googleSignInLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartActivityForResult()
@@ -45,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 authViewModel.handleGoogleSignInResult(task)
             }
 
+            val isCheckingToken by authViewModel.isCheckingToken.collectAsState()
             val uiState by authViewModel.uiState.collectAsState()
             val isUserLoggedIn by authViewModel.isLoggedIn.collectAsState(initial = false)
             val isFirstLogin by authViewModel.isFirstLogin.collectAsState(initial = true)
@@ -56,97 +68,124 @@ class MainActivity : ComponentActivity() {
             val showAccountLinking by authViewModel.showAccountLinking.collectAsState()
             val linkingEmail by authViewModel.linkingEmail.collectAsState()
             val linkingError by authViewModel.linkingError.collectAsState()
+            val showExerciseCreator by authViewModel.showExerciseCreator.collectAsState()
+            val logoutEvent by authViewModel.logoutEvent.collectAsState()
+
+            logoutEvent?.let { event ->
+                val context = LocalContext.current
+                LaunchedEffect(event) {
+                    when (event) {
+                        is LogoutEvent.TokenExpired -> {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.session_expired_login_again),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        is LogoutEvent.Manual -> {
+                            Toast.makeText(context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
+                        }
+                        is LogoutEvent.AccountDeleted -> {
+                            Toast.makeText(
+                                context,
+                                "Konto zostało pomyślnie usunięte",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                    authViewModel.clearLogoutEvent()
+                }
+            }
 
             GymEazeTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = getBackgroundColor()
                 ) {
-
-                    if(showAccountLinking) {
-                        AccountLinkingDialog(
-                            email = linkingEmail,
-                            onDismiss = authViewModel::dismissAccountLinking,
-                            onConfirm = authViewModel::confirmAccountLinking,
-                            isLoading = uiState.isLoading,
-                            errorMessage = linkingError
-                        )
-                    }
-
-                    when {
-                        // Ekran wyboru motywu
-                        showThemeSelection -> {
-                            ThemeSelectionScreen(
-                                isDarkTheme = isDarkTheme,
-                                onReturnClick = authViewModel::hideThemeSelectionScreen,
-                                onThemeSelected = authViewModel::selectTheme
+                    if (isCheckingToken) {
+                        LoadingScreen()
+                    } else {
+                        if (showAccountLinking) {
+                            AccountLinkingDialog(
+                                email = linkingEmail,
+                                onDismiss = authViewModel::dismissAccountLinking,
+                                onConfirm = authViewModel::confirmAccountLinking,
+                                isLoading = uiState.isLoading,
+                                errorMessage = linkingError
                             )
                         }
 
-                        // Ekran ustawień
-                        showSettings -> {
-                            SettingsScreen(
-                                onReturnClick = authViewModel::hideSettingsScreen,
-                                onThemeClick = authViewModel::showThemeSelectionScreen
-                            )
-                        }
-
-                        showProfileEdit -> {
-                            ProfileEditScreen(
-                                onReturnClick = authViewModel::hideProfileEditScreen,
-                                onCancelClick = authViewModel::cancelProfileSetup,
-                                onSaveClick = authViewModel::completeProfileSetup
-                            )
-                        }
-
-                        // Użytkownik nie jest zalogowany - pokaż ekran autoryzacji
-                        !isUserLoggedIn -> {
-                            AuthScreen(
-                                uiState = uiState,
-                                onUsernameChange = authViewModel::updateUsername,
-                                onEmailChange = authViewModel::updateEmail,
-                                onPasswordChange = authViewModel::updatePassword,
-                                onConfirmPasswordChange = authViewModel::updateConfirmPassword,
-                                onUsernameOrEmailChange = authViewModel::updateUsernameOrEmail,
-                                onToggleAuthMode = authViewModel::toggleAuthMode,
-                                onRegister = authViewModel::register,
-                                onLogin = authViewModel::login,
-                                onSettingsClick = authViewModel::showSettingsScreen,
-                                onGoogleLogin = {
-                                    val signInIntent = authViewModel.startGoogleSignIn()
-                                    googleSignInLauncher.launch(signInIntent)
-                                },
-                            )
-                        }
-
-                        // Użytkownik jest zalogowany i to jego pierwszy login - pokaż wprowadzenie
-                        isUserLoggedIn && isFirstLogin -> {
-                            IntroductionScreen(
-                                username = username,
-                                onCompleteIntroduction = authViewModel::showProfileEditScreen,
-                                onSkipIntroduction = authViewModel::clearFirstLogin,
-                                onSettingsClick = authViewModel::showSettingsScreen
-                            )
-                        }
-
-                        // Użytkownik jest zalogowany i nie jest to pierwszy login - główna aplikacja
-                        else -> {
-                            // TODO: Implementacja głównych ekranów aplikacji
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                color = getBackgroundColor()
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Główna aplikacja - TODO: Implementacja",
-                                        color = getBackgroundColor()
-                                    )
-                                    Button(
-                                        onClick = authViewModel::logout
-                                    ) {
-                                        Text("Wyloguj")
-                                    }
-                                }
+                        when {
+                            showThemeSelection -> {
+                                ThemeSelectionScreen(
+                                    isDarkTheme = isDarkTheme,
+                                    onReturnClick = authViewModel::hideThemeSelectionScreen,
+                                    onThemeSelected = authViewModel::selectTheme
+                                )
+                            }
+                            showSettings -> {
+                                SettingsScreen(
+                                    onReturnClick = authViewModel::hideSettingsScreen,
+                                    onThemeClick = authViewModel::showThemeSelectionScreen,
+                                    isUserLoggedIn = isUserLoggedIn,
+                                    onLogoutClick = if (isUserLoggedIn) { { authViewModel.logout() } } else null,
+                                    onPrivacySettingsClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
+                                    onHelpClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
+                                    onNotificationsClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
+                                )
+                            }
+                            showProfileEdit -> {
+                                ProfileEditScreen(
+                                    viewModel = userViewModel,
+                                    onReturnClick = authViewModel::hideProfileEditScreen,
+                                    onNavigateToAuth = {
+                                        authViewModel.delete()
+                                        authViewModel.hideProfileEditScreen()
+                                    },
+                                    selectedRoute = "profile"
+                                )
+                            }
+                            showExerciseCreator -> {
+                                ExerciseCreatorScreen(
+                                    viewModel = exerciseCreatorViewModel,
+                                    onBackClick = authViewModel::hideExerciseCreatorScreen,
+                                    onCreated = authViewModel::hideExerciseCreatorScreen
+                                )
+                            }
+                            !isUserLoggedIn -> {
+                                AuthScreen(
+                                    uiState = uiState,
+                                    onUsernameChange = authViewModel::updateUsername,
+                                    onEmailChange = authViewModel::updateEmail,
+                                    onPasswordChange = authViewModel::updatePassword,
+                                    onConfirmPasswordChange = authViewModel::updateConfirmPassword,
+                                    onUsernameOrEmailChange = authViewModel::updateUsernameOrEmail,
+                                    onToggleAuthMode = authViewModel::toggleAuthMode,
+                                    onRegister = authViewModel::register,
+                                    onLogin = authViewModel::login,
+                                    onSettingsClick = authViewModel::showSettingsScreen,
+                                    onGoogleLogin = {
+                                        val signInIntent = authViewModel.startGoogleSignIn()
+                                        googleSignInLauncher.launch(signInIntent)
+                                    },
+                                )
+                            }
+                            isUserLoggedIn && isFirstLogin -> {
+                                IntroductionScreen(
+                                    username = username,
+                                    onCompleteIntroduction = authViewModel::showProfileEditScreen,
+                                    onSkipIntroduction = authViewModel::clearFirstLogin,
+                                    onSettingsClick = authViewModel::showSettingsScreen
+                                )
+                            }
+                            else -> {
+                                HomeScreen(
+                                    username = username,
+                                    onLogout = { authViewModel.logout() },
+                                    onExerciseCreatorClick = authViewModel::showExerciseCreatorScreen,
+                                    onSettingsClick = authViewModel::showSettingsScreen,
+                                    onEditProfileClick = { authViewModel.showProfileEditScreen() }
+                                )
                             }
                         }
                     }

@@ -5,7 +5,8 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
-import com.example.gymeaze.data.AuthRepository
+import com.example.gymeaze.data.repository.AuthRepository
+import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -13,8 +14,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
 
 data class ValidationErrors(
     val username: String? = null,
@@ -23,6 +25,7 @@ data class ValidationErrors(
     val confirmPassword: String? = null,
     val usernameOrEmail: String? = null
 )
+
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isRegistering: Boolean = true, //true - rejestracja, false - logowanie
@@ -32,7 +35,6 @@ data class AuthUiState(
     val confirmPassword: String = "",
     val usernameOrEmail: String = "",
     val errorMessage: String? = null,
-    val isLoggedIn: Boolean = false,
 
     val registerErrors: ValidationErrors = ValidationErrors(),
     val loginErrors: ValidationErrors = ValidationErrors(),
@@ -73,9 +75,49 @@ data class AuthUiState(
                 password.isNotBlank()
 }
 
+sealed class LogoutEvent {
+    object TokenExpired : LogoutEvent()
+    object Manual : LogoutEvent()
+    object AccountDeleted : LogoutEvent()
+}
+
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
+
     private val authRepository = AuthRepository(application.applicationContext)
-    private val userPreferences = authRepository.getPreferences()
+    private val userPreferences = UserPreferences(application.applicationContext)
+
+    init {
+        checkTokenValidityOnStartup()
+    }
+
+    private val _isCheckingToken = MutableStateFlow(true)
+    val isCheckingToken: StateFlow<Boolean> = _isCheckingToken.asStateFlow()
+
+    private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
+    val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
+
+    private fun checkTokenValidityOnStartup() {
+        viewModelScope.launch {
+            try {
+                val isLoggedIn = userPreferences.isLoggedIn.first()
+                val accessToken = userPreferences.accessToken.first()
+
+                if (isLoggedIn && !accessToken.isNullOrEmpty()) {
+                    val result = authRepository.getCurrentUser()
+                    if (result.isFailure) {
+                        val refreshResult = authRepository.refreshAccessToken()
+                        if (refreshResult.isFailure) {
+                            handleTokenExpiration()
+                        }
+                    }
+                }
+            } catch(e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isCheckingToken.value = false
+            }
+        }
+    }
 
     private val privateUiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = privateUiState.asStateFlow()
@@ -151,7 +193,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
         } else {
             val newLoginErrors = currentState.loginErrors.copy(
-                password = if(password.isBlank()) "Hasło jest wymagane" else null
+                password = if(password.isBlank()) getApplication<Application>().getString(R.string.error_password_required) else null
             )
 
             privateUiState.value = currentState.copy(
@@ -159,6 +201,29 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 loginErrors = newLoginErrors,
                 touchedFields = currentState.touchedFields + "password"
             )
+        }
+    }
+
+    suspend fun ensureValidToken(): Boolean {
+        return try {
+            val isLoggedIn = userPreferences.isLoggedIn.first()
+            val accessToken = userPreferences.accessToken.first()
+
+            if (!isLoggedIn || accessToken.isNullOrEmpty()) {
+                return false
+            }
+
+            val result = authRepository.getCurrentUser()
+            if (result.isFailure) {
+                val refreshResult = authRepository.refreshAccessToken()
+                if (refreshResult.isFailure) {
+                    handleTokenExpiration()
+                    return false
+                }
+            }
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -189,7 +254,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun validateAllFields(): Boolean{
-       val currentState = privateUiState.value
+        val currentState = privateUiState.value
 
         if(currentState.isRegistering) {
             val errors = ValidationErrors(
@@ -209,7 +274,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             val errors = ValidationErrors(
                 usernameOrEmail = Validation.validateUsernameOrEmail(currentState.usernameOrEmail),
-                password = if (currentState.password.isBlank()) "Hasło jest wymagane" else null
+                password = if (currentState.password.isBlank()) getApplication<Application>().getString(R.string.error_password_required) else null
             )
 
             privateUiState.value = currentState.copy(
@@ -239,8 +304,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
             if(result.isSuccess) {
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = true
+                    isLoading = false
                 )
             } else {
                 privateUiState.value = privateUiState.value.copy(
@@ -269,8 +333,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             )
             if (result.isSuccess){
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = true
+                    isLoading = false
                 )
             } else{
                 privateUiState.value = privateUiState.value.copy(
@@ -294,8 +357,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 when {
                     googleResult.success -> {
                         privateUiState.value = privateUiState.value.copy(
-                            isLoading = false,
-                            isLoggedIn = true
+                            isLoading = false
                         )
                     }
 
@@ -309,14 +371,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     else -> {
                         privateUiState.value = privateUiState.value.copy(
                             isLoading = false,
-                            errorMessage = googleResult.error ?: "Google login failed"
+                            errorMessage = googleResult.error ?: getApplication<Application>().getString(R.string.error_google_login_general, "Unknown error")
                         )
                     }
                 }
             } else {
                 privateUiState.value = privateUiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Google login error: ${result.exceptionOrNull()?.message}"
+                    errorMessage = getApplication<Application>().getString(R.string.error_google_login_general, result.exceptionOrNull()?.message ?: "Unknown error")
                 )
             }
         }
@@ -336,8 +398,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             if (result.isSuccess) {
                 privateShowAccountLinking.value = false
                 privateUiState.value = privateUiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = true
+                    isLoading = false
                 )
             } else{
                 privateLinkingError.value = result.exceptionOrNull()?.message
@@ -366,23 +427,49 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             loginWithGoogle(authCode);
         } else{
             privateUiState.value = privateUiState.value.copy(
-                errorMessage = result.exceptionOrNull()?.message ?: "Google Sing-In failed"
+                errorMessage = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_google_signin_failed)
             )
         }
     }
 
-    fun logout() {
+    private fun handleTokenExpiration() {
         viewModelScope.launch {
-            authRepository.logout()
-            privateUiState.value = AuthUiState() //Stan poczatkowy
+            authRepository.clearUserSession()
+            privateUiState.value = AuthUiState()
+            _logoutEvent.value = LogoutEvent.TokenExpired
         }
+    }
+
+    fun logout(manual: Boolean = true) {
+        viewModelScope.launch {
+            if (manual) {
+                authRepository.logout()
+                _logoutEvent.value = LogoutEvent.Manual
+            } else {
+                handleTokenExpiration()
+            }
+            privateUiState.value = AuthUiState()
+        }
+    }
+
+    fun delete() {
+        viewModelScope.launch {
+            authRepository.clearUserSession()
+            privateUiState.value = AuthUiState()
+            privateUiState.value = AuthUiState()
+            _logoutEvent.value = LogoutEvent.AccountDeleted
+        }
+    }
+
+    fun clearLogoutEvent() {
+        _logoutEvent.value = null
     }
 
     fun toggleTheme() {
         viewModelScope.launch {
             val currentTheme = userPreferences.isDarkTheme.first()
             userPreferences.setDarkTheme(!currentTheme)
-            }
+        }
     }
 
     fun clearFirstLogin(){
@@ -399,6 +486,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val privateShowProfileEdit = MutableStateFlow(false)
     val showProfileEdit = privateShowProfileEdit.asStateFlow()
+
+    private val privateShowExerciseCreator = MutableStateFlow(false)
+    val showExerciseCreator = privateShowExerciseCreator.asStateFlow()
 
     fun showSettingsScreen() {
         privateShowSettings.value = true
@@ -423,6 +513,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun hideProfileEditScreen() {
         privateShowProfileEdit.value = false
     }
+
+    fun showExerciseCreatorScreen() { privateShowExerciseCreator.value = true }
+    fun hideExerciseCreatorScreen() { privateShowExerciseCreator.value = false }
 
     fun selectTheme(isDark: Boolean){
         viewModelScope.launch {

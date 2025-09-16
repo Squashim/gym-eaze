@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface IEquipment extends mongoose.Document {
   name: string;
@@ -18,9 +18,9 @@ const equipmentSchema = new mongoose.Schema({
   imageCredit: {
     type: String,
     required: true,
-  }
+  },
 });
 
-const Equipment = mongoose.model<IEquipment>("Equipment", equipmentSchema);
+const Equipment = mongoose.model<IEquipment>('Equipment', equipmentSchema);
 
 export default Equipment;

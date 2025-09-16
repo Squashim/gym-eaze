@@ -1,70 +1,97 @@
 package com.example.gymeaze.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-//Dark
-val PrimaryGreen = Color(0xFF8BC34A)
-val PrimaryGreenDark = Color(0xFF689F38)
-val BackgroundDark = Color(0xFF1C1C1C)
-val SurfaceDark = Color(0xFF2D2D2D)
-val SurfaceVariant = Color(0xFF3D3D3D)
-val OnSurfaceDark = Color(0xFFFFFFFF)
-val OnSurfaceSecondary = Color(0xFFB0B0B0)
-val InputErrorDark = Color(0xFFE25F50);
+val PrimaryLight = Color(0xFF94C521)
+val PrimaryDark = Color(0xFF689F38)
 
-//Gradient
-val Start = Color(0xFF3D3D3D)
-val Middle = Color(0xFF4D4D4D)
-val End = Color(0xFF8BC34A)
+val OnPrimaryLight = Color(0xFFFFFFFF)
+val OnPrimaryDark = Color(0xff141414)
 
-val ButtonOutlined = Color(0xFF4D4D4D)
-val GoogleButton = Color(0xFFFFFFFF)
-val GoogleButtonText = Color(0xFF1F1F1F)
 
-val InputBackground = Color(0xFF3D3D3D)
-val InputBorder = Color(0xFF5D5D5D)
+val SecondaryLight = Color(0xFF141414)
+val SecondaryDark = Color(0xFFe7e4fd)
 
-val NavBarBackground = Color(0xFF1C1C1C)
-val NavBarSelected = Color(0xFF8BC34A)
-val NavBarUnselected = Color(0xFFB0B0B0)
+val OnSecondaryLight = Color(0xFFFFFFFF)
+val OnSecondaryDark = Color(0xff141414)
 
-//Light
 val BackgroundLight = Color(0xFFFEFEFE)
+val BackgroundDark = Color(0xFF1C1C1C)
+
 val SurfaceLight = Color(0xFFF5F5F5)
+val SurfaceDark = Color(0xFF2D2D2D)
+
 val SurfaceVariantLight = Color(0xFFFFFFFF)
+val SurfaceVariantDark = Color(0xFF3D3D3D)
+
 val OnSurfaceLight = Color(0xFF141414)
-val OnSurfaceLightSecondary = Color(0xFF737373)
+val OnSurfaceDark = Color(0xFFFFFFFF)
 
-val PrimaryGreenLight = Color(0xFF5D761E)
+val OnSurfaceSecondaryLight = Color(0xFF737373)
+val OnSurfaceSecondaryDark = Color(0xFFB0B0B0)
 
-val PrimaryGreenDarkLight = Color(0xFF003900)
-val PrimaryGreenSecondaryLight = Color(0xFFFFFFFF)
-
-val InputBackgroundLight = Color(0xFFE5E5E5)
-val InputBorderLight = Color(0xFFA1A1A1)
 val InputErrorLight = Color(0xFFA71D0B)
-
-val NavBarBackgroundLight = Color(0xFFFFFFFF)
-val NavBarSelectedLight = Color(0xFF5D761E)
-val NavBarUnselectedLight = Color(0xFF737373)
+val InputErrorDark = Color(0xFFE25F50)
 
 val ButtonOutlinedLight = Color(0xFFE5E5E5)
+val ButtonOutlinedDark = Color(0xFF4D4D4D)
+
 val GoogleButtonLight = Color(0xFFFFFFFF)
+val GoogleButtonDark = Color(0xFFFFFFFF)
+
 val GoogleButtonTextLight = Color(0xFF1F1F1F)
+val GoogleButtonTextDark = Color(0xFF1F1F1F)
+
+val InputBackgroundLight = Color(0xFFE5E5E5)
+val InputBackgroundDark = Color(0xFF3D3D3D)
+
+val InputBorderLight = Color(0xFFA1A1A1)
+val InputBorderDark = Color(0xFF5D5D5D)
+
+val NavBarBackgroundLight = Color(0xFFFFFFFF)
+val NavbarBackgroundDark = Color(0xFF1C1C1C)
+
+val NavBarSelectedLight = Color(0xFF5D761E)
+val NavBarSelectedDark = Color(0xFF8BC34A)
+
+val NavBarUnselectedLight = Color(0xFF737373)
+val NavBarUnselectedDark = Color(0xFFB0B0B0)
 
 //Gradient
-val StartLight = Color(0xFFF5F5F5)
 val MiddleLight = Color(0xFFE5E5E5)
-val EndLight = Color(0xFF5D761E)
+val MiddleDark = Color(0xFF4D4D4D)
+
+val YellowLight = Color(0x1aeab308)
+val YellowDark = Color(0x1aca8a04)
+
+val OnYellowLight = Color(0xff854d0e)
+val OnYellowDark = Color(0xffeab308)
 
 
 
 @Composable
+fun getPrimaryColor(): Color {
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) PrimaryDark else PrimaryLight
+}
+
+@Composable
 fun getOnPrimaryColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) OnSurfaceDark else Color.White
+    return if (isDarkTheme) OnPrimaryDark else OnPrimaryLight
+}
+
+@Composable
+fun getSecondaryColor(): Color {
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) SecondaryDark else SecondaryLight
+}
+
+@Composable
+fun getOnSecondaryColor(): Color {
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) OnSecondaryDark else OnSecondaryLight
 }
 
 @Composable
@@ -82,7 +109,7 @@ fun getSurfaceColor(): Color {
 @Composable
 fun getSurfaceVariantColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) SurfaceVariant else SurfaceVariantLight
+    return if (isDarkTheme) SurfaceVariantDark else SurfaceVariantLight
 }
 
 
@@ -95,88 +122,62 @@ fun getOnSurfaceColor(): Color {
 @Composable
 fun getOnSurfaceSecondaryColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) OnSurfaceSecondary else OnSurfaceLightSecondary
+    return if (isDarkTheme) OnSurfaceSecondaryDark else OnSurfaceSecondaryLight
 }
-
-
-@Composable
-fun getPrimaryColor(): Color {
-    val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) PrimaryGreen else PrimaryGreenLight
-}
-
-@Composable
-fun getPrimaryDarkColor(): Color {
-    val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) PrimaryGreenDark else PrimaryGreenDarkLight
-}
-
 
 @Composable
 fun getNavBarBackgroundColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) NavBarBackground else NavBarBackgroundLight
+    return if (isDarkTheme) NavbarBackgroundDark else NavBarBackgroundLight
 }
 
 @Composable
 fun getNavBarSelectedColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) NavBarSelected else NavBarSelectedLight
+    return if (isDarkTheme) NavBarSelectedDark else NavBarSelectedLight
 }
 
 @Composable
 fun getNavBarUnselectedColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) NavBarUnselected else NavBarUnselectedLight
+    return if (isDarkTheme) NavBarUnselectedDark else NavBarUnselectedLight
 }
 
 @Composable
 fun getButtonOutlinedColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) ButtonOutlined else ButtonOutlinedLight
+    return if (isDarkTheme) ButtonOutlinedDark else ButtonOutlinedLight
 }
 
 @Composable
 fun getGoogleButtonColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) GoogleButton else GoogleButtonLight
+    return if (isDarkTheme) GoogleButtonDark else GoogleButtonLight
 }
 
 @Composable
 fun getGoogleButtonTextColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) GoogleButtonText else GoogleButtonTextLight
+    return if (isDarkTheme) GoogleButtonTextDark else GoogleButtonTextLight
 }
 
 
 @Composable
 fun getInputBackgroundColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) InputBackground else InputBackgroundLight
+    return if (isDarkTheme) InputBackgroundDark else InputBackgroundLight
 }
 
 @Composable
 fun getInputBorderColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) InputBorder else InputBorderLight
-}
-
-@Composable
-fun getGradientStartColor(): Color {
-    val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) Start else StartLight
+    return if (isDarkTheme) InputBorderDark else InputBorderLight
 }
 
 @Composable
 fun getGradientMiddleColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) Middle else MiddleLight
-}
-
-@Composable
-fun getGradientEndColor(): Color {
-    val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) End else EndLight
+    return if (isDarkTheme) MiddleDark else MiddleLight
 }
 
 @Composable
@@ -185,15 +186,21 @@ fun getErrorColor(): Color{
     return if (isDarkTheme) InputErrorDark else InputErrorLight
 }
 
+@Composable
+fun getYellowColor(): Color{
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) YellowDark else YellowLight
+}
+
+@Composable
+fun getOnYellowColor(): Color{
+    val isDarkTheme = LocalDarkTheme.current
+    return if (isDarkTheme) OnYellowDark else OnYellowLight
+}
+
 
 @Composable
 fun getCardBackgroundColor(): Color {
     val isDarkTheme = LocalDarkTheme.current
     return if (isDarkTheme) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
-}
-
-@Composable
-fun getContinueButtonColor(): Color {
-    val isDarkTheme = LocalDarkTheme.current
-    return if (isDarkTheme) Color(0xFF4CAF50) else PrimaryGreenLight
 }

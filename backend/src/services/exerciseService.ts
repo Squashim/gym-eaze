@@ -194,8 +194,8 @@ export const getExercisesService = async (
     query.visibility = PrivacySettings.public;
   }
 
-  if (filters.muscleGroups) query['muscleGroup.type'] = { $in: filters.muscleGroups };
-  if (filters.equipment) query['equipment.type'] = { $in: filters.equipment };
+  if (filters.muscleGroups) query.muscleGroup = { $in: filters.muscleGroups };
+  if (filters.equipment) query.equipment = { $in: filters.equipment };
   if (filters.hashtags) query.hashtags = { $in: filters.hashtags };
   if (filters.difficulty) query.advancedLevel = filters.difficulty;
 
