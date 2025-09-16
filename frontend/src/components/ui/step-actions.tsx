@@ -4,7 +4,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 import Typography from './typography';
 import { useId, type Ref } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import ReusableAlertDialog from './reusable-alert-dialog';
 import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
 
 type StepActionsProps = {
@@ -18,11 +17,6 @@ type StepActionsProps = {
   isSubmitting: boolean;
   submitDisabled?: boolean;
   isDirty?: boolean;
-  dialog: {
-    cancelLabel: string;
-    description: string;
-    title: string;
-  };
   refs: {
     submitRef?: Ref<HTMLButtonElement>;
     cancelRef?: Ref<HTMLButtonElement>;
@@ -39,96 +33,83 @@ const StepActions = ({
   submittingLabel = 'Wysyłanie...',
   submitDisabled = false,
   isDirty = false,
-  dialog,
   refs,
   isSubmitting,
 }: StepActionsProps) => {
   const uid = useId();
-  const { showDialog, confirmNavigation, cancelNavigation, tryNavigateBack } =
-    useUnsavedChangesWarning(isDirty);
+  const { handleCancel } = useUnsavedChangesWarning(isDirty);
   const isFirstStep = step === 0;
   const isLastStep = step === totalSteps - 1;
   const isBackAvailable = step < totalSteps - 1;
   const isSmallBackIcon = useMediaQuery('(width <= 400px)');
 
   return (
-    <>
-      <ReusableAlertDialog
-        cancelLabel={dialog.cancelLabel}
-        confirmLabel="Przerwij"
-        description={dialog.description}
-        onClose={cancelNavigation}
-        onConfirm={confirmNavigation}
-        open={showDialog}
-        title={dialog.title}
-      />
-      <div className="flex justify-between items-center gap-4 md:col-span-2">
-        {!isFirstStep ? (
-          isSmallBackIcon ? (
+    <div className="flex justify-between items-center gap-4 md:col-span-2">
+      {!isFirstStep ? (
+        isSmallBackIcon ? (
+          <Button
+            className="size-10"
+            onClick={prevStep}
+            size="icon"
+            type="button"
+            variant="outline"
+          >
+            <ChevronLeft className="size-5" />
+          </Button>
+        ) : (
+          <Button onClick={prevStep} size="lg" type="button" variant="outline">
+            <ChevronLeft className="size-5" />
+            Cofnij
+          </Button>
+        )
+      ) : null}
+
+      <div className="flex items-center ml-auto gap-3">
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
+              aria-describedby={uid}
               className="size-10"
-              onClick={prevStep}
+              onClick={handleCancel}
+              ref={refs.cancelRef}
               size="icon"
               type="button"
               variant="outline"
             >
-              <ChevronLeft className="size-5" />
+              <X className="size-5" />
             </Button>
-          ) : (
-            <Button onClick={prevStep} size="lg" type="button" variant="outline">
-              <ChevronLeft className="size-5" />
-              Cofnij
-            </Button>
-          )
-        ) : null}
+          </TooltipTrigger>
+          <TooltipContent id={uid}>
+            <Typography variant="small">{exitLabel}</Typography>
+          </TooltipContent>
+        </Tooltip>
 
-        <div className="flex items-center ml-auto gap-3">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-describedby={uid}
-                className="size-10"
-                onClick={tryNavigateBack}
-                ref={refs.cancelRef}
-                size="icon"
-                type="button"
-                variant="outline"
-              >
-                <X className="size-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent id={uid}>
-              <Typography variant="small">{exitLabel}</Typography>
-            </TooltipContent>
-          </Tooltip>
+        {isBackAvailable && (
+          <Button onClick={nextStep} size="lg" type="button">
+            Kolejny etap
+            <ChevronRight className="size-5" />
+          </Button>
+        )}
 
-          {isBackAvailable && (
-            <Button onClick={nextStep} size="lg" type="button">
-              Kolejny etap
-              <ChevronRight className="size-5" />
-            </Button>
-          )}
-
-          {isLastStep && (
-            <Button
-              disabled={isSubmitting || submitDisabled}
-              ref={refs.submitRef}
-              size="lg"
-              type="submit"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="animate-spin" />
-                  {submittingLabel}
-                </>
-              ) : (
-                submitLabel
-              )}
-            </Button>
-          )}
-        </div>
+        {isLastStep && (
+          <Button
+            disabled={isSubmitting || submitDisabled}
+            ref={refs.submitRef}
+            size="lg"
+            type="submit"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" />
+                {submittingLabel}
+              </>
+            ) : (
+              submitLabel
+            )}
+          </Button>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

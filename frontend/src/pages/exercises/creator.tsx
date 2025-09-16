@@ -201,16 +201,8 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
                 {step === 2 && <ExerciseCreatorStepThree />}
 
                 <StepActions
-                  dialog={{
-                    title: isEditMode
-                      ? 'Czy na pewno chcesz przerwać edycję ćwiczenia?'
-                      : 'Czy na pewno chcesz przerwać tworzenie ćwiczenia?',
-                    description:
-                      'Wszystkie niezapisane zmiany zostaną utracone i nie będzie możliwości ich odzyskania.',
-                    cancelLabel: isEditMode ? 'Powrót do edytora' : 'Powrót do kreatora',
-                  }}
                   exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
-                  isDirty={form.formState.isDirty}
+                  isDirty={form.formState.isDirty || !isImageDefault || !isVideoDefault}
                   isSubmitting={createExercise.isPending || updateExercise.isPending}
                   nextStep={nextStep}
                   prevStep={prevStep}
