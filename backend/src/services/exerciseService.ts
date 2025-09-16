@@ -182,7 +182,7 @@ export const getExerciseByIdService = async (
   }
 
   if (exercise.visibility === PrivacySettings.private) {
-    if (userId && exercise.author.toString() === userId.toString()) {
+    if (userId && exercise.author._id.toString() === userId.toString()) {
       return exercise;
     }
     return 'forbidden';
@@ -259,23 +259,52 @@ export const getExercisesService = async (
 
 export const getExercisesByUserService = async (
   targetUserId: string,
+  page: number,
+  pageSize: PageSize,
   currentUserId?: string,
-): Promise<IExercise[]> => {
+) => {
   const query: FilterQuery<IExercise> = { author: targetUserId };
 
   if (!currentUserId || currentUserId !== targetUserId) {
     query.visibility = PrivacySettings.public;
   }
 
-  return Exercise.find(query).sort({ createdAt: -1 });
+  const skip = (page - 1) * pageSize;
+
+  const [items, total] = await Promise.all([
+    Exercise.find(query)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .populate('muscleGroup', 'name'),
+    Exercise.countDocuments(query),
+  ]);
+
+  return { items, total, page, pageSize };
 };
 
-export const getFavoriteExercisesService = async (userId: string): Promise<IExercise[]> => {
+export const getFavoriteExercisesService = async (
+  userId: string,
+  page: number,
+  pageSize: PageSize,
+) => {
   const user = await User.findById(userId).select('favorites.exercises').lean();
 
   if (!user || !user.favorites || !user.favorites.exercises?.length) {
-    return [];
+    return { items: [], total: 0, page, pageSize };
   }
 
-  return Exercise.find({ _id: { $in: user.favorites.exercises } });
+  const query: FilterQuery<IExercise> = { _id: { $in: user.favorites.exercises } };
+  const skip = (page - 1) * pageSize;
+
+  const [items, total] = await Promise.all([
+    Exercise.find(query)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .populate('muscleGroup', 'name'),
+    Exercise.countDocuments(query),
+  ]);
+
+  return { items, total, page, pageSize };
 };

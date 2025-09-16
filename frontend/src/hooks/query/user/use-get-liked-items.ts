@@ -4,15 +4,17 @@ import { useUser } from '@/context/user';
 import type { UserLikesApiResponse } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';
 
-function useGetLikedItems() {
+type LikedItemType = keyof UserLikesApiResponse;
+
+function useGetLikedItems(type: LikedItemType) {
   const { user } = useUser();
 
-  return useQuery<UserLikesApiResponse>({
+  return useQuery({
     queryKey: QUERY_KEYS.USER_LIKED_ITEMS(user?._id ?? ''),
     queryFn: getLikedItems,
     retry: false,
-    refetchOnWindowFocus: false,
     enabled: !!user,
+    select: (data) => new Set(data[type]),
   });
 }
 

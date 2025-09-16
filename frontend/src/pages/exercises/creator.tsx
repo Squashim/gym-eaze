@@ -41,6 +41,7 @@ import { Visibility } from '@/constants/visibility';
 import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
 import usePageTitle from '@/hooks/use-page-title';
+import PageLayout from '@/components/layout/page';
 
 type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
@@ -173,8 +174,11 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg md:max-w-3xl w-full mx-auto my-4">
-      <Typography variant="h1">{isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}</Typography>
+    <PageLayout
+      className="max-w-lg md:max-w-3xl mx-auto"
+      title={isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}
+      titleClassName="text-center"
+    >
       <Stepper step={step} steps={exerciseCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-center">
         <CardContent className="w-full">
@@ -224,7 +228,7 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

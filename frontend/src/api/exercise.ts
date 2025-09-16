@@ -8,7 +8,7 @@ import type {
 } from '@/types/exercise';
 import API from './api-client';
 import { objectToFormData } from '@/lib/utils';
-import type { ExerciseQueryParams, PaginatedResponse } from '@/types/filters';
+import type { ExerciseQueryParams, PaginatedQueryParams, PaginatedResponse } from '@/types/filters';
 import type { ApiResponse } from '@/types/api';
 
 const create = async (payload: CreateExercisePayload): Promise<BaseExerciseApiResponse> => {
@@ -59,4 +59,36 @@ const getById = async (id: string): Promise<GetExerciseApiResponse> => {
   return data;
 };
 
-export { create, update, getById, getAll, toggleLike, toggleFavorite, remove };
+const getFavorite = async (
+  params: PaginatedQueryParams,
+): Promise<PaginatedResponse<GetExercisesApiResponse>> => {
+  const { data } = await API.get<PaginatedResponse<GetExercisesApiResponse>>(endpoints.favorite, {
+    params: { ...params },
+  });
+
+  return data;
+};
+
+const getByUser = async (
+  userId: string,
+  params: PaginatedQueryParams,
+): Promise<PaginatedResponse<GetExercisesApiResponse>> => {
+  const { data } = await API.get<PaginatedResponse<GetExercisesApiResponse>>(
+    endpoints.byUser(userId),
+    { params: { ...params } },
+  );
+
+  return data;
+};
+
+export {
+  create,
+  update,
+  getById,
+  getAll,
+  toggleLike,
+  toggleFavorite,
+  remove,
+  getByUser,
+  getFavorite,
+};

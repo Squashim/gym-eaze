@@ -11,7 +11,9 @@ export const AUTH = {
 export const EXERCISE = {
   base: 'exercises',
   search: 'exercises/search',
+  favorite: 'exercises/favorite',
   byId: (id: string) => `exercises/${id}`,
+  byUser: (userId: string) => `exercises/user/${userId}`,
   toggleLike: (id: string) => `exercises/${id}/like`,
   toggleFavorite: (id: string) => `exercises/${id}/favorite`,
 } as const;

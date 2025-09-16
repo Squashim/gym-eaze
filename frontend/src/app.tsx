@@ -6,9 +6,11 @@ import Welcome from './pages/welcome';
 import Error from './pages/error';
 import { GoogleLinkProvider } from './context/google-link';
 import AuthGuard from './guards/auth-guard';
-import ExerciseCreator from './components/features/exercises/exercise-creator';
-import ExerciseBrowser from './components/features/exercises/exercise-browser';
-import ExerciseDetails from './components/features/exercises/exercise-details';
+import ExerciseCreator from './pages/exercises/creator';
+import ExerciseBrowser from './pages/exercises/browser';
+import ExerciseDetails from './pages/exercises/details';
+import FavoriteExercises from './pages/exercises/favorite';
+import UserExercises from './pages/exercises/user';
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
         <Route element={<Home />} index path="home" />
 
         <Route element={<ExerciseCreator mode="create" />} path="exercises/create" />
+        <Route element={<UserExercises />} path="exercises/my" />
+        <Route element={<FavoriteExercises />} path="exercises/favorites" />
         <Route element={<ExerciseCreator mode="edit" />} path="exercises/:id/edit" />
       </Route>
 

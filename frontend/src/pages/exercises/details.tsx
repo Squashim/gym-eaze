@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AdvancedLevelBadge, LikesBadge } from '@/components/ui/item-info-badges';
+import { AdvancedLevelBadge, LikesBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevel } from '@/constants/advanced-level';
@@ -21,6 +21,7 @@ import { useExercise } from '@/hooks/query/exercises/use-exercise';
 
 import { toast } from 'sonner';
 import ResourceActions from '@/components/ui/resource-actions';
+import PageLayout from '@/components/layout/page';
 
 const ExerciseDetails = () => {
   const { id } = useParams();
@@ -32,20 +33,23 @@ const ExerciseDetails = () => {
     return user._id === exercise.author._id;
   }, [user, exercise]);
 
-  const { data: userLikes, isLoading: isLikedItemsLoading } = useGetLikedItems();
-  const { data: userFavorites, isLoading: isFavoritedItemsLoading } = useGetFavoritedItems({
-    enabled: !isAuthor,
-  });
+  const { data: userLikes, isLoading: isLikedItemsLoading } = useGetLikedItems('exercises');
+  const { data: userFavorites, isLoading: isFavoritedItemsLoading } = useGetFavoritedItems(
+    'exercises',
+    {
+      enabled: !isAuthor,
+    },
+  );
 
   const liked = useMemo(() => {
     if (!userLikes || !exercise) return false;
-    if (userLikes.exercises.includes(exercise?._id)) return true;
+    if (userLikes.has(exercise?._id)) return true;
   }, [userLikes, exercise]);
 
   const favorited = useMemo(() => {
     if (!userFavorites || !exercise) return false;
     if (isAuthor) return false;
-    if (userFavorites.exercises.includes(exercise?._id)) return true;
+    if (userFavorites.has(exercise?._id)) return true;
   }, [userFavorites, exercise, isAuthor]);
 
   const handleLike = () => {
@@ -119,14 +123,14 @@ const ExerciseDetails = () => {
   };
 
   return (
-    <div className=" flex flex-col gap-4 my-6 w-full">
+    <PageLayout>
       {isLoading ? (
         <ExerciseSkeleton />
       ) : !exercise ? (
         <EmptyExerciseCard error={error} isError={isError} />
       ) : (
         <>
-          <main className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
+          <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
             <header className="col-span-full flex flex-col md:flex-row md:items-center md:justify-between md:gap-4">
               <Typography className="text-left" variant="h1">
                 {exercise.name}
@@ -170,7 +174,14 @@ const ExerciseDetails = () => {
             </div>
             <div className="flex flex-col gap-4 min-w-0">
               <div className="flex justify-between items-center gap-3">
-                <div>
+                <div className="inline-flex gap-2">
+                  {isAuthor && (
+                    <VisibilityBadge
+                      type="Exercise"
+                      variant="accent"
+                      visibility={exercise.visibility}
+                    />
+                  )}
                   {exercise.advancedLevel !== AdvancedLevel.none && (
                     <AdvancedLevelBadge advancedLevel={exercise.advancedLevel} />
                   )}
@@ -199,7 +210,7 @@ const ExerciseDetails = () => {
                 label="Potrzebny sprzęt ćwiczeniowy"
               />
             </div>
-          </main>
+          </section>
           <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center flex-1">
             {exercise.hashtags && exercise.hashtags.length > 0 && (
               <div className="flex flex-col gap-1">
@@ -227,7 +238,7 @@ const ExerciseDetails = () => {
           </Typography>
         </>
       )}
-    </div>
+    </PageLayout>
   );
 };
 
@@ -236,8 +247,8 @@ export default ExerciseDetails;
 const EmptyExerciseCard = ({ error, isError }: { error: Error | null; isError: boolean }) => {
   return (
     isError && (
-      <main className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
-        <Skeleton className="col-span-full h-18 animate-none bg-card border text-card-foreground flex items-center p-6">
+      <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
+        <Skeleton className="col-span-full min-h-18 animate-none bg-card border text-card-foreground flex items-center p-6">
           <Typography variant="h1">Coś poszło nie tak...</Typography>
         </Skeleton>
         <div className="w-full rounded-xl max-w-xl mx-auto">
@@ -248,7 +259,7 @@ const EmptyExerciseCard = ({ error, isError }: { error: Error | null; isError: b
           </Skeleton>
         </div>
         <div className="flex flex-col gap-4">
-          <Skeleton className="w-full h-60 animate-none bg-card border text-card-foreground p-6 flex flex-col gap-4">
+          <Skeleton className="w-full min-h-60 animate-none bg-card border text-card-foreground p-6 flex flex-col gap-4">
             <Typography variant="h2">
               {getApiErrorMsg(error) || 'Wystąpił nieoczekiwany błąd'}
             </Typography>
@@ -262,7 +273,7 @@ const EmptyExerciseCard = ({ error, isError }: { error: Error | null; isError: b
           <Skeleton className="w-full h-40" />
           <Skeleton className="w-full h-40" />
         </div>
-      </main>
+      </section>
     )
   );
 };
@@ -270,7 +281,7 @@ const EmptyExerciseCard = ({ error, isError }: { error: Error | null; isError: b
 const ExerciseSkeleton = () => {
   return (
     <>
-      <main className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
         <Skeleton className="col-span-full h-18" />
         <div className="w-full rounded-xl max-w-xl mx-auto">
           <Skeleton className="w-full aspect-square rounded-xl h-full" />
@@ -280,7 +291,7 @@ const ExerciseSkeleton = () => {
           <Skeleton className="w-full h-40" />
           <Skeleton className="w-full h-40" />
         </div>
-      </main>
+      </section>
       <Skeleton className="w-full h-17" />
     </>
   );

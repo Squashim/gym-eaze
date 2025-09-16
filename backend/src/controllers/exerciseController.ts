@@ -12,7 +12,7 @@ import { validateExerciseFiles, ExerciseValidationError } from '../utils/exercis
 import * as exerciseService from '../services/exerciseService';
 import { AuthRequest } from '../types/auth';
 import { parseField } from '../utils/parsers';
-import { ExerciseQuery, ExerciseRequest } from '../types/exercise';
+import { ExerciseQuery, ExerciseRequest, PageSize } from '../types/exercise';
 
 export const addExercise = async (req: Request, res: Response) => {
   const exerciseReq = req as ExerciseRequest;
@@ -218,8 +218,10 @@ export const getExercisesByUser = async (req: AuthRequest, res: Response) => {
   try {
     const { userId: targetUserId } = req.params;
     const currentUserId = req.userId;
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const pageSize = req.query.pageSize ? (Number(req.query.pageSize) as PageSize) : 9;
 
-    const exercises = await getExercisesByUserService(targetUserId, currentUserId);
+    const exercises = await getExercisesByUserService(targetUserId, page, pageSize, currentUserId);
     return res.json(exercises);
   } catch (error) {
     if (error instanceof Error) {
@@ -233,7 +235,10 @@ export const getExercisesByUser = async (req: AuthRequest, res: Response) => {
 export const getFavoriteExercises = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const exercises = await getFavoriteExercisesService(userId);
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const pageSize = req.query.pageSize ? (Number(req.query.pageSize) as PageSize) : 9;
+
+    const exercises = await getFavoriteExercisesService(userId, page, pageSize);
     return res.json(exercises);
   } catch (error) {
     if (error instanceof Error) {
