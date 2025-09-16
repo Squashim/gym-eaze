@@ -1,5 +1,5 @@
 import mongoose, { Types } from 'mongoose';
-import { Country} from '../constants/countries';
+import { Country } from '../constants/countries';
 import { UserRole, userRoleValues } from '../constants/roles';
 import { Gender, genderValues } from '../constants/genders';
 import { Goal, goalValues } from '../constants/goals';

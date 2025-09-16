@@ -52,7 +52,7 @@ router.patch('/:id/favorite', authenticate, toggleExerciseFavorite);
 
 router.get('/:id', optionalAuth, getExerciseById);
 
-router.get('/', optionalAuth, getExercises);
+router.post('/search', optionalAuth, getExercises);
 
 router.get('/user/:userId', optionalAuth, getExercisesByUser);
 

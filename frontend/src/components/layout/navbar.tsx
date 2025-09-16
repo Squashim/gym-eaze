@@ -244,7 +244,7 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
           {isLoggedIn && user && (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild tabIndex={0}>
-                <Avatar className="cursor-pointer">
+                <Avatar className="cursor-pointer shadow-sm">
                   <AvatarImage
                     alt={`zdjęcie profilowe użytkownika ${user.username}`}
                     src={user.profileDetails.profilePicture || undefined}

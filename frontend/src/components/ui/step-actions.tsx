@@ -3,8 +3,8 @@ import { Button } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 import Typography from './typography';
 import { useId, type Ref } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
 
 type StepActionsProps = {
   step: number;
@@ -16,6 +16,7 @@ type StepActionsProps = {
   submittingLabel?: string;
   isSubmitting: boolean;
   submitDisabled?: boolean;
+  isDirty?: boolean;
   refs: {
     submitRef?: Ref<HTMLButtonElement>;
     cancelRef?: Ref<HTMLButtonElement>;
@@ -31,19 +32,16 @@ const StepActions = ({
   submitLabel,
   submittingLabel = 'Wysyłanie...',
   submitDisabled = false,
+  isDirty = false,
   refs,
   isSubmitting,
 }: StepActionsProps) => {
   const uid = useId();
+  const { handleCancel } = useUnsavedChangesWarning(isDirty);
   const isFirstStep = step === 0;
   const isLastStep = step === totalSteps - 1;
   const isBackAvailable = step < totalSteps - 1;
-  const navigate = useNavigate();
   const isSmallBackIcon = useMediaQuery('(width <= 400px)');
-
-  const handleCancel = () => {
-    void navigate(-1);
-  };
 
   return (
     <div className="flex justify-between items-center gap-4 md:col-span-2">

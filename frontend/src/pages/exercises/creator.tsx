@@ -19,7 +19,6 @@ import { useStepForm } from '@/hooks/use-step-form';
 import Stepper from '@/components/ui/stepper';
 import StepActions from '@/components/ui/step-actions';
 import { Textarea } from '@/components/ui/textarea';
-import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
 import { apiResponseToMultiSelectOptions, cn, extractDirtyFieldsData } from '@/lib/utils';
@@ -41,6 +40,8 @@ import { Loader2 } from 'lucide-react';
 import { Visibility } from '@/constants/visibility';
 import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
+import usePageTitle from '@/hooks/use-page-title';
+import PageLayout from '@/components/layout/page';
 
 type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
@@ -76,14 +77,14 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
           if (isLoading) return 'wait';
           return !isError && !!exerciseData;
         },
-        redirectTo: '/exercises',
+        redirectTo: '/exercises/browse',
         errorMessage: 'Identyfikator ćwiczenia jest niepoprawny.',
       },
       {
         check: () => {
           if (!isEditMode) return true;
           if (isLoading) return 'wait';
-          return exerciseData?.author === user?._id;
+          return exerciseData?.author._id === user?._id;
         },
         redirectTo: `/exercises/${exerciseData?._id}`,
         errorMessage: 'Nie masz uprawnień do edytowania tego ćwiczenia.',
@@ -103,6 +104,8 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     enabled: isEditMode && Boolean(exerciseData),
   });
 
+  usePageTitle(isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia');
+
   useEffect(() => {
     if (!guardsPassed || !exerciseData || !defaultImageFile || !defaultVideoFile || isError) return;
 
@@ -117,8 +120,8 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
         },
         stepTwo: {
           description: exerciseData.description,
-          muscleGroup: exerciseData.muscleGroup,
-          equipment: exerciseData.equipment,
+          muscleGroup: exerciseData.muscleGroup.map((mg) => mg._id),
+          equipment: exerciseData.equipment.map((eq) => eq._id),
           hashtags: exerciseData.hashtags || [],
         },
       });
@@ -172,11 +175,12 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     }
   };
 
-  useUnsavedChangesWarning(form.formState.isDirty);
-
   return (
-    <div className="flex flex-col gap-6 max-w-lg md:max-w-3xl w-full mx-auto my-4">
-      <Typography variant="h1">{isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}</Typography>
+    <PageLayout
+      className="max-w-lg md:max-w-3xl mx-auto"
+      title={isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}
+      titleClassName="text-center"
+    >
       <Stepper step={step} steps={exerciseCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-center">
         <CardContent className="w-full">
@@ -200,6 +204,7 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
 
                 <StepActions
                   exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
+                  isDirty={form.formState.isDirty || !isImageDefault || !isVideoDefault}
                   isSubmitting={createExercise.isPending || updateExercise.isPending}
                   nextStep={nextStep}
                   prevStep={prevStep}
@@ -217,7 +222,7 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -14,3 +14,13 @@ export interface AuthenticatedUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export type Author = Pick<AuthenticatedUser, '_id' | 'username' | 'profileDetails'>;
+
+export type UserLikesApiResponse = {
+  trainingPlans: string[];
+  exercises: string[];
+  posts: string[];
+};
+
+export type UserFavoritesApiResponse = Omit<UserLikesApiResponse, 'posts'>;

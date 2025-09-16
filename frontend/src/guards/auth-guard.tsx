@@ -28,7 +28,7 @@ const AuthGuard = ({ allow, role = 'user' }: AuthAccessControlProps) => {
   return (
     <>
       <Navbar isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
-      <main className="container flex min-dvh-with-navbar flex-col items-center justify-center">
+      <main className="container flex min-dvh-with-navbar flex-col items-center">
         <Outlet />
       </main>
     </>
