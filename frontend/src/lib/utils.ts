@@ -1,3 +1,4 @@
+import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
@@ -184,4 +185,15 @@ export async function urlToFile(url: string): Promise<File> {
   const res = await fetch(url);
   const blob = await res.blob();
   return new File([blob], filename, { type: mimeType || blob.type });
+}
+
+export function getWeeks(days: TrainingDaySchema[]) {
+  return Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => {
+    const start = weekIndex * 7;
+    const end = Math.min(start + 7, days.length);
+    return {
+      name: `Tydzień ${weekIndex + 1}`,
+      days: days.slice(start, end),
+    };
+  });
 }

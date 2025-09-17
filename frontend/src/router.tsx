@@ -12,6 +12,7 @@ import ExerciseCreator from './pages/exercises/creator';
 import UserExercises from './pages/exercises/user';
 import FavoriteExercises from './pages/exercises/favorite';
 import App from './app';
+import WorkoutCreator from './pages/workouts/creator';
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
                 element: <ExerciseCreator mode="edit" />,
               },
             ],
+          },
+          {
+            path: 'workouts',
+            children: [{ path: 'create', element: <WorkoutCreator mode="create" /> }],
           },
         ],
       },

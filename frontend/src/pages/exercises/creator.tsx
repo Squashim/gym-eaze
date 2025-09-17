@@ -47,7 +47,6 @@ type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
 };
 
-
 const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: exerciseSchema,

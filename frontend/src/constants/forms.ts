@@ -1,4 +1,5 @@
 import { AdvancedLevel } from './advanced-level';
+import { Goal } from './goals';
 import { Visibility } from './visibility';
 
 const exerciseCreatorSteps = ['Podstawowe dane', 'Dodatkowe informacje', 'Podsumowanie'];
@@ -22,4 +23,32 @@ const exerciseCreatorDefaultValues = {
 export const exerciseCreatorConstants = {
   steps: exerciseCreatorSteps,
   defaultValues: exerciseCreatorDefaultValues,
+};
+
+const workoutCreatorSteps = ['Podstawowe dane', 'Dni treningowe', 'Podsumowanie'];
+
+const workoutCreatorDefaultValues = {
+  stepOne: {
+    name: '',
+    image: undefined,
+    advancedLevel: AdvancedLevel.none,
+    visibility: Visibility.public,
+    trainingGoal: Goal.none,
+    description: '',
+    hashtags: [],
+  },
+  stepTwo: {
+    days: [
+      {
+        name: 'Dzień 1',
+        isRestDay: false,
+        exercises: [],
+      },
+    ],
+  },
+};
+
+export const workoutCreatorConstants = {
+  steps: workoutCreatorSteps,
+  defaultValues: workoutCreatorDefaultValues,
 };
