@@ -90,6 +90,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         checkTokenValidityOnStartup()
     }
 
+    private val _showBrowseExercises = MutableStateFlow(false)
+    val showBrowseExercises: StateFlow<Boolean> = _showBrowseExercises.asStateFlow()
     private val _isCheckingToken = MutableStateFlow(true)
     val isCheckingToken: StateFlow<Boolean> = _isCheckingToken.asStateFlow()
 
@@ -140,6 +142,30 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val privateLinkingError = MutableStateFlow<String?>(null)
     val linkingError = privateLinkingError.asStateFlow()
 
+    private val _showExerciseDetail = MutableStateFlow(false)
+    val showExerciseDetail = _showExerciseDetail.asStateFlow()
+
+    private val _selectedExerciseId = MutableStateFlow<String?>(null)
+    val selectedExerciseId = _selectedExerciseId.asStateFlow()
+
+
+    fun showExerciseDetailScreen(exerciseId: String) {
+        _selectedExerciseId.value = exerciseId
+        _showExerciseDetail.value = true
+    }
+
+    fun hideExerciseDetailScreen() {
+        _showExerciseDetail.value = false
+        _selectedExerciseId.value = null
+    }
+
+    fun showBrowseExercisesScreen() {
+        _showBrowseExercises.value = true
+    }
+
+    fun hideBrowseExercisesScreen() {
+        _showBrowseExercises.value = false
+    }
     fun toggleAuthMode() {
         privateUiState.value = privateUiState.value.copy(
             isRegistering = !privateUiState.value.isRegistering,

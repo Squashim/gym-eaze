@@ -14,6 +14,8 @@ import com.example.gymeaze.ui.components.AccountLinkingDialog
 import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.AuthScreen
 import com.example.gymeaze.ui.screens.ExerciseCreatorScreen
+import com.example.gymeaze.ui.screens.ExerciseDetailScreen
+import com.example.gymeaze.ui.screens.ExercisesScreen
 import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
 import com.example.gymeaze.ui.screens.profile.ProfileEditScreen
@@ -24,14 +26,12 @@ import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import com.example.gymeaze.data.repository.UserRepository
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.UserViewModel
-
 
 class MainActivity : ComponentActivity() {
 
@@ -40,14 +40,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val authViewModel: AuthViewModel = viewModel()
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
-            //val userViewModel: UserViewModel = viewModel()
             val userViewModel: UserViewModel = viewModel {
                 UserViewModel(
                     application = application,
                     onTokenExpired = { authViewModel.logout(manual = false) }
                 )
             }
-
 
             val googleSignInLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartActivityForResult()
@@ -69,6 +67,9 @@ class MainActivity : ComponentActivity() {
             val linkingEmail by authViewModel.linkingEmail.collectAsState()
             val linkingError by authViewModel.linkingError.collectAsState()
             val showExerciseCreator by authViewModel.showExerciseCreator.collectAsState()
+            val showBrowseExercises by authViewModel.showBrowseExercises.collectAsState()
+            val showExerciseDetail by authViewModel.showExerciseDetail.collectAsState()
+            val selectedExerciseId by authViewModel.selectedExerciseId.collectAsState()
             val logoutEvent by authViewModel.logoutEvent.collectAsState()
 
             logoutEvent?.let { event ->
@@ -152,6 +153,21 @@ class MainActivity : ComponentActivity() {
                                     onCreated = authViewModel::hideExerciseCreatorScreen
                                 )
                             }
+                            showExerciseDetail && selectedExerciseId != null -> {
+                                ExerciseDetailScreen(
+                                    exerciseId = selectedExerciseId!!,
+                                    onBackClick = authViewModel::hideExerciseDetailScreen
+                                )
+                            }
+                            showBrowseExercises -> {
+                                ExercisesScreen(
+                                    onSettingsClick = authViewModel::showSettingsScreen,
+                                    onBackClick = authViewModel::hideBrowseExercisesScreen,
+                                    onExerciseClick = { exerciseId ->
+                                        authViewModel.showExerciseDetailScreen(exerciseId)
+                                    }
+                                )
+                            }
                             !isUserLoggedIn -> {
                                 AuthScreen(
                                     uiState = uiState,
@@ -184,7 +200,8 @@ class MainActivity : ComponentActivity() {
                                     onLogout = { authViewModel.logout() },
                                     onExerciseCreatorClick = authViewModel::showExerciseCreatorScreen,
                                     onSettingsClick = authViewModel::showSettingsScreen,
-                                    onEditProfileClick = { authViewModel.showProfileEditScreen() }
+                                    onEditProfileClick = { authViewModel.showProfileEditScreen() },
+                                    onBrowseExercisesClick = authViewModel::showBrowseExercisesScreen
                                 )
                             }
                         }

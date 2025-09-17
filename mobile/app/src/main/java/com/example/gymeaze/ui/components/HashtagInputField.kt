@@ -131,7 +131,6 @@ fun HashtagInputField(
     }
 }
 
-// Rest of the code remains the same...
 @Composable
 private fun HashtagChip(
     text: String,

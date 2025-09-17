@@ -68,7 +68,8 @@ fun HomeScreen(
     onLogout: () -> Unit,
     onExerciseCreatorClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    onBrowseExercisesClick: () -> Unit
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
@@ -112,7 +113,8 @@ fun HomeScreen(
                     }
                     item {
                         QuickActionSection(
-                            onExerciseCreatorClick = onExerciseCreatorClick
+                            onExerciseCreatorClick = onExerciseCreatorClick,
+                            onBrowseExercisesClick = onBrowseExercisesClick
                         )
                     }
                     item {
@@ -288,7 +290,8 @@ private fun StatCard(
 
 @Composable
 private fun QuickActionSection(
-    onExerciseCreatorClick: () -> Unit
+    onExerciseCreatorClick: () -> Unit,
+    onBrowseExercisesClick: () -> Unit
 ) {
     Column {
         Text(
@@ -318,7 +321,7 @@ private fun QuickActionSection(
                 title = "Przeglądaj ćwiczenia",
                 subtitle = "Zobacz wszystkie",
                 icon = Icons.Default.Search,
-                onClick = {/*TODO Implementacja nawigacji*/},
+                onClick = onBrowseExercisesClick,
                 modifier = Modifier
                     .weight(1f)
             )

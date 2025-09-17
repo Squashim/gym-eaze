@@ -77,6 +77,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation(libs.androidx.appcompat)
 
+    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
+    implementation("com.google.android.exoplayer:exoplayer-ui:2.19.1")
+    implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
