@@ -315,3 +315,18 @@ export const updateUserFitnessDataService = async (
 
   return true;
 };
+
+export const updatePrivacySettingsService = async (
+  userId: string,
+  newSettings: Partial<IUser['privacySettings']>,
+): Promise<boolean> => {
+  const updateFields: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(newSettings)) {
+    updateFields[`privacySettings.${key}`] = value;
+  }
+
+  const result = await User.findByIdAndUpdate(userId, { $set: updateFields });
+
+  return !!result;
+};
