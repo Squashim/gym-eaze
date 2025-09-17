@@ -1,15 +1,12 @@
-import mongoose, { Types } from "mongoose";
-import {
-  PrivacySettings,
-  privacySettingsValues,
-} from "../constants/privacySettings";
-import { AdvancedLevel, advancedLevelValues } from "../constants/advancedLevel";
-import { IExercise } from "../models/exerciseModel";
-import { Goal, goalValues } from "../constants/goals";
-import { IUser } from "./userModel";
+import mongoose, { Types } from 'mongoose';
+import { PrivacySettings, privacySettingsValues } from '../constants/privacySettings';
+import { AdvancedLevel, advancedLevelValues } from '../constants/advancedLevel';
+import { IExercise } from '../models/exerciseModel';
+import { Goal, goalValues } from '../constants/goals';
+import { IUser } from './userModel';
 
 export interface ITrainingPlan extends mongoose.Document {
-  title: string;
+  name: string;
   author: Types.ObjectId | IUser;
   description?: string;
   image?: string;
@@ -18,23 +15,19 @@ export interface ITrainingPlan extends mongoose.Document {
   advancedLevel: AdvancedLevel;
   likes: number;
   days: {
-    day: {
-      name: string;
-      restBetweenExercises: number;
-      totalDuration?: number;
-      isRestDay: boolean;
-      exercises: {
-        exercise: {
-          id: Types.ObjectId | IExercise;
-          duration?: number;
-          sets: {
-            repetitions: number;
-            weight: number;
-            restAfterSet: number;
-          }[];
-        };
+    name: string;
+    totalDuration?: number;
+    isRestDay: boolean;
+    exercises: {
+      id: Types.ObjectId | IExercise;
+      isRepsSet: boolean;
+      duration?: number;
+      restAfterSet: number;
+      sets: {
+        repetitions: number;
+        weight: number;
       }[];
-    };
+    }[];
   }[];
   hashtags?: string[];
   createdAt: Date;
@@ -43,7 +36,7 @@ export interface ITrainingPlan extends mongoose.Document {
 
 const trainingSchema = new mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
       maxLength: 150,
       minLength: 1,
@@ -51,16 +44,16 @@ const trainingSchema = new mongoose.Schema(
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     description: {
       type: String,
-      maxLength: 800,
+      maxLength: 850,
     },
     image: {
       type: String,
-      default: "",
+      default: '',
     },
     goal: {
       type: String,
@@ -84,56 +77,51 @@ const trainingSchema = new mongoose.Schema(
     },
     days: [
       {
-        day: {
-          name: {
-            type: String,
-            maxLength: 150,
-            required: true,
-          },
-          restBetweenExercises: {
-            type: Number,
-            default: 30,
-            required: true,
-          },
-          totalDuration: {
-            type: Number,
-          },
-          isRestDay: {
-            type: Boolean,
-            default: false,
-          },
-          exercises: [
-            {
-              exercise: {
-                id: {
-                  type: mongoose.Schema.Types.ObjectId,
-                  ref: "Exercise",
+        name: {
+          type: String,
+          maxLength: 100,
+          required: true,
+        },
+        totalDuration: {
+          type: Number,
+        },
+        isRestDay: {
+          type: Boolean,
+          default: false,
+        },
+        exercises: [
+          {
+            id: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'Exercise',
+              required: true,
+            },
+            isRepsSet: {
+              type: Boolean,
+              required: true,
+              default: true,
+            },
+            duration: {
+              type: Number,
+            },
+            restAfterSet: {
+              type: Number,
+              required: true,
+            },
+            sets: [
+              {
+                repetitions: {
+                  type: Number,
                   required: true,
                 },
-                duration: {
+                weight: {
                   type: Number,
                 },
-                sets: [
-                  {
-                    repetitions: {
-                      type: Number,
-                      required: true,
-                    },
-                    weight: {
-                      type: Number,
-                    },
-                    restAfterSet: {
-                      type: Number,
-                      required: true,
-                    },
-                    _id: false,
-                  },
-                ],
+                _id: false,
               },
-              _id: false,
-            },
-          ],
-        },
+            ],
+          },
+        ],
       },
     ],
     hashtags: [
@@ -145,9 +133,6 @@ const trainingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const TrainingPlan = mongoose.model<ITrainingPlan>(
-  "TrainingPlan",
-  trainingSchema,
-);
+const TrainingPlan = mongoose.model<ITrainingPlan>('TrainingPlan', trainingSchema);
 
 export default TrainingPlan;
