@@ -46,7 +46,7 @@ export const addTrainingPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ message: error.message });
     }
 
-    console.error('Training plan creation error:', error);
+    console.error('Error:', error);
     return res.status(500).json({
       message: 'Błąd podczas dodawania planu treningowego',
     });

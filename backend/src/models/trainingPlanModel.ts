@@ -15,6 +15,7 @@ export interface ITrainingPlan extends mongoose.Document {
   advancedLevel: AdvancedLevel;
   likes: number;
   days: {
+    dayNumber: number;
     name: string;
     totalDuration?: number;
     isRestDay: boolean;
@@ -54,6 +55,7 @@ const trainingSchema = new mongoose.Schema(
     image: {
       type: String,
       default: '',
+      required: true,
     },
     goal: {
       type: String,
@@ -77,6 +79,11 @@ const trainingSchema = new mongoose.Schema(
     },
     days: [
       {
+        dayNumber: {
+          type: Number,
+          default: 0,
+          required: true,
+        },
         name: {
           type: String,
           maxLength: 100,

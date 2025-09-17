@@ -59,6 +59,12 @@ export const validateTrainingPlanData = (data: CreateTrainingPlanData) => {
         );
       }
 
+      if (day.exercises.length > 15) {
+        throw new TrainingPlanValidationError(
+          `Dzień treningowy "${day.name}" może zawierać maksymalnie 15 ćwiczeń`,
+        );
+      }
+
       for (const exercise of day.exercises) {
         if (!exercise.id) {
           throw new TrainingPlanValidationError('Każde ćwiczenie musi mieć przypisane ID');
@@ -70,16 +76,37 @@ export const validateTrainingPlanData = (data: CreateTrainingPlanData) => {
           );
         }
 
+        if (exercise.duration && exercise.duration > 21600) {
+          throw new TrainingPlanValidationError('Maksymalny czas trwania ćwiczenia to 6h');
+        }
+
         if (exercise.isRepsSet) {
           if (!exercise.sets || exercise.sets.length === 0) {
             throw new TrainingPlanValidationError(
               'Ćwiczenie z powtórzeniami musi mieć co najmniej jedną serię',
             );
           }
+          if (exercise.sets.length > 15) {
+            throw new TrainingPlanValidationError(
+              'Ćwiczenie z powtórzeniami może mieć maksymalnie 15 serii',
+            );
+          }
+
+          for (const set of exercise.sets) {
+            if (set.weight > 300) {
+              throw new TrainingPlanValidationError('Maksymalny ciężar w serii to 300kg');
+            }
+          }
         }
 
         if (typeof exercise.restAfterSet !== 'number' || exercise.restAfterSet < 0) {
-          throw new TrainingPlanValidationError('RestAfterSet musi być liczbą większą lub równą 0');
+          throw new TrainingPlanValidationError(
+            'Odpoczynek po serii musi być liczbą większą lub równą 0',
+          );
+        }
+
+        if (exercise.restAfterSet > 5400) {
+          throw new TrainingPlanValidationError('Maksymalny odpoczynek po serii to 1h 30min');
         }
       }
     }
