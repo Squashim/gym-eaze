@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
 import java.text.SimpleDateFormat
+import com.example.gymeaze.R
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -346,11 +348,15 @@ private fun MuscleGroupItem(muscleGroup: MuscleGroup) {
                 .border(2.dp, getPrimaryColor(), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.FitnessCenter,
-                contentDescription = null,
-                tint = getPrimaryColor(),
-                modifier = Modifier.size(24.dp)
+            AsyncImage(
+                model = muscleGroup.image,
+                contentDescription = muscleGroup.name,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.gym_eaze_logo_light),
+                error = painterResource(R.drawable.gym_eaze_logo_dark)
             )
         }
 
@@ -413,11 +419,15 @@ private fun EquipmentItem(equipment: Equipment) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Build,
-                contentDescription = null,
-                tint = getOnSurfaceColor(),
-                modifier = Modifier.size(24.dp)
+            AsyncImage(
+                model = equipment.image,
+                contentDescription = equipment.name,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(6.dp)),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.gym_eaze_logo_light),
+                error = painterResource(R.drawable.gym_eaze_logo_dark)
             )
         }
 

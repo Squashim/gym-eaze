@@ -2,10 +2,7 @@ package com.example.gymeaze.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.MuscleGroup
@@ -29,6 +27,8 @@ import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.MultiSelectDropdown
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ExercisesViewModel
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -152,10 +152,8 @@ fun ExercisesScreen(
                     EmptyExercisesMessage()
                 }
                 else -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
+                    LazyColumn(
                         contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -168,7 +166,7 @@ fun ExercisesScreen(
                         }
 
                         if (uiState.hasMorePages) {
-                            item(span = { GridItemSpan(2) }) {
+                            item{
                                 LaunchedEffect(Unit) {
                                     viewModel.loadMoreExercises()
                                 }
@@ -336,6 +334,20 @@ private fun FilterDialog(
                             availableItems = availableMuscleGroups,
                             onSelectionChange = onMuscleGroupsChange,
                             itemDisplayText = { it.name },
+                            itemContent = { muscleGroup ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    AsyncImage(
+                                        model = muscleGroup.image,
+                                        contentDescription = muscleGroup.name,
+                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = muscleGroup.name,
+                                        color = getOnSurfaceColor()
+                                    )
+                                }
+                            },
                             placeholder = "Wybierz partie mięśniowe",
                             isLoading = availableMuscleGroups.isEmpty()
                         )
@@ -348,6 +360,20 @@ private fun FilterDialog(
                             availableItems = availableEquipment,
                             onSelectionChange = onEquipmentChange,
                             itemDisplayText = { it.name },
+                            itemContent = { equipment ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    AsyncImage(
+                                        model = equipment.image,
+                                        contentDescription = equipment.name,
+                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = equipment.name,
+                                        color = getOnSurfaceColor()
+                                    )
+                                }
+                            },
                             placeholder = "Wybierz sprzęt",
                             isLoading = availableEquipment.isEmpty()
                         )

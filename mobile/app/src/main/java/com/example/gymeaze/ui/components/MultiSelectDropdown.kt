@@ -33,7 +33,8 @@ fun <T> MultiSelectDropdown(
     itemDisplayText: (T) -> String,
     modifier: Modifier = Modifier,
     placeholder: String,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    itemContent: (@Composable (T) -> Unit)? = null
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -108,7 +109,8 @@ fun <T> MultiSelectDropdown(
             selectedItems = selectedItems,
             onSelectionChange = onSelectionChange,
             onDismiss = { showDialog = false },
-            itemDisplayText = itemDisplayText
+            itemDisplayText = itemDisplayText,
+            itemContent = itemContent
         )
     }
 }
@@ -152,7 +154,8 @@ private fun <T> MultiSelectDialog(
     onSelectionChange: (List<T>) -> Unit,
     onDismiss: () -> Unit,
     itemDisplayText: (T) -> String,
-    maxSelected: Int = 8
+    maxSelected: Int = 8,
+    itemContent: (@Composable (T) -> Unit)? = null
 ) {
     var searchText by remember { mutableStateOf("") }
     val filteredItems = availableItems.filter {
@@ -278,11 +281,15 @@ private fun <T> MultiSelectDialog(
 
                                 Spacer(modifier = Modifier.width(8.dp))
 
-                                Text(
-                                    text = itemDisplayText(item),
-                                    color = if (canSelectMore) getOnSurfaceColor() else getOnSurfaceSecondaryColor(),
-                                    fontSize = 14.sp
-                                )
+                                if (itemContent != null) {
+                                    itemContent(item)
+                                } else {
+                                    Text(
+                                        text = itemDisplayText(item),
+                                        color = if (canSelectMore) getOnSurfaceColor() else getOnSurfaceSecondaryColor(),
+                                        fontSize = 14.sp
+                                    )
+                                }
                             }
                         }
                     }

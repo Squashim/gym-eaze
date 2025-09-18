@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,13 +29,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
@@ -449,7 +454,21 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             itemDisplayText = { it.name },
             isLoading = ui.isLoadingData,
             placeholder = stringResource(R.string.select_muscle_groups),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            itemContent = { muscleGroup ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = muscleGroup.image,
+                        contentDescription = muscleGroup.name,
+                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = muscleGroup.name,
+                        color = getOnSurfaceColor()
+                    )
+                }
+            }
         )
 
         MultiSelectDropdown(
@@ -460,7 +479,21 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             itemDisplayText = { it.name },
             isLoading = ui.isLoadingData,
             placeholder = stringResource(R.string.select_equipment),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            itemContent = { equipment ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = equipment.image,
+                        contentDescription = equipment.name,
+                        modifier = Modifier.size(28.dp).clip(RoundedCornerShape(6.dp))
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = equipment.name,
+                        color = getOnSurfaceColor()
+                    )
+                }
+            }
         )
 
         HashtagInputField(
@@ -538,8 +571,8 @@ private fun StepSummary(ui: ExerciseCreatorState) {
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(4.dp))
-            TagGroup(
-                items = ui.selectedMuscleGroups.map { it.name }
+            TagGroupWithImage(
+                items = ui.selectedMuscleGroups
             )
         }
 
@@ -551,8 +584,8 @@ private fun StepSummary(ui: ExerciseCreatorState) {
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(4.dp))
-            TagGroup(
-                items = ui.selectedEquipment.map({it.name})
+            EquipmentTagGroup(
+                items = ui.selectedEquipment
             )
         }
 
@@ -705,6 +738,84 @@ private fun TagGroup(items: List<String>) {
         }
     }
 }
+
+@Composable
+private fun TagGroupWithImage(items: List<com.example.gymeaze.data.models.MuscleGroup>) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 120.dp)
+    ) {
+        items(items) { item ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(getPrimaryColor().copy(alpha = 0.1f), CircleShape)
+                        .border(2.dp, getPrimaryColor(), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = item.image,
+                        contentDescription = item.name,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = item.name,
+                    fontSize = 12.sp,
+                    color = getOnSurfaceColor(),
+                    textAlign = TextAlign.Center,
+                    maxLines = 2
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EquipmentTagGroup(items: List<com.example.gymeaze.data.models.Equipment>) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 120.dp)
+    ) {
+        items(items) { item ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(getOnSurfaceColor().copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = item.image,
+                        contentDescription = item.name,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = item.name,
+                    fontSize = 12.sp,
+                    color = getOnSurfaceColor(),
+                    textAlign = TextAlign.Center,
+                    maxLines = 2
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun ExpandableTagField(
