@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.profile.sections.dialogs
+package com.example.gymeaze.ui.screens.profile.edit.dialogs
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -21,8 +21,8 @@ import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 
 @Composable
-fun PhysicalInfoDialog(
-    isFitnessDataPublic: Boolean = true,
+fun BadgesInfoDialog(
+    isBadgesDetailsPublic : Boolean = true,
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -50,15 +50,15 @@ fun PhysicalInfoDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.physical_information),
+                        text = stringResource(R.string.pinned_badges),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
                     )
 
                     Icon(
-                        imageVector = if (isFitnessDataPublic) Icons.Default.Public else Icons.Default.Lock,
-                        contentDescription = if ( isFitnessDataPublic)
+                        imageVector = if (isBadgesDetailsPublic) Icons.Default.Public else Icons.Default.Lock,
+                        contentDescription = if (isBadgesDetailsPublic)
                             stringResource(R.string.public_badges_desc) else stringResource(R.string.private_badges_desc),
                         tint = getOnSurfaceSecondaryColor(),
                         modifier = Modifier.size(16.dp)
@@ -69,7 +69,7 @@ fun PhysicalInfoDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.physical_info_description),
+                        text = stringResource(R.string.badges_info_description),
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         color = getOnSurfaceColor(),
@@ -77,7 +77,7 @@ fun PhysicalInfoDialog(
                     )
 
                     Text(
-                        text = stringResource(R.string.physical_info_bmi_note),
+                        text = stringResource(R.string.badges_privacy_info),
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         color = getOnSurfaceColor(),

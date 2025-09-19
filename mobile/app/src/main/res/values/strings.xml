@@ -324,4 +324,58 @@
     <string name="enter_your_age">Wprowadź swoj wiek</string>
     <string name="enter_your_height">Wprowadź swoj wzrost</string>
     <string name="enter_your_weight">Wprowadź swoją wagę</string>
+
+    <!-- Sections Settings -->
+    <string name="appearance">Wygląd</string>
+    <string name="account">Konto</string>
+    <string name="help_and_support">Pomoc i wsparcie</string>
+
+    <!-- Subtitles Settings -->
+    <string name="theme_subtitle">Wybierz motyw aplikacji</string>
+    <string name="privacy_settings_subtitle">Zarządzaj widocznością danych</string>
+    <string name="notifications_subtitle">Kontroluj powiadomienia</string>
+    <string name="badges_help_subtitle">Dowiedz się jak zdobywać odznaki</string>
+    <string name="training_goals">Cel treningowy</string>
+    <string name="badge_reminders">Przypomnienia odznak</string>
+    <string name="training_stats">Statystyki treningów</string>
+
+    <!-- Privacy Settings -->
+    <string name="success_privacy_settings">Ustawienia prywatności zostały zaktualizowane.</string>
+    <string name="error_privacy_settings">Błąd przy zmianie ustawień prywatności</string>
+    <string name="privacy_settings_change">Zmień ustawienia prywatności</string>
+    <string name="privacy_settings_description">Dostosuj widoczność swoich danych. Możesz ukryć swoje dane przed innymi użytkownikami lub udostępnić je wszystkim odwiedzającym Twój profil.</string>
+    <string name="personal_data_description_settings">Pozwól innym użytkownikom zobaczyć Twoje dane personalne (imię, nazwisko, miasto, kraj) będą one widoczne dla innych użytkowników</string>
+    <string name="physical_info_description_settings">Twoje informacje fizyczne (płeć, waga, wzrost, wiek a także wsaźnik bmi) będą widoczne dla innych użytkowników</string>
+    <string name="training_goals_description_settings">Pozwól innym użytkownikom zobaczyć Twój cel treningowy</string>
+    <string name="badge_reminders_description_settings">Inni użytkownicy mogą przeglądać Twoje zdobyte odznaki. Jeśli chcesz ukryć je przed innymi, możesz wyłączyć tę opcję.</string>
+    <string name="training_stats_description_settings">Pozwól innym użytkownikom widzieć Twoje postępy w treningach i obserwować systematyczność.</string>
+
+    <!-- Help Screen Settings-->
+    <string name="how_to_earn_badges_title">Jak zdobywać odznaki w GymEaze?</string>
+    <string name="how_to_earn_badges_description">W naszej społeczności każda aktywność ma znaczenie. Twój progres, zaangażowanie i wsparcie dla innych są nagradzane wyjątkowymi odznakami, które podkreślają Twoje osiągnięcia i motywują do dalszego rozwoju.</string>
+    <string name="activity_and_usage">1. Aktywność na silowni i długość korzystania z aplikacji</string>
+    <string name="activity_and_usage_description">Z każdym rokiem korzystania z GymEaze zbliżasz się do kolejnych wyróżnień. To odznaki za systematyczność i wytrwałość.</string>
+    <string name="first_activity_badge">Po roku aktywności – "Rok z nami"</string>
+    <string name="workout_frequency_badges">Po dwóch latach – "2 lata wytrwałości"</string>
+    <string name="consistency_badges">…aż do "5 lat konsekwencji"</string>
+    <string name="training_with_detection">2. Podłącz czujnik i rozpocznij trening</string>
+    <string name="training_with_detection_example">Po pierwszym połączeniu z czujnikiem otrzymasz odznakę "Techniczny debiut" To znak, że trenujesz inteligentnie i nowocześnie!</string>
+    <string name="social_activity">3. Dodawaj treningi do społeczności</string>
+    <string name="social_activity_description">Twoje plany mogą inspirować całą społeczność!</string>
+    <string name="community_badges">Stwórz swój pierwszy publiczny trening – zdobądź "Trenera w akcji"</string>
+    <string name="sharing_badges">Z czasem możesz dojść do tytułu "Architekta siły"</string>
+    <string name="exercises_activity">4. Twórz własne ćwiczenia i dziel się nimi z innymi</string>
+    <string name="exercises_activity_description">To odznaki za twórczość i dzielenie się wiedzą </string>
+    <string name="milestone_exercises">Po stworzeniu pierwszego ćwiczenia otrzymasz odznakę "Kreatora ruchu"</string>
+    <string name="improvement_exercises">Tworząc ćwićzenia możesz awansować aż do "Mistrza tworzenia ćwiczeń"</string>
+    <string name="exploration_badges">5. Bądź aktywny w społeczności!</string>
+    <string name="feature_discovery_badges">Za pierwszy post – "Pierwszy głos"</string>
+    <string name="profile_completion_badges">Regularność nagradzamy aż do "Lidera dyskusji"  Wspieraj, motywuj i buduj atmosferę!</string>
+    <string name="popularity_profile">6. Zyskuj popularność dzięki wartościowym treściom</string>
+    <string name="popularity_profile_description">Podziel się swoją formą – ludzie Cię uwielbiają!</string>
+    <string name="milestone_profile">10 motywatorów? Otrzymasz odznakę "Pierwsza dziesiątka"</string>
+    <string name="second_milestone_profile">Przy 100 motywatorach możesz zostać "Fitness influencerem"</string>
+    <string name="tips_title">Wskazówki</string>
+    <string name="badges_tips">Możesz przypiąć maksymalnie 5 odznak do swojego profilu – pokaż innym z czego jesteś najbardziej dumny!</string>
+
 </resources>

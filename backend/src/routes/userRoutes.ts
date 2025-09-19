@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middlewares/authMiddleware';
 import {
   deleteUser,
+  getPrivacySettings,
   getUserBadges,
   getUserFavorites,
   getUserFitnessData,
@@ -49,6 +50,7 @@ router.patch('/profile/personal-details', authenticate, updateUserPersonalData);
 router.get('/profile/fitness-details', authenticate, getUserFitnessData);
 router.patch('/profile/fitness-details', authenticate, updateUserFitnessData);
 
+router.get('/privacy-settings', authenticate, getPrivacySettings);
 router.patch('/privacy-settings', authenticate, updatePrivacySettings);
 
 export default router;

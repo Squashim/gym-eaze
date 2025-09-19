@@ -1,6 +1,5 @@
-package com.example.gymeaze.ui.screens.profile
+package com.example.gymeaze.ui.screens.profile.edit
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,20 +12,18 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
-import com.example.gymeaze.ui.screens.profile.sections.LoginDataSection
-import com.example.gymeaze.ui.screens.profile.sections.PersonalDataSection
-import com.example.gymeaze.ui.screens.profile.sections.PhysicalInfoSection
-import com.example.gymeaze.ui.screens.profile.sections.ProfileInfoSection
+import com.example.gymeaze.ui.screens.profile.edit.sections.LoginDataSection
+import com.example.gymeaze.ui.screens.profile.edit.sections.PersonalDataSection
+import com.example.gymeaze.ui.screens.profile.edit.sections.PhysicalInfoSection
+import com.example.gymeaze.ui.screens.profile.edit.sections.ProfileInfoSection
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 

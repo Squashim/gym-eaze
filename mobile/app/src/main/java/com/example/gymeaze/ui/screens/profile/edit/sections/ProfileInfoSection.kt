@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.profile.sections
+package com.example.gymeaze.ui.screens.profile.edit.sections
 
 import android.net.Uri
 import android.widget.Toast
@@ -39,8 +39,9 @@ import com.example.gymeaze.R
 import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.ui.components.LoadingScreen
-import com.example.gymeaze.ui.screens.profile.sections.dialogs.BadgesInfoDialog
-import com.example.gymeaze.ui.screens.profile.sections.dialogs.TrainingGoalInfoDialog
+import com.example.gymeaze.ui.screens.profile.edit.utils.BadgeSelectionDialog
+import com.example.gymeaze.ui.screens.profile.edit.dialogs.BadgesInfoDialog
+import com.example.gymeaze.ui.screens.profile.edit.dialogs.TrainingGoalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 

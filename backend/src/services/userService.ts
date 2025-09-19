@@ -316,6 +316,13 @@ export const updateUserFitnessDataService = async (
   return true;
 };
 
+export const getPrivacySettingsService = async (
+  userId: string,
+): Promise<IUser['privacySettings'] | null> => {
+  const user = await User.findById(userId).select('privacySettings');
+  return user?.privacySettings || null;
+};
+
 export const updatePrivacySettingsService = async (
   userId: string,
   newSettings: Partial<IUser['privacySettings']>,

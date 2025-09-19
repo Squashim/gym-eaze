@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.PrivacySettings
 import com.example.gymeaze.data.models.UpdateLoginRequest
 import com.example.gymeaze.data.models.UpdateLoginResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
@@ -288,7 +289,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     private val _deleteError = MutableStateFlow<String?>(null)
     val deleteError: StateFlow<String?> = _deleteError.asStateFlow()
 
-    // W UserViewModel dodaj:
     private val _navigateToAuth = MutableStateFlow(false)
     val navigateToAuth: StateFlow<Boolean> = _navigateToAuth.asStateFlow()
 
@@ -758,5 +758,166 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
             _fitnessDataLoading.value = false
         }
+    }
+
+    // SETTINGS FOR LOGGED-IN -------------------------------------------------------------
+
+    private val privateShowPrivacySettings = MutableStateFlow(false)
+    val showPrivacySettings = privateShowPrivacySettings.asStateFlow()
+
+    private val privateShowHelpScreen = MutableStateFlow(false)
+    val showHelpScreen = privateShowHelpScreen.asStateFlow()
+
+    private val privateShowNotificationsScreen = MutableStateFlow(false)
+    val showNotificationsScreen = privateShowNotificationsScreen.asStateFlow()
+
+    fun showPrivacySettingsScreen() {
+        privateShowPrivacySettings.value = true
+    }
+    fun hidePrivacySettingsScreen() {
+        privateShowPrivacySettings.value = false
+    }
+
+    fun showHelpScreen() {
+        privateShowHelpScreen.value = true
+    }
+    fun hideHelpScreen() {
+        privateShowHelpScreen.value = false
+    }
+
+    fun showNotificationsScreen() {
+        privateShowNotificationsScreen.value = true
+    }
+    fun hideNotificationsScreen() {
+        privateShowNotificationsScreen.value = false
+    }
+
+    // PRIVACY SETTINGS ------------------------------------------------------------------------------
+
+    private val _privacySettings = MutableLiveData<PrivacySettings?>()
+    val privacySettings: LiveData<PrivacySettings?> = _privacySettings
+
+    private val _privacySettingsLoading = MutableLiveData<Boolean>()
+    val privacySettingsLoading: LiveData<Boolean> = _privacySettingsLoading
+
+    private val _privacySettingsError = MutableLiveData<String?>()
+    val privacySettingsError: LiveData<String?> = _privacySettingsError
+
+    private val _privacySettingsSuccess = MutableLiveData<String?>()
+    val privacySettingsSuccess: LiveData<String?> = _privacySettingsSuccess
+
+    private val _personalDataEnabled = MutableLiveData<Boolean>()
+    val personalDataEnabled: LiveData<Boolean> = _personalDataEnabled
+
+    private val _physicalInfoEnabled = MutableLiveData<Boolean>()
+    val physicalInfoEnabled: LiveData<Boolean> = _physicalInfoEnabled
+
+    private val _trainingGoalsEnabled = MutableLiveData<Boolean>()
+    val trainingGoalsEnabled: LiveData<Boolean> = _trainingGoalsEnabled
+
+    private val _badgeRemindersEnabled = MutableLiveData<Boolean>()
+    val badgeRemindersEnabled: LiveData<Boolean> = _badgeRemindersEnabled
+
+    private val _trainingStatsEnabled = MutableLiveData<Boolean>()
+    val trainingStatsEnabled: LiveData<Boolean> = _trainingStatsEnabled
+
+    fun fetchPrivacySettings() {
+        viewModelScope.launch {
+            _privacySettingsLoading.value = true
+            _privacySettingsError.value = null
+
+            val authRepository = AuthRepository(getApplication())
+            val refreshResult = authRepository.refreshAccessToken()
+
+            if (refreshResult.isFailure) {
+                _privacySettingsError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
+                _privacySettingsLoading.value = false
+                handleTokenExpiration()
+                _navigateToAuth.value = true
+                return@launch
+            }
+
+            val result = userRepository.getPrivacySettings()
+
+            if (result.isSuccess) {
+                val settings = result.getOrNull()
+                _privacySettings.value = settings
+                _personalDataEnabled.value = settings?.isPersonalDetailsPublic ?: true
+                _physicalInfoEnabled.value = settings?.isFitnessDetailsPublic ?: true
+                _trainingGoalsEnabled.value = settings?.isGoalPublic ?: true
+                _badgeRemindersEnabled.value = settings?.isBadgesDetailsPublic ?: true
+                _trainingStatsEnabled.value = settings?.isTrainingStatisticsPublic ?: true
+
+                _privacySettingsError.value = null
+            } else {
+                _privacySettingsError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
+                _privacySettings.value = null
+            }
+
+            _privacySettingsLoading.value = false
+        }
+    }
+
+    fun updatePrivacySettings() {
+        viewModelScope.launch {
+            _privacySettingsLoading.value = true
+            _privacySettingsError.value = null
+            _privacySettingsSuccess.value = null
+
+            val authRepository = AuthRepository(getApplication())
+            val refreshResult = authRepository.refreshAccessToken()
+
+            if (refreshResult.isFailure) {
+                _privacySettingsError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
+                _privacySettingsLoading.value = false
+                return@launch
+            }
+
+            val result = userRepository.updatePrivacySettings(
+                personalDataEnabled = _personalDataEnabled.value ?: true,
+                physicalInfoEnabled = _physicalInfoEnabled.value ?: true,
+                trainingGoalsEnabled = _trainingGoalsEnabled.value ?: true,
+                badgeRemindersEnabled = _badgeRemindersEnabled.value ?: true,
+                trainingStatsEnabled = _trainingStatsEnabled.value ?: true
+            )
+
+            if (result.isSuccess) {
+                _privacySettingsError.value = null
+                _privacySettingsSuccess.value = getApplication<Application>().getString(R.string.success_privacy_settings)
+
+            } else {
+                _privacySettingsError.value = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_privacy_settings)
+            }
+
+            _privacySettingsLoading.value = false
+        }
+    }
+
+    fun updatePersonalDataEnabled(enabled: Boolean) {
+        _personalDataEnabled.value = enabled
+    }
+
+    fun updatePhysicalInfoEnabled(enabled: Boolean) {
+        _physicalInfoEnabled.value = enabled
+    }
+
+    fun updateTrainingGoalsEnabled(enabled: Boolean) {
+        _trainingGoalsEnabled.value = enabled
+    }
+
+    fun updateBadgeRemindersEnabled(enabled: Boolean) {
+        _badgeRemindersEnabled.value = enabled
+    }
+
+    fun updateTrainingStatsEnabled(enabled: Boolean) {
+        _trainingStatsEnabled.value = enabled
+    }
+
+    fun clearPrivacySettingsSuccess() {
+        _privacySettingsSuccess.value = null
+    }
+
+    fun clearPrivacySettingsError() {
+        _privacySettingsError.value = null
     }
 }

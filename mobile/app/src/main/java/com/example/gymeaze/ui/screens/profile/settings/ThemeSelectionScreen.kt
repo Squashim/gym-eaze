@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.profile
+package com.example.gymeaze.ui.screens.profile.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

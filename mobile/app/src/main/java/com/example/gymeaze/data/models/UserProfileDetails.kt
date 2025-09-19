@@ -74,3 +74,26 @@ data class UpdateFitnessDataResponse(
     val message: String,
     val data: UserFitnessData
 )
+
+// Privacy Settings
+
+data class PrivacySettings(
+    val isPersonalDetailsPublic: Boolean = true,
+    val isFitnessDetailsPublic: Boolean = true,
+    val isGoalPublic: Boolean = true,
+    val isBadgesDetailsPublic: Boolean = true,
+    val isTrainingStatisticsPublic: Boolean = true
+)
+
+data class GetPrivacySettingsResponse(
+    val message: String,
+    val data: PrivacySettings
+)
+
+data class UpdatePrivacySettingsRequest(
+    val privacySettings: PrivacySettings
+)
+
+data class UpdatePrivacySettingsResponse(
+    val message: String
+)

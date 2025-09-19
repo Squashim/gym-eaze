@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.profile.sections
+package com.example.gymeaze.ui.screens.profile.edit.utils
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -312,7 +312,7 @@ private fun BadgeSelectionItem(
                                 2.dp,
                                 if (canSelect) getOnSurfaceSecondaryColor().copy(alpha = 0.3f)
                                 else getOnSurfaceSecondaryColor().copy(alpha = 0.1f),
-                                RoundedCornerShape(8.dp) // Kwadrat z lekko zaokrąglonymi rogami
+                                RoundedCornerShape(8.dp)
                             )
                     )
                 }

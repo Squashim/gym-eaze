@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.profile.sections
+package com.example.gymeaze.ui.screens.profile.edit.sections
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke

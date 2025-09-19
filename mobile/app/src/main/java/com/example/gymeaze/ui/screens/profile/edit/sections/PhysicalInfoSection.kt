@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.profile.sections
+package com.example.gymeaze.ui.screens.profile.edit.sections
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.LoadingScreen
-import com.example.gymeaze.ui.screens.profile.sections.dialogs.PhysicalInfoDialog
+import com.example.gymeaze.ui.screens.profile.edit.dialogs.PhysicalInfoDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.UserViewModel
 

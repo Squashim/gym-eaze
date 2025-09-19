@@ -18,9 +18,9 @@ import com.example.gymeaze.ui.screens.ExerciseDetailScreen
 import com.example.gymeaze.ui.screens.ExercisesScreen
 import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
-import com.example.gymeaze.ui.screens.profile.ProfileEditScreen
-import com.example.gymeaze.ui.screens.profile.SettingsScreen
-import com.example.gymeaze.ui.screens.profile.ThemeSelectionScreen
+import com.example.gymeaze.ui.screens.profile.edit.ProfileEditScreen
+import com.example.gymeaze.ui.screens.profile.settings.SettingsScreen
+import com.example.gymeaze.ui.screens.profile.settings.ThemeSelectionScreen
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.viewmodel.AuthViewModel
@@ -29,7 +29,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import com.example.gymeaze.data.repository.UserRepository
+import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
+import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
+import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.UserViewModel
 
@@ -71,6 +73,11 @@ class MainActivity : ComponentActivity() {
             val showExerciseDetail by authViewModel.showExerciseDetail.collectAsState()
             val selectedExerciseId by authViewModel.selectedExerciseId.collectAsState()
             val logoutEvent by authViewModel.logoutEvent.collectAsState()
+
+            // ustawienia w profilu
+            val showPrivacySettings by userViewModel.showPrivacySettings.collectAsState()
+            val showHelpScreen by userViewModel.showHelpScreen.collectAsState()
+            val showNotificationsScreen by userViewModel.showNotificationsScreen.collectAsState()
 
             logoutEvent?.let { event ->
                 val context = LocalContext.current
@@ -117,6 +124,22 @@ class MainActivity : ComponentActivity() {
                         }
 
                         when {
+                            showNotificationsScreen -> {
+                                NotificationsScreen(
+                                    onReturnClick = userViewModel::hideNotificationsScreen,
+                                )
+                            }
+                            showPrivacySettings -> {
+                                PrivacySettingsScreen(
+                                    onReturnClick = userViewModel::hidePrivacySettingsScreen,
+                                    viewModel = userViewModel
+                                )
+                            }
+                            showHelpScreen -> {
+                                HelpScreen(
+                                    onReturnClick = userViewModel::hideHelpScreen,
+                                )
+                            }
                             showThemeSelection -> {
                                 ThemeSelectionScreen(
                                     isDarkTheme = isDarkTheme,
@@ -130,9 +153,9 @@ class MainActivity : ComponentActivity() {
                                     onThemeClick = authViewModel::showThemeSelectionScreen,
                                     isUserLoggedIn = isUserLoggedIn,
                                     onLogoutClick = if (isUserLoggedIn) { { authViewModel.logout() } } else null,
-                                    onPrivacySettingsClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
-                                    onHelpClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
-                                    onNotificationsClick = if (isUserLoggedIn) { { /* implementuj */ } } else null,
+                                    onPrivacySettingsClick = if (isUserLoggedIn) { { userViewModel.showPrivacySettingsScreen() } } else null,
+                                    onHelpClick = if (isUserLoggedIn) { { userViewModel.showHelpScreen() } } else null,
+                                    onNotificationsClick = if (isUserLoggedIn) { { userViewModel.showNotificationsScreen() } } else null,
                                 )
                             }
                             showProfileEdit -> {
