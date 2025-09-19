@@ -193,6 +193,7 @@ class MainActivity : ComponentActivity() {
                             }
                             !isUserLoggedIn -> {
                                 AuthScreen(
+                                    isUserLoggedIn = isUserLoggedIn,
                                     uiState = uiState,
                                     onUsernameChange = authViewModel::updateUsername,
                                     onEmailChange = authViewModel::updateEmail,
@@ -219,6 +220,7 @@ class MainActivity : ComponentActivity() {
                             }
                             else -> {
                                 HomeScreen(
+                                    isUserLoggedIn = isUserLoggedIn,
                                     username = username,
                                     onLogout = { authViewModel.logout() },
                                     onExerciseCreatorClick = authViewModel::showExerciseCreatorScreen,
