@@ -1,11 +1,12 @@
-import mongoose, { Types } from "mongoose";
-import { IUser } from "./userModel";
+import mongoose, { Types } from 'mongoose';
+import { IUser } from './userModel';
 
 export interface IPost extends mongoose.Document {
   author: Types.ObjectId | IUser;
   content: string;
   image?: string;
   video?: string;
+  hashtags?: string[];
   likes: number;
   createdAt: Date;
   updatedAt: Date;
@@ -15,7 +16,7 @@ const postSchema = new mongoose.Schema(
   {
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     content: {
@@ -25,12 +26,16 @@ const postSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: "",
     },
     video: {
       type: String,
-      default: "",
     },
+    hashtags: [
+      {
+        type: String,
+        maxLength: 35,
+      },
+    ],
     likes: {
       type: Number,
       default: 0,
@@ -39,6 +44,6 @@ const postSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const Post = mongoose.model<IPost>("Post", postSchema);
+const Post = mongoose.model<IPost>('Post', postSchema);
 
 export default Post;

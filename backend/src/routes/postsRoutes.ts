@@ -1,0 +1,51 @@
+import express from 'express';
+import { authenticate, optionalAuth } from '../middlewares/authMiddleware';
+import {
+  uploadExerciseFiles,
+  handleMulterError,
+  checkFileSizes,
+} from '../middlewares/exerciseMiddleware';
+import {
+  addPost,
+  deletePost,
+  getPosts,
+  getPostsByUser,
+  togglePostLike,
+  updatePost,
+} from '../controllers/postController';
+
+const router = express.Router();
+
+router.post(
+  '/',
+  authenticate,
+  uploadExerciseFiles.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'video', maxCount: 1 },
+  ]),
+  handleMulterError,
+  checkFileSizes,
+  addPost,
+);
+
+router.patch(
+  '/:id',
+  authenticate,
+  uploadExerciseFiles.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'video', maxCount: 1 },
+  ]),
+  handleMulterError,
+  checkFileSizes,
+  updatePost,
+);
+
+router.delete('/:id', authenticate, deletePost);
+
+router.patch('/:id/like', authenticate, togglePostLike);
+
+router.get('/', optionalAuth, getPosts);
+
+router.get('/:userId', optionalAuth, getPostsByUser);
+
+export default router;
