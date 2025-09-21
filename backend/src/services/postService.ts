@@ -12,14 +12,6 @@ export const createPost = async (
   let imageUrl: string | undefined;
   let videoUrl: string | undefined;
 
-  if (imageBuffer) {
-    imageUrl = await uploadBufferToCloudinary(imageBuffer, 'posts/images', 'image');
-  }
-
-  if (videoBuffer) {
-    videoUrl = await uploadBufferToCloudinary(videoBuffer, 'posts/videos', 'video');
-  }
-
   if (data.hashtags) {
     if (data.hashtags.length > 50) {
       throw new Error(`Możesz dodać maksymalnie 50 hashtagów`);
@@ -35,6 +27,14 @@ export const createPost = async (
         );
       }
     }
+  }
+
+  if (imageBuffer) {
+    imageUrl = await uploadBufferToCloudinary(imageBuffer, 'posts/images', 'image');
+  }
+
+  if (videoBuffer) {
+    videoUrl = await uploadBufferToCloudinary(videoBuffer, 'posts/videos', 'video');
   }
 
   const post = new Post({
@@ -64,23 +64,6 @@ export const updatePostService = async (
     throw new Error('Treść posta może mieć maksymalnie 800 znaków');
   }
 
-  if (imageBuffer && videoBuffer) {
-    throw new Error('Nie możesz dodać jednocześnie zdjęcia i filmiku. Wybierz tylko jedno.');
-  }
-
-  if (imageBuffer) {
-    post.image = await uploadBufferToCloudinary(imageBuffer, 'posts/images', 'image');
-    post.video = undefined;
-  }
-  if (videoBuffer) {
-    post.video = await uploadBufferToCloudinary(videoBuffer, 'posts/videos', 'video');
-    post.image = undefined;
-  }
-
-  if (content) {
-    post.content = content.trim();
-  }
-
   if (hashtags) {
     if (hashtags.length > 50) {
       throw new Error(`Możesz dodać maksymalnie 50 hashtagów`);
@@ -98,6 +81,23 @@ export const updatePostService = async (
     }
 
     post.hashtags = hashtags;
+  }
+
+  if (imageBuffer && videoBuffer) {
+    throw new Error('Nie możesz dodać jednocześnie zdjęcia i filmiku. Wybierz tylko jedno.');
+  }
+
+  if (imageBuffer) {
+    post.image = await uploadBufferToCloudinary(imageBuffer, 'posts/images', 'image');
+    post.video = undefined;
+  }
+  if (videoBuffer) {
+    post.video = await uploadBufferToCloudinary(videoBuffer, 'posts/videos', 'video');
+    post.image = undefined;
+  }
+
+  if (content) {
+    post.content = content.trim();
   }
 
   await post.save();
