@@ -9,6 +9,7 @@ import muscleGroupRoutes from './routes/muscleGroupRoutes';
 import userRoutes from './routes/userRoutes';
 import trainingsRoutes from './routes/trainingsRoutes';
 import postsRoutes from './routes/postsRoutes';
+import commentRoutes from './routes/commentRoutes';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/exercises', exerciseRoutes);
@@ -27,6 +29,7 @@ app.use('/api/muscleGroup', muscleGroupRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/training-plans', trainingsRoutes);
 app.use('/api/posts', postsRoutes);
+app.use('/api/comments', commentRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API działa 🚀');
