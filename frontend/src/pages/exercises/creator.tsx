@@ -43,6 +43,8 @@ import useFormFiles from '@/hooks/use-form-files';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import PageLayout from '@/components/layout/page';
 import { InfoField } from '@/components/ui/creator-info-fields';
+import HashtagList from '@/components/ui/hashtag-list';
+import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 
 type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
@@ -133,20 +135,15 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
   const imageFile = form.watch('stepOne.image');
   const videoFile = form.watch('stepOne.video');
 
-  const handleCreate = (formData: ExerciseSchema) => {
-    const formattedData = {
-      ...formData.stepOne,
-      ...formData.stepTwo,
-    } as CreateExercisePayload;
-
-    createExercise.mutate(formattedData);
-  };
-
   const fileComparison = useMemo(() => {
     return compareFiles(imageFile, videoFile);
   }, [imageFile, videoFile, compareFiles]);
 
   const { isImageDefault, isVideoDefault } = fileComparison;
+
+  const { onCancel, bypassBlocker } = useUnsavedChangesWarning(
+    form.formState.isDirty || (isEditMode && (!isImageDefault || !isVideoDefault)),
+  );
 
   const handleUpdate = (formData: ExerciseSchema) => {
     const dirtyFields = form.formState.dirtyFields;
@@ -164,7 +161,18 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
       formattedData.video = formData.stepOne.video;
     }
 
+    bypassBlocker();
     updateExercise.mutate({ id: id!, payload: formattedData });
+  };
+
+  const handleCreate = (formData: ExerciseSchema) => {
+    const formattedData = {
+      ...formData.stepOne,
+      ...formData.stepTwo,
+    } as CreateExercisePayload;
+
+    bypassBlocker();
+    createExercise.mutate(formattedData);
   };
 
   const onSubmit = (formData: ExerciseSchema) => {
@@ -204,9 +212,9 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
 
                 <StepActions
                   exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
-                  isDirty={form.formState.isDirty || !isImageDefault || !isVideoDefault}
                   isSubmitting={createExercise.isPending || updateExercise.isPending}
                   nextStep={nextStep}
+                  onCancel={onCancel}
                   prevStep={prevStep}
                   refs={refs}
                   step={step}
@@ -568,19 +576,7 @@ const ExerciseCreatorStepThree = () => {
           />
         </InfoField>
 
-        {formData.stepTwo.hashtags.length > 0 && (
-          <InfoField fullWidth label="Hasztagi">
-            <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
-              {formData.stepTwo.hashtags.map((hashtag) => {
-                return (
-                  <Badge key={hashtag} variant="outline">
-                    {`#${hashtag}`}
-                  </Badge>
-                );
-              })}
-            </div>
-          </InfoField>
-        )}
+        <HashtagList hashtags={formData.stepTwo.hashtags} />
       </div>
     </div>
   );

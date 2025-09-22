@@ -37,7 +37,7 @@ import {
   type TrainingDaySchema,
   type WorkoutSchema,
 } from '@/schemas/workout-schema';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import ActiveDay from '@/components/features/workouts/active-day';
 import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
@@ -51,6 +51,10 @@ import {
   parseWorkoutSetsLabel,
 } from '@/lib/parsers';
 import { BicepsFlexed, CalendarDays, Clock, Flame } from 'lucide-react';
+import { useWorkout } from '@/hooks/query/workouts/use-workout';
+import type { CreateWorkoutPayload } from '@/types/workout';
+import HashtagList from '@/components/ui/hashtag-list';
+import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 
 interface WorkoutCreatorProps {
   mode: 'create' | 'edit';
@@ -63,19 +67,30 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
     totalSteps: workoutCreatorConstants.steps.length,
   });
 
+  const { createWorkout } = useWorkout();
   const { handleSubmit } = form;
 
   const isEditMode = mode === 'edit';
 
+  const { onCancel, bypassBlocker } = useUnsavedChangesWarning(form.formState.isDirty);
+
   usePageTitle(isEditMode ? 'Edytor planu treningowego' : 'Kreator planu treningowego');
+
+  const handleCreate = (formData: WorkoutSchema) => {
+    const formattedData = {
+      ...formData.stepOne,
+      ...formData.stepTwo,
+    } as CreateWorkoutPayload;
+
+    bypassBlocker();
+    createWorkout.mutate(formattedData);
+  };
 
   const onSubmit = (formData: WorkoutSchema) => {
     if (isEditMode) {
-      console.log('Edit mode - form data:', formData);
-      // handleUpdate(formData);
+      console.log('TODO');
     } else {
-      console.log('Create mode - form data:', formData);
-      // handleCreate(formData);
+      handleCreate(formData);
     }
   };
 
@@ -101,13 +116,13 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
               <StepActions
                 exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
                 fixed
-                isDirty={form.formState.isDirty}
-                isSubmitting={false}
+                isSubmitting={createWorkout.isPending}
                 nextStep={nextStep}
+                onCancel={onCancel}
                 prevStep={prevStep}
                 refs={refs}
                 step={step}
-                submitDisabled={false}
+                submitDisabled={createWorkout.isPending || !form.formState.isDirty}
                 submitLabel={isEditMode ? 'Edytuj plan' : 'Stwórz plan'}
                 submittingLabel={isEditMode ? 'Edytowanie...' : 'Tworzenie...'}
                 totalSteps={totalSteps}
@@ -151,7 +166,7 @@ function WorkoutCreatorStepOne() {
 
       <FormField
         control={control}
-        name="stepOne.trainingGoal"
+        name="stepOne.goal"
         render={({ field }) => (
           <FormItem className="self-start">
             <FormLabel className="font-semibold" htmlFor={field.name}>
@@ -321,18 +336,26 @@ function WorkoutCreatorStepThree() {
   const { watch } = useFormContext<WorkoutSchema>();
   const formData = watch();
 
-  const totalDays = formData.stepTwo.days.length;
-  const totalExercises = formData.stepTwo.days.reduce((acc, day) => acc + day.exercises.length, 0);
-  const totalSets = formData.stepTwo.days.reduce(
-    (acc, day) =>
-      acc + day.exercises.reduce((exerciseAcc, exercise) => exerciseAcc + exercise.sets.length, 0),
-    0,
-  );
+  const { totalDays, totalExercises, totalSets, avgDailyWorkoutTime } = useMemo(() => {
+    const totalDays = formData.stepTwo.days.length;
+    const totalExercises = formData.stepTwo.days.reduce(
+      (acc, day) => acc + day.exercises.length,
+      0,
+    );
+    const totalSets = formData.stepTwo.days.reduce(
+      (acc, day) =>
+        acc +
+        day.exercises.reduce((exerciseAcc, exercise) => exerciseAcc + exercise.sets.length, 0),
+      0,
+    );
+    const totalWorkoutTime = formData.stepTwo.days.reduce(
+      (acc, day) => acc + calculateWorkoutTime(day),
+      0,
+    );
+    const avgDailyWorkoutTime = totalDays ? Math.round(totalWorkoutTime / totalDays) : 0;
 
-  const totalWorkoutTime = formData.stepTwo.days.reduce((acc, day) => {
-    return acc + calculateWorkoutTime(day);
-  }, 0);
-  const avgDailyWorkoutTime = Math.round(totalWorkoutTime / totalDays);
+    return { totalDays, totalExercises, totalSets, avgDailyWorkoutTime };
+  }, [formData.stepTwo.days]);
 
   return (
     <div className="md:col-span-full">
@@ -359,7 +382,7 @@ function WorkoutCreatorStepThree() {
 
         <InfoField label="Cel treningowy">
           <Badge className="bg-accent text-accent-foreground shadow-sm min-h-7">
-            {formData.stepOne.trainingGoal}
+            {formData.stepOne.goal}
           </Badge>
         </InfoField>
 
@@ -389,19 +412,7 @@ function WorkoutCreatorStepThree() {
           <IconInfoField icon={Clock} label={parseTimeBrackets(avgDailyWorkoutTime)} />
         </InfoField>
 
-        {formData.stepOne.hashtags.length > 0 && (
-          <InfoField fullWidth label="Hasztagi">
-            <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
-              {formData.stepOne.hashtags.map((hashtag) => {
-                return (
-                  <Badge key={hashtag} variant="outline">
-                    {`#${hashtag}`}
-                  </Badge>
-                );
-              })}
-            </div>
-          </InfoField>
-        )}
+        <HashtagList hashtags={formData.stepOne.hashtags} />
       </div>
     </div>
   );

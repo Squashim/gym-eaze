@@ -218,21 +218,22 @@ export function getWorkoutDefaultSets(isRepsSet: boolean): RepsSet[] | DurationS
 
 export function calculateWorkoutTime(day: TrainingDaySchema): number {
   let totalSeconds = 0;
-  day.exercises.forEach((ex) => {
+  day.exercises.forEach((ex, idx) => {
     const setsCount = ex.sets.length;
     const rest = ex.restAfterSet;
+    const includeLastRest = idx === day.exercises.length - 1;
 
     if (ex.isRepsSet) {
-      ex.sets.forEach((set) => {
-        totalSeconds += set.repetitions * WORKOUT.DEFAULT_SETS_REP_DURATION;
-      });
+      totalSeconds += ex.sets.reduce(
+        (sum, set) => sum + set.repetitions * WORKOUT.DEFAULT_SETS_REP_DURATION,
+        0,
+      );
     } else {
-      ex.sets.forEach((set) => {
-        totalSeconds += set.duration;
-      });
+      totalSeconds += ex.sets.reduce((sum, set) => sum + set.duration, 0);
     }
 
-    totalSeconds += setsCount * rest;
+    const restAfterSetCount = includeLastRest ? setsCount : Math.max(0, setsCount - 1);
+    totalSeconds += restAfterSetCount * rest;
   });
 
   return totalSeconds;

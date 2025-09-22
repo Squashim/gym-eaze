@@ -27,13 +27,10 @@ function parsePlurals(count: number, forms: [string, string, string]): string {
   const lastDigit = count % 10;
   const lastTwoDigits = count % 100;
 
-  if (lastTwoDigits >= 12 && lastTwoDigits <= 14) {
-    return `${count} ${forms[2]}`;
+  if (count === 1) return `${count} ${forms[0]}`;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14)) {
+    return `${count} ${forms[1]}`;
   }
-
-  if (lastDigit === 1) return `${count} ${forms[0]}`;
-  if (lastDigit >= 2 && lastDigit <= 4) return `${count} ${forms[1]}`;
-
   return `${count} ${forms[2]}`;
 }
 

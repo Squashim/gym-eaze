@@ -10,9 +10,16 @@ interface SetsListProps {
   dayNumber: number;
   exerciseNumber: number;
   isRepsSet: boolean;
+  isLastExercise: boolean;
 }
 
-const SetsList = ({ dayNumber, exerciseNumber, sets, isRepsSet }: SetsListProps) => {
+const SetsList = ({
+  dayNumber,
+  exerciseNumber,
+  sets,
+  isRepsSet,
+  isLastExercise,
+}: SetsListProps) => {
   const { control, onTotalSetsChange, onDuplicate, onDelete } = useSetsManager({
     dayNumber,
     exerciseNumber,
@@ -63,6 +70,7 @@ const SetsList = ({ dayNumber, exerciseNumber, sets, isRepsSet }: SetsListProps)
           <SetItem
             dayNumber={dayNumber}
             exerciseNumber={exerciseNumber}
+            isLastExercise={isLastExercise}
             isRepsSet={isRepsSet}
             key={i}
             onDelete={onDelete}

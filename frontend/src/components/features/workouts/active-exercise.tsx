@@ -33,6 +33,7 @@ const ActiveExercise = ({
     control,
     sets,
     isRepsSet,
+    isLastExercise,
     exerciseNumber,
     onSwitchChange,
     onAlertConfirm,
@@ -113,6 +114,7 @@ const ActiveExercise = ({
         <SetsList
           dayNumber={dayNumber}
           exerciseNumber={exerciseNumber}
+          isLastExercise={isLastExercise}
           isRepsSet={isRepsSet}
           sets={sets}
         />

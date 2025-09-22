@@ -90,7 +90,7 @@ const workoutStepOneSchema = z.object({
   image: imageValidator,
   advancedLevel: z.nativeEnum(AdvancedLevel),
   visibility: z.nativeEnum(Visibility),
-  trainingGoal: z.nativeEnum(Goal),
+  goal: z.nativeEnum(Goal),
   description: z
     .string()
     .refine(

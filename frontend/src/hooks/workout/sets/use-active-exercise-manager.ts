@@ -61,6 +61,10 @@ function useActiveExerciseManager({
     onExerciseSelect(null);
   }, [onExerciseSelect]);
 
+  const isLastExercise = useMemo(() => {
+    return exerciseIds.findIndex((id) => id === exerciseId) === exerciseIds.length - 1;
+  }, [exerciseId, exerciseIds]);
+
   return {
     onSwitchChange: handleSwitchChange,
     onAlertConfirm: handleAlertConfirm,
@@ -70,6 +74,7 @@ function useActiveExerciseManager({
     control,
     sets,
     isRepsSet,
+    isLastExercise,
   };
 }
 

@@ -15,6 +15,7 @@ interface SetItemProps {
   dayNumber: number;
   exerciseNumber: number;
   isRepsSet: boolean;
+  isLastExercise: boolean;
   onDuplicate: (setNumber: number) => void;
   onDelete: (setNumber: number) => void;
 }
@@ -25,6 +26,7 @@ const SetItem = ({
   dayNumber,
   exerciseNumber,
   isRepsSet,
+  isLastExercise,
   onDuplicate,
   onDelete,
 }: SetItemProps) => {
@@ -125,7 +127,9 @@ const SetItem = ({
         )}
       </div>
 
-      <RestAfterSetSeparator restTime={restAfterSet} />
+      {(setNumber < setsCount - 1 || !isLastExercise) && (
+        <RestAfterSetSeparator restTime={restAfterSet} />
+      )}
     </>
   );
 };

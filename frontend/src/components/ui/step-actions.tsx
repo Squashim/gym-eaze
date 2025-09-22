@@ -4,7 +4,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 import Typography from './typography';
 import { useId, type Ref } from 'react';
 import { useMediaQuery } from '@/hooks/utils/use-media-query';
-import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 import { cn } from '@/lib/utils';
 
 type StepActionsProps = {
@@ -12,12 +11,12 @@ type StepActionsProps = {
   totalSteps: number;
   prevStep: () => void;
   nextStep: () => void;
+  onCancel: () => void;
   exitLabel: string;
   submitLabel: string;
   submittingLabel?: string;
   isSubmitting: boolean;
   submitDisabled?: boolean;
-  isDirty?: boolean;
   fixed?: boolean;
   refs: {
     submitRef?: Ref<HTMLButtonElement>;
@@ -30,17 +29,16 @@ const StepActions = ({
   totalSteps,
   prevStep,
   nextStep,
+  onCancel,
   exitLabel,
   submitLabel,
   submittingLabel = 'Wysyłanie...',
   submitDisabled = false,
-  isDirty = false,
   refs,
   fixed = false,
   isSubmitting,
 }: StepActionsProps) => {
   const uid = useId();
-  const { handleCancel } = useUnsavedChangesWarning(isDirty);
   const isFirstStep = step === 0;
   const isLastStep = step === totalSteps - 1;
   const isBackAvailable = step < totalSteps - 1;
@@ -79,7 +77,7 @@ const StepActions = ({
             <Button
               aria-describedby={uid}
               className="size-10"
-              onClick={handleCancel}
+              onClick={onCancel}
               ref={refs.cancelRef}
               size="icon"
               type="button"

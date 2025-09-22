@@ -19,6 +19,10 @@ export const EXERCISE = {
   toggleFavorite: (id: string) => `exercises/${id}/favorite`,
 } as const;
 
+export const WORKOUT = {
+  base: 'training-plans',
+} as const;
+
 export const USER = {
   likedItems: 'user/likes',
   favoritedItems: 'user/favorites',

@@ -33,7 +33,7 @@ const workoutCreatorDefaultValues = {
     image: undefined,
     advancedLevel: AdvancedLevel.none,
     visibility: Visibility.public,
-    trainingGoal: Goal.none,
+    goal: Goal.none,
     description: '',
     hashtags: [],
   },
