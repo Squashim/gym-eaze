@@ -1,11 +1,14 @@
+import { WORKOUT } from '@/constants/workout';
 import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
+import type { DurationSet, RepsSet } from '@/types/workout';
 import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import type { FieldValues } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
+import { parseTimeBrackets } from './parsers';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -196,4 +199,46 @@ export function getWeeks(days: TrainingDaySchema[]) {
       days: days.slice(start, end),
     };
   });
+}
+
+export function getWorkoutDefaultSets(isRepsSet: true): RepsSet[];
+export function getWorkoutDefaultSets(isRepsSet: false): DurationSet[];
+export function getWorkoutDefaultSets(isRepsSet: boolean): RepsSet[] | DurationSet[] {
+  if (isRepsSet) {
+    return Array.from({ length: WORKOUT.DEFAULT_SETS }, () => ({
+      repetitions: WORKOUT.DEFAULT_SETS_REPS,
+      weight: null,
+    }));
+  } else {
+    return Array.from({ length: WORKOUT.DEFAULT_SETS }, () => ({
+      duration: WORKOUT.DEFAULT_SETS_DURATION,
+    }));
+  }
+}
+
+export function calculateWorkoutTime(day: TrainingDaySchema): number {
+  let totalSeconds = 0;
+  day.exercises.forEach((ex) => {
+    const setsCount = ex.sets.length;
+    const rest = ex.restAfterSet;
+
+    if (ex.isRepsSet) {
+      ex.sets.forEach((set) => {
+        totalSeconds += set.repetitions * WORKOUT.DEFAULT_SETS_REP_DURATION;
+      });
+    } else {
+      ex.sets.forEach((set) => {
+        totalSeconds += set.duration;
+      });
+    }
+
+    totalSeconds += setsCount * rest;
+  });
+
+  return totalSeconds;
+}
+
+export function getDayTimeRange(day: TrainingDaySchema): string {
+  const totalSeconds = calculateWorkoutTime(day);
+  return parseTimeBrackets(totalSeconds);
 }

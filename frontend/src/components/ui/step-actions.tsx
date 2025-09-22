@@ -3,8 +3,8 @@ import { Button } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 import Typography from './typography';
 import { useId, type Ref } from 'react';
-import { useMediaQuery } from '@/hooks/use-media-query';
-import { useUnsavedChangesWarning } from '@/hooks/use-unsaved-changes-warning';
+import { useMediaQuery } from '@/hooks/utils/use-media-query';
+import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 import { cn } from '@/lib/utils';
 
 type StepActionsProps = {

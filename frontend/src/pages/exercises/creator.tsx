@@ -28,7 +28,7 @@ import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
 import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-groups';
 import type { MuscleGroup } from '@/types/muscle-group';
 import type { Equipment } from '@/types/equipment';
-import { useEffect, useMemo, type PropsWithChildren } from 'react';
+import { useEffect, useMemo } from 'react';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { exerciseCreatorConstants } from '@/constants/forms';
 import { useExercise } from '@/hooks/query/exercises/use-exercise';
@@ -40,8 +40,9 @@ import { Loader2 } from 'lucide-react';
 import { Visibility } from '@/constants/visibility';
 import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
-import usePageTitle from '@/hooks/use-page-title';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import PageLayout from '@/components/layout/page';
+import { InfoField } from '@/components/ui/creator-info-fields';
 
 type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
@@ -489,22 +490,6 @@ const ExerciseCreatorStepThree = () => {
     return map;
   }, [equipment]);
 
-  const InfoField = ({
-    label,
-    fullWidth = false,
-    children,
-  }: PropsWithChildren & {
-    fullWidth?: boolean;
-    label: string;
-  }) => (
-    <div className={cn('flex flex-col gap-1', fullWidth && 'md:col-span-2')}>
-      <Typography className="font-semibold" variant="small">
-        {label}:
-      </Typography>
-      {children}
-    </div>
-  );
-
   const ItemsHorizontalGallery = <T extends { _id: string; name: string; image: string }>({
     itemIds,
     itemMap,
@@ -540,65 +525,63 @@ const ExerciseCreatorStepThree = () => {
   };
 
   return (
-    <>
-      <div className="md:col-span-2">
-        <Typography className="md:col-span-2" variant="h3">
-          Sprawdź poprawność danych
-        </Typography>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <InfoField fullWidth label="Nazwa ćwiczenia">
-            <Typography
-              className="break-words px-2 py-1 rounded-md bg-accent-foreground/10"
-              variant="p"
-            >
-              {formData.stepOne.name}
-            </Typography>
-          </InfoField>
+    <div className="md:col-span-2">
+      <Typography className="md:col-span-2" variant="h3">
+        Sprawdź poprawność danych
+      </Typography>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <InfoField fullWidth label="Nazwa ćwiczenia">
+          <Typography
+            className="break-words px-2 py-1 rounded-md bg-accent-foreground/10"
+            variant="p"
+          >
+            {formData.stepOne.name}
+          </Typography>
+        </InfoField>
 
-          <InfoField label="Poziom trudności">
-            <AdvancedLevelBadge advancedLevel={formData.stepOne.advancedLevel} />
-          </InfoField>
+        <InfoField label="Poziom trudności">
+          <AdvancedLevelBadge advancedLevel={formData.stepOne.advancedLevel} />
+        </InfoField>
 
-          <InfoField label="Widoczność ćwiczenia">
-            <VisibilityBadge type="Exercise" visibility={formData.stepOne.visibility} />
-          </InfoField>
+        <InfoField label="Widoczność ćwiczenia">
+          <VisibilityBadge type="Exercise" visibility={formData.stepOne.visibility} />
+        </InfoField>
 
-          <InfoField fullWidth label="Opis ćwiczenia">
-            <Typography
-              className="break-words whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar px-2 py-1 rounded-md bg-accent-foreground/10"
-              variant="p"
-            >
-              {formData.stepTwo.description}
-            </Typography>
-          </InfoField>
+        <InfoField fullWidth label="Opis ćwiczenia">
+          <Typography
+            className="break-words whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar px-2 py-1 rounded-md bg-accent-foreground/10"
+            variant="p"
+          >
+            {formData.stepTwo.description}
+          </Typography>
+        </InfoField>
 
-          <InfoField fullWidth label="Grupy mięśniowe">
-            <ItemsHorizontalGallery itemIds={formData.stepTwo.muscleGroup} itemMap={muscleMap} />
-          </InfoField>
+        <InfoField fullWidth label="Grupy mięśniowe">
+          <ItemsHorizontalGallery itemIds={formData.stepTwo.muscleGroup} itemMap={muscleMap} />
+        </InfoField>
 
-          <InfoField fullWidth label="Sprzęt ćwiczeniowy">
-            <ItemsHorizontalGallery
-              isRounded
-              itemIds={formData.stepTwo.equipment}
-              itemMap={equipmentMap}
-            />
-          </InfoField>
+        <InfoField fullWidth label="Sprzęt ćwiczeniowy">
+          <ItemsHorizontalGallery
+            isRounded
+            itemIds={formData.stepTwo.equipment}
+            itemMap={equipmentMap}
+          />
+        </InfoField>
 
-          {formData.stepTwo.hashtags.length > 0 && (
-            <InfoField fullWidth label="Hasztagi">
-              <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
-                {formData.stepTwo.hashtags.map((hashtag) => {
-                  return (
-                    <Badge key={hashtag} variant="outline">
-                      {`#${hashtag}`}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </InfoField>
-          )}
-        </div>
+        {formData.stepTwo.hashtags.length > 0 && (
+          <InfoField fullWidth label="Hasztagi">
+            <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
+              {formData.stepTwo.hashtags.map((hashtag) => {
+                return (
+                  <Badge key={hashtag} variant="outline">
+                    {`#${hashtag}`}
+                  </Badge>
+                );
+              })}
+            </div>
+          </InfoField>
+        )}
       </div>
-    </>
+    </div>
   );
 };

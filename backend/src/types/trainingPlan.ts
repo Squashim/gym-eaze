@@ -18,6 +18,7 @@ export interface DayExercise {
 
 export interface TrainingDay {
   name: string;
+  dayNumber: number;
   isRestDay: boolean;
   exercises: DayExercise[];
 }

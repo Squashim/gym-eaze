@@ -16,27 +16,71 @@ const imageValidator = z
     'Obraz musi być w formacie JPG, PNG lub WEBP.',
   );
 
-const exerciseSetValidator = z.object({
-  repetitions: z.number(),
-  weight: z.number().optional(),
-  restAfterSet: z.number().optional(),
-});
-
-const dayExercisesValidator = z.object({
+const repsSetValidator = z.object({
   id: z.string(),
-  isRepsSet: z.boolean(),
-  duration: z.number(),
-  sets: z.array(exerciseSetValidator),
+  isRepsSet: z.literal(true),
+  restAfterSet: z
+    .number()
+    .min(30, 'Odpoczynek po serii musi wynosić co najmniej 30 sekund.')
+    .max(5400, 'Odpoczynek po serii nie może przekraczać 90 minut.'),
+  sets: z
+    .array(
+      z.object({
+        repetitions: z
+          .number()
+          .min(1, 'Liczba powtórzeń musi być większa od 0.')
+          .max(100, 'Liczba powtórzeń nie może przekraczać 100.'),
+        weight: z.number().max(300, 'Maksymalna waga to 300 kg.').nullable().optional(),
+      }),
+    )
+    .min(1, 'Ćwiczenie musi mieć przynajmniej jedną serię.')
+    .max(15, 'Ćwiczenie może mieć maksymalnie 15 serii.'),
 });
 
-const trainingDaySchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nazwa dnia treningowego jest wymagana.')
-    .max(100, 'Nazwa dnia treningowego nie może być dłuższa niż 100 znaków.'),
-  isRestDay: z.boolean(),
-  exercises: z.array(dayExercisesValidator),
+const durationSetValidator = z.object({
+  id: z.string(),
+  isRepsSet: z.literal(false),
+  restAfterSet: z
+    .number()
+    .min(30, 'Odpoczynek po serii musi wynosić co najmniej 30 sekund.')
+    .max(5400, 'Odpoczynek po serii nie może przekraczać 90 minut.'),
+  sets: z
+    .array(
+      z.object({
+        duration: z
+          .number()
+          .min(30, 'Czas trwania ćwiczenie musi wynosić co najmniej 1 minutę.')
+          .max(21600, 'Czas trwania ćwiczenia nie może przekraczać 6 godzin.'),
+      }),
+    )
+    .min(1, 'Ćwiczenie musi mieć przynajmniej jedną serię.')
+    .max(15, 'Ćwiczenie może mieć maksymalnie 15 serii.'),
 });
+
+const dayExercisesValidator = z.discriminatedUnion('isRepsSet', [
+  repsSetValidator,
+  durationSetValidator,
+]);
+
+const trainingDaySchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, 'Nazwa dnia treningowego jest wymagana.')
+      .max(100, 'Nazwa dnia treningowego nie może być dłuższa niż 100 znaków.'),
+    dayNumber: z.number(),
+    isRestDay: z.boolean(),
+    exercises: z.array(dayExercisesValidator),
+  })
+  .superRefine((day, ctx) => {
+    if (!day.isRestDay && (day.exercises.length < 1 || day.exercises.length > 15)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['exercises'],
+        message: 'Dzień treningowy musi zawierać od 1 do 15 ćwiczeń.',
+      });
+    }
+  });
 
 const workoutStepOneSchema = z.object({
   name: z
@@ -66,6 +110,7 @@ const workoutStepTwoSchema = z.object({
   days: z
     .array(trainingDaySchema)
     .min(1, 'Plan musi zawierać przynajmniej jeden dzień treningowy.')
+    .max(30, 'Plan nie może zawierać więcej niż 30 dni treningowych.')
     .refine((days) => days.some((day) => !day.isRestDay), {
       message: 'Plan musi zawierać przynajmniej jeden dzień, który nie jest dniem wolnym.',
     }),

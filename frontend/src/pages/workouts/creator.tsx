@@ -1,6 +1,5 @@
-import DaysList from '@/components/features/workouts/days-list';
+import DaysList from '@/components/features/workouts/days/days-list';
 import PageLayout from '@/components/layout/page';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileInput } from '@/components/ui/file-input';
 import {
@@ -31,17 +30,27 @@ import { AdvancedLevel } from '@/constants/advanced-level';
 import { workoutCreatorConstants } from '@/constants/forms';
 import { Goal } from '@/constants/goals';
 import { Visibility } from '@/constants/visibility';
-import usePageTitle from '@/hooks/use-page-title';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import { useStepForm } from '@/hooks/use-step-form';
-import { getWeeks } from '@/lib/utils';
 import {
   workoutSchema,
   type TrainingDaySchema,
   type WorkoutSchema,
 } from '@/schemas/workout-schema';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import ActiveDay from '@/components/features/workouts/active-day';
+import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
+import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
+import { Badge } from '@/components/ui/badge';
+import { calculateWorkoutTime } from '@/lib/utils';
+import {
+  parseDayLabel,
+  parseExerciseLabel,
+  parseTimeBrackets,
+  parseWorkoutSetsLabel,
+} from '@/lib/parsers';
+import { BicepsFlexed, CalendarDays, Clock, Flame } from 'lucide-react';
 
 interface WorkoutCreatorProps {
   mode: 'create' | 'edit';
@@ -87,6 +96,7 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
             >
               {step === 0 && <WorkoutCreatorStepOne />}
               {step === 1 && <WorkoutCreatorStepTwo />}
+              {step === 2 && <WorkoutCreatorStepThree />}
 
               <StepActions
                 exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
@@ -295,138 +305,104 @@ function WorkoutCreatorStepOne() {
 }
 
 function WorkoutCreatorStepTwo() {
-  const { control } = useFormContext<WorkoutSchema>();
+  const [selectedDay, setSelectedDay] = useState<TrainingDaySchema | null>(null);
+  const [selectedTab, setSelectedTab] = useState<string>('week-1');
 
-  return (
-    <FormField
-      control={control}
-      name="stepTwo.days"
-      render={({ field }) => (
-        <FormItem className="md:col-span-full">
-          <FormControl>
-            <DaysInput onChange={field.onChange} value={field.value} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-}
-
-interface DaysInputProps {
-  value: TrainingDaySchema[];
-  onChange: (days: TrainingDaySchema[]) => void;
-}
-
-function DaysInput({ value, onChange }: DaysInputProps) {
-  const [activeDayIndex, setActiveDayIndex] = useState<number | null>(null);
-  const weeks = useMemo(() => getWeeks(value), [value]);
-
-  const handleTotalDaysChange = useCallback(
-    (newTotal: number) => {
-      if (newTotal > value.length) {
-        const additionalDays = Array.from(
-          {
-            length: newTotal - value.length,
-          },
-          (_, i) => ({
-            name: `Dzień ${value.length + i + 1}`,
-            isRestDay: false,
-            exercises: [],
-          }),
-        );
-        onChange([...value, ...additionalDays]);
-      } else if (newTotal < value.length) {
-        onChange(value.slice(0, newTotal));
-      }
-    },
-    [value, onChange],
-  );
-
-  if (activeDayIndex !== null) {
-    return (
-      <ActiveDayView
-        day={value[activeDayIndex]}
-        dayIndex={activeDayIndex}
-        setActiveDayIndex={setActiveDayIndex}
-      />
-    );
+  if (selectedDay) {
+    return <ActiveDay day={selectedDay} onDaySelect={setSelectedDay} />;
   }
 
   return (
-    <DaysList
-      handleTotalDaysChange={handleTotalDaysChange}
-      setActiveDayIndex={setActiveDayIndex}
-      totalDays={value.length}
-      weeks={weeks}
-    />
+    <DaysList onDaySelect={setSelectedDay} onTabSelect={setSelectedTab} selectedTab={selectedTab} />
   );
 }
 
-type ActiveDayViewProps = {
-  day: TrainingDaySchema;
-  dayIndex: number;
-  setActiveDayIndex: (index: number | null) => void;
-};
+function WorkoutCreatorStepThree() {
+  const { watch } = useFormContext<WorkoutSchema>();
+  const formData = watch();
 
-const ActiveDayView = ({ day, dayIndex, setActiveDayIndex }: ActiveDayViewProps) => {
-  const { control } = useFormContext<WorkoutSchema>();
+  const totalDays = formData.stepTwo.days.length;
+  const totalExercises = formData.stepTwo.days.reduce((acc, day) => acc + day.exercises.length, 0);
+  const totalSets = formData.stepTwo.days.reduce(
+    (acc, day) =>
+      acc + day.exercises.reduce((exerciseAcc, exercise) => exerciseAcc + exercise.sets.length, 0),
+    0,
+  );
+
+  const totalWorkoutTime = formData.stepTwo.days.reduce((acc, day) => {
+    return acc + calculateWorkoutTime(day);
+  }, 0);
+  const avgDailyWorkoutTime = Math.round(totalWorkoutTime / totalDays);
 
   return (
-    <div className="md:col-span-3 flex flex-col gap-4">
-      <Button className="w-fit" onClick={() => setActiveDayIndex(null)} variant="outline">
-        <ArrowLeft />
-        Powrót do listy dni
-      </Button>
+    <div className="md:col-span-full">
+      <Typography className="md:col-span-full" variant="h3">
+        Sprawdź poprawność danych
+      </Typography>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <InfoField fullWidth label="Nazwa planu treningowego">
+          <Typography
+            className="break-words px-2 py-1 rounded-md bg-accent-foreground/10"
+            variant="p"
+          >
+            {formData.stepOne.name}
+          </Typography>
+        </InfoField>
 
-      <FormField
-        control={control}
-        name={`stepTwo.days.${dayIndex}.name`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="font-semibold">Nazwa dnia</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                autoComplete="off"
-                autoFocus
-                maxLength={150}
-                placeholder="Podaj nazwę dnia treningowego"
-                type="text"
-              />
-            </FormControl>
-            <FormMessage />
-            <FormDescription>Maksymalna długość nazwy to 150 znaków.</FormDescription>
-          </FormItem>
+        <InfoField label="Poziom trudności">
+          <AdvancedLevelBadge advancedLevel={formData.stepOne.advancedLevel} />
+        </InfoField>
+
+        <InfoField label="Widoczność planu">
+          <VisibilityBadge type="Workout" visibility={formData.stepOne.visibility} />
+        </InfoField>
+
+        <InfoField label="Cel treningowy">
+          <Badge className="bg-accent text-accent-foreground shadow-sm min-h-7">
+            {formData.stepOne.trainingGoal}
+          </Badge>
+        </InfoField>
+
+        {formData.stepOne.description && (
+          <InfoField fullWidth label="Opis planu">
+            <Typography
+              className="break-words whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar px-2 py-1 rounded-md bg-accent-foreground/10"
+              variant="p"
+            >
+              {formData.stepOne.description}
+            </Typography>
+          </InfoField>
         )}
-      />
 
-      <FormField
-        control={control}
-        name={`stepTwo.days.${dayIndex}.isRestDay`}
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-md border p-3 md:col-span-2">
-            <div className="flex flex-col gap-1">
-              <FormLabel className="font-semibold">Dzień wolny od ćwiczeń</FormLabel>
-              <FormDescription>
-                Ustawienie dnia jako wolny, zablokuje możliwość dodawania do niego ćwiczeń.
-              </FormDescription>
+        <div className="flex flex-col gap-1 col-span-full">
+          <Typography className="font-semibold" variant="small">
+            Plan zawiera:
+          </Typography>
+          <div className="flex flex-wrap gap-2 items-center">
+            <IconInfoField icon={CalendarDays} label={parseDayLabel(totalDays)} />
+            <IconInfoField icon={BicepsFlexed} label={parseExerciseLabel(totalExercises)} />
+            <IconInfoField icon={Flame} label={parseWorkoutSetsLabel(totalSets)} />
+          </div>
+        </div>
+
+        <InfoField fullWidth label="Szacowany czas na codzienny trening">
+          <IconInfoField icon={Clock} label={parseTimeBrackets(avgDailyWorkoutTime)} />
+        </InfoField>
+
+        {formData.stepOne.hashtags.length > 0 && (
+          <InfoField fullWidth label="Hasztagi">
+            <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
+              {formData.stepOne.hashtags.map((hashtag) => {
+                return (
+                  <Badge key={hashtag} variant="outline">
+                    {`#${hashtag}`}
+                  </Badge>
+                );
+              })}
             </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                name={field.name}
-                onCheckedChange={(checked) => field.onChange(checked)}
-              />
-            </FormControl>
-          </FormItem>
+          </InfoField>
         )}
-      />
-
-      <Button disabled={day.isRestDay} variant="secondary">
-        <Plus />
-        Dodaj ćwiczenia
-      </Button>
+      </div>
     </div>
   );
-};
+}

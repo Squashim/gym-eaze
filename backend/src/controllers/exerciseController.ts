@@ -197,6 +197,20 @@ export const getExerciseById = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getExercisesByIds = async (req: AuthRequest, res: Response) => {
+  try {
+    const { ids } = req.body;
+    const exercises = await exerciseService.getExercisesByIdsService(ids);
+    return res.json(exercises);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(500).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
+  }
+};
+
 export const getExercises = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;

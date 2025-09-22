@@ -41,6 +41,7 @@ const workoutCreatorDefaultValues = {
     days: [
       {
         name: 'Dzień 1',
+        dayNumber: 0,
         isRestDay: false,
         exercises: [],
       },

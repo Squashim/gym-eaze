@@ -8,7 +8,7 @@ import { AdvancedLevel } from '@/constants/advanced-level';
 import { useUser } from '@/context/user';
 import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
-import usePageTitle from '@/hooks/use-page-title';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import { cn, getApiErrorMsg } from '@/lib/utils';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';

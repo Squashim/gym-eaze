@@ -3,6 +3,7 @@ import {
   addExercise,
   getExerciseById,
   getExercises,
+  getExercisesByIds,
   getExercisesByUser,
   getFavoriteExercises,
   toggleExerciseFavorite,
@@ -51,6 +52,8 @@ router.patch('/:id/like', authenticate, toggleExerciseLike);
 router.patch('/:id/favorite', authenticate, toggleExerciseFavorite);
 
 router.get('/:id', optionalAuth, getExerciseById);
+
+router.post('/batch', optionalAuth, getExercisesByIds);
 
 router.post('/search', optionalAuth, getExercises);
 

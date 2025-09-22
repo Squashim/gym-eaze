@@ -96,6 +96,16 @@ export const validateTrainingPlanData = (data: CreateTrainingPlanData) => {
             if (set.weight > 300) {
               throw new TrainingPlanValidationError('Maksymalny ciężar w serii to 300kg');
             }
+
+            if (set.repetitions < 1) {
+              throw new TrainingPlanValidationError(
+                'Liczba powtórzeń w serii musi być większa od 0',
+              );
+            }
+
+            if (set.repetitions > 100) {
+              throw new TrainingPlanValidationError('Maksymalna liczba powtórzeń w serii to 100');
+            }
           }
         }
 
