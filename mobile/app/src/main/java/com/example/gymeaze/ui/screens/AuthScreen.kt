@@ -418,7 +418,8 @@ fun AuthScreen(
     onRegister: () -> Unit,
     onLogin: () -> Unit,
     onGoogleLogin: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onCreateTrainingPlanClick : () -> Unit
 ) {
     var selectedRoute by remember { mutableStateOf("profile") }
 
@@ -436,7 +437,10 @@ fun AuthScreen(
     ) { paddingValues ->
         when (selectedRoute) {
             "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn)
-            "workouts" -> TrainingsPlanScreen(onSettingsClick)
+            "workouts" -> TrainingsPlanScreen(
+                onSettingsClick = onSettingsClick,
+                onCreateTrainingPlanClick = onCreateTrainingPlanClick
+            )
             "community" -> CommunityScreen(onSettingsClick)
             "profile" -> {
                 Box(modifier = Modifier.fillMaxSize()) {

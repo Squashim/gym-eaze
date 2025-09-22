@@ -63,7 +63,8 @@ fun HomeScreen(
     onExerciseCreatorClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onEditProfileClick: () -> Unit,
-    onBrowseExercisesClick: () -> Unit
+    onBrowseExercisesClick: () -> Unit,
+    onCreateTrainingPlanClick: () -> Unit
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
@@ -84,7 +85,10 @@ fun HomeScreen(
     ) { paddingValues ->
         when (selectedRoute) {
             "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn,onExerciseCreatorClick)
-            "workouts" -> TrainingsPlanScreen(onSettingsClick)
+            "workouts" -> TrainingsPlanScreen(
+                onSettingsClick = onSettingsClick,
+                onCreateTrainingPlanClick = onCreateTrainingPlanClick
+            )
             "community" -> CommunityScreen(onSettingsClick)
             "profile" -> {
                 LazyColumn(
@@ -108,7 +112,8 @@ fun HomeScreen(
                     item {
                         QuickActionSection(
                             onExerciseCreatorClick = onExerciseCreatorClick,
-                            onBrowseExercisesClick = onBrowseExercisesClick
+                            onBrowseExercisesClick = onBrowseExercisesClick,
+                            onCreateTrainingPlanClick = onCreateTrainingPlanClick
                         )
                     }
                     item {
@@ -285,8 +290,9 @@ private fun StatCard(
 @Composable
 private fun QuickActionSection(
     onExerciseCreatorClick: () -> Unit,
-    onBrowseExercisesClick: () -> Unit
-) {
+    onBrowseExercisesClick: () -> Unit,
+    onCreateTrainingPlanClick: () -> Unit
+    ) {
     Column {
         Text(
             text = "Szybkie akcje",
@@ -328,10 +334,10 @@ private fun QuickActionSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             ActionButton(
-                title = "Moje plany",
-                subtitle = "Treningowe",
+                title = "Nowy plan",
+                subtitle = "Treningowy",
                 icon = Icons.AutoMirrored.Filled.Assignment,
-                onClick = {/*TODO Implementacja nawigacji*/},
+                onClick = onCreateTrainingPlanClick,
                 modifier = Modifier
                     .weight(1f)
             )

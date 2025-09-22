@@ -1,0 +1,391 @@
+package com.example.gymeaze.ui.components
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.example.gymeaze.constants.AdvancedLevel
+import com.example.gymeaze.constants.Goals
+import com.example.gymeaze.ui.theme.getInputBorderColor
+import com.example.gymeaze.ui.theme.getOnSurfaceColor
+import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
+import com.example.gymeaze.ui.theme.getPrimaryColor
+import com.example.gymeaze.ui.theme.getSurfaceColor
+
+@Composable
+fun GoalSelectionDialog(
+    selectedGoal: String,
+    onGoalSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val goals = listOf(
+        Goals.NONE to "Nie wybrano",
+        Goals.MUSCLE_GAIN to "Budowanie masy mięśniowej",
+        Goals.STRENGTH to "Zwiększanie siły",
+        Goals.ENDURANCE to "Poprawa wytrzymałości",
+        Goals.FAT_LOSS to "Redukcja tkanki tłuszczowej",
+        Goals.CALORIE_BURN to "Spalanie kalorii",
+        Goals.COORDINATION to "Poprawa koordynacji",
+        Goals.MOBILITY to "Poprawa mobilności",
+        Goals.FLEXIBILITY to "Poprawa gibkości",
+        Goals.LEGS_GLUTES to "Rozwój nóg i pośladków",
+        Goals.POSTURE to "Poprawa postawy ciała",
+        Goals.RECOVERY to "Regeneracja i odpoczynek"
+    )
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Wybierz cel treningu",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
+                    )
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Zamknij",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn {
+                    items(goals) { (value, label) ->
+                        GoalOptionItem(
+                            label = label,
+                            description = getGoalDescription(value),
+                            isSelected = selectedGoal == value,
+                            onClick = { onGoalSelected(value) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DifficultySelectionDialog(
+    selectedDifficulty: String,
+    onDifficultySelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val difficulties = listOf(
+        AdvancedLevel.EASY to "Początkujący",
+        AdvancedLevel.MEDIUM to "Średniozaawansowany",
+        AdvancedLevel.HARD to "Zaawansowany"
+    )
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Wybierz poziom trudności",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
+                    )
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Zamknij",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                difficulties.forEach { (value, label) ->
+                    DifficultyOptionItem(
+                        label = label,
+                        description = getDifficultyDescription(value),
+                        isSelected = selectedDifficulty == value,
+                        color = getDifficultyColor(value),
+                        onClick = { onDifficultySelected(value) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HashtagInputDialog(
+    onHashtagAdded: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var hashtag by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Dodaj hashtag",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
+                    )
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Zamknij",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = hashtag,
+                    onValueChange = {
+                        if (it.length <= 35 && !it.contains(" ") && !it.contains("#")) {
+                            hashtag = it
+                        }
+                    },
+                    label = { Text("Hashtag") },
+                    placeholder = { Text("npp biceps, klatka") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = getPrimaryColor(),
+                        unfocusedBorderColor = getInputBorderColor()
+                    ),
+                    supportingText = {
+                        Text("${hashtag.length}/35 • Bez spacji i znaków #")
+                    },
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("Anuluj")
+                    }
+
+                    TextButton(
+                        onClick = {
+                            if (hashtag.trim().isNotEmpty()) {
+                                onHashtagAdded(hashtag.trim().lowercase())
+                            }
+                        },
+                        enabled = hashtag.trim().isNotEmpty()
+                    ) {
+                        Text("Dodaj", color = getPrimaryColor())
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GoalOptionItem(
+    label: String,
+    description: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        color = if (isSelected) getPrimaryColor().copy(alpha = 0.1f) else Color.Transparent,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = isSelected,
+                onClick = onClick,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = getPrimaryColor(),
+                    unselectedColor = getOnSurfaceSecondaryColor()
+                )
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = label,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = getOnSurfaceColor()
+                )
+                Text(
+                    text = description,
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DifficultyOptionItem(
+    label: String,
+    description: String,
+    isSelected: Boolean,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onClick() },
+        color = if (isSelected) color.copy(alpha = 0.1f) else Color.Transparent,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = isSelected,
+                onClick = onClick,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = color,
+                    unselectedColor = getOnSurfaceSecondaryColor()
+                )
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = label,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = getOnSurfaceColor()
+                )
+                Text(
+                    text = description,
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
+        }
+    }
+}
+
+private fun getGoalDescription(goal: String): String = when (goal) {
+    Goals.MUSCLE_GAIN -> "Budowanie masy mięśniowej i objętości"
+    Goals.STRENGTH -> "Zwiększanie siły maksymalnej"
+    Goals.ENDURANCE -> "Poprawa wytrzymałości mięśniowej"
+    Goals.FAT_LOSS -> "Spalanie tkanki tłuszczowej"
+    Goals.CALORIE_BURN -> "Intensywne spalanie kalorii"
+    Goals.COORDINATION -> "Rozwój koordynacji ruchowej"
+    Goals.MOBILITY -> "Poprawa zakresu ruchów"
+    Goals.FLEXIBILITY -> "Zwiększenie elastyczności"
+    Goals.LEGS_GLUTES -> "Wzmocnienie dolnej partii ciała"
+    Goals.POSTURE -> "Korekta i wzmocnienie postawy"
+    Goals.RECOVERY -> "Regeneracja i relaksacja"
+    else -> "Brak konkretnego celu"
+}
+
+private fun getDifficultyDescription(difficulty: String): String = when (difficulty) {
+    AdvancedLevel.EASY -> "Do 6 miesięcy doświadczenia"
+    AdvancedLevel.MEDIUM -> "6 miesięcy - 2 lata doświadczenia"
+    AdvancedLevel.HARD -> "Ponad 2 lata doświadczenia"
+    else -> ""
+}
+
+@Composable
+private fun getDifficultyColor(difficulty: String): Color = when (difficulty) {
+    AdvancedLevel.EASY -> Color(0xFF4CAF50)
+    AdvancedLevel.MEDIUM -> Color(0xFFFF9800)
+    AdvancedLevel.HARD -> Color(0xFFF44336)
+    else -> getPrimaryColor()
+}

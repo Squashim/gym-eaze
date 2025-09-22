@@ -98,6 +98,52 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
     val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
 
+    private val _showCreateTrainingPlan = MutableStateFlow(false)
+    val showCreateTrainingPlan: StateFlow<Boolean> = _showCreateTrainingPlan.asStateFlow()
+
+    private val _showTrainingPlanDetail = MutableStateFlow(false)
+    val showTrainingPlanDetail: StateFlow<Boolean> = _showTrainingPlanDetail.asStateFlow()
+
+    private val _selectedTrainingPlanId = MutableStateFlow<String?>(null)
+    val selectedTrainingPlanId: StateFlow<String?> = _selectedTrainingPlanId.asStateFlow()
+
+    private val _showExerciseSelectionForDay = MutableStateFlow(false)
+    val showExerciseSelectionForDay: StateFlow<Boolean> = _showExerciseSelectionForDay.asStateFlow()
+
+    private val _selectedDayIndex = MutableStateFlow<Int?>(null)
+    val selectedDayIndex: StateFlow<Int?> = _selectedDayIndex.asStateFlow()
+
+    fun showCreateTrainingPlanScreen() {
+        _showCreateTrainingPlan.value = true
+    }
+
+
+    fun hideCreateTrainingPlanScreen() {
+        _showCreateTrainingPlan.value = false
+    }
+
+    fun showTrainingPlanDetailScreen(planId: String) {
+        _selectedTrainingPlanId.value = planId
+        _showTrainingPlanDetail.value = true
+    }
+
+    fun hideTrainingPlanDetailScreen() {
+        _showTrainingPlanDetail.value = false
+        _selectedTrainingPlanId.value = null
+    }
+
+
+    fun showExerciseSelectionForDayScreen(dayIndex: Int) {
+        _selectedDayIndex.value = dayIndex
+        _showExerciseSelectionForDay.value = true
+    }
+
+
+    fun hideExerciseSelectionForDayScreen() {
+        _showExerciseSelectionForDay.value = false
+        _selectedDayIndex.value = null
+    }
+
     private fun checkTokenValidityOnStartup() {
         viewModelScope.launch {
             try {

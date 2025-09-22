@@ -29,9 +29,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
+import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
+import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
+import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.UserViewModel
 
@@ -42,6 +46,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val authViewModel: AuthViewModel = viewModel()
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
+            val createTrainingPlanViewModel: CreateTrainingPlanViewModel = viewModel()
             val userViewModel: UserViewModel = viewModel {
                 UserViewModel(
                     application = application,
@@ -74,7 +79,13 @@ class MainActivity : ComponentActivity() {
             val selectedExerciseId by authViewModel.selectedExerciseId.collectAsState()
             val logoutEvent by authViewModel.logoutEvent.collectAsState()
 
-            // ustawienia w profilu
+            val showCreateTrainingPlan by authViewModel.showCreateTrainingPlan.collectAsState()
+            val showTrainingPlanDetail by authViewModel.showTrainingPlanDetail.collectAsState()
+            val selectedTrainingPlanId by authViewModel.selectedTrainingPlanId.collectAsState()
+            val showExerciseSelectionForDay by authViewModel.showExerciseSelectionForDay.collectAsState()
+            val selectedDayIndex by authViewModel.selectedDayIndex.collectAsState()
+
+
             val showPrivacySettings by userViewModel.showPrivacySettings.collectAsState()
             val showHelpScreen by userViewModel.showHelpScreen.collectAsState()
             val showNotificationsScreen by userViewModel.showNotificationsScreen.collectAsState()
@@ -124,6 +135,34 @@ class MainActivity : ComponentActivity() {
                         }
 
                         when {
+                            showExerciseSelectionForDay && selectedDayIndex != null -> {
+                                ExerciseSelectionScreen(
+                                    dayIndex = selectedDayIndex!!,
+                                    onBackClick = authViewModel::hideExerciseSelectionForDayScreen,
+                                    onExerciseSelected = { exercise ->
+                                        createTrainingPlanViewModel.addExerciseToDay(selectedDayIndex!!, exercise)
+                                        authViewModel.hideExerciseSelectionForDayScreen()
+                                    }
+                                )
+                            }
+
+                            showCreateTrainingPlan -> {
+                                CreateTrainingPlanScreen(
+                                    onBackClick = authViewModel::hideCreateTrainingPlanScreen,
+                                    onNavigateToExerciseSelection = { dayIndex ->
+                                        authViewModel.showExerciseSelectionForDayScreen(dayIndex)
+                                    },
+                                    viewModel = createTrainingPlanViewModel
+                                )
+                            }
+
+                            showTrainingPlanDetail && selectedTrainingPlanId != null -> {
+                                TrainingPlanDetailScreen(
+                                    trainingPlanId = selectedTrainingPlanId!!,
+                                    onBackClick = authViewModel::hideTrainingPlanDetailScreen
+                                )
+                            }
+
                             showNotificationsScreen -> {
                                 NotificationsScreen(
                                     onReturnClick = userViewModel::hideNotificationsScreen,
@@ -208,6 +247,7 @@ class MainActivity : ComponentActivity() {
                                         val signInIntent = authViewModel.startGoogleSignIn()
                                         googleSignInLauncher.launch(signInIntent)
                                     },
+                                    onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen
                                 )
                             }
                             isUserLoggedIn && isFirstLogin -> {
@@ -226,7 +266,8 @@ class MainActivity : ComponentActivity() {
                                     onExerciseCreatorClick = authViewModel::showExerciseCreatorScreen,
                                     onSettingsClick = authViewModel::showSettingsScreen,
                                     onEditProfileClick = { authViewModel.showProfileEditScreen() },
-                                    onBrowseExercisesClick = authViewModel::showBrowseExercisesScreen
+                                    onBrowseExercisesClick = authViewModel::showBrowseExercisesScreen,
+                                    onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen
                                 )
                             }
                         }
