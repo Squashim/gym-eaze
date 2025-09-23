@@ -379,4 +379,5 @@
 
     <!-- Posts -->
     <string name="community">Społeczność</string>
+    <string name="succes_created_post">Post został dodany</string>
 </resources>

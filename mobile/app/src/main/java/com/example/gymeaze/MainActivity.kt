@@ -39,6 +39,7 @@ import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
+import com.example.gymeaze.viewmodel.PostsViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
@@ -49,6 +50,8 @@ class MainActivity : ComponentActivity() {
             val authViewModel: AuthViewModel = viewModel()
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
             val createTrainingPlanViewModel: CreateTrainingPlanViewModel = viewModel()
+            val createPostViewModel: PostsViewModel = viewModel()
+
             val userViewModel: UserViewModel = viewModel {
                 UserViewModel(
                     application = application,
@@ -142,7 +145,7 @@ class MainActivity : ComponentActivity() {
                         when {
                             showCreatePost -> {
                                 CreatePostScreen(
-                                    viewModel = exerciseCreatorViewModel, // lub jak nazywa się Twoja instancja ViewModel
+                                    viewModel = createPostViewModel, // lub jak nazywa się Twoja instancja ViewModel
                                     onBackClick = {
                                         // logika powrotu, np:
                                         //showCreatePost = false
