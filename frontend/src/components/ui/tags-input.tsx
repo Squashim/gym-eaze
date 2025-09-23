@@ -12,9 +12,18 @@ interface TagsInputProps {
   disabled?: boolean;
   maxTags?: number;
   id: string;
+  tabIndex?: number;
 }
 
-function TagsInput({ value, onChange, placeholder, disabled, maxTags = 50, id }: TagsInputProps) {
+function TagsInput({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  maxTags = 50,
+  id,
+  tabIndex = 0,
+}: TagsInputProps) {
   const [input, setInput] = useState('');
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -162,6 +171,7 @@ function TagsInput({ value, onChange, placeholder, disabled, maxTags = 50, id }:
         onPaste={handlePaste}
         placeholder={value.length > 0 ? 'Dodaj kolejny hasztag...' : placeholder}
         ref={inputRef}
+        tabIndex={tabIndex}
         value={input}
       />
     </div>

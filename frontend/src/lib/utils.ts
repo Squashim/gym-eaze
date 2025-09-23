@@ -1,10 +1,14 @@
+import { WORKOUT } from '@/constants/workout';
+import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
+import type { DurationSet, RepsSet } from '@/types/workout';
 import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import type { FieldValues } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
+import { parseTimeBrackets } from './parsers';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -184,4 +188,58 @@ export async function urlToFile(url: string): Promise<File> {
   const res = await fetch(url);
   const blob = await res.blob();
   return new File([blob], filename, { type: mimeType || blob.type });
+}
+
+export function getWeeks(days: TrainingDaySchema[]) {
+  return Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => {
+    const start = weekIndex * 7;
+    const end = Math.min(start + 7, days.length);
+    return {
+      name: `Tydzień ${weekIndex + 1}`,
+      days: days.slice(start, end),
+    };
+  });
+}
+
+export function getWorkoutDefaultSets(isRepsSet: true): RepsSet[];
+export function getWorkoutDefaultSets(isRepsSet: false): DurationSet[];
+export function getWorkoutDefaultSets(isRepsSet: boolean): RepsSet[] | DurationSet[] {
+  if (isRepsSet) {
+    return Array.from({ length: WORKOUT.DEFAULT_SETS }, () => ({
+      repetitions: WORKOUT.DEFAULT_SETS_REPS,
+      weight: null,
+    }));
+  } else {
+    return Array.from({ length: WORKOUT.DEFAULT_SETS }, () => ({
+      duration: WORKOUT.DEFAULT_SETS_DURATION,
+    }));
+  }
+}
+
+export function calculateWorkoutTime(day: TrainingDaySchema): number {
+  let totalSeconds = 0;
+  day.exercises.forEach((ex, idx) => {
+    const setsCount = ex.sets.length;
+    const rest = ex.restAfterSet;
+    const includeLastRest = idx === day.exercises.length - 1;
+
+    if (ex.isRepsSet) {
+      totalSeconds += ex.sets.reduce(
+        (sum, set) => sum + set.repetitions * WORKOUT.DEFAULT_SETS_REP_DURATION,
+        0,
+      );
+    } else {
+      totalSeconds += ex.sets.reduce((sum, set) => sum + set.duration, 0);
+    }
+
+    const restAfterSetCount = includeLastRest ? setsCount : Math.max(0, setsCount - 1);
+    totalSeconds += restAfterSetCount * rest;
+  });
+
+  return totalSeconds;
+}
+
+export function getDayTimeRange(day: TrainingDaySchema): string {
+  const totalSeconds = calculateWorkoutTime(day);
+  return parseTimeBrackets(totalSeconds);
 }

@@ -13,9 +13,14 @@ export const EXERCISE = {
   search: 'exercises/search',
   favorite: 'exercises/favorite',
   byId: (id: string) => `exercises/${id}`,
+  byIds: 'exercises/batch',
   byUser: (userId: string) => `exercises/user/${userId}`,
   toggleLike: (id: string) => `exercises/${id}/like`,
   toggleFavorite: (id: string) => `exercises/${id}/favorite`,
+} as const;
+
+export const WORKOUT = {
+  base: 'training-plans',
 } as const;
 
 export const USER = {

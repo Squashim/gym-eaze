@@ -4,6 +4,7 @@ import type {
   CreateExercisePayload,
   GetExerciseApiResponse,
   GetExercisesApiResponse,
+  GetExercisesByIdsApiResponse,
   UpdateExercisePayload,
 } from '@/types/exercise';
 import API from './api-client';
@@ -59,6 +60,11 @@ const getById = async (id: string): Promise<GetExerciseApiResponse> => {
   return data;
 };
 
+const getByIds = async (ids: string[]): Promise<GetExercisesByIdsApiResponse[]> => {
+  const { data } = await API.post<GetExercisesByIdsApiResponse[]>(endpoints.byIds, { ids });
+  return data;
+};
+
 const getFavorite = async (
   params: PaginatedQueryParams,
 ): Promise<PaginatedResponse<GetExercisesApiResponse>> => {
@@ -85,6 +91,7 @@ export {
   create,
   update,
   getById,
+  getByIds,
   getAll,
   toggleLike,
   toggleFavorite,

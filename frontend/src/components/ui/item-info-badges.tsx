@@ -27,7 +27,7 @@ const VisibilityBadge = ({ visibility, type, variant = 'default' }: VisibilityBa
   const icon = isPublic ? <Globe2 className="size-4 mr-0.5" /> : <Lock className="size-4 mr-0.5" />;
   const label = `${isPublic ? 'Publiczn' : 'Prywatn'}${type === 'Workout' ? 'y' : 'e'}`;
   return (
-    <Badge className="min-h-7 text-sm px-3" variant={variant}>
+    <Badge className="min-h-7" variant={variant}>
       <div>{icon}</div>
       {label}
     </Badge>

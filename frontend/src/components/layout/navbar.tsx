@@ -30,7 +30,7 @@ import { authorizedLinks, links } from '@/constants/navbar';
 import type { MenuItem } from '@/types/navbar';
 import { Loader2, LucideLogIn, LucideLogOut, Menu, X } from 'lucide-react';
 import Typography from '../ui/typography';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { useMediaQuery } from '@/hooks/utils/use-media-query';
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
 import {
   DropdownMenuContent,

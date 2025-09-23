@@ -8,16 +8,19 @@ import { Toaster } from '@/components/ui/sonner';
 import toasterOptions from './config/toaster';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import router from './router';
+import { StrictMode } from 'react';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 createRoot(document.getElementById('root')!).render(
-  <GoogleOAuthProvider clientId={clientId}>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />;
-        <Toaster {...toasterOptions} />
-      </QueryClientProvider>
-    </ThemeProvider>
-  </GoogleOAuthProvider>,
+  <StrictMode>
+    <GoogleOAuthProvider clientId={clientId}>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <Toaster {...toasterOptions} />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </GoogleOAuthProvider>
+  </StrictMode>,
 );

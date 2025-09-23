@@ -5,6 +5,7 @@ export const QUERY_KEYS = {
   EQUIPMENT: ['equipment'],
   MUSCLE_GROUPS: ['muscle-groups'],
   EXERCISES: (params: ExerciseQueryParams) => ['exercises', params],
+  EXERCISES_BY_IDS: (length: number) => ['exercises', 'by-ids', length],
   EXERCISE: (id: string) => ['exercises', id],
   FAVORITE_EXERCISES: (params: PaginatedQueryParams) => ['exercises', 'favorite', params],
   USER_EXERCISES: (userId: string, params: PaginatedQueryParams) => [

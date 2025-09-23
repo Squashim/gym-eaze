@@ -33,6 +33,13 @@ export type BaseExerciseApiResponse<
   updatedAt: string;
 };
 
+export type GetExercisesByIdsApiResponse = {
+  _id: string;
+  name: string;
+  image: string;
+  muscleGroup: MuscleGroup[];
+};
+
 export type GetExerciseApiResponse = BaseExerciseApiResponse<MuscleGroup[], Equipment[], Author>;
 
 export type GetExercisesApiResponse = BaseExerciseApiResponse<{ _id: string; name: string }[]>;

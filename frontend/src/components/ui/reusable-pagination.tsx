@@ -10,17 +10,17 @@ import {
 } from './pagination';
 import type { MouseEvent } from 'react';
 import { cn } from '@/lib/utils';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { useMediaQuery } from '@/hooks/utils/use-media-query';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import Typography from './typography';
 
 type ReusablePaginationProps = {
   currentPage: number;
-  pageSize: number;
+  pageSize?: number;
   totalPages: number;
   scrollToRef?: React.RefObject<HTMLHeadingElement | null>;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: PageSize) => void;
+  onPageSizeChange?: (size: PageSize) => void;
 };
 
 const ReusablePagination = ({
@@ -68,6 +68,7 @@ const ReusablePagination = ({
     if (scrollToRef?.current) {
       requestAnimationFrame(() => {
         scrollToRef.current?.scrollIntoView({ behavior: 'smooth' });
+        (document.activeElement as HTMLElement)?.blur();
       });
     }
   };
@@ -100,23 +101,26 @@ const ReusablePagination = ({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className="flex items-center gap-2 w-full justify-end">
-        <Typography variant="muted">Pokaż na stronie</Typography>
+      {onPageSizeChange && pageSize && (
+        <div className="flex items-center gap-2 w-full justify-end">
+          <Typography variant="muted">Pokaż na stronie</Typography>
 
-        <Select
-          onValueChange={(value) => onPageSizeChange(Number(value) as PageSize)}
-          value={pageSize.toString()}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="9">9</SelectItem>
-            <SelectItem value="18">18</SelectItem>
-            <SelectItem value="36">36</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <Select
+            onValueChange={(value) => onPageSizeChange(Number(value) as PageSize)}
+            value={pageSize.toString()}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="9">9</SelectItem>
+              <SelectItem value="18">18</SelectItem>
+              <SelectItem value="36">36</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {totalPages > 1 && (
         <div className="flex justify-center w-full">
           <Pagination>
@@ -128,8 +132,8 @@ const ReusablePagination = ({
                     currentPage <= 1 && 'pointer-events-none opacity-70',
                     !isMobile && 'h-10',
                   )}
-                  href="#"
                   onClick={handlePreviousPage}
+                  tabIndex={currentPage <= 1 ? -1 : 0}
                 />
               </PaginationItem>
               {visiblePages.map((page, index) => (
@@ -139,7 +143,6 @@ const ReusablePagination = ({
                   ) : (
                     <PaginationLink
                       className={cn(!isMobile && 'size-10')}
-                      href="#"
                       isActive={currentPage === page}
                       onClick={(e) => handlePageSelect(e, page as number)}
                     >
@@ -155,8 +158,8 @@ const ReusablePagination = ({
                     currentPage >= totalPages && 'pointer-events-none opacity-70',
                     !isMobile && 'h-10',
                   )}
-                  href="#"
                   onClick={handleNextPage}
+                  tabIndex={currentPage >= totalPages ? -1 : 0}
                 />
               </PaginationItem>
             </PaginationContent>
