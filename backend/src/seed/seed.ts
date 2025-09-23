@@ -45,9 +45,9 @@ const seed = async () => {
     //await seedBadges();
     //await seedEquipment();
     //await seedMuscleGroups();
+    await seedUsers();
     await seedExercises();
-    //await seedUsers();
-    //await seedPosts();
+    await seedPosts();
     //await seedTrainingPlans();
     //await seedComments();
     //await seedUserHasTrainingPlans();

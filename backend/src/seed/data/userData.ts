@@ -4,7 +4,7 @@ import { UserRole } from '../../constants/roles';
 import { Goal } from '../../constants/goals';
 import { Gender } from '../../constants/genders';
 import { StatusTraining } from '../../constants/statuses';
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
 
 const saltRounds = 10;
@@ -27,22 +27,28 @@ export const seedUsers = async () => {
 };
 
 export const userIds = {
-  admin: new ObjectId("68aadfbccc15cf46f25867ad"), // admin
+  admin: new ObjectId('68aadfbccc15cf46f25867ad'), // admin
+  monikaGym: new ObjectId('68d0243f1ef234cc5446b600'), // monikaGym
 };
 
-
 const users = [
-    {
+  {
     _id: userIds.admin,
-    username: "GymEaze",
-    email: "gymeaze.admin@gmail.com",
-    password: "Admin12345678!",
+    username: 'GymEaze',
+    email: 'gymeaze.admin@gmail.com',
+    password: 'Admin12345678!',
     role: UserRole.admin,
     profileDetails: {
-      profilePicture: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
       description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
       goal: Goal.calorieBurn,
     },
+    followedUsers: [
+      {
+        _id: userIds.monikaGym,
+      },
+    ],
     badges: [
       {
         badge: new Types.ObjectId('6887b71977991eea1a365c96'),
@@ -75,6 +81,18 @@ const users = [
         awardedAt: new Date(),
       },
     ],
+  },
+  {
+    _id: userIds.monikaGym,
+    username: 'monikaGym',
+    email: 'monikaGym@example.com',
+    password: 'monikaGym12345678!',
+    role: UserRole.user,
+    profileDetails: {
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
+      description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
+    },
   },
   /*
   {
