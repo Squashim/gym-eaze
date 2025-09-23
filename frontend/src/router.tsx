@@ -12,6 +12,7 @@ import ExerciseCreator from './pages/exercises/creator';
 import UserExercises from './pages/exercises/user';
 import FavoriteExercises from './pages/exercises/favorite';
 import App from './app';
+import Community from './pages/community';
 import WorkoutCreator from './pages/workouts/creator';
 
 const router = createBrowserRouter([
@@ -23,7 +24,7 @@ const router = createBrowserRouter([
         element: <AuthGuard allow="all" />,
         children: [
           { index: true, path: '/', element: <Welcome /> },
-          { path: '/social/browse', element: <div>Posty</div> },
+          { path: '/community', element: <Community /> },
           {
             path: '/exercises',
             children: [

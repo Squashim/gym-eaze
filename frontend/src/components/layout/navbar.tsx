@@ -39,9 +39,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
 import Notification from '../ui/notification';
+import ReusableAvatar from '../ui/reusable-avatar';
 
 type NavbarProps = {
   isLoggedIn: boolean;
@@ -178,17 +178,7 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
                     {isLoggedIn && user && (
                       <div className="flex w-full flex-col gap-4">
                         <div className="flex items-center gap-4">
-                          <Avatar className="size-12">
-                            <AvatarImage
-                              alt={`zdjęcie profilowe użytkownika ${user.username}`}
-                              src={user.profileDetails.profilePicture || undefined}
-                            />
-                            <AvatarFallback>
-                              <Typography className="font-medium" variant="h4">
-                                {user.username.slice(0, 2).toUpperCase()}
-                              </Typography>
-                            </AvatarFallback>
-                          </Avatar>
+                          <ReusableAvatar className="size-12" variant="h4" />
                           <div className="flex flex-col">
                             <Typography className="font-semibold text-base" variant="p">
                               {user.username}
@@ -244,17 +234,10 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
           {isLoggedIn && user && (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild tabIndex={0}>
-                <Avatar className="cursor-pointer shadow-sm">
-                  <AvatarImage
-                    alt={`zdjęcie profilowe użytkownika ${user.username}`}
-                    src={user.profileDetails.profilePicture || undefined}
-                  />
-                  <AvatarFallback className="dark:bg-background">
-                    <Typography variant="small">
-                      {user.username.slice(0, 2).toUpperCase()}
-                    </Typography>
-                  </AvatarFallback>
-                </Avatar>
+                <ReusableAvatar
+                  className="cursor-pointer shadow-sm"
+                  fallbackClassName="dark:bg-background"
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="hidden lg:flex flex-col">
                 <DropdownMenuLabel>

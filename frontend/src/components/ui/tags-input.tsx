@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Textarea } from './textarea';
 import { Button } from './button';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface TagsInputProps {
   value: string[];
@@ -13,6 +14,7 @@ interface TagsInputProps {
   maxTags?: number;
   id: string;
   tabIndex?: number;
+  className?: string;
 }
 
 function TagsInput({
@@ -23,6 +25,7 @@ function TagsInput({
   maxTags = 50,
   id,
   tabIndex = 0,
+  className,
 }: TagsInputProps) {
   const [input, setInput] = useState('');
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
@@ -103,7 +106,10 @@ function TagsInput({
   return (
     <div
       aria-label="Pole formularza z hasztagami"
-      className="dark:bg-input/30 border-input flex max-h-24 min-h-20 overflow-y-auto scrollbar w-full min-w-0 rounded-md border bg-transparent px-1 py-1 text-base shadow-xs duration-300 outline-none items-start flex-wrap gap-1 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 transition-all pr-12 relative"
+      className={cn(
+        'dark:bg-input/30 border-input flex max-h-24 min-h-20 overflow-y-auto scrollbar w-full min-w-0 rounded-md border bg-transparent px-1 py-1 text-base shadow-xs duration-300 outline-none items-start flex-wrap gap-1 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 transition-all pr-12 relative',
+        className,
+      )}
       onClick={() => inputRef.current?.focus()}
       role="listbox"
     >
