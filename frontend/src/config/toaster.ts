@@ -1,4 +1,5 @@
 const toasterOptions = {
+  duration: 1500,
   richColors: true,
   toastOptions: {
     classNames: {

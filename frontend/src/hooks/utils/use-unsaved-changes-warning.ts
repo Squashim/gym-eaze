@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
-import { useBlocker, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { useBlocker } from 'react-router-dom';
 
 export function useUnsavedChangesWarning(hasUnsavedChanges: boolean) {
-  const navigate = useNavigate();
+  const shouldBypassBlocker = useRef(false);
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+      hasUnsavedChanges &&
+      !shouldBypassBlocker.current &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {
@@ -23,8 +25,12 @@ export function useUnsavedChangesWarning(hasUnsavedChanges: boolean) {
     }
   }, [blocker]);
 
+  const bypassBlocker = () => {
+    shouldBypassBlocker.current = true;
+  };
+
   const handleCancel = () => {
-    void navigate(-1);
+    window.history.back();
   };
 
   useEffect(() => {
@@ -41,6 +47,7 @@ export function useUnsavedChangesWarning(hasUnsavedChanges: boolean) {
   }, [hasUnsavedChanges]);
 
   return {
-    handleCancel,
+    onCancel: handleCancel,
+    bypassBlocker,
   };
 }
