@@ -88,7 +88,7 @@ fun ExercisesMenuScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        ExerciseSectionButton(
+                        SectionButton(
                             title = "Kreator\nćwiczenia",
                             subtitle = "Stwórz swoje\nidealne\nćwiczenie",
                             imageRes = R.drawable.create_exercise,
@@ -99,7 +99,7 @@ fun ExercisesMenuScreen(
                             onClick = onCreateExerciseClick
                         )
 
-                        ExerciseSectionButton(
+                        SectionButton(
                             title = "Moje\nćwiczenia",
                             subtitle = "Zbiór Twoich\nćwiczeń",
                             imageRes = R.drawable.my_exercises,
@@ -113,7 +113,7 @@ fun ExercisesMenuScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        ExerciseSectionButton(
+                        SectionButton(
                             title = "Przeglądaj\nćwiczenia",
                             subtitle = "Odkrywaj\nnowe\npomysły",
                             imageRes = R.drawable.overview_exercises,
@@ -122,7 +122,7 @@ fun ExercisesMenuScreen(
                             onClick = onBrowseExercisesClick
                         )
 
-                        ExerciseSectionButton(
+                        SectionButton(
                             title = "Ulubione",
                             subtitle = "Tutaj znajdziesz\nćwiczenia które\nchcesz mieć\npod ręką",
                             imageRes = R.drawable.favorites_exercises,
@@ -138,7 +138,7 @@ fun ExercisesMenuScreen(
 }
 
 @Composable
-private fun ExerciseSectionButton(
+fun SectionButton(
     title: String,
     subtitle: String,
     imageRes: Int,
@@ -169,11 +169,11 @@ private fun ExerciseSectionButton(
                     color = borderColor,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .padding(16.dp)
+                .padding(12.dp)
         ) {
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .height(150.dp)
                     .align(Alignment.TopCenter)
                     .offset(y = 10.dp),
                 shape = RoundedCornerShape(12.dp),

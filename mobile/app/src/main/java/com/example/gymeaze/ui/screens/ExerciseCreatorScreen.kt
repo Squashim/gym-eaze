@@ -29,6 +29,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -181,7 +182,7 @@ fun ExerciseCreatorScreen(
 }
 
 @Composable
-private fun ExitConfirmationDialog(
+fun ExitConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -964,44 +965,82 @@ private fun BottomBar(
 }
 
 @Composable
-private fun UploadCard(
+fun UploadCard(
     title: String,
     subtitle: String,
     hint: String,
     selected: Boolean,
     onPick: (Uri?) -> Unit,
     mime: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent(), onPick)
+
+    val alpha = if (enabled) 1f else 0.5f
+    val cardColor = if (enabled) getSurfaceColor() else getSurfaceColor().copy(alpha = 0.6f)
+    val borderColor = if (enabled) {
+        getOnSurfaceColor().copy(alpha = 0.3f)
+    } else {
+        getOnSurfaceColor().copy(alpha = 0.15f)
+    }
 
     Card(
         modifier = modifier
             .height(220.dp)
-            .clickable { launcher.launch(mime) }
-            .border(1.dp, getOnSurfaceColor().copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
+            .clickable(enabled = enabled) {
+                if (enabled) launcher.launch(mime)
+            }
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(12.dp)
+                .alpha(alpha),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = getPrimaryColor(), modifier = Modifier.size(28.dp))
+            Icon(
+                Icons.Default.CloudUpload,
+                contentDescription = null,
+                tint = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
+                modifier = Modifier.size(28.dp)
+            )
             Spacer(Modifier.height(6.dp))
-            Text(title, color = getOnSurfaceColor(), fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
-            Text(subtitle, color = getOnSurfaceSecondaryColor(), fontSize = 12.sp, textAlign = TextAlign.Center)
+            Text(
+                title,
+                color = if (enabled) getOnSurfaceColor() else getOnSurfaceColor().copy(alpha = 0.5f),
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                subtitle,
+                color = if (enabled) getOnSurfaceSecondaryColor() else getOnSurfaceSecondaryColor().copy(alpha = 0.5f),
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
             Spacer(Modifier.height(8.dp))
-            Text(hint, color = getOnSurfaceSecondaryColor(), fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 12.sp)
+            Text(
+                hint,
+                color = if (enabled) getOnSurfaceSecondaryColor() else getOnSurfaceSecondaryColor().copy(alpha = 0.5f),
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 12.sp
+            )
             Spacer(Modifier.height(6.dp))
-            if (selected) Text(stringResource(R.string.file_selected), color = getPrimaryColor(), fontSize = 12.sp)
+            if (selected) {
+                Text(
+                    stringResource(R.string.file_selected),
+                    color = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }
-
 @Composable
 private fun DifficultyRow(text: String, selected: Boolean, onSelect: () -> Unit) {
     Row(

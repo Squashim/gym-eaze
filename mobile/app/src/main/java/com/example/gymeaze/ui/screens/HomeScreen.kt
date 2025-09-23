@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
+import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
@@ -64,7 +65,9 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
     onEditProfileClick: () -> Unit,
     onBrowseExercisesClick: () -> Unit,
-    onCreateTrainingPlanClick: () -> Unit
+    onCreateTrainingPlanClick: () -> Unit,
+    onCreatePostClick: () -> Unit = {}
+
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
@@ -89,7 +92,7 @@ fun HomeScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> CommunityScreen(onSettingsClick)
+            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick)
             "profile" -> {
                 LazyColumn(
                     modifier = Modifier

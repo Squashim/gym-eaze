@@ -234,7 +234,6 @@
     <string name="how_to_earn_badges">Jak zdobywać odznaki?</string>
     <string name="notifications">Powiadomienia</string>
     <string name="logout">Wyloguj się</string>
-    <string name="community">Społeczność</string>
     <string name="exercise_creator">Kreator ćwiczenia</string>
     <string name="cancel_creation">Anuluj tworzenie</string>
     <string name="exit_creation_confirmation_title">Czy na pewno chcesz przerwać tworzenie ćwiczenia?</string>
@@ -378,4 +377,6 @@
     <string name="tips_title">Wskazówki</string>
     <string name="badges_tips">Możesz przypiąć maksymalnie 5 odznak do swojego profilu – pokaż innym z czego jesteś najbardziej dumny!</string>
 
+    <!-- Posts -->
+    <string name="community">Społeczność</string>
 </resources>

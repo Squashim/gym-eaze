@@ -33,6 +33,7 @@ import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
+import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.AuthUiState
 
@@ -419,7 +420,8 @@ fun AuthScreen(
     onLogin: () -> Unit,
     onGoogleLogin: () -> Unit,
     onSettingsClick: () -> Unit,
-    onCreateTrainingPlanClick : () -> Unit
+    onCreateTrainingPlanClick : () -> Unit,
+    onCreatePostClick: () -> Unit = {}
 ) {
     var selectedRoute by remember { mutableStateOf("profile") }
 
@@ -441,7 +443,8 @@ fun AuthScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> CommunityScreen(onSettingsClick)
+            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick)
+
             "profile" -> {
                 Box(modifier = Modifier.fillMaxSize()) {
                     BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())

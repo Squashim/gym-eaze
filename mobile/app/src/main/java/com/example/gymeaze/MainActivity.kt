@@ -32,6 +32,8 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
 import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
 import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
+import com.example.gymeaze.ui.screens.posts.PostScreen
+import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
@@ -90,6 +92,9 @@ class MainActivity : ComponentActivity() {
             val showHelpScreen by userViewModel.showHelpScreen.collectAsState()
             val showNotificationsScreen by userViewModel.showNotificationsScreen.collectAsState()
 
+            val showPostScreen by authViewModel.showPostScreen.collectAsState()
+            val showCreatePost by authViewModel.showCreatePost.collectAsState()
+
             logoutEvent?.let { event ->
                 val context = LocalContext.current
                 LaunchedEffect(event) {
@@ -135,6 +140,28 @@ class MainActivity : ComponentActivity() {
                         }
 
                         when {
+                            showCreatePost -> {
+                                CreatePostScreen(
+                                    viewModel = exerciseCreatorViewModel, // lub jak nazywa się Twoja instancja ViewModel
+                                    onBackClick = {
+                                        // logika powrotu, np:
+                                        //showCreatePost = false
+                                    },
+                                    onCreated = {
+                                        // logika po utworzeniu posta, np:
+                                        //showCreatePost = false
+                                        // ewentualnie odświeżenie listy postów
+                                    }
+                                )
+                            }
+
+                            showPostScreen -> {
+                                PostScreen(
+                                    onSettingsClick = authViewModel::showSettingsScreen,
+                                    isUserLoggedIn = isUserLoggedIn,
+                                    onCreatePostClick = authViewModel::showCreatePostScreen
+                                )
+                            }
                             showExerciseSelectionForDay && selectedDayIndex != null -> {
                                 ExerciseSelectionScreen(
                                     dayIndex = selectedDayIndex!!,
@@ -247,7 +274,8 @@ class MainActivity : ComponentActivity() {
                                         val signInIntent = authViewModel.startGoogleSignIn()
                                         googleSignInLauncher.launch(signInIntent)
                                     },
-                                    onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen
+                                    onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
+                                    onCreatePostClick = authViewModel::showCreatePostScreen
                                 )
                             }
                             isUserLoggedIn && isFirstLogin -> {
@@ -267,7 +295,8 @@ class MainActivity : ComponentActivity() {
                                     onSettingsClick = authViewModel::showSettingsScreen,
                                     onEditProfileClick = { authViewModel.showProfileEditScreen() },
                                     onBrowseExercisesClick = authViewModel::showBrowseExercisesScreen,
-                                    onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen
+                                    onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
+                                    onCreatePostClick = authViewModel::showCreatePostScreen
                                 )
                             }
                         }
