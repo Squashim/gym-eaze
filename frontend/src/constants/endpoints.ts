@@ -23,6 +23,10 @@ export const WORKOUT = {
   base: 'training-plans',
 } as const;
 
+export const POST = {
+  base: 'posts',
+} as const;
+
 export const USER = {
   likedItems: 'user/likes',
   favoritedItems: 'user/favorites',
