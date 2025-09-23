@@ -29,7 +29,7 @@ const SetsList = ({
 
   return (
     <>
-      <header className="flex items-center gap-4 justify-between py-4">
+      <header className="flex items-center gap-4 justify-between py-4 flex-wrap">
         <NumberInput
           autoFocus
           className="w-12"
@@ -65,7 +65,10 @@ const SetsList = ({
         />
       </header>
 
-      <div className="flex flex-col gap-2 overflow-y-auto scrollbar max-h-[40dvh]">
+      <div
+        className="flex flex-col gap-2 overflow-y-auto scrollbar"
+        style={{ maxHeight: 'calc(100vh - 44rem)' }}
+      >
         {sets.map((_, i) => (
           <SetItem
             dayNumber={dayNumber}

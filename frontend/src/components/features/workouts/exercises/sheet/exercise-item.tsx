@@ -24,27 +24,28 @@ const ExerciseItem = ({ item, onExerciseToggle, isExerciseAdded }: ExerciseItemP
   );
 
   return (
-    <div className="rounded-md p-3 shadow-md flex items-center gap-2 border h-26 bg-card text-card-foreground">
-      <div className="flex-shrink-0 overflow-hidden h-full aspect-square">
-        <img
-          alt={`zdjęcie poglądowe ćwiczenia ${item.name}`}
-          className="w-full h-full aspect-square object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
-          src={item.image}
-        />
-      </div>
-
-      <div className="flex flex-col items-start justify-between h-full">
-        <Typography className="text-sm font-semibold line-clamp-1">{item.name}</Typography>
-        <Typography className="text-sm line-clamp-1" variant="muted">
-          {displayMuscleGroups}
-        </Typography>
-        <div className="flex gap-2 items-center">
-          <AdvancedLevelBadge advancedLevel={item.advancedLevel} />
-          <LikesBadge likes={item.likes} />
+    <div className="rounded-md p-3 shadow-md flex gap-2 border bg-card text-card-foreground h-26 max-[425px]:h-auto">
+      <div className="flex gap-3 max-[425px]:flex-col">
+        <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-[425px]:max-h-26">
+          <img
+            alt={`zdjęcie poglądowe ćwiczenia ${item.name}`}
+            className="h-full aspect-square object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
+            src={item.image}
+          />
+        </div>
+        <div className="flex flex-col items-start justify-between h-full">
+          <Typography className="text-sm font-semibold line-clamp-1">{item.name}</Typography>
+          <Typography className="text-sm line-clamp-1" variant="muted">
+            {displayMuscleGroups}
+          </Typography>
+          <div className="flex gap-2 items-center flex-wrap">
+            <AdvancedLevelBadge advancedLevel={item.advancedLevel} />
+            <LikesBadge likes={item.likes} />
+          </div>
         </div>
       </div>
 
-      <div className="ml-auto flex flex-col justify-between h-full">
+      <div className="flex gap-2 ml-auto flex-col h-full">
         <DetailsActionBtn redirectTo={`/exercises/${item._id}`} />
 
         <Tooltip>

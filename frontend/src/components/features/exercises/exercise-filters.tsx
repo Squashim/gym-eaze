@@ -49,7 +49,6 @@ const ExerciseFilters = ({
 }: ExerciseFiltersProps) => {
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const [searchText, setSearchText] = useState(filters.search ?? '');
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const debouncedSearch = useDebounce(searchText, 350);
   const {
     data: muscleGroups,
@@ -62,17 +61,22 @@ const ExerciseFilters = ({
     isError: isEquipmentError,
   } = useGetEquipment();
 
-  useEffect(() => {
-    const count = Object.entries(filters).reduce((acc, [key, value]) => {
+  const activeFiltersCount = useMemo(() => {
+    return Object.entries(filters).reduce((acc, [key, value]) => {
       if (key === 'search') return acc;
       if (Array.isArray(value) && value.length > 0) return acc + 1;
       if (typeof value === 'boolean' && value) return acc + 1;
       if (typeof value === 'string' && value !== '') return acc + 1;
       return acc;
     }, 0);
-
-    setActiveFiltersCount(count);
   }, [filters]);
+
+  const muscleGroupOptions = useMemo(
+    () => apiResponseToMultiSelectOptions(muscleGroups),
+    [muscleGroups],
+  );
+
+  const equipmentOptions = useMemo(() => apiResponseToMultiSelectOptions(equipment), [equipment]);
 
   useEffect(() => {
     setFilters({ search: debouncedSearch });
@@ -148,7 +152,7 @@ const ExerciseFilters = ({
                 maxCount={3}
                 modalPopover={true}
                 onValueChange={(value) => setFilters({ muscleGroups: value })}
-                options={apiResponseToMultiSelectOptions(muscleGroups)}
+                options={muscleGroupOptions}
                 placeholder={
                   isMuscleGroupsLoading
                     ? 'Ładowanie...'
@@ -172,7 +176,7 @@ const ExerciseFilters = ({
                 maxCount={3}
                 modalPopover={true}
                 onValueChange={(value) => setFilters({ equipment: value })}
-                options={apiResponseToMultiSelectOptions(equipment)}
+                options={equipmentOptions}
                 placeholder={
                   isEquipmentLoading
                     ? 'Ładowanie...'

@@ -37,7 +37,7 @@ import {
   type TrainingDaySchema,
   type WorkoutSchema,
 } from '@/schemas/workout-schema';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import ActiveDay from '@/components/features/workouts/active-day';
 import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
@@ -55,6 +55,7 @@ import { useWorkout } from '@/hooks/query/workouts/use-workout';
 import type { CreateWorkoutPayload } from '@/types/workout';
 import HashtagList from '@/components/ui/hashtag-list';
 import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
+import { toast } from 'sonner';
 
 interface WorkoutCreatorProps {
   mode: 'create' | 'edit';
@@ -75,6 +76,15 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
   const { onCancel, bypassBlocker } = useUnsavedChangesWarning(form.formState.isDirty);
 
   usePageTitle(isEditMode ? 'Edytor planu treningowego' : 'Kreator planu treningowego');
+
+  useEffect(() => {
+    const daysError = form.formState.errors?.stepTwo?.days;
+    if (daysError && typeof daysError.message === 'string') {
+      toast.error(daysError.message);
+    } else if (Array.isArray(daysError)) {
+      toast.error('Upewnij się, że każdy dzień treningowy jest poprawnie wypełniony.');
+    }
+  }, [form.formState.errors?.stepTwo?.days]);
 
   const handleCreate = (formData: WorkoutSchema) => {
     const formattedData = {
@@ -122,7 +132,7 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
                 prevStep={prevStep}
                 refs={refs}
                 step={step}
-                submitDisabled={createWorkout.isPending || !form.formState.isDirty}
+                submitDisabled={isEditMode && !form.formState.isDirty}
                 submitLabel={isEditMode ? 'Edytuj plan' : 'Stwórz plan'}
                 submittingLabel={isEditMode ? 'Edytowanie...' : 'Tworzenie...'}
                 totalSteps={totalSteps}

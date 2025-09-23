@@ -66,7 +66,7 @@ const ExerciseItem = ({
 
   return (
     <div
-      className="rounded-md p-3 shadow-md flex items-center gap-2 border h-24 bg-card text-card-foreground hover:bg-primary/10 cursor-pointer transition-[background,border] ease-in-out duration-200 hover:border-primary/30"
+      className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground hover:bg-primary/10 cursor-pointer transition-[background,border] ease-in-out duration-200 hover:border-primary/30 relative min-[425px]:h-24 flex-wrap  min-[425px]:flex-nowrap"
       onClick={handleSelect}
       onKeyDown={handleKeyDown}
       ref={setNodeRef}
@@ -78,7 +78,7 @@ const ExerciseItem = ({
         <GripVertical className="size-5" />
       </div>
 
-      <div className="flex-shrink-0 overflow-hidden h-full aspect-square">
+      <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-h-24">
         <img
           alt={`zdjęcie poglądowe ćwiczenia ${exercise.name}`}
           className="w-full h-full aspect-square object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
@@ -86,7 +86,7 @@ const ExerciseItem = ({
         />
       </div>
 
-      <div className="flex flex-col items-start justify-between h-full">
+      <div className="flex flex-col items-start justify-between min-[425px]:h-full">
         <Typography className="text-sm font-semibold line-clamp-1">{exercise.name}</Typography>
         <Typography className="text-sm line-clamp-1" variant="muted">
           {displayMuscleGroups}
@@ -99,7 +99,7 @@ const ExerciseItem = ({
         </div>
       </div>
 
-      <div className="ml-auto flex flex-col justify-between h-full">
+      <div className="ml-auto flex flex-col justify-between absolute top-4 right-4 min-[425px]:h-full min-[425px]:static">
         <ExerciseManageDropdown
           exercisesCount={exercisesCount}
           onDelete={handleDelete}

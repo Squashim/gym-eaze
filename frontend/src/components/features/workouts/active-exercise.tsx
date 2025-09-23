@@ -60,8 +60,8 @@ const ActiveExercise = ({
         {isError && <Message>Wystąpił błąd podczas pobierania ćwiczenia.</Message>}
 
         {exercise && (
-          <div className="rounded-md p-3 shadow-md flex items-center gap-2 border h-30 bg-card text-card-foreground">
-            <div className="flex-shrink-0 overflow-hidden h-full aspect-square">
+          <div className="rounded-md p-3 shadow-md flex items-center gap-2 border min-[425px]:h-30 bg-card text-card-foreground flex-wrap min-[425px]:flex-nowrap">
+            <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-h-30">
               <img
                 alt={`zdjęcie poglądowe ćwiczenia ${exercise.name}`}
                 className="w-full h-full aspect-square object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
@@ -69,7 +69,7 @@ const ActiveExercise = ({
               />
             </div>
 
-            <div className="flex flex-col items-start justify-between h-full">
+            <div className="flex flex-col items-start justify-between min-[425px]:h-full">
               <Typography className="text-sm font-semibold line-clamp-1">
                 {exercise.name}
               </Typography>

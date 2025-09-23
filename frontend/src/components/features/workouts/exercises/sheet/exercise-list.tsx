@@ -47,12 +47,12 @@ const ExerciseList = ({
   }
 
   return (
-    <section className="px-4 pb-4 gap-4 flex flex-col">
-      <div className="grid gap-3 h-full">
+    <>
+      <div className="flex flex-col gap-3 h-full min-h-0 mb-4">
         <Typography className="text-lg" ref={scrollRef} variant="h4">
           Znaleziono {parseExerciseLabel(exercises?.total ?? 0)}
         </Typography>
-        <div className="overflow-y-auto scrollbar flex flex-col gap-3 max-h-[63dvh]">
+        <div className="flex flex-col flex-grow min-h-0 overflow-y-auto scrollbar gap-3">
           {exercises && exercises.items.length === 0 ? (
             <ExerciseErrorState listType={listType} />
           ) : (
@@ -74,7 +74,7 @@ const ExerciseList = ({
         scrollToRef={scrollRef}
         totalPages={totalPages}
       />
-    </section>
+    </>
   );
 };
 

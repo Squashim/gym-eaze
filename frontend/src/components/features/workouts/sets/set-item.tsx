@@ -54,7 +54,7 @@ const SetItem = ({
         </div>
 
         {isRepsSet ? (
-          <div className="flex items-center gap-4 justify-between w-full">
+          <div className="flex items-center gap-4 justify-between w-full flex-wrap">
             <FormField
               control={control}
               name={`stepTwo.days.${dayNumber}.exercises.${exerciseNumber}.sets.${setNumber}.repetitions`}

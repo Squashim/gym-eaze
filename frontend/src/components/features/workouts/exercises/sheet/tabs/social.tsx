@@ -6,7 +6,7 @@ import useFilterQuery from '@/hooks/use-filter-query';
 import type { ExerciseFilters, SortBy } from '@/types/filters';
 import { initialExerciseFilters } from '@/constants/filters';
 import useGetExercises from '@/hooks/query/exercises/use-get-exercises';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useDebounce from '@/hooks/utils/use-debounce';
 import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-groups';
 import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
@@ -27,13 +27,14 @@ import {
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
 
+const FILTERS_MAX_HEIGHT = 650;
+
 const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {
   const { params, setPage, setFilters, setSortBy, clearFilters } =
     useFilterQuery<ExerciseFilters>(initialExerciseFilters);
   const { data: exercises, isLoading, isError } = useGetExercises(params);
   const [searchText, setSearchText] = useState(params.filters?.search ?? '');
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const debouncedSearch = useDebounce(searchText, 350);
   const {
     data: muscleGroups,
@@ -46,17 +47,24 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
     isError: isEquipmentError,
   } = useGetEquipment();
 
-  useEffect(() => {
-    const count = Object.entries(params.filters ?? {}).reduce((acc, [key, value]) => {
+  const activeFiltersCount = useMemo(() => {
+    return Object.entries(params.filters ?? {}).reduce((acc, [key, value]) => {
       if (key === 'search') return acc;
       if (Array.isArray(value) && value.length > 0) return acc + 1;
       if (typeof value === 'boolean' && value) return acc + 1;
       if (typeof value === 'string' && value !== '') return acc + 1;
       return acc;
     }, 0);
-
-    setActiveFiltersCount(count);
   }, [params.filters]);
+  const muscleGroupOptions = useMemo(
+    () => apiResponseToMultiSelectOptions(muscleGroups),
+    [muscleGroups],
+  );
+  const equipmentOptions = useMemo(() => apiResponseToMultiSelectOptions(equipment), [equipment]);
+
+  const listMaxHeight = isMoreFiltersOpen
+    ? `calc(100vh - min(${FILTERS_MAX_HEIGHT}px, 70vh))`
+    : `calc(100vh - 15rem)`;
 
   useEffect(() => {
     setFilters({ search: debouncedSearch });
@@ -149,7 +157,7 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
       <div
         className={cn(
           'overflow-hidden transition-all duration-300 ease-in-out flex flex-col gap-3 mt-3 p-0.5',
-          isMoreFiltersOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0',
+          isMoreFiltersOpen ? 'max-h-[500px] opacity-100 mb-3' : 'max-h-0 opacity-0',
         )}
       >
         <div className="grid grid-cols-2 gap-4">
@@ -209,7 +217,7 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
             maxCount={3}
             modalPopover={true}
             onValueChange={(value) => setFilters({ muscleGroups: value })}
-            options={apiResponseToMultiSelectOptions(muscleGroups)}
+            options={muscleGroupOptions}
             placeholder={
               isMuscleGroupsLoading
                 ? 'Ładowanie...'
@@ -234,7 +242,7 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
             maxCount={3}
             modalPopover={true}
             onValueChange={(value) => setFilters({ equipment: value })}
-            options={apiResponseToMultiSelectOptions(equipment)}
+            options={equipmentOptions}
             placeholder={
               isEquipmentLoading
                 ? 'Ładowanie...'
@@ -277,16 +285,18 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
           </div>
         </div>
       </div>
-      <ExerciseList
-        exercises={exercises}
-        isError={isError}
-        isExerciseAdded={isExerciseAdded}
-        isLoading={isLoading}
-        listType="social"
-        onExerciseToggle={onExerciseToggle}
-        params={params}
-        setPage={setPage}
-      />
+      <div className="flex flex-col h-full pb-3" style={{ maxHeight: listMaxHeight }}>
+        <ExerciseList
+          exercises={exercises}
+          isError={isError}
+          isExerciseAdded={isExerciseAdded}
+          isLoading={isLoading}
+          listType="social"
+          onExerciseToggle={onExerciseToggle}
+          params={params}
+          setPage={setPage}
+        />
+      </div>
     </>
   );
 };

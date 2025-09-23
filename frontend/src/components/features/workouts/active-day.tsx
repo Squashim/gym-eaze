@@ -136,7 +136,10 @@ const ActiveDay = ({ day, onDaySelect }: ActiveDayViewProps) => {
           </div>
         )}
 
-        <div className="grid gap-3 overflow-y-auto scrollbar max-h-[40dvh] focus-within:outline-none p-0.5">
+        <div
+          className="grid gap-3 overflow-y-auto scrollbar focus-within:outline-none p-0.5"
+          style={{ maxHeight: 'calc(100vh - 43rem)' }}
+        >
           {isRestDay ? (
             <Message>Odpocznij! Dzień wolny nie zawiera ćwiczeń</Message>
           ) : formExercises.length === 0 ? (

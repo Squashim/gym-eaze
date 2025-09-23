@@ -47,7 +47,11 @@ function useDaysManager() {
         .filter((day) => day.dayNumber !== dayNumber)
         .map((day, index) => ({ ...day, dayNumber: index }));
 
-      setValue('stepTwo.days', updatedDays, { shouldDirty: true, shouldTouch: true });
+      setValue('stepTwo.days', updatedDays, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
 
       toast.success('Dzień został usunięty');
     },
