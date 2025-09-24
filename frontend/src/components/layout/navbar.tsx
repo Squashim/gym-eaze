@@ -178,7 +178,12 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
                     {isLoggedIn && user && (
                       <div className="flex w-full flex-col gap-4">
                         <div className="flex items-center gap-4">
-                          <ReusableAvatar className="size-12" variant="h4" />
+                          <ReusableAvatar
+                            className="size-12"
+                            profilePicture={user.profileDetails.profilePicture}
+                            username={user.username}
+                            variant="h4"
+                          />
                           <div className="flex flex-col">
                             <Typography className="font-semibold text-base" variant="p">
                               {user.username}
@@ -237,6 +242,8 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
                 <ReusableAvatar
                   className="cursor-pointer shadow-sm"
                   fallbackClassName="dark:bg-background"
+                  profilePicture={user.profileDetails.profilePicture}
+                  username={user.username}
                 />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="hidden lg:flex flex-col">

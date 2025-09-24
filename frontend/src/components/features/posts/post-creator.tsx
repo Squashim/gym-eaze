@@ -73,7 +73,13 @@ function PostCreator() {
         className="bg-card text-card-foreground gap-4 rounded-xl border p-4 shadow-sm flex max-w-xl"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <ReusableAvatar className="size-12" fallbackClassName="dark:bg-background" variant="h4" />
+        <ReusableAvatar
+          className="size-12"
+          fallbackClassName="dark:bg-background"
+          profilePicture={user?.profileDetails.profilePicture}
+          username={user?.username}
+          variant="h4"
+        />
         <div className="flex flex-col gap-2 w-full min-w-0">
           <FormField
             control={form.control}

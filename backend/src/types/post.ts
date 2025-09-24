@@ -29,6 +29,4 @@ export type AuthPostRequest = AuthRequest & PostRequest;
 export interface PostFilters {
   hashtags?: string[];
   followedOnly?: boolean;
-  search?: string;
-  excludeUserId?: string;
 }

@@ -121,7 +121,7 @@ export const togglePostLike = async (req: AuthPostRequest, res: Response) => {
 export const getPosts = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
-    const { hashtags, followedOnly, search, cursor, limit = 10 } = req.query;
+    const { hashtags, followedOnly, cursor, limit = 10 } = req.query;
 
     let parsedHashtags: string[] | undefined;
     if (hashtags) {
@@ -141,7 +141,6 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
     const filters: PostFilters = {
       hashtags: parsedHashtags,
       followedOnly: userId ? followedOnly === 'true' : false,
-      search: search ? String(search) : undefined,
     };
 
     const posts = await getPostsWithCursor(filters, cursor as string, Number(limit), userId);

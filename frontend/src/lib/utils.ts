@@ -190,6 +190,26 @@ export async function urlToFile(url: string): Promise<File> {
   return new File([blob], filename, { type: mimeType || blob.type });
 }
 
+export function serializeQuery(params: Record<string, unknown>): string {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((v) => {
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+          searchParams.append(key, String(v));
+        }
+      });
+    } else if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      searchParams.append(key, String(value));
+    }
+  });
+  return searchParams.toString();
+}
+
 export function getWeeks(days: TrainingDaySchema[]) {
   return Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => {
     const start = weekIndex * 7;

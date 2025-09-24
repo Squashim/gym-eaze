@@ -1,4 +1,3 @@
-import Message from '@/components/ui/message';
 import { Skeleton } from '@/components/ui/skeleton';
 import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import type { WorkoutExercise } from '@/types/workout';
@@ -9,6 +8,8 @@ import { useCallback } from 'react';
 import ExerciseItem from './exercise-item';
 import ExerciseCopyDialog from './exercise-copy-dialog';
 import useExerciseCopyDialog from '@/hooks/workout/exercises/use-exercise-copy.dialog';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 interface ExercisesListProps {
   exerciseIds: string[];
@@ -62,7 +63,12 @@ const ExercisesList = ({
   }
 
   if (isError) {
-    return <Message>Wystąpił błąd podczas pobierania ćwiczeń.</Message>;
+    return (
+      <Alert>
+        <Info />
+        <AlertTitle>Wystąpił błąd podczas pobierania ćwiczeń.</AlertTitle>
+      </Alert>
+    );
   }
 
   return (

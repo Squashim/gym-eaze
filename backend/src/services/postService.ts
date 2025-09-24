@@ -157,10 +157,6 @@ export const getPostsService = async (
     andFilters.push({ hashtags: { $in: filters.hashtags } });
   }
 
-  if (filters.excludeUserId) {
-    andFilters.push({ author: { $ne: filters.excludeUserId } });
-  }
-
   if (filters.followedOnly) {
     if (!userId) {
       return { items: [], total: 0, page, pageSize, hasMore: false };
@@ -172,15 +168,6 @@ export const getPostsService = async (
     } else {
       return { items: [], total: 0, page, pageSize, hasMore: false };
     }
-  }
-
-  if (filters.search) {
-    andFilters.push({
-      $or: [
-        { content: { $regex: filters.search, $options: 'i' } },
-        { title: { $regex: filters.search, $options: 'i' } },
-      ],
-    });
   }
 
   if (andFilters.length) {

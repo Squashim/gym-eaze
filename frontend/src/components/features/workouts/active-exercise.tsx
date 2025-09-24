@@ -2,7 +2,6 @@ import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
 import { useMemo } from 'react';
 import BackHeader from './back-header';
-import Message from '@/components/ui/message';
 import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevelBadge, LikesBadge } from '@/components/ui/item-info-badges';
@@ -12,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import SetsList from './sets/sets-list';
 import { DetailsActionBtn } from '@/components/ui/reusable-buttons';
 import useActiveExerciseManager from '@/hooks/workout/sets/use-active-exercise-manager';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 interface ActiveExerciseProps {
   exerciseId: string;
@@ -57,7 +58,12 @@ const ActiveExercise = ({
 
         {isLoading && <Skeleton className="h-30" />}
 
-        {isError && <Message>Wystąpił błąd podczas pobierania ćwiczenia.</Message>}
+        {isError && (
+          <Alert>
+            <Info />
+            <AlertTitle>Wystąpił błąd podczas pobierania ćwiczenia.</AlertTitle>
+          </Alert>
+        )}
 
         {exercise && (
           <div className="rounded-md p-3 shadow-md flex items-center gap-2 border min-[425px]:h-30 bg-card text-card-foreground flex-wrap min-[425px]:flex-nowrap">

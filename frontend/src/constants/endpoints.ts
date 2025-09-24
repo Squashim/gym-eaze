@@ -25,6 +25,7 @@ export const WORKOUT = {
 
 export const POST = {
   base: 'posts',
+  toggleLike: (id: string) => `posts/${id}/like`,
 } as const;
 
 export const USER = {
