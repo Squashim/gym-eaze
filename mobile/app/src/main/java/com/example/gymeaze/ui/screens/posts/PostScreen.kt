@@ -10,10 +10,11 @@ import com.example.gymeaze.ui.screens.posts.loggedIn.PostsMenuScreen
 fun PostScreen(
     onSettingsClick: () -> Unit,
     isUserLoggedIn: Boolean,
-    onCreatePostClick: () -> Unit = {}
+    onCreatePostClick: () -> Unit = {},
+    onBrowsePostClick: () -> Unit = {}
 ) {
     if (isUserLoggedIn){
-        PostsMenuScreen(onSettingsClick = onSettingsClick, onCreatePostClick = onCreatePostClick)
+        PostsMenuScreen(onSettingsClick = onSettingsClick, onCreatePostClick = onCreatePostClick, onBrowsePostClick = onBrowsePostClick)
     } else {
         PostsOverviewScreen(onSettingsClick=onSettingsClick)
 

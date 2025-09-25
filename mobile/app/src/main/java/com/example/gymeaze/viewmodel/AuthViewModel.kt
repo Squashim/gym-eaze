@@ -592,7 +592,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _showCreatePost = MutableStateFlow(false)
     val showCreatePost = _showCreatePost.asStateFlow()
 
-    // Dodaj te funkcje
+    private val _showBrowsePost = MutableStateFlow(false)
+    val showBrowsePost = _showBrowsePost.asStateFlow()
+
+
     fun showPostScreen() {
         _showPostScreen.value = true
     }
@@ -608,6 +611,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun hideCreatePostScreen() {
         _showCreatePost.value = false
     }
+
+    fun showBrowsePostScreen(){
+        _showBrowsePost.value = true
+    }
+    fun hideBrowsePostScreen(){
+        _showBrowsePost.value = false
+    }
+
 
     fun showExerciseCreatorScreen() { privateShowExerciseCreator.value = true }
     fun hideExerciseCreatorScreen() { privateShowExerciseCreator.value = false }

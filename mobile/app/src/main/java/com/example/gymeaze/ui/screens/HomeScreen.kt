@@ -66,7 +66,8 @@ fun HomeScreen(
     onEditProfileClick: () -> Unit,
     onBrowseExercisesClick: () -> Unit,
     onCreateTrainingPlanClick: () -> Unit,
-    onCreatePostClick: () -> Unit = {}
+    onCreatePostClick: () -> Unit = {},
+    onBrowsePostClick: () -> Unit = {}
 
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
@@ -92,7 +93,7 @@ fun HomeScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick)
+            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick, onBrowsePostClick)
             "profile" -> {
                 LazyColumn(
                     modifier = Modifier

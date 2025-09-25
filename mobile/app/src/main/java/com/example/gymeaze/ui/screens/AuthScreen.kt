@@ -421,7 +421,8 @@ fun AuthScreen(
     onGoogleLogin: () -> Unit,
     onSettingsClick: () -> Unit,
     onCreateTrainingPlanClick : () -> Unit,
-    onCreatePostClick: () -> Unit = {}
+    onCreatePostClick: () -> Unit = {},
+    onBrowsePostClick: () -> Unit ={}
 ) {
     var selectedRoute by remember { mutableStateOf("profile") }
 
@@ -443,7 +444,7 @@ fun AuthScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick)
+            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick, onBrowsePostClick)
 
             "profile" -> {
                 Box(modifier = Modifier.fillMaxSize()) {

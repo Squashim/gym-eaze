@@ -29,7 +29,7 @@ import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 
-import com.example.gymeaze.viewmodel.PostsViewModel
+import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)

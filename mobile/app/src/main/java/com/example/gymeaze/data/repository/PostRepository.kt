@@ -6,6 +6,9 @@ import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.PostApiService
+import com.example.gymeaze.data.models.GetPostsResponse
+import com.example.gymeaze.data.models.LikesResponse
+import com.example.gymeaze.data.models.ToggleLikeResponse
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
 import com.google.gson.Gson
@@ -145,5 +148,52 @@ class PostsRepository(private val context: Context) {
             type.startsWith("video/webm") -> ".webm"
             else -> ".bin"
         }
+    }
+
+    suspend fun getPosts(
+        hashtags: List<String>? = null,
+        followedOnly: Boolean? = null,
+        cursor: String? = null,
+        limit: Int = 10
+    ): GetPostsResponse? {
+        return try {
+            val response = api.getPosts(
+                hashtags = hashtags,
+                followedOnly = followedOnly,
+                cursor = cursor,
+                limit = limit
+            )
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun toggleLike(postId: String): Result<ToggleLikeResponse> {
+        return try {
+            val response = api.toggleLike(postId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd polubienia"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserLikes(): Result<LikesResponse> = try {
+        val response = api.getUserLikes()
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception("Błąd pobierania polubień"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 }

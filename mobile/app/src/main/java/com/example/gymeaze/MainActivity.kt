@@ -33,13 +33,14 @@ import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
 import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
 import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
+import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
-import com.example.gymeaze.viewmodel.PostsViewModel
+import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
@@ -97,6 +98,8 @@ class MainActivity : ComponentActivity() {
 
             val showPostScreen by authViewModel.showPostScreen.collectAsState()
             val showCreatePost by authViewModel.showCreatePost.collectAsState()
+            val showBrowsePost by authViewModel.showBrowsePost.collectAsState()
+
 
             logoutEvent?.let { event ->
                 val context = LocalContext.current
@@ -143,17 +146,23 @@ class MainActivity : ComponentActivity() {
                         }
 
                         when {
+                            showBrowsePost -> {
+                                SeeAllPostsScreen(
+                                    onBackClick = { authViewModel.hideBrowsePostScreen() }
+                                )
+                            }
+
                             showCreatePost -> {
                                 CreatePostScreen(
-                                    viewModel = createPostViewModel, // lub jak nazywa się Twoja instancja ViewModel
+                                    viewModel = createPostViewModel,
                                     onBackClick = {
-                                        // logika powrotu, np:
-                                        //showCreatePost = false
+
+                                        authViewModel.hideCreatePostScreen()
                                     },
                                     onCreated = {
-                                        // logika po utworzeniu posta, np:
-                                        //showCreatePost = false
-                                        // ewentualnie odświeżenie listy postów
+
+                                        authViewModel.hideCreatePostScreen()
+
                                     }
                                 )
                             }
@@ -162,7 +171,8 @@ class MainActivity : ComponentActivity() {
                                 PostScreen(
                                     onSettingsClick = authViewModel::showSettingsScreen,
                                     isUserLoggedIn = isUserLoggedIn,
-                                    onCreatePostClick = authViewModel::showCreatePostScreen
+                                    onCreatePostClick = authViewModel::showCreatePostScreen,
+                                    onBrowsePostClick = authViewModel::showBrowsePostScreen
                                 )
                             }
                             showExerciseSelectionForDay && selectedDayIndex != null -> {
@@ -278,7 +288,9 @@ class MainActivity : ComponentActivity() {
                                         googleSignInLauncher.launch(signInIntent)
                                     },
                                     onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
-                                    onCreatePostClick = authViewModel::showCreatePostScreen
+                                    onCreatePostClick = authViewModel::showCreatePostScreen,
+                                    onBrowsePostClick = authViewModel::showBrowsePostScreen
+
                                 )
                             }
                             isUserLoggedIn && isFirstLogin -> {
@@ -299,7 +311,8 @@ class MainActivity : ComponentActivity() {
                                     onEditProfileClick = { authViewModel.showProfileEditScreen() },
                                     onBrowseExercisesClick = authViewModel::showBrowseExercisesScreen,
                                     onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
-                                    onCreatePostClick = authViewModel::showCreatePostScreen
+                                    onCreatePostClick = authViewModel::showCreatePostScreen,
+                                    onBrowsePostClick = authViewModel::showBrowsePostScreen
                                 )
                             }
                         }

@@ -20,15 +20,6 @@ export const getPostsWithCursor = async (
     andFilters.push({ hashtags: { $in: filters.hashtags } });
   }
 
-  if (filters.search?.trim()) {
-    andFilters.push({
-      $or: [
-        { content: { $regex: filters.search.trim(), $options: 'i' } },
-        { hashtags: { $in: [new RegExp(filters.search.trim(), 'i')] } },
-      ],
-    });
-  }
-
   if (filters.followedOnly && userId) {
     const user = await User.findById(userId).select('followedUsers').lean();
     const followedUsers = user?.followedUsers ?? [];

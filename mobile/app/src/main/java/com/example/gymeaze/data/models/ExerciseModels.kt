@@ -25,9 +25,6 @@ data class ExerciseAuthor(
     val profileDetails: ProfileDetails? = null
 )
 
-data class ProfileDetails(
-    val profilePicture: String? = null
-)
 
 data class ExercisesResponse(
     val items: List<Exercise>,
