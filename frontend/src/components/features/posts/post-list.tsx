@@ -9,6 +9,7 @@ import type { PostQueryParams } from '@/types/filters';
 
 interface PostListProps {
   posts: GetPostsApiResponse[] | undefined;
+  params: PostQueryParams;
   isLoading: boolean;
   isError: boolean;
   likedPosts: {
@@ -16,10 +17,23 @@ interface PostListProps {
     isLoading: boolean;
     isError: boolean;
   };
-  params: PostQueryParams;
+  likePendingId: string | null;
+  onDelete: (postId: string) => void;
+  onEdit: (postId: string) => void;
+  onLikeToggle: (postId: string) => void;
 }
 
-function PostList({ posts, isLoading, isError, likedPosts, params }: PostListProps) {
+function PostList({
+  posts,
+  params,
+  isLoading,
+  isError,
+  likedPosts,
+  likePendingId,
+  onDelete,
+  onEdit,
+  onLikeToggle,
+}: PostListProps) {
   const { user } = useUser();
 
   const isLiked = useMemo(() => {
@@ -27,12 +41,16 @@ function PostList({ posts, isLoading, isError, likedPosts, params }: PostListPro
   }, [likedPosts]);
 
   const isAuthor = useMemo(() => {
-    return (authorId: string) => user?._id === authorId;
+    return (authorId: string) => !!user && user._id === authorId;
   }, [user]);
+
+  const isLikePending = useMemo(() => {
+    return (postId: string) => likePendingId === postId;
+  }, [likePendingId]);
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 max-w-xl">
+      <div className="flex flex-col gap-4 w-full">
         {Array.from({ length: 6 }).map((_, index) => (
           <Skeleton className="h-42 w-full rounded-xl" key={index} />
         ))}
@@ -42,7 +60,7 @@ function PostList({ posts, isLoading, isError, likedPosts, params }: PostListPro
 
   if (isError) {
     return (
-      <div className="flex flex-col gap-4 max-w-xl">
+      <div className="flex flex-col gap-4 w-full">
         <Alert>
           <Info />
           <AlertTitle>Wystąpił błąd podczas pobierania postów. Spróbuj ponownie</AlertTitle>
@@ -53,7 +71,7 @@ function PostList({ posts, isLoading, isError, likedPosts, params }: PostListPro
 
   if (posts && posts.length === 0) {
     return (
-      <div className="flex flex-col gap-4 max-w-xl">
+      <div className="flex flex-col gap-4 w-full">
         <Alert>
           <Info />
           <AlertTitle>
@@ -67,19 +85,29 @@ function PostList({ posts, isLoading, isError, likedPosts, params }: PostListPro
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {posts!.map((post) => (
-        <PostItem
-          isAuthor={isAuthor(post.author._id)}
-          isLiked={isLiked(post._id)}
-          isLikedPostsError={likedPosts.isError}
-          isLikedPostsLoading={likedPosts.isLoading}
-          isLogged={!!user}
-          key={post._id}
-          post={post}
-        />
-      ))}
-    </div>
+    <>
+      <div className="flex flex-col gap-4 w-full">
+        {posts!.map((post) => (
+          <PostItem
+            auth={{
+              isLogged: !!user,
+              isAuthor: isAuthor(post.author._id),
+            }}
+            key={post._id}
+            like={{
+              isLiked: isLiked(post._id),
+              isLikedPostsLoading: likedPosts.isLoading,
+              isLikedPostsError: likedPosts.isError,
+              isLikePending: isLikePending(post._id),
+            }}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onLikeToggle={onLikeToggle}
+            post={post}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 

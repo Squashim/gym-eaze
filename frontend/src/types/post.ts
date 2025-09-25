@@ -9,6 +9,8 @@ type BasePost<TImage = string, TVideo = string> = {
 
 export type CreatePostPayload = BasePost<File | null, File | null>;
 
+export type UpdatePostPayload = Partial<CreatePostPayload>;
+
 export type GetPostsApiResponse = BasePost & {
   _id: string;
   author: Author;

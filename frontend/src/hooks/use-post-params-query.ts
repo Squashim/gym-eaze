@@ -36,10 +36,15 @@ function usePostParamsQuery() {
     [searchParams, setSearchParams],
   );
 
+  const clearParams = useCallback(() => {
+    setSearchParams(new URLSearchParams());
+  }, [setSearchParams]);
+
   return {
     params,
     setHashtags,
     setParam,
+    clearParams,
   };
 }
 

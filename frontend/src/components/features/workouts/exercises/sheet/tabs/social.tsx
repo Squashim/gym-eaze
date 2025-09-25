@@ -56,6 +56,7 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
       return acc;
     }, 0);
   }, [params.filters]);
+
   const muscleGroupOptions = useMemo(
     () => apiResponseToMultiSelectOptions(muscleGroups),
     [muscleGroups],

@@ -11,6 +11,8 @@ function useGetPosts(params: PostQueryParams) {
       getAll({ ...params, cursor: pageParam as string | null | undefined }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     initialPageParam: null,
+    refetchInterval: 1000 * 60 * 5,
+    retry: false,
   });
 }
 

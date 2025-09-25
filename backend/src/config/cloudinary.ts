@@ -60,4 +60,21 @@ export const uploadTrainingPlanMedia = async (
   return { imageUrl };
 };
 
+export const deleteFromCloudinary = async (
+  fileUrl: string,
+  resource_type: 'image' | 'video' = 'image',
+) => {
+  const publicId = getPublicIdFromUrl(fileUrl);
+
+  await cloudinary.uploader.destroy(publicId, { resource_type });
+};
+
+function getPublicIdFromUrl(url: string): string {
+  url = url.split('?')[0];
+  const parts = url.split('/upload/')[1];
+  const noVersion = parts.replace(/^v\d+\//, '');
+  const publicId = noVersion.replace(/\.[^/.]+$/, '');
+  return publicId;
+}
+
 export default cloudinary;

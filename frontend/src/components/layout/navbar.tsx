@@ -108,6 +108,18 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
   };
 
   const renderMobileMenuItem = (item: MenuItem) => {
+    if (item.allow === 'logged-in' && !isLoggedIn) {
+      return null;
+    }
+
+    if (item.allow === 'not-logged-in' && isLoggedIn) {
+      return null;
+    }
+
+    if (item.allow === 'logged-in' && item.role === 'admin' && !isAdmin) {
+      return null;
+    }
+
     if (item.items) {
       return (
         <AccordionItem className="border-b-0" key={item.title} value={item.title}>

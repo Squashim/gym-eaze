@@ -2,12 +2,29 @@ import { POST as endpoints } from '@/constants/endpoints';
 import API from './api-client';
 import { objectToFormData, serializeQuery } from '@/lib/utils';
 import type { ApiResponse } from '@/types/api';
-import type { CreatePostPayload, GetPostsApiResponse } from '@/types/post';
+import type { CreatePostPayload, GetPostsApiResponse, UpdatePostPayload } from '@/types/post';
 import type { CursorPaginatedResponse, PostQueryParams } from '@/types/filters';
 
 const create = async (payload: CreatePostPayload): Promise<ApiResponse> => {
   const formData = objectToFormData(payload);
   const { data } = await API.post<ApiResponse>(endpoints.base, formData);
+  return data;
+};
+
+const update = async (id: string, payload: UpdatePostPayload): Promise<ApiResponse> => {
+  const formData = objectToFormData(payload);
+  if (payload.image === null) {
+    formData.append('image', 'null');
+  }
+  if (payload.video === null) {
+    formData.append('video', 'null');
+  }
+  const { data } = await API.patch<ApiResponse>(endpoints.byId(id), formData);
+  return data;
+};
+
+const remove = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.delete<ApiResponse>(endpoints.byId(id));
   return data;
 };
 
@@ -26,4 +43,4 @@ const toggleLike = async (id: string): Promise<ApiResponse> => {
   return data;
 };
 
-export { create, getAll, toggleLike };
+export { create, update, remove, getAll, toggleLike };
