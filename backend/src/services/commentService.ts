@@ -19,17 +19,39 @@ export const createCommentService = async (
   const isReply = parentType === CommentParentType.comment;
 
   if (!Types.ObjectId.isValid(parentId)) {
-    throw new Error('Nieprawidłowy identyfikator rodzica');
+    throw new Error(
+      'Nieprawidłowy identyfikator rodzica - (Ćwiczenie | Trening | Post | Komentarz)',
+    );
   }
 
   if (!Types.ObjectId.isValid(authorId)) {
     throw new Error('Nieprawidłowy identyfikator użytkownika');
   }
 
-  if (isReply) {
+  if (!isReply) {
+    let parentExists = false;
+    switch (parentType) {
+      case CommentParentType.exercise:
+        parentExists = !!(await Exercise.exists({ _id: parentId }));
+        break;
+      case CommentParentType.training:
+        parentExists = !!(await TrainingPlan.exists({ _id: parentId }));
+        break;
+      case CommentParentType.post:
+        parentExists = !!(await Post.exists({ _id: parentId }));
+        break;
+    }
+    if (!parentExists) {
+      throw new Error('Nie znaleziono rodzica dla podanego typu');
+    }
+  } else {
     const parentComment = await CommentModel.findById(parentId);
 
-    if (!parentComment || parentComment.parentType === CommentParentType.comment) {
+    if (!parentComment) {
+      throw new Error('Nie znaleziono rodzica dla podanego typu');
+    }
+
+    if (parentComment.parentType === CommentParentType.comment) {
       throw new Error('Zbyt głęboko zagnieżdżony komentarz');
     }
   }
@@ -154,9 +176,10 @@ export const getCommentsWithCursor = async (
   }
 
   const items = await CommentModel.find(query)
-    .sort({ createdAt: -1, _id: -1 })
+    .sort({ createdAt: -1, likes: -1, _id: -1 })
     .limit(limit + 1)
     .populate('author', 'username profileDetails.profilePicture')
+    .select('-parentType -parentId')
     .lean();
 
   const hasMore = items.length > limit;
@@ -183,7 +206,7 @@ export const getRepliesForComment = async (
   }
 
   const comment = await CommentModel.findById(commentId);
-  if (!comment || comment.parentType !== CommentParentType.comment) {
+  if (!comment || comment.parentType === CommentParentType.comment) {
     throw new Error('Komentarz nie istnieje lub nie można pobrać odpowiedzi');
   }
 
@@ -197,9 +220,10 @@ export const getRepliesForComment = async (
   }
 
   const items = await CommentModel.find(query)
-    .sort({ createdAt: -1, _id: -1 })
+    .sort({ createdAt: -1, likes: -1, _id: -1 })
     .limit(limit + 1)
     .populate('author', 'username profileDetails.profilePicture')
+    .select('-parentType -parentId')
     .lean();
 
   const hasMore = items.length > limit;
