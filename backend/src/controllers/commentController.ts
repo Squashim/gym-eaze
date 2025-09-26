@@ -2,74 +2,55 @@ import { Response, Request } from 'express';
 import { AuthRequest } from '../types/auth';
 import {
   createCommentService,
-  createReplyService,
-  getMainCommentsWithCursor,
+  getCommentsWithCursor,
   getRepliesForComment,
 } from '../services/commentService';
 import { CreateCommentBody } from '../types/comment';
+import {
+  CommentParentType,
+  MainCommentParentType,
+  MainCommentParentTypes,
+  mainCommentParentTypes,
+} from '../constants/commentType';
 
 export const createComment = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
     const { content, parentType, parentId }: CreateCommentBody = req.body;
 
-    if (!content?.trim()) {
-      return res.status(400).json({ message: 'Treść komentarza jest wymagana' });
-    }
-
-    if (!parentType || !['Post', 'Ćwiczenie', 'Trening'].includes(parentType)) {
-      return res.status(400).json({ message: 'Nieprawidłowy typ rodzica komentarza' });
-    }
-
-    if (!parentId) {
-      return res.status(400).json({ message: 'ID rodzica jest wymagane' });
-    }
-
-    await createCommentService(content.trim(), parentType, parentId, userId!);
+    await createCommentService(content, parentType, parentId, userId!);
 
     return res.status(201).json({
-      message: 'Komentarz został utworzony',
+      message:
+        parentType === CommentParentType.comment
+          ? 'Odpowiedź została dodana'
+          : 'Komentarz został dodany',
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    }
     return res.status(500).json({
-      message: 'Nie udało się dodać komentarza',
+      message: 'Wystąpił niezidetyfikowany błąd podczas dodawania komentarza/odpowiedzi',
     });
   }
 };
 
-export const createReply = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    const { content } = req.body;
-    const { commentId } = req.params;
-
-    await createReplyService(content, commentId, userId!);
-
-    return res.status(201).json({
-      message: 'Odpowiedź została dodana',
-    });
-  } catch {
-    return res.status(500).json({
-      message: 'Nie udało się dodać odpowiedzi',
-    });
-  }
-};
-
-export const getMainComments = async (req: Request, res: Response) => {
+export const getComments = async (req: Request, res: Response) => {
   try {
     const { parentType, parentId } = req.params;
     const { cursor, limit = 10 } = req.query;
 
-    if (!parentType || !['Post', 'Ćwiczenie', 'Trening'].includes(parentType)) {
+    if (!parentType || !mainCommentParentTypes.includes(parentType as MainCommentParentType)) {
       return res.status(400).json({ message: 'Nieprawidłowy typ rodzica komentarza' });
     }
 
     if (!parentId) {
-      return res.status(400).json({ message: 'ID rodzica jest wymagane' });
+      return res.status(400).json({ message: 'Identyfikator rodzica jest wymagany' });
     }
 
-    const result = await getMainCommentsWithCursor(
-      parentType as 'Post' | 'Ćwiczenie' | 'Trening',
+    const result = await getCommentsWithCursor(
+      parentType as MainCommentParentTypes,
       parentId,
       cursor as string,
       parseInt(limit as string) || 10,
@@ -77,7 +58,9 @@ export const getMainComments = async (req: Request, res: Response) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    }
     return res.status(500).json({
       message: 'Nie udało się pobrać komentarzy',
     });
@@ -86,22 +69,24 @@ export const getMainComments = async (req: Request, res: Response) => {
 
 export const getCommentReplies = async (req: Request, res: Response) => {
   try {
-    const { commentId } = req.params;
+    const { id } = req.params;
     const { cursor, limit = 10 } = req.query;
 
-    if (!commentId) {
-      return res.status(400).json({ message: 'ID komentarza jest wymagane' });
+    if (!id) {
+      return res.status(400).json({ message: 'Identyfikator komentarza jest wymagany' });
     }
 
     const result = await getRepliesForComment(
-      commentId,
+      id,
       cursor as string,
       parseInt(limit as string) || 10,
     );
 
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Error fetching replies:', error);
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    }
     return res.status(500).json({
       message: 'Nie udało się pobrać odpowiedzi',
     });

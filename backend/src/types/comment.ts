@@ -1,5 +1,7 @@
+import { AllParentTypes } from '../constants/commentType';
+
 export interface CreateCommentBody {
   content: string;
-  parentType: 'Post' | 'Ćwiczenie' | 'Trening';
+  parentType: AllParentTypes;
   parentId: string;
 }
