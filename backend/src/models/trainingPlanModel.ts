@@ -29,6 +29,7 @@ export interface ITrainingPlan extends mongoose.Document {
     }[];
   }[];
   hashtags?: string[];
+  commentsCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -151,6 +152,9 @@ const trainingSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    commentsCount: {
+      type: Number,
+    },
   },
   { timestamps: true },
 );

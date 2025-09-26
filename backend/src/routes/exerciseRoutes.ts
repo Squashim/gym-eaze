@@ -16,6 +16,8 @@ import {
 } from '../middlewares/exerciseMiddleware';
 import { authenticate, optionalAuth } from '../middlewares/authMiddleware';
 import { deleteExercise, updateExercise } from '../controllers/exerciseController';
+import { CommentParentType } from '../constants/commentType';
+import { getComments } from '../controllers/commentController';
 
 const router = Router();
 
@@ -58,5 +60,11 @@ router.post('/batch', optionalAuth, getExercisesByIds);
 router.post('/search', optionalAuth, getExercises);
 
 router.get('/user/:userId', optionalAuth, getExercisesByUser);
+
+router.get('/:id/comments', optionalAuth, (req, res) => {
+  req.params.parentType = CommentParentType.exercise;
+  req.params.parentId = req.params.id;
+  return getComments(req, res);
+});
 
 export default router;

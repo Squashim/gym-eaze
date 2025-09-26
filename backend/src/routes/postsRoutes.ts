@@ -13,6 +13,8 @@ import {
   togglePostLike,
   updatePost,
 } from '../controllers/postController';
+import { CommentParentType } from '../constants/commentType';
+import { getComments } from '../controllers/commentController';
 
 const router = express.Router();
 
@@ -47,5 +49,11 @@ router.patch('/:id/like', authenticate, togglePostLike);
 router.get('/', optionalAuth, getPosts);
 
 router.get('/:userId', optionalAuth, getPostsByUser);
+
+router.get('/:id/comments', optionalAuth, (req, res) => {
+  req.params.parentType = CommentParentType.post;
+  req.params.parentId = req.params.id;
+  return getComments(req, res);
+});
 
 export default router;
