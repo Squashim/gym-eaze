@@ -1,8 +1,9 @@
 import mongoose, { FilterQuery, SortOrder, Types } from 'mongoose';
-import { uploadBufferToCloudinary } from '../config/cloudinary';
+import { deleteFromCloudinary, uploadBufferToCloudinary } from '../config/cloudinary';
 import Post, { IPost } from '../models/postModel';
 import { CreatePostData, PostFilters, UpdatePostData } from '../types/post';
 import User from '../models/userModel';
+import { parseDescription } from '../utils/parsers';
 
 export const createPost = async (
   data: CreatePostData,
@@ -50,6 +51,8 @@ export const updatePostService = async (
   postId: string,
   userId: string,
   data: UpdatePostData,
+  image: null | undefined,
+  video: null | undefined,
 ): Promise<void> => {
   const post = await Post.findById(postId);
   if (!post) throw new Error('Post nie istnieje');
@@ -60,7 +63,7 @@ export const updatePostService = async (
 
   const { content, imageBuffer, videoBuffer, hashtags } = data;
 
-  if (content && content.trim().length > 800) {
+  if (content && parseDescription(content).length > 800) {
     throw new Error('Treść posta może mieć maksymalnie 800 znaków');
   }
 
@@ -83,6 +86,16 @@ export const updatePostService = async (
     post.hashtags = hashtags;
   }
 
+  if ((image === null || imageBuffer) && post.image) {
+    await deleteFromCloudinary(post.image);
+    post.image = undefined;
+  }
+
+  if ((video === null || videoBuffer) && post.video) {
+    await deleteFromCloudinary(post.video, 'video');
+    post.video = undefined;
+  }
+
   if (imageBuffer && videoBuffer) {
     throw new Error('Nie możesz dodać jednocześnie zdjęcia i filmiku. Wybierz tylko jedno.');
   }
@@ -97,7 +110,7 @@ export const updatePostService = async (
   }
 
   if (content) {
-    post.content = content.trim();
+    post.content = content;
   }
 
   post.isEdited = true;
@@ -107,12 +120,21 @@ export const updatePostService = async (
 
 export const deletePostService = async (postId: string, userId: string): Promise<void> => {
   const post = await Post.findById(postId);
+
   if (!post) {
     throw new Error('Post nie istnieje');
   }
 
   if (post.author.toString() !== userId) {
     throw new Error('Nie masz uprawnień do usunięcia tego posta');
+  }
+
+  if (post.image) {
+    await deleteFromCloudinary(post.image);
+  }
+
+  if (post.video) {
+    await deleteFromCloudinary(post.video, 'video');
   }
 
   await post.deleteOne();
@@ -159,10 +181,6 @@ export const getPostsService = async (
     andFilters.push({ hashtags: { $in: filters.hashtags } });
   }
 
-  if (filters.excludeUserId) {
-    andFilters.push({ author: { $ne: filters.excludeUserId } });
-  }
-
   if (filters.followedOnly) {
     if (!userId) {
       return { items: [], total: 0, page, pageSize, hasMore: false };
@@ -174,15 +192,6 @@ export const getPostsService = async (
     } else {
       return { items: [], total: 0, page, pageSize, hasMore: false };
     }
-  }
-
-  if (filters.search) {
-    andFilters.push({
-      $or: [
-        { content: { $regex: filters.search, $options: 'i' } },
-        { title: { $regex: filters.search, $options: 'i' } },
-      ],
-    });
   }
 
   if (andFilters.length) {

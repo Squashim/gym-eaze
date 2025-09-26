@@ -118,7 +118,13 @@ const trainingSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      maxLength: 850,
+      validate: {
+        validator: function (v: string) {
+          const normalized = v.replace(/\r\n/g, '\n');
+          return normalized.length <= 850;
+        },
+        message: 'Opis może mieć maksymalnie 850 znaków',
+      },
     },
     image: {
       type: String,

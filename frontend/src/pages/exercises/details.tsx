@@ -103,7 +103,12 @@ const ExerciseDetails = () => {
           variant="ghost"
         >
           <a className="flex items-center gap-2 pr-2" href={`/profile/${exercise.author._id}`}>
-            <ReusableAvatar className="shadow-sm" fallbackClassName="dark:bg-background" />
+            <ReusableAvatar
+              className="shadow-sm"
+              fallbackClassName="dark:bg-background"
+              profilePicture={user?.profileDetails.profilePicture}
+              username={user?.username}
+            />
             {exercise.author.username}
             {isAuthor && ' (Ty)'}
           </a>

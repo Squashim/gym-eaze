@@ -23,8 +23,14 @@ const postSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      maxlength: 800,
       required: true,
+      validate: {
+        validator: function (v: string) {
+          const normalized = v.replace(/\r\n/g, '\n');
+          return normalized.length <= 800;
+        },
+        message: 'Treść może mieć maksymalnie 800 znaków',
+      },
     },
     image: {
       type: String,

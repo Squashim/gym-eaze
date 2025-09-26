@@ -4,7 +4,7 @@ import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import { useState } from 'react';
 import ExercisesSheet from './exercises/sheet/sheet';
 import { Button } from '@/components/ui/button';
-import { Plus, TriangleAlert } from 'lucide-react';
+import { Info, Plus, TriangleAlert } from 'lucide-react';
 import Typography from '@/components/ui/typography';
 import BackHeader from './back-header';
 import {
@@ -19,10 +19,10 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { WORKOUT } from '@/constants/workout';
 import { Separator } from '@/components/ui/separator';
-import Message from '@/components/ui/message';
 import ActiveExercise from './active-exercise';
 import useExercisesManager from '@/hooks/workout/exercises/use-exercises-manager';
 import ExercisesList from './exercises/exercises-list';
+import { Alert, AlertTitle } from '@/components/ui/alert';
 
 interface ActiveDayViewProps {
   day: TrainingDaySchema;
@@ -141,9 +141,15 @@ const ActiveDay = ({ day, onDaySelect }: ActiveDayViewProps) => {
           style={{ maxHeight: 'calc(100vh - 43rem)' }}
         >
           {isRestDay ? (
-            <Message>Odpocznij! Dzień wolny nie zawiera ćwiczeń</Message>
+            <Alert>
+              <Info />
+              <AlertTitle>Odpocznij! Dzień wolny nie zawiera ćwiczeń</AlertTitle>
+            </Alert>
           ) : formExercises.length === 0 ? (
-            <Message>Brak dodanych ćwiczeń</Message>
+            <Alert>
+              <Info />
+              <AlertTitle>Brak dodanych ćwiczeń</AlertTitle>
+            </Alert>
           ) : (
             <ExercisesList
               exerciseIds={exerciseIds}

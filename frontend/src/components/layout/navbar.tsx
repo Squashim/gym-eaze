@@ -108,6 +108,18 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
   };
 
   const renderMobileMenuItem = (item: MenuItem) => {
+    if (item.allow === 'logged-in' && !isLoggedIn) {
+      return null;
+    }
+
+    if (item.allow === 'not-logged-in' && isLoggedIn) {
+      return null;
+    }
+
+    if (item.allow === 'logged-in' && item.role === 'admin' && !isAdmin) {
+      return null;
+    }
+
     if (item.items) {
       return (
         <AccordionItem className="border-b-0" key={item.title} value={item.title}>
@@ -178,7 +190,12 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
                     {isLoggedIn && user && (
                       <div className="flex w-full flex-col gap-4">
                         <div className="flex items-center gap-4">
-                          <ReusableAvatar className="size-12" variant="h4" />
+                          <ReusableAvatar
+                            className="size-12"
+                            profilePicture={user.profileDetails.profilePicture}
+                            username={user.username}
+                            variant="h4"
+                          />
                           <div className="flex flex-col">
                             <Typography className="font-semibold text-base" variant="p">
                               {user.username}
@@ -237,6 +254,8 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
                 <ReusableAvatar
                   className="cursor-pointer shadow-sm"
                   fallbackClassName="dark:bg-background"
+                  profilePicture={user.profileDetails.profilePicture}
+                  username={user.username}
                 />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="hidden lg:flex flex-col">

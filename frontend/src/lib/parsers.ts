@@ -47,3 +47,19 @@ export function parseDayLabel(count: number) {
   if (count >= 2) return `${count} dni`;
   return `${count} dni`;
 }
+
+export function parseTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${parseDayLabel(days)} temu`;
+  if (hours > 0) return `${parsePlurals(hours, ['godzinę', 'godziny', 'godzin'])} temu`;
+  if (minutes > 0) return `${parsePlurals(minutes, ['minutę', 'minuty', 'minut'])} temu`;
+  return `przed chwilą`;
+}

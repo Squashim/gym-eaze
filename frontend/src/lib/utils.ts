@@ -118,22 +118,25 @@ export function extractDirtyFieldsData<
 >(dirtyFields: Partial<Record<keyof TFormData, unknown>>, formData: TFormData): TPayload {
   const formattedData = {} as TPayload;
 
-  (Object.keys(dirtyFields) as (keyof TFormData)[]).forEach((stepKey) => {
-    const stepDirty = dirtyFields[stepKey];
+  (Object.keys(dirtyFields) as (keyof TFormData)[]).forEach((key) => {
+    const dirty = dirtyFields[key];
 
-    if (stepDirty && typeof stepDirty === 'object' && stepDirty !== null) {
-      (Object.keys(stepDirty) as (keyof typeof stepDirty)[]).forEach((fieldKey) => {
-        if (stepDirty && typeof stepDirty === 'object' && fieldKey in stepDirty) {
-          const fieldValue = (stepDirty as Record<string, unknown>)[fieldKey];
-          if (fieldValue) {
-            const stepData = formData[stepKey];
-            if (stepData && typeof stepData === 'object' && stepData !== null) {
-              const sourceValue: unknown = (stepData as Record<string, unknown>)[
-                fieldKey as string
-              ];
-              if (sourceValue !== undefined) {
-                (formattedData as Record<string, unknown>)[fieldKey as string] = sourceValue;
-              }
+    if (dirty === true) {
+      const value = formData[key];
+      if (value !== undefined) {
+        (formattedData as Record<string, unknown>)[key as string] = value;
+      }
+      return;
+    }
+
+    if (dirty && typeof dirty === 'object' && dirty !== null) {
+      const nestedData = formData[key];
+      Object.keys(dirty).forEach((nestedKey) => {
+        if ((dirty as Record<string, unknown>)[nestedKey]) {
+          if (nestedData && typeof nestedData === 'object' && nestedKey in nestedData) {
+            const value = (nestedData as Record<string, unknown>)[nestedKey];
+            if (value !== undefined) {
+              (formattedData as Record<string, unknown>)[nestedKey] = value;
             }
           }
         }
@@ -188,6 +191,26 @@ export async function urlToFile(url: string): Promise<File> {
   const res = await fetch(url);
   const blob = await res.blob();
   return new File([blob], filename, { type: mimeType || blob.type });
+}
+
+export function serializeQuery(params: Record<string, unknown>): string {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((v) => {
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+          searchParams.append(key, String(v));
+        }
+      });
+    } else if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      searchParams.append(key, String(value));
+    }
+  });
+  return searchParams.toString();
 }
 
 export function getWeeks(days: TrainingDaySchema[]) {
