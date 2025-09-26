@@ -26,7 +26,7 @@ fun PostsMenuScreen(
     onCreatePostClick: () -> Unit = {},
     onMyPostClick: () -> Unit = {},
     onBrowsePostClick: () -> Unit = {},
-    onFollowersPostClick: () -> Unit = {}
+    onFollowedUsersPosts: () -> Unit ={}
 ) {
     var selectedRoute by remember { mutableStateOf("community") }
 
@@ -119,7 +119,7 @@ fun PostsMenuScreen(
                             imageRes = R.drawable.followed_posts,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),
-                            onClick = onFollowersPostClick
+                            onClick = onFollowedUsersPosts
                         )
                     }
                 }

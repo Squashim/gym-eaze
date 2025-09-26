@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.UserPreferences
+import com.example.gymeaze.data.models.User
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -595,29 +596,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _showBrowsePost = MutableStateFlow(false)
     val showBrowsePost = _showBrowsePost.asStateFlow()
 
+    private val _showFollowedUserPosts = MutableStateFlow(false)
+    val showFollowedUserPosts = _showFollowedUserPosts.asStateFlow()
 
-    fun showPostScreen() {
-        _showPostScreen.value = true
-    }
-
-    fun hidePostScreen() {
-        _showPostScreen.value = false
-    }
-
-    fun showCreatePostScreen() {
-        _showCreatePost.value = true
-    }
-
-    fun hideCreatePostScreen() {
-        _showCreatePost.value = false
-    }
-
-    fun showBrowsePostScreen(){
-        _showBrowsePost.value = true
-    }
-    fun hideBrowsePostScreen(){
-        _showBrowsePost.value = false
-    }
+    private val _showMyPosts = MutableStateFlow(false)
+    val showMyPosts = _showMyPosts.asStateFlow()
 
 
     fun showExerciseCreatorScreen() { privateShowExerciseCreator.value = true }
@@ -629,6 +612,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    suspend fun getCurrentUser(): Result<User> {
+        return authRepository.getCurrentUser()
+    }
+
+
     fun completeProfileSetup() {
         //TODO Zapisz dane
         clearFirstLogin()
@@ -639,4 +627,44 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         clearFirstLogin()
         hideProfileEditScreen()
     }
+
+
+
+    fun showMyPostsScreen(){
+       _showMyPosts.value = true
+    }
+    fun hideMyPostsScreen(){
+        _showMyPosts.value = false
+    }
+
+    fun showFollowedUserPostsScreen(){
+       _showFollowedUserPosts.value = true
+    }
+    fun hideFollowedUserPostsScreen(){
+        _showFollowedUserPosts.value = false
+    }
+
+    fun showPostScreen() {
+        _showPostScreen.value = true
+    }
+
+    fun hidePostScreen() {
+        _showPostScreen.value = false
+    }
+
+    fun showCreatePostScreen() {
+       _showCreatePost.value = true
+    }
+
+    fun hideCreatePostScreen() {
+       _showCreatePost.value = false
+    }
+
+    fun showBrowsePostScreen(){
+        _showBrowsePost.value = true
+    }
+    fun hideBrowsePostScreen(){
+        _showBrowsePost.value = false
+    }
+
 }

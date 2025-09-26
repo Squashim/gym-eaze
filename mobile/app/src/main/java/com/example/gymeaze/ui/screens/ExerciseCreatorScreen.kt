@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
@@ -964,6 +965,7 @@ private fun BottomBar(
     }
 }
 
+/*
 @Composable
 fun UploadCard(
     title: String,
@@ -1037,6 +1039,99 @@ fun UploadCard(
                     color = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
                     fontSize = 12.sp
                 )
+            }
+        }
+    }
+}
+
+ */
+
+@Composable
+fun UploadCard(
+    title: String,
+    subtitle: String,
+    hint: String,
+    selected: Boolean,
+    onPick: (Uri?) -> Unit,
+    mime: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onRemove: (() -> Unit)? = null
+) {
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent(), onPick)
+
+    val alpha = if (enabled) 1f else 0.5f
+    val cardColor = if (enabled) getSurfaceColor() else getSurfaceColor().copy(alpha = 0.6f)
+    val borderColor = if (enabled) {
+        getOnSurfaceColor().copy(alpha = 0.3f)
+    } else {
+        getOnSurfaceColor().copy(alpha = 0.15f)
+    }
+
+    Card(
+        modifier = modifier
+            .height(220.dp)
+            .clickable(enabled = enabled) {
+                if (enabled) launcher.launch(mime)
+            }
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+                .alpha(alpha),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                Icons.Default.CloudUpload,
+                contentDescription = null,
+                tint = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                title,
+                color = if (enabled) getOnSurfaceColor() else getOnSurfaceColor().copy(alpha = 0.5f),
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                subtitle,
+                color = if (enabled) getOnSurfaceSecondaryColor() else getOnSurfaceSecondaryColor().copy(alpha = 0.5f),
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                hint,
+                color = if (enabled) getOnSurfaceSecondaryColor() else getOnSurfaceSecondaryColor().copy(alpha = 0.5f),
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 12.sp
+            )
+            Spacer(Modifier.height(6.dp))
+            if (selected) {
+                Text(
+                    stringResource(R.string.file_selected),
+                    color = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
+                    fontSize = 12.sp
+                )
+                if (onRemove != null) {
+                    Spacer(Modifier.height(6.dp))
+                    TextButton(onClick = onRemove) {
+                        Icon(Icons.Default.Delete, contentDescription = null, tint = getErrorColor())
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.delete),
+                            color = getErrorColor(),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
             }
         }
     }

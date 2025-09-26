@@ -8,6 +8,7 @@ import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.PostApiService
 import com.example.gymeaze.data.models.GetPostsResponse
 import com.example.gymeaze.data.models.LikesResponse
+import com.example.gymeaze.data.models.PostResponse
 import com.example.gymeaze.data.models.ToggleLikeResponse
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
@@ -173,6 +174,18 @@ class PostsRepository(private val context: Context) {
         }
     }
 
+    suspend fun getUserPosts(
+        userId: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): Result<PostResponse> {
+        return try {
+            val response = api.getUserPosts(userId, cursor, limit)
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     suspend fun toggleLike(postId: String): Result<ToggleLikeResponse> {
         return try {
             val response = api.toggleLike(postId)
@@ -196,4 +209,108 @@ class PostsRepository(private val context: Context) {
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    suspend fun updatePost(
+        postId: String,
+        content: String,
+        hashtags: List<String>,
+        imageUri: Uri?,
+        videoUri: Uri?,
+        imageRemoved: Boolean = false,
+        videoRemoved: Boolean = false
+    ): Result<String> {
+        return try {
+            val imageSuffix = imageUri?.let { guessSuffix(it) }
+            val videoSuffix = videoUri?.let { guessSuffix(it) }
+
+            if (imageUri != null && imageSuffix !in listOf(".png", ".webp", ".jpg", ".jpeg")) {
+                return Result.failure(IllegalArgumentException(context.getString(R.string.error_allowed_image_extensions)))
+            }
+            if (videoUri != null && videoSuffix !in listOf(".mp4", ".webm")) {
+                return Result.failure(IllegalArgumentException(context.getString(R.string.error_allowed_video_extensions)))
+            }
+
+            val imageFile = imageUri?.let { uriToTempFile(it, "post_image", imageSuffix!!) }
+            val videoFile = videoUri?.let { uriToTempFile(it, "post_video", videoSuffix!!) }
+
+            if (imageFile != null && imageFile.length() > MAX_IMAGE_BYTES) {
+                imageFile.delete()
+                return Result.failure(IllegalArgumentException(context.getString(R.string.error_max_image_size)))
+            }
+            if (videoFile != null && videoFile.length() > MAX_VIDEO_BYTES) {
+                videoFile.delete()
+                return Result.failure(IllegalArgumentException(context.getString(R.string.error_max_video_size)))
+            }
+
+            val text = "text/plain".toMediaType()
+            val contentBody: RequestBody = content.toRequestBody(text)
+            val hashtagsJson = Gson().toJson(hashtags)
+            val hashtagsBody: RequestBody = hashtagsJson.toRequestBody("application/json".toMediaType())
+
+            val requestBuilder = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("content", content)
+                .addFormDataPart("hashtags", hashtagsJson)
+
+            if (imageRemoved) {
+                requestBuilder.addFormDataPart("image", "null")
+            } else if (imageFile != null) {
+                val imageMime = when (imageSuffix) {
+                    ".png" -> "image/png"
+                    ".jpg", ".jpeg" -> "image/jpeg"
+                    ".webp" -> "image/webp"
+                    else -> "application/octet-stream"
+                }
+                requestBuilder.addFormDataPart(
+                    "image",
+                    imageFile.name,
+                    imageFile.asRequestBody(imageMime.toMediaTypeOrNull())
+                )
+            }
+
+            if (videoRemoved) {
+                requestBuilder.addFormDataPart("video", "null")
+            } else if (videoFile != null) {
+                val videoMime = when (videoSuffix) {
+                    ".mp4" -> "video/mp4"
+                    ".webm" -> "video/webm"
+                    else -> "application/octet-stream"
+                }
+                requestBuilder.addFormDataPart(
+                    "video",
+                    videoFile.name,
+                    videoFile.asRequestBody(videoMime.toMediaTypeOrNull())
+                )
+            }
+
+            val requestBody = requestBuilder.build()
+            val response = api.updatePost(postId, requestBody)
+
+            imageFile?.delete()
+            videoFile?.delete()
+
+            if (response.isSuccessful) {
+                Result.success(response.body()?.message ?: "Post zaktualizowany")
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd serwera"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deletePost(postId: String): Result<String> {
+        return try {
+            val response = api.deletePost(postId)
+            if (response.isSuccessful) {
+                Result.success(response.body()?.message ?: "Post został usunięty")
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd serwera"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 }

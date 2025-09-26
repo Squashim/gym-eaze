@@ -11,12 +11,14 @@ fun PostScreen(
     onSettingsClick: () -> Unit,
     isUserLoggedIn: Boolean,
     onCreatePostClick: () -> Unit = {},
-    onBrowsePostClick: () -> Unit = {}
+    onBrowsePostClick: () -> Unit = {},
+    onFollowedUsersPosts: () -> Unit ={},
+    onMyPosts: () -> Unit = {}
 ) {
     if (isUserLoggedIn){
-        PostsMenuScreen(onSettingsClick = onSettingsClick, onCreatePostClick = onCreatePostClick, onBrowsePostClick = onBrowsePostClick)
+        PostsMenuScreen(onSettingsClick = onSettingsClick, onCreatePostClick = onCreatePostClick, onBrowsePostClick = onBrowsePostClick, onFollowedUsersPosts = onFollowedUsersPosts, onMyPostClick = onMyPosts)
     } else {
-        PostsOverviewScreen(onSettingsClick=onSettingsClick)
+        PostsOverviewScreen()
 
     }
 }

@@ -68,11 +68,24 @@ export const updatePost = async (req: AuthPostRequest, res: Response) => {
     const imageFile = req.files?.image?.[0];
     const videoFile = req.files?.video?.[0];
 
-    await updatePostService(postId!, userId!, {
-      content,
-      imageBuffer: imageFile?.buffer,
-      videoBuffer: videoFile?.buffer,
-    });
+    const image = req.body.image === 'null' ? null : undefined;
+    const video = req.body.video === 'null' ? null : undefined;
+
+    const trimmedContent = content?.trim();
+    const hashtags = parseField(req.body.hashtags);
+
+    await updatePostService(
+      postId!,
+      userId!,
+      {
+        content: trimmedContent,
+        imageBuffer: imageFile?.buffer,
+        videoBuffer: videoFile?.buffer,
+        hashtags,
+      },
+      image,
+      video,
+    );
 
     return res.status(200).json({ message: 'Post został zaktualizowany' });
   } catch (error) {

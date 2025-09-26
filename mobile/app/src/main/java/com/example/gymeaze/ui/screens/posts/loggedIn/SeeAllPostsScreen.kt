@@ -1,6 +1,5 @@
 package com.example.gymeaze.ui.screens.posts.loggedIn
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -12,11 +11,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.LoadingScreen
+import com.example.gymeaze.ui.screens.posts.components.DeletePostDialog
 import com.example.gymeaze.ui.screens.posts.components.SeeAllPostsContent
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.AuthViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable
@@ -24,24 +26,75 @@ fun SeeAllPostsScreen(
     onBackClick: () -> Unit = {}
 ) {
     val viewModel: PostsViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
     val posts by viewModel.posts.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val currentUsername = currentUser?.username ?: ""
+    var editingPost by remember { mutableStateOf<PostUi?>(null) }
+    var deletingPost by remember { mutableStateOf<PostUi?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+
+    val onEditClick: (PostUi) -> Unit = { post ->
+        editingPost = post
+    }
+
+    val onDeleteClick: (PostUi) -> Unit = { post ->
+        deletingPost = post
+        showDeleteDialog = true
+    }
+
+    LaunchedEffect(Unit) {
+        val result = authViewModel.getCurrentUser()
+        result.onSuccess { user ->
+            viewModel.setCurrentUser(user)
+            viewModel.fetchPosts(refresh = true)
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
 
-        SeeAllPostsContent(
-            posts = posts,
-            onBackClick = onBackClick,
-            onSearchHashtags = { hashtags -> viewModel.searchByHashtags(hashtags) },
-            onClearSearch = { viewModel.clearSearch() },
-            onLoadMore = { viewModel.loadMore() },
-            isLoading = isLoading,
-            onRefresh = { viewModel.refreshPosts() },
-            isRefreshing = isRefreshing,
-            onToggleLike = { postId -> viewModel.toggleLike(postId) },
-        )
+        if (showDeleteDialog && deletingPost != null) {
+            DeletePostDialog(
+                onConfirm = {
+                    viewModel.deletePost(deletingPost!!.id)
+                    showDeleteDialog = false
+                    deletingPost = null
+                },
+                onDismiss = {
+                    showDeleteDialog = false
+                    deletingPost = null
+                }
+            )
+        }
+
+        if (editingPost != null) {
+            EditPostScreen(
+                viewModel = viewModel,
+                postToEdit = editingPost!!,
+                onBackClick = { editingPost = null },
+                onEdited = { editingPost = null }
+            )
+        } else {
+            SeeAllPostsContent(
+                posts = posts,
+                currentUsername = currentUsername,
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick,
+                onBackClick = onBackClick,
+                onSearchHashtags = { hashtags -> viewModel.searchByHashtags(hashtags) },
+                onClearSearch = { viewModel.clearSearch() },
+                onLoadMore = { viewModel.loadMore() },
+                isLoading = isLoading,
+                onRefresh = { viewModel.refreshPosts() },
+                isRefreshing = isRefreshing,
+                onToggleLike = { postId -> viewModel.toggleLike(postId) },
+                onToggleSeeMore = { true },
+            )
+        }
 
         if (isLoading && posts.isEmpty()) {
             LoadingScreen()
@@ -87,4 +140,3 @@ fun SeeAllPostsScreen(
         }
     }
 }
-

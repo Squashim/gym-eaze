@@ -9,8 +9,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.ThumbUpAlt
@@ -27,10 +30,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getErrorColor
+import com.example.gymeaze.ui.theme.getOnPrimaryColor
+import com.example.gymeaze.ui.theme.getOnSecondaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -39,18 +46,26 @@ import com.example.gymeaze.ui.theme.getSurfaceColor
 @Composable
 fun PostCard(
     post: PostUi,
+    currentUsername: String,
+    onEditClick: (PostUi) -> Unit,
+    onDeleteClick: (PostUi) -> Unit,
     onHashtagClick: (String) -> Unit = {},
     onImageClick: () -> Unit = {},
     onVideoClick: () -> Unit = {},
     onUserClick: (String) -> Unit = {},
     onReportClick: (PostUi) -> Unit = {},
     modifier: Modifier = Modifier,
-    onToggleLike: (String) -> Unit
+    onToggleLike: (String) -> Unit,
+    onToggleSeeMore: (String) -> Boolean,
 ) {
     fun isVideo(url: String): Boolean =
         url.endsWith(".mp4", true) || url.endsWith(".webm", true) || url.contains("video", true)
 
     var menuExpanded by remember { mutableStateOf(false) }
+    var isContentExpanded by remember { mutableStateOf(false) }
+
+    var moreDialog  by remember { mutableStateOf(false) }
+    val maxContentLength = 550
 
     Card(
         modifier = modifier
@@ -98,7 +113,14 @@ fun PostCard(
                 }
 
                 Box {
-                    IconButton(onClick = { menuExpanded = true }) {
+                    IconButton(onClick = {
+                        if (onToggleSeeMore(post.id) == true) {
+                            menuExpanded = true
+                        } else {
+                            menuExpanded = false
+                        }
+
+                    }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "Więcej opcji",
@@ -111,31 +133,126 @@ fun PostCard(
                         onDismissRequest = { menuExpanded = false },
                         containerColor = getBackgroundColor()
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("Zgłoś post") },
-                            onClick = {
-                                menuExpanded = false
-                                onReportClick(post)
-                            },
-                            colors = MenuDefaults.itemColors(
-                                textColor = getOnSurfaceColor()
+                        if (post.username == currentUsername) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    menuExpanded = false
+                                    onEditClick(post)
+                                },
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                            tint = getOnSurfaceColor()
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            "Edytuj post",
+                                            color = getOnSurfaceColor()
+                                        )
+                                    }
+                                }
                             )
-                        )
-                    }
 
+                            HorizontalDivider(
+                                color = getOnSurfaceColor().copy(alpha = 0.3f),
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+
+                            DropdownMenuItem(
+                                onClick = {
+                                    menuExpanded = false
+                                    onDeleteClick(post)
+                                },
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                            tint = getErrorColor()
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            "Usuń post",
+                                            color = getErrorColor()
+                                        )
+                                    }
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                onClick = {
+                                    menuExpanded = false
+                                    onReportClick(post)
+                                },
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Flag,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                            tint = getOnSurfaceColor()
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            "Zgłoś post",
+                                            color = getOnSurfaceColor()
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             if (post.content.isNotEmpty()) {
-                Text(
-                    text = post.content,
-                    color = getOnSurfaceColor(),
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                val shouldTruncate = post.content.length > maxContentLength && !isContentExpanded
+                val displayText = if (shouldTruncate) {
+                    post.content.take(maxContentLength)
+                } else {
+                    post.content
+                }
+
+                Column {
+                    Text(
+                        text = displayText,
+                        color = getOnSurfaceColor(),
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+
+                    if (post.content.length > maxContentLength) {
+                        Text(
+                            text = if (isContentExpanded) "Zobacz mniej" else "Zobacz wszystko",
+                            color = getOnSurfaceSecondaryColor(),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier
+                                .clickable {
+                                    isContentExpanded = !isContentExpanded
+                                }
+                                .padding(top = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
             if (post.hashtags.isNotEmpty()) {

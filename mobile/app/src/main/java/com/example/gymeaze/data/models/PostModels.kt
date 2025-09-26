@@ -41,7 +41,8 @@ data class PostUi(
     val mediaUrl: String?,
     val likes: Int,
     val isLiked: Boolean,
-    val hashtags: List<String> = emptyList()
+    val hashtags: List<String> = emptyList(),
+    val isOwner: Boolean = false
 )
 
 data class ToggleLikeResponse(
@@ -53,4 +54,10 @@ data class LikesResponse(
     val posts: List<String>,
     val exercises: List<String>,
     val trainingPlans: List<String>
+)
+
+data class PostResponse(
+    val items: List<Post>,
+    val hasMore: Boolean,
+    val nextCursor: String?
 )

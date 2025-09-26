@@ -35,6 +35,8 @@ import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
+import com.example.gymeaze.ui.screens.posts.loggedIn.MyPosts
+import com.example.gymeaze.ui.screens.posts.loggedIn.PostsFollowedUsers
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
@@ -99,6 +101,8 @@ class MainActivity : ComponentActivity() {
             val showPostScreen by authViewModel.showPostScreen.collectAsState()
             val showCreatePost by authViewModel.showCreatePost.collectAsState()
             val showBrowsePost by authViewModel.showBrowsePost.collectAsState()
+            val showFollowedUsersPosts by authViewModel.showFollowedUserPosts.collectAsState()
+            val showMyPosts by authViewModel.showMyPosts.collectAsState()
 
 
             logoutEvent?.let { event ->
@@ -146,6 +150,16 @@ class MainActivity : ComponentActivity() {
                         }
 
                         when {
+                            showMyPosts-> {
+                                MyPosts(
+                                    onBackClick = { authViewModel.hideMyPostsScreen() }
+                                )
+                            }
+                            showFollowedUsersPosts -> {
+                                PostsFollowedUsers(
+                                    onBackClick = { authViewModel.hideFollowedUserPostsScreen() }
+                                )
+                            }
                             showBrowsePost -> {
                                 SeeAllPostsScreen(
                                     onBackClick = { authViewModel.hideBrowsePostScreen() }
@@ -172,7 +186,10 @@ class MainActivity : ComponentActivity() {
                                     onSettingsClick = authViewModel::showSettingsScreen,
                                     isUserLoggedIn = isUserLoggedIn,
                                     onCreatePostClick = authViewModel::showCreatePostScreen,
-                                    onBrowsePostClick = authViewModel::showBrowsePostScreen
+                                    onBrowsePostClick = authViewModel::showBrowsePostScreen,
+                                    onFollowedUsersPosts = authViewModel :: showFollowedUserPostsScreen,
+                                    onMyPosts = authViewModel :: showMyPostsScreen
+
                                 )
                             }
                             showExerciseSelectionForDay && selectedDayIndex != null -> {
@@ -289,7 +306,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
                                     onCreatePostClick = authViewModel::showCreatePostScreen,
-                                    onBrowsePostClick = authViewModel::showBrowsePostScreen
+                                    onBrowsePostClick = authViewModel::showBrowsePostScreen,
+                                    onFollowedUsersPosts = authViewModel :: showFollowedUserPostsScreen,
+                                    onMyPosts = authViewModel :: showMyPostsScreen
 
                                 )
                             }
@@ -312,7 +331,9 @@ class MainActivity : ComponentActivity() {
                                     onBrowseExercisesClick = authViewModel::showBrowseExercisesScreen,
                                     onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
                                     onCreatePostClick = authViewModel::showCreatePostScreen,
-                                    onBrowsePostClick = authViewModel::showBrowsePostScreen
+                                    onBrowsePostClick = authViewModel::showBrowsePostScreen,
+                                    onFollowedUsersPosts = authViewModel :: showFollowedUserPostsScreen,
+                                    onMyPosts = authViewModel :: showMyPostsScreen
                                 )
                             }
                         }

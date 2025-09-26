@@ -422,13 +422,19 @@ fun AuthScreen(
     onSettingsClick: () -> Unit,
     onCreateTrainingPlanClick : () -> Unit,
     onCreatePostClick: () -> Unit = {},
-    onBrowsePostClick: () -> Unit ={}
+    onBrowsePostClick: () -> Unit ={},
+    onFollowedUsersPosts: () -> Unit ={},
+    onMyPosts: () -> Unit = {}
 ) {
     var selectedRoute by remember { mutableStateOf("profile") }
 
     Scaffold(
         topBar = {
-            GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+            // Pokazuj TopBar tylko jeśli nie jesteś w sekcji "community"
+            if (selectedRoute != "community") {
+                GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+            }
+            // W sekcji "community" dziecko (PostScreen) wyświetli własny TopBar z lupką!
         },
         bottomBar = {
             GymEazeBottomNavigationBar(
@@ -444,7 +450,7 @@ fun AuthScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick, onBrowsePostClick)
+            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick, onBrowsePostClick, onFollowedUsersPosts, onMyPosts)
 
             "profile" -> {
                 Box(modifier = Modifier.fillMaxSize()) {

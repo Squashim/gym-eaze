@@ -1,4 +1,5 @@
 package com.example.gymeaze.ui.screens.posts.components
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,23 +13,24 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
-import com.example.gymeaze.ui.screens.posts.components.EnhancedSearchBar
-import com.example.gymeaze.ui.screens.posts.components.PostCard
-import com.example.gymeaze.ui.screens.posts.components.MediaFullScreenDialog
+import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeeAllPostsContent(
     posts: List<PostUi>,
+    currentUsername: String,
+    onEditClick: (PostUi) -> Unit,
+    onDeleteClick: (PostUi) -> Unit,
     onBackClick: () -> Unit,
     onSearchHashtags: (List<String>) -> Unit,
     onClearSearch: () -> Unit,
@@ -36,7 +38,10 @@ fun SeeAllPostsContent(
     isLoading: Boolean,
     onRefresh: () -> Unit,
     isRefreshing: Boolean,
-    onToggleLike: (String) -> Unit
+    onToggleLike: (String) -> Unit,
+    onToggleSeeMore: (String) -> Boolean,
+    searchEnabled: Boolean = true,
+    showLogoTopBar: Boolean = false
 ) {
     var selectedHashtags by remember { mutableStateOf<List<String>>(emptyList()) }
     var hashtagInput by remember { mutableStateOf("") }
@@ -44,48 +49,94 @@ fun SeeAllPostsContent(
     var fullScreenMedia by remember { mutableStateOf<Pair<PostUi, Boolean>?>(null) }
 
     val listState = rememberLazyListState()
+    val isDarkTheme = LocalDarkTheme.current
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Przeglądaj posty",
-                        color = getOnSurfaceColor(),
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Wróć",
-                            tint = getOnSurfaceColor()
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            isSearchActive = !isSearchActive
-                            if (!isSearchActive) {
-                                selectedHashtags = emptyList()
-                                hashtagInput = ""
-                                onClearSearch()
+            if (showLogoTopBar) {
+                TopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Image(
+                                painter = painterResource(
+                                    id = if(isDarkTheme){
+                                        com.example.gymeaze.R.drawable.gym_eaze_logo_light
+                                    } else {
+                                        com.example.gymeaze.R.drawable.gym_eaze_logo_dark
+                                    }),
+                                contentDescription = stringResource(com.example.gymeaze.R.string.logo)
+                            )
+                        }
+                    },
+                    actions = {
+                        if (searchEnabled) {
+                            IconButton(
+                                onClick = {
+                                    isSearchActive = !isSearchActive
+                                    if (!isSearchActive) {
+                                        selectedHashtags = emptyList()
+                                        hashtagInput = ""
+                                        onClearSearch()
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
+                                    contentDescription = if (isSearchActive) "Zamknij wyszukiwanie" else "Szukaj",
+                                    tint = getOnSurfaceColor()
+                                )
                             }
                         }
-                    ) {
-                        Icon(
-                            imageVector = if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
-                            contentDescription = if (isSearchActive) "Zamknij wyszukiwanie" else "Szukaj",
-                            tint = getOnSurfaceColor()
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = getBackgroundColor()
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = getBackgroundColor()
+                    )
                 )
-            )
+            } else {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Wróć",
+                            color = getOnSurfaceColor(),
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Wróć",
+                                tint = getOnSurfaceColor()
+                            )
+                        }
+                    },
+                    actions = {
+                        if (searchEnabled) {
+                            IconButton(
+                                onClick = {
+                                    isSearchActive = !isSearchActive
+                                    if (!isSearchActive) {
+                                        selectedHashtags = emptyList()
+                                        hashtagInput = ""
+                                        onClearSearch()
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
+                                    contentDescription = if (isSearchActive) "Zamknij wyszukiwanie" else "Szukaj",
+                                    tint = getOnSurfaceColor()
+                                )
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = getBackgroundColor()
+                    )
+                )
+            }
         },
         containerColor = getBackgroundColor()
     ) { paddingValues ->
@@ -100,9 +151,7 @@ fun SeeAllPostsContent(
                 BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                    // USUŃ PADDING Z TUTAJ - to powodowało problem!
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     // Search bar - z paddingiem tylko z góry dla TopBar
                     if (isSearchActive) {
@@ -138,16 +187,16 @@ fun SeeAllPostsContent(
                         }
                     }
 
-                    // LazyColumn z postami - padding tylko z góry
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                             .weight(1f),
                         state = listState,
                         contentPadding = PaddingValues(
-                            top = if (isSearchActive) 0.dp else paddingValues.calculateTopPadding()
-                        ),
-                        verticalArrangement = Arrangement.Bottom
+                            top = if (isSearchActive) 0.dp else paddingValues.calculateTopPadding(),
+                            bottom = 16.dp
+                        )
                     ) {
                         if (isLoading && posts.isNotEmpty()) {
                             item {
@@ -165,17 +214,22 @@ fun SeeAllPostsContent(
                             }
                         }
 
+                        // Informacja o braku postów
                         if (posts.isEmpty() && !isLoading) {
                             item {
                                 NoPostsInfo(isSearchActive, selectedHashtags.isNotEmpty())
                             }
                         } else {
+                            // Lista postów
                             itemsIndexed(
                                 items = posts,
                                 key = { _, post -> post.id }
                             ) { index, post ->
                                 PostCard(
                                     post = post,
+                                    currentUsername = currentUsername,
+                                    onEditClick = onEditClick,
+                                    onDeleteClick = onDeleteClick,
                                     onHashtagClick = { hashtag ->
                                         if (!selectedHashtags.contains(hashtag)) {
                                             selectedHashtags = selectedHashtags + hashtag
@@ -189,8 +243,12 @@ fun SeeAllPostsContent(
                                     onVideoClick = {
                                         fullScreenMedia = post to true
                                     },
-                                    onToggleLike = onToggleLike
+                                    onToggleLike = onToggleLike,
+                                    onToggleSeeMore = onToggleSeeMore
+
                                 )
+
+                                // Trigger do ładowania więcej postów
                                 if (index == posts.size - 3) {
                                     LaunchedEffect(Unit) { onLoadMore() }
                                 }
@@ -199,6 +257,7 @@ fun SeeAllPostsContent(
                     }
                 }
 
+                // Dialog pełnoekranowy dla mediów
                 fullScreenMedia?.let { (post, isVideo) ->
                     MediaFullScreenDialog(
                         post = post,

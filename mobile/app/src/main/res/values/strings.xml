@@ -155,6 +155,8 @@
     <string name="country">Kraj</string>
     <string name="select_country_placeholder">Podaj kraj zamieszkania</string>
 
+    <string name="delete">Usuń</string>
+
     <string name="edit_physical_info">Edytuj swoje informacje fizyczne</string>
     <string name="edit_physical_info_description">Wprowadź nowe dane lub zaktualizuj już istniejące. Wszystkie dane są opcjonalne, a ich widoczność zależy od Twoich ustawień prywatności. Domyślnie są publiczne.</string>
     <string name="gender">Płeć</string>
