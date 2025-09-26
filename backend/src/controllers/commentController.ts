@@ -2,8 +2,11 @@ import { Response, Request } from 'express';
 import { AuthRequest } from '../types/auth';
 import {
   createCommentService,
+  deleteCommentService,
   getCommentsWithCursor,
   getRepliesForComment,
+  toggleCommentLikeService,
+  updateCommentService,
 } from '../services/commentService';
 import { CreateCommentBody } from '../types/comment';
 import {
@@ -12,6 +15,7 @@ import {
   MainCommentParentTypes,
   mainCommentParentTypes,
 } from '../constants/commentType';
+import { parseDescription } from '../utils/parsers';
 
 export const createComment = async (req: AuthRequest, res: Response) => {
   try {
@@ -32,6 +36,55 @@ export const createComment = async (req: AuthRequest, res: Response) => {
     }
     return res.status(500).json({
       message: 'Wystąpił niezidetyfikowany błąd podczas dodawania komentarza/odpowiedzi',
+    });
+  }
+};
+
+export const updateComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const { content } = req.body;
+
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ message: 'Treść komentarza jest wymagana' });
+    }
+
+    if (parseDescription(content.trim()).length > 1000) {
+      return res.status(400).json({ message: 'Komentarz nie może być dłuższy niż 1000 znaków' });
+    }
+
+    const message = await updateCommentService(id, userId!, content);
+
+    return res.status(200).json({
+      message: message,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    }
+    return res.status(500).json({
+      message: 'Wystąpił niezidetyfikowany błąd podczas edytowania komentarza/odpowiedzi',
+    });
+  }
+};
+
+export const deleteComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    const message = await deleteCommentService(id, userId!);
+
+    return res.status(200).json({
+      message: message,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    }
+    return res.status(500).json({
+      message: 'Wystąpił niezidetyfikowany błąd podczas usuwania komentarza/odpowiedzi',
     });
   }
 };
@@ -90,5 +143,26 @@ export const getCommentReplies = async (req: Request, res: Response) => {
     return res.status(500).json({
       message: 'Nie udało się pobrać odpowiedzi',
     });
+  }
+};
+
+export const toggleCommentLike = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const result = await toggleCommentLikeService(userId, id);
+
+    res.status(200).json(result);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
