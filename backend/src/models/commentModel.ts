@@ -7,6 +7,7 @@ export interface IComment extends mongoose.Document {
   likes: number;
   parentType: CommentParentType;
   parentId: Types.ObjectId;
+  isEdited?: boolean;
   repliesCount?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +43,9 @@ const commentSchema = new mongoose.Schema(
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+    },
+    isEdited: {
+      type: Boolean,
     },
     repliesCount: {
       type: Number,

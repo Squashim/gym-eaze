@@ -100,6 +100,8 @@ export const updatePostService = async (
     post.content = content.trim();
   }
 
+  post.isEdited = true;
+
   await post.save();
 };
 

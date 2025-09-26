@@ -8,6 +8,7 @@ export interface IPost extends mongoose.Document {
   video?: string;
   hashtags?: string[];
   likes: number;
+  isEdited?: boolean;
   commentsCount?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +41,9 @@ const postSchema = new mongoose.Schema(
     likes: {
       type: Number,
       default: 0,
+    },
+    isEdited: {
+      type: Boolean,
     },
     commentsCount: {
       type: Number,

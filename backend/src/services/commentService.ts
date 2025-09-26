@@ -81,6 +81,8 @@ export const updateCommentService = async (commentId: string, userId: string, co
   }
 
   comment.content = content.trim();
+  comment.isEdited = true;
+
   await comment.save();
 
   return comment.parentType === CommentParentType.comment
