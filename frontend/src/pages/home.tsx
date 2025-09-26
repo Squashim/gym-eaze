@@ -1,7 +1,7 @@
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import { STORAGE_FLAGS } from '@/constants/storage-flags';
 import { useUser } from '@/context/user';
-import { useSessionFlag } from '@/hooks/use-session-flag';
+import { useSessionFlag } from '@/hooks/utils/use-session-flag';
 
 const Home = () => {
   const { user } = useUser();

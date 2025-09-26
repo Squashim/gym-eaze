@@ -218,6 +218,17 @@
   .dark input:-webkit-autofill:focus-visible {
     outline: 3px solid #282727 !important;
   }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type='number'] {
+    appearance: none;
+    -moz-appearance: textfield;
+  }
 }
 
 @layer base {

@@ -82,7 +82,7 @@ export const links: MenuItem[] = [
   },
   {
     title: 'Przeglądaj posty',
-    url: '/social/browse',
+    url: '/community',
     allow: 'all',
   },
   {

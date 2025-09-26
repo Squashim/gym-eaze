@@ -5,32 +5,39 @@ import { Goal } from '../constants/goals';
 import { PrivacySettings } from '../constants/privacySettings';
 import { AdvancedLevel } from '../constants/advancedLevel';
 
-export interface DayExercise {
-  id: Types.ObjectId | IExercise;
-  isRepsSet: boolean;
-  duration?: number;
-  restAfterSet: number;
-  sets: {
-    repetitions: number;
-    weight: number;
-  }[];
-}
+export type RepsSet = { repetitions: number; weight?: number | null };
+export type DurationSet = { duration: number };
+export type Set = RepsSet | DurationSet;
+
+export type DayExercise =
+  | {
+      id: Types.ObjectId | IExercise;
+      isRepsSet: true;
+      restAfterSet: number;
+      sets: RepsSet[];
+    }
+  | {
+      id: Types.ObjectId | IExercise;
+      isRepsSet: false;
+      restAfterSet: number;
+      sets: DurationSet[];
+    };
 
 export interface TrainingDay {
   name: string;
+  dayNumber: number;
   isRestDay: boolean;
   exercises: DayExercise[];
 }
 
 export interface CreateTrainingPlanData {
-  title: string;
-  author: string;
-  description?: string;
-  goal: Goal;
+  name: string;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
-  hashtags?: string[];
+  goal: Goal;
   days: TrainingDay[];
+  description?: string;
+  hashtags?: string[];
 }
 
 export interface TrainingPlanRequest extends Request {

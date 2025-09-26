@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AdvancedLevelBadge, LikesBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
@@ -8,7 +7,7 @@ import { AdvancedLevel } from '@/constants/advanced-level';
 import { useUser } from '@/context/user';
 import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
-import usePageTitle from '@/hooks/use-page-title';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import { cn, getApiErrorMsg } from '@/lib/utils';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
@@ -22,6 +21,7 @@ import { useExercise } from '@/hooks/query/exercises/use-exercise';
 import { toast } from 'sonner';
 import ResourceActions from '@/components/ui/resource-actions';
 import PageLayout from '@/components/layout/page';
+import ReusableAvatar from '@/components/ui/reusable-avatar';
 
 const ExerciseDetails = () => {
   const { id } = useParams();
@@ -99,21 +99,11 @@ const ExerciseDetails = () => {
       <div className="flex items-center gap-2 md:justify-end">
         <Button
           asChild
-          className="flex items-center gap-2 p-0 hover:bg-transparent"
+          className="flex items-center gap-2 p-0 hover:bg-transparent rounded-tl-2xl rounded-bl-2xl"
           variant="ghost"
         >
           <a className="flex items-center gap-2 pr-2" href={`/profile/${exercise.author._id}`}>
-            <Avatar className="shadow-sm">
-              <AvatarImage
-                alt={`zdjęcie profilowe użytkownika ${exercise.author.username}`}
-                src={exercise.author.profileDetails.profilePicture || undefined}
-              />
-              <AvatarFallback className="dark:bg-background">
-                <Typography variant="small">
-                  {exercise.author.username.slice(0, 2).toUpperCase()}
-                </Typography>
-              </AvatarFallback>
-            </Avatar>
+            <ReusableAvatar className="shadow-sm" fallbackClassName="dark:bg-background" />
             {exercise.author.username}
             {isAuthor && ' (Ty)'}
           </a>
