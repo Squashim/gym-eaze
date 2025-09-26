@@ -185,10 +185,8 @@ class MainActivity : ComponentActivity() {
                                 PostScreen(
                                     onSettingsClick = authViewModel::showSettingsScreen,
                                     isUserLoggedIn = isUserLoggedIn,
-                                    onCreatePostClick = authViewModel::showCreatePostScreen,
-                                    onBrowsePostClick = authViewModel::showBrowsePostScreen,
-                                    onFollowedUsersPosts = authViewModel :: showFollowedUserPostsScreen,
-                                    onMyPosts = authViewModel :: showMyPostsScreen
+                                    createPostViewModel = createPostViewModel,
+                                    setShowBottomBar = {  }
 
                                 )
                             }

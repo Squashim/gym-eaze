@@ -35,11 +35,15 @@ fun PostsMenuScreen(
             GymEazeTopAppBar(onSettingsClick = onSettingsClick)
         },
         bottomBar = {
+            /*
             GymEazeBottomNavigationBar(
                 selectedRoute = selectedRoute,
                 onItemSelected = { route -> selectedRoute = route }
             )
+
+             */
         },
+
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         Box(

@@ -666,5 +666,4 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun hideBrowsePostScreen(){
         _showBrowsePost.value = false
     }
-
 }

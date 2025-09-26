@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
@@ -36,6 +37,7 @@ import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.AuthUiState
+import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable
 fun RegisterForm(
@@ -427,6 +429,7 @@ fun AuthScreen(
     onMyPosts: () -> Unit = {}
 ) {
     var selectedRoute by remember { mutableStateOf("profile") }
+    val createPostViewModel: PostsViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -450,7 +453,7 @@ fun AuthScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick, onBrowsePostClick, onFollowedUsersPosts, onMyPosts)
+            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, createPostViewModel, setShowBottomBar = { true })
 
             "profile" -> {
                 Box(modifier = Modifier.fillMaxSize()) {

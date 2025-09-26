@@ -680,7 +680,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 }
 
 

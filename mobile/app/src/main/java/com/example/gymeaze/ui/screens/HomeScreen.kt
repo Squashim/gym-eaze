@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
@@ -51,6 +52,7 @@ import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -74,19 +76,25 @@ fun HomeScreen(
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
+    val createPostViewModel: PostsViewModel = viewModel()
+    var showBottomBar by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
-            GymEazeTopAppBar(
-                onSettingsClick = onSettingsClick
-            )
+            if (selectedRoute != "community"){
+                GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+            }
+
         },
         bottomBar = {
-            GymEazeBottomNavigationBar(
-                selectedRoute = selectedRoute,
-                onItemSelected = { route -> selectedRoute = route }
-            )
+            if (showBottomBar) {
+                GymEazeBottomNavigationBar(
+                    selectedRoute = selectedRoute,
+                    onItemSelected = { route -> selectedRoute = route }
+                )
+            }
         },
+
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         when (selectedRoute) {
@@ -95,38 +103,62 @@ fun HomeScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
             )
-            "community" -> PostScreen(onSettingsClick, isUserLoggedIn, onCreatePostClick, onBrowsePostClick, onFollowedUsersPosts, onMyPosts)
-            "profile" -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .background(getBackgroundColor()),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        WelcomeSection(
-                            username = username,
-                            currentDate = currentDate,
-                            onEditProfileClick = onEditProfileClick
-                        )
-                    }
-                    item {
-                        QuickStatsSection()
-                    }
-                    item {
-                        QuickActionSection(
-                            onExerciseCreatorClick = onExerciseCreatorClick,
-                            onBrowseExercisesClick = onBrowseExercisesClick,
-                            onCreateTrainingPlanClick = onCreateTrainingPlanClick
-                        )
-                    }
-                    item {
-                        RecentActivitySection()
-                    }
-                }
-            }
+            "community" -> PostScreen(
+                onSettingsClick = onSettingsClick,
+                isUserLoggedIn = isUserLoggedIn,
+                createPostViewModel = createPostViewModel,
+                setShowBottomBar = { showBottomBar = it }
+            )
+            "profile" -> ProfileScreen(
+                username = username,
+                currentDate = currentDate,
+                onEditProfileClick = onEditProfileClick,
+                onExerciseCreatorClick = onExerciseCreatorClick,
+                onBrowseExercisesClick = onBrowseExercisesClick,
+                onCreateTrainingPlanClick = onCreateTrainingPlanClick,
+                paddingValues = paddingValues
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfileScreen(
+    username: String,
+    currentDate: String,
+    onEditProfileClick: () -> Unit,
+    onExerciseCreatorClick: () -> Unit,
+    onBrowseExercisesClick: () -> Unit,
+    onCreateTrainingPlanClick: () -> Unit,
+    paddingValues: PaddingValues
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .background(getBackgroundColor()),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            WelcomeSection(
+                username = username,
+                currentDate = currentDate,
+                onEditProfileClick = onEditProfileClick
+            )
+        }
+        item {
+            QuickStatsSection()
+        }
+        item {
+            QuickActionSection(
+                onExerciseCreatorClick = onExerciseCreatorClick,
+                onBrowseExercisesClick = onBrowseExercisesClick,
+                onCreateTrainingPlanClick = onCreateTrainingPlanClick
+            )
+        }
+        item {
+            RecentActivitySection()
         }
     }
 }
