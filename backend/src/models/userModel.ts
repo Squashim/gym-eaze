@@ -10,6 +10,7 @@ import { IUserHasTrainingPlans } from '../models/userHasTrainingPlansModel';
 import { statusesValues, StatusTraining } from '../constants/statuses';
 import '../models/notificationModel';
 import { IPost } from './postModel';
+import { IComment } from './commentModel';
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -22,6 +23,7 @@ export interface IUser extends Document {
   likes: {
     trainingPlans: (Types.ObjectId | ITrainingPlan)[];
     exercises: (Types.ObjectId | IExercise)[];
+    comments: (Types.ObjectId | IComment)[];
     posts: (Types.ObjectId | IPost)[];
   };
   favorites: {
@@ -111,6 +113,12 @@ const userSchema = new mongoose.Schema<IUser>(
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Exercise',
+        },
+      ],
+      comments: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Comment',
         },
       ],
       posts: [

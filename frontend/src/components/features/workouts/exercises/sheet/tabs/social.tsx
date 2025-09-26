@@ -1,0 +1,305 @@
+import Typography from '@/components/ui/typography';
+import ExerciseList from '../exercise-list';
+import { Switch } from '@/components/ui/switch';
+import type { WorkoutSheetTabProps } from '@/types/workout';
+import useFilterQuery from '@/hooks/use-filter-query';
+import type { ExerciseFilters, SortBy } from '@/types/filters';
+import { initialExerciseFilters } from '@/constants/filters';
+import useGetExercises from '@/hooks/query/exercises/use-get-exercises';
+import { useEffect, useMemo, useState } from 'react';
+import useDebounce from '@/hooks/utils/use-debounce';
+import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-groups';
+import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
+import { AdvancedLevel } from '@/constants/advanced-level';
+import { ArrowUpDown, Eraser, Filter, Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { apiResponseToMultiSelectOptions, cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { TagsInput } from '@/components/ui/tags-input';
+
+const FILTERS_MAX_HEIGHT = 650;
+
+const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {
+  const { params, setPage, setFilters, setSortBy, clearFilters } =
+    useFilterQuery<ExerciseFilters>(initialExerciseFilters);
+  const { data: exercises, isLoading, isError } = useGetExercises(params);
+  const [searchText, setSearchText] = useState(params.filters?.search ?? '');
+  const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);
+  const debouncedSearch = useDebounce(searchText, 350);
+  const {
+    data: muscleGroups,
+    isLoading: isMuscleGroupsLoading,
+    isError: isMuscleGroupError,
+  } = useGetMuscleGroups();
+  const {
+    data: equipment,
+    isLoading: isEquipmentLoading,
+    isError: isEquipmentError,
+  } = useGetEquipment();
+
+  const activeFiltersCount = useMemo(() => {
+    return Object.entries(params.filters ?? {}).reduce((acc, [key, value]) => {
+      if (key === 'search') return acc;
+      if (Array.isArray(value) && value.length > 0) return acc + 1;
+      if (typeof value === 'boolean' && value) return acc + 1;
+      if (typeof value === 'string' && value !== '') return acc + 1;
+      return acc;
+    }, 0);
+  }, [params.filters]);
+
+  const muscleGroupOptions = useMemo(
+    () => apiResponseToMultiSelectOptions(muscleGroups),
+    [muscleGroups],
+  );
+  const equipmentOptions = useMemo(() => apiResponseToMultiSelectOptions(equipment), [equipment]);
+
+  const listMaxHeight = isMoreFiltersOpen
+    ? `calc(100vh - min(${FILTERS_MAX_HEIGHT}px, 70vh))`
+    : `calc(100vh - 15rem)`;
+
+  useEffect(() => {
+    setFilters({ search: debouncedSearch });
+  }, [debouncedSearch, setFilters]);
+
+  const handleSearchClear = () => {
+    setSearchText('');
+    setFilters({ search: '' });
+  };
+
+  const handleMoreFiltersToggle = () => {
+    setIsMoreFiltersOpen(!isMoreFiltersOpen);
+  };
+
+  const handleAdvancedLevelChange = (value: AdvancedLevel) => {
+    if (value === AdvancedLevel.none) {
+      setFilters({ difficulty: undefined });
+    } else {
+      setFilters({ difficulty: value });
+    }
+  };
+
+  const renderSearchInput = () => {
+    return (
+      <div className="relative flex items-center w-full">
+        <Search className="absolute left-3 size-4 text-muted-foreground pointer-events-none" />
+        <Input
+          className="pl-9"
+          id="exercise-search"
+          maxLength={64}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Wyszukaj ćwiczenie"
+          type="text"
+          value={searchText}
+        />
+        {searchText && (
+          <Button
+            className="absolute right-0 ease-in-out duration-200"
+            onClick={handleSearchClear}
+            size="icon"
+            variant="ghost"
+          >
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <header className="flex items-center w-full gap-3">
+        {renderSearchInput()}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="relative" onClick={handleMoreFiltersToggle} size="icon">
+              <Filter />
+              {activeFiltersCount > 0 && (
+                <Badge
+                  className="absolute -top-1 -right-1 rounded-full min-w-5 h-5 px-1 tabular-nums"
+                  variant="secondary"
+                >
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <Typography variant="small">
+              {isMoreFiltersOpen ? 'Ukryj filtry' : 'Pokaż filtry'}
+            </Typography>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className={cn(activeFiltersCount > 0 ? 'visible' : 'invisible')}
+              onClick={clearFilters}
+              size="icon"
+              variant="ghost"
+            >
+              <Eraser />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <Typography variant="small">Wyczyść filtry</Typography>
+          </TooltipContent>
+        </Tooltip>
+      </header>
+      <div
+        className={cn(
+          'overflow-hidden transition-all duration-300 ease-in-out flex flex-col gap-3 mt-3 p-0.5',
+          isMoreFiltersOpen ? 'max-h-[500px] opacity-100 mb-3' : 'max-h-0 opacity-0',
+        )}
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Typography className="font-semibold" variant="small">
+              Sortuj według:
+            </Typography>
+            <Select onValueChange={(value) => setSortBy(value as SortBy)} value={params.sortBy}>
+              <SelectTrigger className="w-full" tabIndex={isMoreFiltersOpen ? 0 : -1}>
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="latest">Najnowsze</SelectItem>
+                <SelectItem value="popular">Popularne</SelectItem>
+                <SelectItem value="top-rated">Najlepiej oceniane</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
+            <Typography className="font-semibold" variant="small">
+              Poziom trudności:
+            </Typography>
+            <Select
+              onValueChange={handleAdvancedLevelChange}
+              value={params.filters?.difficulty ?? AdvancedLevel.none}
+            >
+              <SelectTrigger className="w-full" tabIndex={isMoreFiltersOpen ? 0 : -1}>
+                <SelectValue placeholder="Wybierz poziom trudności..." />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(AdvancedLevel).map(([key, value]) => (
+                  <SelectItem key={key} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+          <Typography className="font-semibold" variant="small">
+            Grupy mięśniowe:
+          </Typography>
+          <MultiSelect
+            defaultValue={
+              isMuscleGroupsLoading || isMuscleGroupError
+                ? []
+                : (params.filters?.muscleGroups ?? [])
+            }
+            disabled={isMuscleGroupsLoading || isMuscleGroupError}
+            hideSelectAll={true}
+            maxCount={3}
+            modalPopover={true}
+            onValueChange={(value) => setFilters({ muscleGroups: value })}
+            options={muscleGroupOptions}
+            placeholder={
+              isMuscleGroupsLoading
+                ? 'Ładowanie...'
+                : isMuscleGroupError
+                  ? 'Błąd pobierania danych...'
+                  : 'Wybierz grupy mięśniowe...'
+            }
+            tabIndex={isMoreFiltersOpen ? 0 : -1}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Typography className="font-semibold" variant="small">
+            Sprzęt ćwiczeniowy:
+          </Typography>
+          <MultiSelect
+            defaultValue={
+              isEquipmentLoading || isEquipmentError ? [] : (params.filters?.equipment ?? [])
+            }
+            disabled={isEquipmentLoading || isEquipmentError}
+            hideSelectAll={true}
+            maxCount={3}
+            modalPopover={true}
+            onValueChange={(value) => setFilters({ equipment: value })}
+            options={equipmentOptions}
+            placeholder={
+              isEquipmentLoading
+                ? 'Ładowanie...'
+                : isEquipmentError
+                  ? 'Błąd pobierania danych...'
+                  : 'Wybierz sprzęt...'
+            }
+            tabIndex={isMoreFiltersOpen ? 0 : -1}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Typography className="font-semibold" variant="small">
+            Hasztagi:
+          </Typography>
+          <TagsInput
+            id="exercise-filter-hashtags"
+            onChange={(tags) => setFilters({ hashtags: tags })}
+            placeholder="Podaj hasztagi, np. biceps, triceps - użyj Entera lub przecinka"
+            tabIndex={isMoreFiltersOpen ? 0 : -1}
+            value={params.filters?.hashtags || []}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Typography className="font-semibold" variant="small">
+            Pokaż ćwiczenia obserwowanych użytkowników:
+          </Typography>
+          <div className="flex flex-row items-center justify-between rounded-md border border-input p-3 bg-transparent dark:bg-input/30 shadow-xs">
+            <div className="grid gap-1">
+              <Typography variant="muted">
+                Włącz, aby wyświetlać tylko ćwiczenia osób, które obserwujesz
+              </Typography>
+            </div>
+            <Switch
+              checked={params.filters?.followers === true}
+              onCheckedChange={(checked) => setFilters({ followers: checked ? true : undefined })}
+              tabIndex={isMoreFiltersOpen ? 0 : -1}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col h-full pb-3" style={{ maxHeight: listMaxHeight }}>
+        <ExerciseList
+          exercises={exercises}
+          isError={isError}
+          isExerciseAdded={isExerciseAdded}
+          isLoading={isLoading}
+          listType="social"
+          onExerciseToggle={onExerciseToggle}
+          params={params}
+          setPage={setPage}
+        />
+      </div>
+    </>
+  );
+};
+
+export default SocialExercisesTab;

@@ -7,7 +7,7 @@ import {
   updatePostService,
 } from '../services/postService';
 import { AuthPostRequest, PostFilters } from '../types/post';
-import { parseField } from '../utils/parsers';
+import { parseDescription, parseField } from '../utils/parsers';
 import { AuthRequest } from '../types/auth';
 import { getPostsWithCursor } from '../utils/post';
 
@@ -22,7 +22,7 @@ export const addPost = async (req: AuthPostRequest, res: Response) => {
     if (!content || content.trim().length === 0) {
       return res.status(400).json({ message: 'Treść posta jest wymagana' });
     }
-    if (content.length > 800) {
+    if (parseDescription(content).length > 800) {
       return res.status(400).json({ message: 'Treść posta może mieć maksymalnie 800 znaków' });
     }
 

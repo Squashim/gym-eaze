@@ -35,3 +35,15 @@ export type ExerciseFilters = {
   difficulty?: AdvancedLevel;
   followers?: boolean;
 };
+
+export interface CursorPaginatedResponse<T> {
+  items: T[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
+export type PostQueryParams = {
+  hashtags?: string[];
+  followedOnly?: boolean;
+  cursor?: string | null;
+};

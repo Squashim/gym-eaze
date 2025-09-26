@@ -17,6 +17,7 @@ export interface IExercise extends mongoose.Document {
   muscleGroup: (Types.ObjectId | IMuscleGroup)[];
   equipment: (Types.ObjectId | IEquipment)[];
   hashtags?: string[];
+  commentsCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -88,6 +89,9 @@ const exerciseSchema = new mongoose.Schema(
         maxLength: 35,
       },
     ],
+    commentsCount: {
+      type: Number,
+    },
   },
   { timestamps: true },
 );

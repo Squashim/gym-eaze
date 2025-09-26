@@ -8,6 +8,8 @@ export interface IPost extends mongoose.Document {
   video?: string;
   hashtags?: string[];
   likes: number;
+  isEdited?: boolean;
+  commentsCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,8 +23,14 @@ const postSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      maxlength: 800,
       required: true,
+      validate: {
+        validator: function (v: string) {
+          const normalized = v.replace(/\r\n/g, '\n');
+          return normalized.length <= 800;
+        },
+        message: 'Treść może mieć maksymalnie 800 znaków',
+      },
     },
     image: {
       type: String,
@@ -39,6 +47,12 @@ const postSchema = new mongoose.Schema(
     likes: {
       type: Number,
       default: 0,
+    },
+    isEdited: {
+      type: Boolean,
+    },
+    commentsCount: {
+      type: Number,
     },
   },
   { timestamps: true },

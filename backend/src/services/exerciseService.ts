@@ -283,6 +283,20 @@ export const getExercisesByUserService = async (
   return { items, total, page, pageSize };
 };
 
+export const getExercisesByIdsService = async (ids: string[]) => {
+  const invalidId = ids.find((id) => !mongoose.Types.ObjectId.isValid(id));
+
+  if (invalidId) {
+    throw new Error(`Nieprawidłowy identyfikator ćwiczenia`);
+  }
+
+  const exercises = await Exercise.find({ _id: { $in: ids } })
+    .select('image name muscleGroup')
+    .populate('muscleGroup', 'name')
+    .lean();
+  return exercises;
+};
+
 export const getFavoriteExercisesService = async (
   userId: string,
   page: number,

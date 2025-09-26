@@ -3,7 +3,7 @@ import ExerciseFilters from '../../components/features/exercises/exercise-filter
 import useFilterQuery from '@/hooks/use-filter-query';
 import type { ExerciseFilters as ExerciseFiltersType } from '@/types/filters';
 import { initialExerciseFilters } from '@/constants/filters';
-import usePageTitle from '@/hooks/use-page-title';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import PageLayout from '@/components/layout/page';
 import ExerciseContent from '../../components/features/exercises/exercise-content';
 

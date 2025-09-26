@@ -15,7 +15,7 @@ createRoot(document.getElementById('root')!).render(
   <GoogleOAuthProvider clientId={clientId}>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />;
+        <RouterProvider router={router} />
         <Toaster {...toasterOptions} />
       </QueryClientProvider>
     </ThemeProvider>

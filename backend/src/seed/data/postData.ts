@@ -24,6 +24,7 @@ const posts = [
       'Wow! 😃💪 Nie mogę uwierzyć, jak szybko rośnie nasza społeczność GymEaze! Każdy nowy użytkownik, każdy dodany trening i każda motywująca wiadomość sprawiają, że to miejsce staje się coraz bardziej inspirujące. 🌟 To dzięki Wam GymEaze staje się przestrzenią, gdzie ludzie naprawdę wspierają się w osiąganiu celów. Widząc Wasze postępy i zaangażowanie, wiem, że razem możemy osiągnąć naprawdę wiele! 🚀 Dziękuję, że jesteście częścią tej społeczności. Nie przestawajcie dzielić się swoimi sukcesami i motywować innych - razem rośniemy silniejsi! 💥',
     hashtags: ['społeczność', 'motywacja', 'sukces'],
     likes: 77,
+    commentsCount: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

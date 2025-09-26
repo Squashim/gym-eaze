@@ -1,4 +1,5 @@
-import { CreateTrainingPlanData, DayExercise, TrainingDay } from '../types/trainingPlan';
+import { CreateTrainingPlanData, DayExercise } from '../types/trainingPlan';
+import { parseDescription } from './parsers';
 
 export class TrainingPlanValidationError extends Error {
   constructor(message: string) {
@@ -8,14 +9,14 @@ export class TrainingPlanValidationError extends Error {
 }
 
 export const validateTrainingPlanData = (data: CreateTrainingPlanData) => {
-  if (!data.title || data.title.trim().length === 0) {
+  if (!data.name || data.name.trim().length === 0) {
     throw new TrainingPlanValidationError('Tytuł jest wymagany');
   }
-  if (data.title.length > 150) {
+  if (data.name.length > 150) {
     throw new TrainingPlanValidationError('Tytuł może mieć maksymalnie 150 znaków');
   }
 
-  if (data.description && data.description.length > 850) {
+  if (data.description && parseDescription(data.description).length > 850) {
     throw new TrainingPlanValidationError('Opis może mieć maksymalnie 850 znaków');
   }
 
@@ -70,43 +71,54 @@ export const validateTrainingPlanData = (data: CreateTrainingPlanData) => {
           throw new TrainingPlanValidationError('Każde ćwiczenie musi mieć przypisane ID');
         }
 
-        if (!exercise.isRepsSet && !exercise.duration) {
-          throw new TrainingPlanValidationError(
-            'Ćwiczenie czasowe musi mieć określony czas trwania',
-          );
+        if (exercise.sets.length === 0) {
+          throw new TrainingPlanValidationError('Ćwiczenie musi mieć co najmniej jedną serię');
         }
 
-        if (exercise.duration && exercise.duration > 21600) {
-          throw new TrainingPlanValidationError('Maksymalny czas trwania ćwiczenia to 6h');
+        if (exercise.sets.length > 15) {
+          throw new TrainingPlanValidationError('Ćwiczenie może mieć maksymalnie 15 serii');
         }
 
-        if (exercise.isRepsSet) {
-          if (!exercise.sets || exercise.sets.length === 0) {
-            throw new TrainingPlanValidationError(
-              'Ćwiczenie z powtórzeniami musi mieć co najmniej jedną serię',
-            );
-          }
-          if (exercise.sets.length > 15) {
-            throw new TrainingPlanValidationError(
-              'Ćwiczenie z powtórzeniami może mieć maksymalnie 15 serii',
-            );
-          }
-
-          for (const set of exercise.sets) {
-            if (set.weight > 300) {
-              throw new TrainingPlanValidationError('Maksymalny ciężar w serii to 300kg');
-            }
-          }
-        }
-
-        if (typeof exercise.restAfterSet !== 'number' || exercise.restAfterSet < 0) {
-          throw new TrainingPlanValidationError(
-            'Odpoczynek po serii musi być liczbą większą lub równą 0',
-          );
+        if (typeof exercise.restAfterSet !== 'number' || exercise.restAfterSet < 30) {
+          throw new TrainingPlanValidationError('Minimalny odpoczynek po serii to 30 sekund');
         }
 
         if (exercise.restAfterSet > 5400) {
           throw new TrainingPlanValidationError('Maksymalny odpoczynek po serii to 1h 30min');
+        }
+
+        if (exercise.isRepsSet) {
+          for (const set of exercise.sets) {
+            if (set.repetitions < 1) {
+              throw new TrainingPlanValidationError(
+                'Liczba powtórzeń w serii musi być większa od 0',
+              );
+            }
+
+            if (set.repetitions > 100) {
+              throw new TrainingPlanValidationError('Maksymalna liczba powtórzeń w serii to 100');
+            }
+
+            if (set.weight && set.weight < 0) {
+              throw new TrainingPlanValidationError('Ciężar w serii nie może być ujemny');
+            }
+
+            if (set.weight && set.weight > 300) {
+              throw new TrainingPlanValidationError('Maksymalny ciężar w serii to 300kg');
+            }
+          }
+        } else {
+          for (const set of exercise.sets) {
+            if (set.duration < 30) {
+              throw new TrainingPlanValidationError(
+                'Czas trwania serii musi być co najmniej 30 sekund',
+              );
+            }
+
+            if (set.duration > 21600) {
+              throw new TrainingPlanValidationError('Maksymalny czas trwania serii to 6h');
+            }
+          }
         }
       }
     }
@@ -119,49 +131,31 @@ export const validateTrainingPlanFile = (imageBuffer: Buffer): void => {
   }
 };
 
-export const calculateDayDuration = (day: TrainingDay, includeLastRest: boolean = true): number => {
-  if (day.isRestDay) {
-    return 0;
-  }
-  return day.exercises.reduce((totalTime, exercise) => {
-    return totalTime + calculateExerciseDuration(exercise, includeLastRest);
-  }, 0);
-};
-
-const calculateExerciseDuration = (
+export const calculateExerciseDuration = (
   exercise: DayExercise,
   includeLastRest: boolean = true,
 ): number => {
-  const AVERAGE_REP_TIME = 3; //--------------------------------------------------------------------------------------------CZAS TRWANIA JEDNEGO POWTÓRZENIA W SEKUNDACH--------------------------------------------------------------------
+  const AVERAGE_REP_TIME = 3;
+  const restAfterSetCount = includeLastRest
+    ? exercise.sets.length
+    : Math.max(0, exercise.sets.length - 1);
+  const totalRestTime = restAfterSetCount * exercise.restAfterSet;
+
+  if (!exercise.sets || exercise.sets.length === 0) {
+    return 0;
+  }
 
   if (exercise.isRepsSet) {
-    if (!exercise.sets || exercise.sets.length === 0) {
-      return 0;
-    }
-
-    const totalExerciseTime = exercise.sets.reduce((setTime, set) => {
+    const totalRepsExerciseTime = exercise.sets.reduce((setTime, set) => {
       return setTime + set.repetitions * AVERAGE_REP_TIME;
     }, 0);
 
-    const restSetsCount = includeLastRest
-      ? exercise.sets.length
-      : Math.max(0, exercise.sets.length - 1);
-
-    const totalRestTime = restSetsCount * exercise.restAfterSet;
-
-    return totalExerciseTime + totalRestTime;
+    return totalRepsExerciseTime + totalRestTime;
   } else {
-    if (!exercise.duration) {
-      return 0;
-    }
+    const totalDurationExerciseTime = exercise.sets.reduce((setTime, set) => {
+      return setTime + set.duration;
+    }, 0);
 
-    const numberOfSets = exercise.sets?.length || 1;
-    const totalExerciseTime = exercise.duration * numberOfSets;
-
-    const restSetsCount = includeLastRest ? numberOfSets : Math.max(0, numberOfSets - 1);
-
-    const totalRestTime = restSetsCount * exercise.restAfterSet;
-
-    return totalExerciseTime + totalRestTime;
+    return totalDurationExerciseTime + totalRestTime;
   }
 };

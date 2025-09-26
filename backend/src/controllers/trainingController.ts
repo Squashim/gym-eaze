@@ -3,13 +3,14 @@ import { AuthRequest } from '../types/auth';
 import { TrainingPlanRequest } from '../types/trainingPlan';
 import { TrainingPlanValidationError } from '../utils/trainingPlanValidation';
 import { createTrainingPlan } from '../services/trainingPlanService';
+import { parseField } from '../utils/parsers';
 
 export const addTrainingPlan = async (req: Request, res: Response) => {
   const trainingReq = req as TrainingPlanRequest;
   const authReq = req as AuthRequest;
 
   try {
-    const { title, description, goal, visibility, advancedLevel, hashtags } = trainingReq.body;
+    const { name, description, goal, visibility, advancedLevel, hashtags } = trainingReq.body;
     let { days } = trainingReq.body;
     const userId = authReq.userId;
     const imageFile = trainingReq.files?.image?.[0];
@@ -26,18 +27,22 @@ export const addTrainingPlan = async (req: Request, res: Response) => {
       }
     }
 
+    const trimmedName = name.trim();
+    const trimmedDescription = description && description.trim();
+    const hashtagsArray = parseField(hashtags);
+
     const trainingPlan = await createTrainingPlan(
       {
-        author: userId!,
-        title: title.trim(),
-        description: description?.trim(),
+        name: trimmedName,
+        description: trimmedDescription,
         goal,
         visibility,
         advancedLevel,
-        hashtags,
+        hashtags: hashtagsArray,
         days,
       },
       imageFile.buffer,
+      userId!,
     );
 
     return res.status(201).json(trainingPlan);

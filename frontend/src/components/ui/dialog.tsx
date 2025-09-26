@@ -53,6 +53,10 @@ function DialogContent({
           className,
         )}
         data-slot="dialog-content"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          document.body.style.pointerEvents = '';
+        }}
         {...props}
       >
         {children}

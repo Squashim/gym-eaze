@@ -4,36 +4,104 @@ import { AdvancedLevel, advancedLevelValues } from '../constants/advancedLevel';
 import { IExercise } from '../models/exerciseModel';
 import { Goal, goalValues } from '../constants/goals';
 import { IUser } from './userModel';
+import { Set } from '../types/trainingPlan';
 
 export interface ITrainingPlan extends mongoose.Document {
   name: string;
   author: Types.ObjectId | IUser;
   description?: string;
-  image?: string;
+  image: string;
   goal: Goal;
   visibility: PrivacySettings;
   advancedLevel: AdvancedLevel;
   likes: number;
   days: {
-    dayNumber: number;
     name: string;
-    totalDuration?: number;
+    dayNumber: number;
+    totalDuration: number;
     isRestDay: boolean;
     exercises: {
       id: Types.ObjectId | IExercise;
       isRepsSet: boolean;
-      duration?: number;
+      duration: number;
       restAfterSet: number;
-      sets: {
-        repetitions: number;
-        weight: number;
-      }[];
+      sets: Set[];
     }[];
   }[];
   hashtags?: string[];
+  commentsCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const exerciseSchema = new mongoose.Schema(
+  {
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Exercise',
+      required: true,
+    },
+    isRepsSet: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    duration: {
+      type: Number,
+    },
+    restAfterSet: {
+      type: Number,
+      required: true,
+    },
+    sets: {
+      type: [
+        {
+          type: mongoose.Schema.Types.Mixed,
+          required: true,
+        },
+      ],
+      validate: {
+        validator: function (sets: Set[]) {
+          return sets.every(
+            (set) =>
+              ('repetitions' in set && !('duration' in set)) ||
+              ('duration' in set && !('repetitions' in set)),
+          );
+        },
+        message: 'Każda seria musi być albo powtórzeniowa, albo czasowa.',
+      },
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+const daySchema = new mongoose.Schema(
+  {
+    dayNumber: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    name: {
+      type: String,
+      maxLength: 100,
+      required: true,
+    },
+    totalDuration: {
+      type: Number,
+      required: true,
+    },
+    isRestDay: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    exercises: [exerciseSchema],
+  },
+  { _id: false },
+);
 
 const trainingSchema = new mongoose.Schema(
   {
@@ -50,7 +118,13 @@ const trainingSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      maxLength: 850,
+      validate: {
+        validator: function (v: string) {
+          const normalized = v.replace(/\r\n/g, '\n');
+          return normalized.length <= 850;
+        },
+        message: 'Opis może mieć maksymalnie 850 znaków',
+      },
     },
     image: {
       type: String,
@@ -72,70 +146,21 @@ const trainingSchema = new mongoose.Schema(
       type: String,
       enum: advancedLevelValues,
       default: AdvancedLevel.easy,
+      required: true,
     },
     likes: {
       type: Number,
       default: 0,
     },
-    days: [
-      {
-        dayNumber: {
-          type: Number,
-          default: 0,
-          required: true,
-        },
-        name: {
-          type: String,
-          maxLength: 100,
-          required: true,
-        },
-        totalDuration: {
-          type: Number,
-        },
-        isRestDay: {
-          type: Boolean,
-          default: false,
-        },
-        exercises: [
-          {
-            id: {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: 'Exercise',
-              required: true,
-            },
-            isRepsSet: {
-              type: Boolean,
-              required: true,
-              default: true,
-            },
-            duration: {
-              type: Number,
-            },
-            restAfterSet: {
-              type: Number,
-              required: true,
-            },
-            sets: [
-              {
-                repetitions: {
-                  type: Number,
-                  required: true,
-                },
-                weight: {
-                  type: Number,
-                },
-                _id: false,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    days: [daySchema],
     hashtags: [
       {
         type: String,
       },
     ],
+    commentsCount: {
+      type: Number,
+    },
   },
   { timestamps: true },
 );
