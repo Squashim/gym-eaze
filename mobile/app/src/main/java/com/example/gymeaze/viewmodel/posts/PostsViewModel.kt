@@ -6,6 +6,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Post
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.data.models.User
@@ -677,6 +678,43 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
             }.onFailure { error ->
                 _error.value = error.message ?: "Błąd podczas usuwania posta"
                 _isLoading.value = false
+            }
+        }
+    }
+
+    private val _comments = MutableStateFlow<List<Comment>>(emptyList())
+    val comments: StateFlow<List<Comment>> = _comments
+
+    private val _hasMoreComment = MutableStateFlow(false)
+    val hasMoreComment: StateFlow<Boolean> = _hasMoreComment
+
+    private val _nextCursorComment = MutableStateFlow<String?>(null)
+    val nextCursorComment: StateFlow<String?> = _nextCursorComment
+
+    private val _commentsCount = MutableStateFlow(0)
+    val commentsCount: StateFlow<Int> = _commentsCount
+
+    fun loadComments(postId: String, cursor: String? = null, limit: Int = 10) {
+        viewModelScope.launch {
+            val response = repository.getCommentsForPost(postId, cursor, limit)
+            _comments.value = response?.items ?: emptyList()
+            _hasMoreComment.value = response?.hasMore ?: false
+            _nextCursorComment.value = response?.nextCursor
+            _commentsCount.value = _comments.value.size
+        }
+    }
+
+    fun loadMoreComments(postId: String, limit: Int = 10) {
+        val cursor = _nextCursorComment.value
+        if (_hasMoreComment.value && cursor != null) {
+            viewModelScope.launch {
+                val response = repository.getCommentsForPost(postId, cursor, limit)
+                val current = _comments.value
+                val newComments = response?.items ?: emptyList()
+                _comments.value = current + newComments
+                _hasMoreComment.value = response?.hasMore ?: false
+                _nextCursorComment.value = response?.nextCursor
+                _commentsCount.value = _comments.value.size
             }
         }
     }

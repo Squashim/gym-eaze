@@ -6,6 +6,7 @@ import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.PostApiService
+import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.GetPostsResponse
 import com.example.gymeaze.data.models.LikesResponse
 import com.example.gymeaze.data.models.PostResponse
@@ -309,6 +310,19 @@ class PostsRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun getCommentsForPost(
+        postId: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): GetCommentsResponse? {
+        return try {
+            val response = api.getComments(postId, cursor, limit)
+            if (response.isSuccessful) response.body() else null
+        } catch (e: Exception) {
+            null
         }
     }
 

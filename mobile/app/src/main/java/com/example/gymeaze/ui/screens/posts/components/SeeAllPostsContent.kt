@@ -48,6 +48,9 @@ fun SeeAllPostsContent(
     var isSearchActive by remember { mutableStateOf(false) }
     var fullScreenMedia by remember { mutableStateOf<Pair<PostUi, Boolean>?>(null) }
 
+    var showCommentsSheet by remember { mutableStateOf(false) }
+    var selectedPostId by remember { mutableStateOf<String?>(null) }
+
     val listState = rememberLazyListState()
     val isDarkTheme = LocalDarkTheme.current
 
@@ -244,7 +247,11 @@ fun SeeAllPostsContent(
                                         fullScreenMedia = post to true
                                     },
                                     onToggleLike = onToggleLike,
-                                    onToggleSeeMore = onToggleSeeMore
+                                    onToggleSeeMore = onToggleSeeMore,
+                                    onCommentClick = {
+                                        selectedPostId = post.id
+                                        showCommentsSheet = true
+                                    },
 
                                 )
 
@@ -264,6 +271,24 @@ fun SeeAllPostsContent(
                         showVideo = isVideo,
                         onClose = { fullScreenMedia = null }
                     )
+                }
+
+                val bottomSheetState = rememberModalBottomSheetState(
+                    skipPartiallyExpanded = true
+                )
+
+
+                if (showCommentsSheet && selectedPostId != null) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showCommentsSheet = false },
+                        sheetState = bottomSheetState,
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
+                        CommentsPanel(
+                            postId = selectedPostId!!,
+                            onClose = { showCommentsSheet = false }
+                        )
+                    }
                 }
             }
         }

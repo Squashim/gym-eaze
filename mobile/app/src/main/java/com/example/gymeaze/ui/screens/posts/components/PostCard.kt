@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens.posts.components
 
+import android.R.attr.onClick
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -57,6 +58,7 @@ fun PostCard(
     modifier: Modifier = Modifier,
     onToggleLike: (String) -> Unit,
     onToggleSeeMore: (String) -> Boolean,
+    onCommentClick: () -> Unit,
 ) {
     fun isVideo(url: String): Boolean =
         url.endsWith(".mp4", true) || url.endsWith(".webm", true) || url.contains("video", true)
@@ -66,6 +68,8 @@ fun PostCard(
 
     var moreDialog  by remember { mutableStateOf(false) }
     val maxContentLength = 550
+
+
 
     Card(
         modifier = modifier
@@ -352,7 +356,7 @@ fun PostCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     IconButton(
-                        onClick = { /* TODO: komentarz */ },
+                        onClick = { onCommentClick()  },
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(

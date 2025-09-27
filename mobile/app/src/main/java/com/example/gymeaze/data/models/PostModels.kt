@@ -61,3 +61,18 @@ data class PostResponse(
     val hasMore: Boolean,
     val nextCursor: String?
 )
+
+data class Comment(
+    val _id: String,
+    val content: String,
+    val createdAt: String,
+    val author: Author,
+    val likes: Int?,
+    val updatedAt: String?,
+)
+
+data class GetCommentsResponse(
+    val items: List<Comment>,
+    val hasMore: Boolean,
+    val nextCursor: String?
+)

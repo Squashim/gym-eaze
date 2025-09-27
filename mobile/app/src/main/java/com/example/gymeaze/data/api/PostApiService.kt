@@ -1,6 +1,7 @@
 package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.AddPostResponse
+import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.GetPostsResponse
 import com.example.gymeaze.data.models.LikesResponse
 import com.example.gymeaze.data.models.MessageResponse
@@ -64,4 +65,11 @@ interface PostApiService {
         @Query("cursor") cursor: String? = null,
         @Query("limit") limit: Int = 10
     ): PostResponse
+
+        @GET("/api/posts/{id}/comments")
+        suspend fun getComments(
+            @Path("id") postId: String,
+            @Query("cursor") cursor: String? = null,
+            @Query("limit") limit: Int = 10
+        ): Response<GetCommentsResponse>
 }
