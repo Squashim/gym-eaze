@@ -2,8 +2,11 @@ package com.example.gymeaze.ui.screens.posts.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,26 +37,39 @@ fun LoginToLikeDialog(
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Ikona
+
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Nagłówek
                 Text(
-                    text = "Funkcja dostępna po zalogowaniu",
+                    text = "Dołącz do społeczności",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = getOnSurfaceColor()
+                    color = getOnSurfaceColor(),
+                    textAlign = TextAlign.Center
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Opis
                 Text(
-                    text = "Zaloguj się, aby móc korzystać z tych funkcji",
+                    text = "Zaloguj się, lub zarejestruj aby móc w pełni korzystać z możliwości aplikacji",
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
-                    color = getOnSurfaceColor(),
-                    textAlign = TextAlign.Start
+                    color = getOnSurfaceSecondaryColor(),
+                    textAlign = TextAlign.Center
                 )
 
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Przyciski
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
                         onClick = onDismiss,
@@ -64,7 +80,7 @@ fun LoginToLikeDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "OK",
+                            text = "Rozumiem",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnPrimaryColor()

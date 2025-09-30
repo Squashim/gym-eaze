@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,14 +30,16 @@ import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
+import com.example.gymeaze.ui.theme.getSecondaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.posts.cleanedCommentLength
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit) {
+fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit, currentUsername: String) {
     val viewModel: PostsViewModel = viewModel()
     val comments by viewModel.comments.collectAsState()
     val hasMore by viewModel.hasMoreComment.collectAsState()
@@ -62,16 +65,17 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
 
     var commentsCount by remember { mutableStateOf(initialCommentsCount) }
 
+    var showLoginDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(postId) {
         viewModel.loadComments(postId, refresh = true)
         viewModel.fetchUserCommentLikes()
         commentsCount = initialCommentsCount
     }
 
-    LaunchedEffect(comments.size) {
-        if (shouldScrollToTop && comments.isNotEmpty()) {
-            kotlinx.coroutines.delay(200)
-            listState.scrollToItem(0)
+    LaunchedEffect(comments) {
+        if (shouldScrollToTop) {
+            listState.animateScrollToItem(0)
             shouldScrollToTop = false
         }
     }
@@ -102,7 +106,7 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                 fontSize = 18.sp,
                 color = getOnSurfaceColor()
             )
-            IconButton(onClick = onClose) {
+            IconButton(onClick = onClose, modifier = Modifier.offset(x = (8).dp)) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Zamknij",
@@ -148,7 +152,8 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                         showDeleteDialog = commentToDelete
                         deleteMessage = ""
                     },
-                    onReportClick = { /* Zgłaszanie */ }
+                    onReportClick = { /* Zgłaszanie */ },
+                    onLoginRequired = { showLoginDialog = true }
                 )
 
                 if (expandedReplies.contains(comment._id)) {
@@ -167,7 +172,8 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                             onDeleteClick = { replyToDelete ->
                                 showDeleteDialog = replyToDelete
                                 deleteMessage = ""
-                            }
+                            },
+                            onLoginRequired = { showLoginDialog = true } // Dodany callback
                         )
                         Spacer(Modifier.padding(3.dp))
                     }
@@ -188,6 +194,13 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                     }
                 }
             }
+        }
+
+        // Dialog logowania
+        if (showLoginDialog) {
+            LoginToLikeDialog(
+                onDismiss = { showLoginDialog = false },
+            )
         }
 
         if (showDeleteDialog != null) {
@@ -318,83 +331,122 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
             )
         }
 
-        if (replyingTo != null) {
+        // Sprawdzenie czy użytkownik jest zalogowany
+        if (currentUsername.isNotEmpty()) {
+            // Użytkownik zalogowany - pokaż normalny interfejs
+            if (replyingTo != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Odpowiadasz @$replyingToUsername",
+                        fontSize = 16.sp,
+                        color = getOnSurfaceSecondaryColor()
+                    )
+                    IconButton(
+                        onClick = {
+                            replyingTo = null
+                            replyingToUsername = null
+                        },
+                        modifier = Modifier.size(20.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Anuluj",
+                            modifier = Modifier.size(18.dp),
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    "Odpowiadasz @$replyingToUsername",
-                    fontSize = 16.sp,
-                    color = getOnSurfaceSecondaryColor()
+                OutlinedTextField(
+                    value = newCommentText,
+                    onValueChange = { newCommentText = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = {
+                        Text(
+                            if (replyingTo != null) "Napisz odpowiedź..."
+                            else "Dodaj komentarz..."
+                        )
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    maxLines = 4,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = getPrimaryColor(),
+                        unfocusedBorderColor = getOnSurfaceSecondaryColor(),
+                        cursorColor = getPrimaryColor()
+                    )
                 )
+
                 IconButton(
                     onClick = {
-                        replyingTo = null
-                        replyingToUsername = null
+                        if (newCommentText.isNotBlank()) {
+                            scope.launch {
+                                if (replyingTo != null) {
+                                    viewModel.addReply(replyingTo!!, newCommentText.trim())
+                                    viewModel.loadReplies(replyingTo!!)
+                                } else {
+                                    viewModel.addComment(postId, newCommentText.trim())
+                                    commentsCount += 1 // zwiększ licznik komentarzy
+                                    shouldScrollToTop = true
+                                }
+                                newCommentText = ""
+                                replyingTo = null
+                                replyingToUsername = null
+                            }
+                        }
                     },
-                    modifier = Modifier.size(20.dp),
+                    enabled = newCommentText.isNotBlank()
                 ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Anuluj",
-                        modifier = Modifier.size(18.dp),
-                        tint = getOnSurfaceColor()
-                    )
+                    Icon(Icons.Default.Send, contentDescription = "Wyślij", tint = getOnSurfaceColor())
                 }
             }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = newCommentText,
-                onValueChange = { newCommentText = it },
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(
-                        if (replyingTo != null) "Napisz odpowiedź..."
-                        else "Dodaj komentarz..."
+        } else {
+            // Użytkownik niezalogowany - pokaż komunikat
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .background(
+                        color = getSecondaryColor().copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(16.dp)
                     )
-                },
-                shape = RoundedCornerShape(12.dp),
-                maxLines = 4,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = getPrimaryColor(),
-                    unfocusedBorderColor = getOnSurfaceSecondaryColor(),
-                    cursorColor = getPrimaryColor()
-                )
-            )
-
-            IconButton(
-                onClick = {
-                    if (newCommentText.isNotBlank()) {
-                        scope.launch {
-                            if (replyingTo != null) {
-                                viewModel.addReply(replyingTo!!, newCommentText.trim())
-                                viewModel.loadReplies(replyingTo!!)
-                            } else {
-                                viewModel.addComment(postId, newCommentText.trim())
-                                commentsCount += 1 // zwiększ licznik komentarzy
-                                shouldScrollToTop = true
-                            }
-                            newCommentText = ""
-                            replyingTo = null
-                            replyingToUsername = null
-                        }
-                    }
-                },
-                enabled = newCommentText.isNotBlank()
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Default.Send, contentDescription = "Wyślij", tint = getOnSurfaceColor())
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Zaloguj się",
+                    modifier = Modifier.size(32.dp),
+                    tint = getOnSurfaceSecondaryColor()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Zaloguj się, aby dodawać komentarze",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = getOnSurfaceColor(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Dołącz do dyskusji i dołącz do społeczności",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -410,7 +462,8 @@ fun CommentItem(
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
-    onReportClick: (Comment) -> Unit = {}
+    onReportClick: (Comment) -> Unit = {},
+    onLoginRequired: () -> Unit = {} // Nowy callback dla wymagania logowania
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(comment._id).collectAsState(initial = false)
@@ -424,6 +477,15 @@ fun CommentItem(
         comment.content.trim().take(maxChars) + "..."
     } else {
         comment.content.trim()
+    }
+
+    // Funkcja pomocnicza do sprawdzania czy wymagane jest logowanie
+    fun requireLogin(action: () -> Unit) {
+        if (currentUsername.isEmpty()) {
+            onLoginRequired()
+        } else {
+            action()
+        }
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -452,7 +514,9 @@ fun CommentItem(
 
                     Box {
                         IconButton(
-                            onClick = { showMenu = true },
+                            onClick = {
+                                requireLogin { showMenu = true }
+                            },
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
@@ -581,11 +645,14 @@ fun CommentItem(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Like button
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
-                            viewModel.toggleCommentLike(comment._id)
+                            requireLogin {
+                                viewModel.toggleCommentLike(comment._id)
+                            }
                         }
                     ) {
                         Text(
@@ -615,8 +682,13 @@ fun CommentItem(
                         )
                     }
 
+                    // Reply button
                     TextButton(
-                        onClick = { onReply(comment._id, comment.author.username) },
+                        onClick = {
+                            requireLogin {
+                                onReply(comment._id, comment.author.username)
+                            }
+                        },
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
@@ -627,6 +699,7 @@ fun CommentItem(
                         )
                     }
 
+                    // View replies button
                     if (comment.repliesCount != null && comment.repliesCount > 0) {
                         TextButton(
                             onClick = onToggleReplies,
@@ -654,9 +727,19 @@ fun ReplyItem(
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
+    onLoginRequired: () -> Unit = {} // Nowy callback dla wymagania logowania
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(reply._id).collectAsState(initial = false)
+
+    // Funkcja pomocnicza do sprawdzania czy wymagane jest logowanie
+    fun requireLogin(action: () -> Unit) {
+        if (currentUsername.isEmpty()) {
+            onLoginRequired()
+        } else {
+            action()
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -685,7 +768,9 @@ fun ReplyItem(
 
                 Box {
                     IconButton(
-                        onClick = { showMenu = true },
+                        onClick = {
+                            requireLogin { showMenu = true }
+                        },
                         modifier = Modifier.size(20.dp)
                     ) {
                         Icon(
@@ -702,13 +787,22 @@ fun ReplyItem(
                     ) {
                         if (reply.author.username == currentUsername) {
                             DropdownMenuItem(
-                                text = { Text("Edytuj odpowiedź") },
+                                text = {
+                                    Text(
+                                        "Edytuj odpowiedź",
+                                        color = getOnSurfaceColor()
+                                    )
+                                },
                                 onClick = {
                                     showMenu = false
                                     onEditClick(reply)
                                 },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Edit, contentDescription = null)
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = null,
+                                        tint = getOnSurfaceColor()
+                                    )
                                 }
                             )
 
@@ -719,23 +813,42 @@ fun ReplyItem(
                             )
 
                             DropdownMenuItem(
-                                text = { Text("Usuń odpowiedź") },
+                                text = {
+                                    Text(
+                                        "Usuń odpowiedź",
+                                        color = getErrorColor()
+                                    )
+                                },
                                 onClick = {
                                     showMenu = false
                                     onDeleteClick(reply)
                                 },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Delete, contentDescription = null, tint = getErrorColor())
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = null,
+                                        tint = getErrorColor()
+                                    )
                                 }
                             )
                         } else {
                             DropdownMenuItem(
-                                text = { Text("Zgłoś") },
+                                text = {
+                                    Text(
+                                        "Zgłoś",
+                                        color = getOnSurfaceColor()
+                                    )
+                                },
                                 onClick = {
                                     showMenu = false
+                                    // Możesz dodać obsługę zgłoszenia
                                 },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Flag, contentDescription = null)
+                                    Icon(
+                                        Icons.Default.Flag,
+                                        contentDescription = null,
+                                        tint = getOnSurfaceColor()
+                                    )
                                 }
                             )
                         }
@@ -753,11 +866,14 @@ fun ReplyItem(
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            // Like button
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.clickable {
-                    viewModel.toggleCommentLike(reply._id)
+                    requireLogin {
+                        viewModel.toggleCommentLike(reply._id)
+                    }
                 }
             ) {
                 Text(

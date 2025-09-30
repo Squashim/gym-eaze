@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.theme.LocalDarkTheme
@@ -24,6 +25,7 @@ import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +56,8 @@ fun SeeAllPostsContent(
 
     val listState = rememberLazyListState()
     val isDarkTheme = LocalDarkTheme.current
+
+    val viewModel: PostsViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -287,12 +291,15 @@ fun SeeAllPostsContent(
                         modifier = Modifier.fillMaxHeight(),
                         containerColor = getSurfaceColor()
                     ) {
-                        // Używaj tylko tutaj!
                         if (selectedPost != null) {
                             CommentsPanel(
                                 postId = selectedPostId!!,
                                 initialCommentsCount = selectedPost.commentsCount,
-                                onClose = { showCommentsSheet = false }
+                                onClose = {
+                                    showCommentsSheet = false
+                                    //viewModel.fetchPosts(refresh = true) // <-- to odświeży liczbę komentarzy w postach!
+                                },
+                                currentUsername = currentUsername
                             )
                         }
                     }

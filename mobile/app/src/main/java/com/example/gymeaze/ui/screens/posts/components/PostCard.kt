@@ -123,8 +123,8 @@ fun PostCard(
                         } else {
                             menuExpanded = false
                         }
-
-                    }) {
+                    }, modifier = Modifier.offset(x = 14.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "Więcej opcji",
