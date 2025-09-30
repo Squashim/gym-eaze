@@ -1,5 +1,7 @@
 package com.example.gymeaze.data.models
 
+import com.example.gymeaze.util.formatToRelativeTime
+
 data class AddPostResponse(
     val message: String
 )
@@ -20,6 +22,7 @@ data class Post(
     val video: String?,
     val likes: Int?,
     val updatedAt: String?,
+    val commentsCount: Int?
 )
 
 data class Author(
@@ -42,7 +45,8 @@ data class PostUi(
     val likes: Int,
     val isLiked: Boolean,
     val hashtags: List<String> = emptyList(),
-    val isOwner: Boolean = false
+    val isOwner: Boolean = false,
+    val commentsCount: Int,
 )
 
 data class ToggleLikeResponse(
@@ -53,7 +57,8 @@ data class ToggleLikeResponse(
 data class LikesResponse(
     val posts: List<String>,
     val exercises: List<String>,
-    val trainingPlans: List<String>
+    val trainingPlans: List<String>,
+    val comments: List<String>,
 )
 
 data class PostResponse(
@@ -68,11 +73,38 @@ data class Comment(
     val createdAt: String,
     val author: Author,
     val likes: Int?,
+    val repliesCount: Int?,
     val updatedAt: String?,
+    val isEdited: Boolean?,
+    val parentId: String?,
+    val parentType: String?
 )
 
 data class GetCommentsResponse(
     val items: List<Comment>,
     val hasMore: Boolean,
     val nextCursor: String?
+)
+
+data class CreateCommentRequest(
+    val content: String,
+    val parentType: String,
+    val parentId: String
+)
+
+data class MessageCommentResponse(
+    val message: String
+)
+
+data class ToggleLikeCommentResponse(
+    val message: String,
+    val likes: Int
+)
+
+fun Comment.timeAgo(): String {
+    return createdAt.formatToRelativeTime()
+}
+
+data class UpdateCommentRequest(
+    val content: String
 )

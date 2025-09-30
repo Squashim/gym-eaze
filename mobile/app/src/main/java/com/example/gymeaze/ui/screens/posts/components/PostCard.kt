@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.ThumbUpAlt
 import androidx.compose.material.icons.filled.ThumbUpOffAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,7 +69,6 @@ fun PostCard(
 
     var moreDialog  by remember { mutableStateOf(false) }
     val maxContentLength = 550
-
 
 
     Card(
@@ -312,60 +312,55 @@ fun PostCard(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                // Polubienia
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.clickable { onToggleLike(post.id) }
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        IconButton(
-                            onClick = { onToggleLike(post.id) },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (post.isLiked) Icons.Default.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                                contentDescription = if (post.isLiked) "Cofnij polubienie" else "Dodaj polubienie",
-                                tint = if (post.isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-
-                        Text(
-                            text = "${post.likes}",
-                            color = getOnSurfaceSecondaryColor(),
-                            fontSize = 14.sp
-                        )
-                    }
-
+                    Icon(
+                        imageVector = if (post.isLiked) Icons.Default.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
+                        contentDescription = if (post.isLiked) "Cofnij polubienie" else "Dodaj polubienie",
+                        tint = if (post.isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Polubienia (${post.likes})",
+                        color = if (post.isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
+                        fontSize = 14.sp,
+                        fontWeight = if (post.isLiked) FontWeight.Medium else FontWeight.Normal
+                    )
                 }
 
+                Spacer(modifier = Modifier.width(32.dp))
 
-                Spacer(modifier = Modifier.width(80.dp))
                 Box(
                     modifier = Modifier
                         .width(1.dp)
-                        .height(38.dp)
-                        .background(getOnSurfaceSecondaryColor())
+                        .height(20.dp)
+                        .background(getOnSurfaceSecondaryColor().copy(alpha = 0.3f))
                 )
-                Spacer(modifier = Modifier.width(80.dp))
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Spacer(modifier = Modifier.width(32.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.clickable { onCommentClick() }
                 ) {
-                    IconButton(
-                        onClick = { onCommentClick()  },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ChatBubbleOutline,
-                            contentDescription = "Komentarz",
-                            tint = getOnSurfaceSecondaryColor(),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.ChatBubbleOutline,
+                        contentDescription = "Komentarz",
+                        tint = getOnSurfaceSecondaryColor(),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Komentarze (${post.commentsCount})",
+                        color = getOnSurfaceSecondaryColor(),
+                        fontSize = 14.sp
+                    )
                 }
             }
         }

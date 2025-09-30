@@ -2,15 +2,20 @@ package com.example.gymeaze.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.PostApiService
+import com.example.gymeaze.data.models.CreateCommentRequest
 import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.GetPostsResponse
 import com.example.gymeaze.data.models.LikesResponse
+import com.example.gymeaze.data.models.MessageCommentResponse
 import com.example.gymeaze.data.models.PostResponse
+import com.example.gymeaze.data.models.ToggleLikeCommentResponse
 import com.example.gymeaze.data.models.ToggleLikeResponse
+import com.example.gymeaze.data.models.UpdateCommentRequest
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
 import com.google.gson.Gson
@@ -313,6 +318,7 @@ class PostsRepository(private val context: Context) {
         }
     }
 
+
     suspend fun getCommentsForPost(
         postId: String,
         cursor: String? = null,
@@ -323,6 +329,78 @@ class PostsRepository(private val context: Context) {
             if (response.isSuccessful) response.body() else null
         } catch (e: Exception) {
             null
+        }
+    }
+
+    suspend fun getRepliesForComment(
+        commentId: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): GetCommentsResponse? {
+        return try {
+            val response = api.getReplies(commentId, cursor, limit)
+            if (response.isSuccessful) response.body() else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun createComment(
+        content: String,
+        parentType: String,
+        parentId: String
+    ): MessageCommentResponse? {
+        return try {
+            val body = CreateCommentRequest(
+                content = content,
+                parentType = parentType,
+                parentId = parentId
+            )
+            Log.d("API_CALL", "Creating comment: $body")
+            val response = api.createComment(body)
+            Log.d("API_CALL", "Response code: ${response.code()}, body: ${response.body()}")
+            if (response.isSuccessful) response.body() else {
+                Log.e("API_ERROR", "Error: ${response.errorBody()?.string()}")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("API_EXCEPTION", "Exception: ${e.message}", e)
+            null
+        }
+    }
+
+    suspend fun toggleCommentLike(commentId: String): ToggleLikeCommentResponse? {
+        return try {
+            val response = api.toggleCommentLike(commentId)
+            if (response.isSuccessful) response.body() else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun editComment(commentId: String, newContent: String): Result<String> {
+        return try {
+            val response = api.updateComment(commentId, UpdateCommentRequest(newContent))
+            if (response.isSuccessful) {
+                Result.success(response.body()?.message ?: "Komentarz zaktualizowany")
+            } else {
+                Result.failure(Exception(response.errorBody()?.string()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteComment(commentId: String): Result<String> {
+        return try {
+            val response = api.deleteComment(commentId)
+            if (response.isSuccessful) {
+                Result.success(response.body()?.message ?: "Komentarz usunięty")
+            } else {
+                Result.failure(Exception(response.errorBody()?.string()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

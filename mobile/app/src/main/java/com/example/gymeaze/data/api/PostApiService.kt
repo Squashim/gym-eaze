@@ -1,12 +1,16 @@
 package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.AddPostResponse
+import com.example.gymeaze.data.models.CreateCommentRequest
 import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.GetPostsResponse
 import com.example.gymeaze.data.models.LikesResponse
+import com.example.gymeaze.data.models.MessageCommentResponse
 import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.PostResponse
+import com.example.gymeaze.data.models.ToggleLikeCommentResponse
 import com.example.gymeaze.data.models.ToggleLikeResponse
+import com.example.gymeaze.data.models.UpdateCommentRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -52,12 +56,12 @@ interface PostApiService {
     suspend fun updatePost(
         @Path("id") postId: String,
         @Body requestBody: RequestBody
-    ): Response<MessageResponse>
+    ): Response<MessageCommentResponse>
 
     @DELETE("/api/posts/{id}")
     suspend fun deletePost(
         @Path("id") postId: String
-    ): Response<MessageResponse>
+    ): Response<MessageCommentResponse>
 
     @GET("/api/posts/{userId}")
     suspend fun getUserPosts(
@@ -66,10 +70,38 @@ interface PostApiService {
         @Query("limit") limit: Int = 10
     ): PostResponse
 
-        @GET("/api/posts/{id}/comments")
-        suspend fun getComments(
-            @Path("id") postId: String,
-            @Query("cursor") cursor: String? = null,
-            @Query("limit") limit: Int = 10
-        ): Response<GetCommentsResponse>
+    @GET("/api/posts/{id}/comments")
+    suspend fun getComments(
+        @Path("id") postId: String,
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 10
+    ): Response<GetCommentsResponse>
+
+    @GET("/api/comments/{id}/replies")
+    suspend fun getReplies(
+        @Path("id") commentId: String,
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 10
+    ): Response<GetCommentsResponse>
+
+    @POST("/api/comments")
+    suspend fun createComment(
+        @Body body: CreateCommentRequest
+    ): Response<MessageCommentResponse>
+
+    @PATCH("/api/comments/{id}/like")
+    suspend fun toggleCommentLike(
+        @Path("id") commentId: String
+    ): Response<ToggleLikeCommentResponse>
+
+    @PATCH("/api/comments/{id}")
+    suspend fun updateComment(
+        @Path("id") commentId: String,
+        @Body body: UpdateCommentRequest
+    ): Response<MessageCommentResponse>
+
+    @DELETE("/api/comments/{id}")
+    suspend fun deleteComment(
+        @Path("id") commentId: String
+    ): Response<MessageCommentResponse>
 }

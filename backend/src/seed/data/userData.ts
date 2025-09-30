@@ -29,6 +29,11 @@ export const seedUsers = async () => {
 export const userIds = {
   admin: new ObjectId('68aadfbccc15cf46f25867ad'), // admin
   monikaGym: new ObjectId('68d0243f1ef234cc5446b600'), // monikaGym
+  walterWhite: new ObjectId('68dbb721ebd73dc55aa3be3a'), // WalterWhite
+  jessiePinkman: new ObjectId('68dbb887cec66d85594d666f'), // JessiePinkman
+  saulGoodman: new ObjectId('68dbba2ccf4ebefe086f0258'), // SaulGoodman
+  hankSchrader: new ObjectId('68dbbad7fcab453d566dfc3f'), // HankSchrader
+  gusFring: new ObjectId('68dbbb7acd76dd1143530531'), // GusFring
 };
 
 const users = [
@@ -92,6 +97,61 @@ const users = [
       profilePicture:
         'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
       description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
+    },
+  },
+  {
+    _id: userIds.walterWhite,
+    username: 'WalterWhite',
+    email: 'walterwhite@example.com',
+    password: 'WalterWhite123!',
+    role: UserRole.user,
+    profileDetails: {
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230010/walterwhite_xfninq.png',
+    },
+  },
+  {
+    _id: userIds.jessiePinkman,
+    username: 'JessiePinkman',
+    email: 'jessiepinkman@example.com',
+    password: 'JessiePinkman123!',
+    role: UserRole.user,
+    profileDetails: {
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230219/jessiePinkman_r3kx75.png',
+    },
+  },
+  {
+    _id: userIds.saulGoodman,
+    username: 'SaulGoodman',
+    email: 'saulgoodman@example.com',
+    password: 'SaulGoodman123!',
+    role: UserRole.user,
+    profileDetails: {
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230476/Saul_Goodman_xyplfj.png',
+    },
+  },
+  {
+    _id: userIds.hankSchrader,
+    username: 'HankSchrader',
+    email: 'hankschrader@example.com',
+    password: 'HankSchrader123!',
+    role: UserRole.user,
+    profileDetails: {
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230643/Hank_Schrader_wz7mov.png',
+    },
+  },
+  {
+    _id: userIds.gusFring,
+    username: 'GusFring',
+    email: 'gusfring@example.com',
+    password: 'GusFring12345!',
+    role: UserRole.user,
+    profileDetails: {
+      profilePicture:
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230808/Gus_Fring_q3a5nt.png',
     },
   },
   /*

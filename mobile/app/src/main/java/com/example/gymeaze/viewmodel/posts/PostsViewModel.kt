@@ -31,7 +31,8 @@ data class PostUiState(
     val videoFile: Uri? = null,
     val hashtags: List<String> = emptyList(),
     val imageRemoved: Boolean = false,
-    val videoRemoved: Boolean = false
+    val videoRemoved: Boolean = false,
+
 )
 
 class PostsViewModel(application: Application) : AndroidViewModel(application) {
@@ -40,8 +41,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(PostUiState())
     val uiState: StateFlow<PostUiState> = _uiState.asStateFlow()
-
-    // Rozdzielone cache dla różnych trybów
     private var allPostsCache = mutableListOf<PostUi>()
     private var followedPostsCache = mutableListOf<PostUi>()
     private var userPostsCache = mutableListOf<PostUi>()
@@ -238,7 +237,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                     delay(1000 - (System.currentTimeMillis() - allPostsLastLoadTime))
                 }
 
-                // Najpierw pobierz polubienia
                 fetchUserLikes()
 
                 val response = repository.getPosts(
@@ -299,7 +297,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                     delay(1000 - (System.currentTimeMillis() - followedPostsLastLoadTime))
                 }
 
-                // Najpierw pobierz polubienia
                 fetchUserLikes()
 
                 val response = repository.getPosts(
@@ -328,12 +325,8 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                     followedPostsHasMore = response.hasMore
                     followedPostsLastLoadTime = System.currentTimeMillis()
 
-                    // WAŻNE: Jeśli nie ma postów, wyczyść błąd
                     if (updatedPosts.isEmpty() && followedPostsHashtags == null) {
-                        // To jest normalne - użytkownik nie obserwuje nikogo lub nikt nie ma postów
                     } else if (updatedPosts.isEmpty() && followedPostsHashtags != null) {
-                        // To może być komunikat o braku wyników wyszukiwania
-                        // Możesz ustawić specjalny stan dla "brak wyników wyszukiwania"
                     }
                 } else {
                     _error.value = "Błąd pobierania postów"
@@ -346,8 +339,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-// W fetchPosts() użyj allPostsCache
-// W fetchFollowedUsersPosts() użyj followedPostsCache
 
     fun loadMoreFollowed() {
         loadMoreJob?.cancel()
@@ -363,8 +354,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         loadMoreJob?.cancel()
 
         followedPostsHashtags = hashtags.takeIf { it.isNotEmpty() }
-
-        // WAŻNE: Wyczyść cache i stan przed nowym wyszukiwaniem
         followedPostsCache.clear()
         followedPostsCursor = null
         followedPostsHasMore = true
@@ -436,8 +425,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         loadMoreJob?.cancel()
 
         followedPostsHashtags = null
-
-        // WAŻNE: Wyczyść cache i przywróć domyślny stan
         followedPostsCache.clear()
         followedPostsCursor = null
         followedPostsHasMore = true
@@ -462,7 +449,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
         allPostsHashtags = hashtags.takeIf { it.isNotEmpty() }
 
-        // Wyczyść cache przed nowym wyszukiwaniem
         allPostsCache.clear()
         allPostsCursor = null
         allPostsHasMore = true
@@ -477,7 +463,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
         allPostsHashtags = null
 
-        // WAŻNE: Wyczyść cache i przywróć domyślny stan
         allPostsCache.clear()
         allPostsCursor = null
         allPostsHasMore = true
@@ -512,8 +497,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         super.onCleared()
         searchJob?.cancel()
         loadMoreJob?.cancel()
-
-        // Wyczyść wszystkie cache
         allPostsCache.clear()
         followedPostsCache.clear()
         userPostsCache.clear()
@@ -560,8 +543,8 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                 hashtags = hashtags,
                 imageUri = imageToSend,
                 videoUri = videoToSend,
-                imageRemoved = state.imageRemoved,   // 🔥 dodajemy
-                videoRemoved = state.videoRemoved    // 🔥 dodajemy
+                imageRemoved = state.imageRemoved,
+                videoRemoved = state.videoRemoved
             )
 
             result.onSuccess {
@@ -594,7 +577,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
         userPostsHashtags = hashtags.takeIf { it.isNotEmpty() }
 
-        // Wyczyść cache przed nowym wyszukiwaniem
         userPostsCache.clear()
         userPostsCursor = null
         userPostsHasMore = true
@@ -621,7 +603,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
         userPostsHashtags = null
 
-        // WAŻNE: Wyczyść cache i przywróć domyślny stan
         userPostsCache.clear()
         userPostsCursor = null
         userPostsHasMore = true
@@ -664,12 +645,10 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
             val result = repository.deletePost(postId)
             result.onSuccess { message ->
-                // Usuń post z lokalnej listy
                 val currentPosts = _posts.value.toMutableList()
                 currentPosts.removeAll { it.id == postId }
                 _posts.value = currentPosts
 
-                // Usuń ze wszystkich cache
                 allPostsCache.removeAll { it.id == postId }
                 followedPostsCache.removeAll { it.id == postId }
                 userPostsCache.removeAll { it.id == postId }
@@ -691,30 +670,182 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
     private val _nextCursorComment = MutableStateFlow<String?>(null)
     val nextCursorComment: StateFlow<String?> = _nextCursorComment
 
-    private val _commentsCount = MutableStateFlow(0)
-    val commentsCount: StateFlow<Int> = _commentsCount
+    //private val _commentsCount = MutableStateFlow(0)
+    //val commentsCount: StateFlow<Int> = _commentsCount
 
+/*
     fun loadComments(postId: String, cursor: String? = null, limit: Int = 10) {
         viewModelScope.launch {
             val response = repository.getCommentsForPost(postId, cursor, limit)
+            //_commentsCount.value = response?.items?.size ?: 0
             _comments.value = response?.items ?: emptyList()
             _hasMoreComment.value = response?.hasMore ?: false
             _nextCursorComment.value = response?.nextCursor
-            _commentsCount.value = _comments.value.size
+            //_commentsCount.value = _comments.value.size
         }
     }
 
+ */
+fun loadComments(postId: String, cursor: String? = null, limit: Int = 10, refresh: Boolean = false) {
+    viewModelScope.launch {
+        val effectiveCursor = if (refresh) null else cursor
+        val response = repository.getCommentsForPost(postId, effectiveCursor, limit)
+        _comments.value = response?.items ?: emptyList()
+        _hasMoreComment.value = response?.hasMore ?: false
+        _nextCursorComment.value = response?.nextCursor
+    }
+}
+
+    private val _isLoadingComments = MutableStateFlow(false)
+    val isLoadingComments: StateFlow<Boolean> = _isLoadingComments
+
+    private val _repliesMap = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
+
+    private val _likedComments = MutableStateFlow<Set<String>>(emptySet())
+
     fun loadMoreComments(postId: String, limit: Int = 10) {
         val cursor = _nextCursorComment.value
-        if (_hasMoreComment.value && cursor != null) {
+        if (_hasMoreComment.value && cursor != null && !_isLoadingComments.value) {
             viewModelScope.launch {
+                _isLoadingComments.value = true
                 val response = repository.getCommentsForPost(postId, cursor, limit)
                 val current = _comments.value
                 val newComments = response?.items ?: emptyList()
                 _comments.value = current + newComments
                 _hasMoreComment.value = response?.hasMore ?: false
                 _nextCursorComment.value = response?.nextCursor
-                _commentsCount.value = _comments.value.size
+                //_commentsCount.value = _comments.value.size
+                _isLoadingComments.value = false
+            }
+        }
+    }
+
+    fun loadReplies(commentId: String, cursor: String? = null, limit: Int = 10) {
+        viewModelScope.launch {
+            val response = repository.getRepliesForComment(commentId, cursor, limit)
+            if (response != null) {
+                val currentMap = _repliesMap.value.toMutableMap()
+                currentMap[commentId] = response.items
+                _repliesMap.value = currentMap
+            }
+        }
+    }
+
+    fun getRepliesForComment(commentId: String): StateFlow<List<Comment>> {
+        return _repliesMap.map { it[commentId] ?: emptyList() }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
+    }
+
+    fun addComment(postId: String, content: String) {
+        viewModelScope.launch {
+            val response = repository.createComment(
+                content = content,
+                parentType = "Post",
+                parentId = postId
+            )
+            if (response != null) {
+                loadComments(postId)
+            }
+        }
+    }
+
+    fun addReply(commentId: String, content: String) {
+        viewModelScope.launch {
+            val response = repository.createComment(
+                content = content,
+                parentType = "Komentarz",
+                parentId = commentId
+            )
+            if (response != null) {
+                loadReplies(commentId)
+
+                val updatedComments = _comments.value.map { comment ->
+                    if (comment._id == commentId) {
+                        comment.copy(repliesCount = (comment.repliesCount ?: 0) + 1)
+                    } else {
+                        comment
+                    }
+                }
+                _comments.value = updatedComments
+            }
+        }
+    }
+
+    fun toggleCommentLike(commentId: String) {
+        viewModelScope.launch {
+            val response = repository.toggleCommentLike(commentId)
+            if (response != null) {
+                val isLiked = response.message.contains("Dodano")
+
+                _likedComments.value = if (isLiked) {
+                    _likedComments.value + commentId
+                } else {
+                    _likedComments.value - commentId
+                }
+
+                updateCommentLikesWithServerValue(commentId, response.likes)
+            }
+        }
+    }
+
+    private fun updateCommentLikesWithServerValue(commentId: String, likes: Int) {
+        _comments.value = _comments.value.map { comment ->
+            if (comment._id == commentId) {
+                comment.copy(likes = likes)
+            } else {
+                comment
+            }
+        }
+
+        _repliesMap.value = _repliesMap.value.mapValues { (_, replies) ->
+            replies.map { reply ->
+                if (reply._id == commentId) {
+                    reply.copy(likes = likes)
+                } else {
+                    reply
+                }
+            }
+        }
+    }
+
+    fun isCommentLiked(commentId: String): StateFlow<Boolean> {
+        return _likedComments.map { it.contains(commentId) }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                false
+            )
+    }
+
+    fun editComment(comment: Comment, newContent: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.editComment(comment._id, newContent)
+            onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd edycji" })
+            if (result.isSuccess) {
+                loadComments(comment.parentId ?: "")
+            }
+        }
+    }
+
+    fun deleteComment(comment: Comment, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.deleteComment(comment._id)
+            onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd usuwania" })
+            if (result.isSuccess) {
+                loadComments(comment.parentId ?: "")
+            }
+        }
+    }
+
+    fun fetchUserCommentLikes() {
+        viewModelScope.launch {
+            val response = repository.getUserLikes()
+            response.onSuccess { likesResponse ->
+                _likedComments.value = likesResponse.comments.map { it.toString() }.toSet()
             }
         }
     }

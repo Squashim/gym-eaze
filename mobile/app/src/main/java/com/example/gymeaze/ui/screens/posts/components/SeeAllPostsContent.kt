@@ -23,6 +23,7 @@ import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
+import com.example.gymeaze.ui.theme.getSurfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -279,15 +280,21 @@ fun SeeAllPostsContent(
 
 
                 if (showCommentsSheet && selectedPostId != null) {
+                    val selectedPost = posts.find { it.id == selectedPostId }
                     ModalBottomSheet(
                         onDismissRequest = { showCommentsSheet = false },
                         sheetState = bottomSheetState,
-                        modifier = Modifier.fillMaxHeight()
+                        modifier = Modifier.fillMaxHeight(),
+                        containerColor = getSurfaceColor()
                     ) {
-                        CommentsPanel(
-                            postId = selectedPostId!!,
-                            onClose = { showCommentsSheet = false }
-                        )
+                        // Używaj tylko tutaj!
+                        if (selectedPost != null) {
+                            CommentsPanel(
+                                postId = selectedPostId!!,
+                                initialCommentsCount = selectedPost.commentsCount,
+                                onClose = { showCommentsSheet = false }
+                            )
+                        }
                     }
                 }
             }
