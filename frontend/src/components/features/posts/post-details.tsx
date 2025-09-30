@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseTimeAgo } from '@/lib/parsers';
-import PostMediaPreview from './post-media-preview';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import useGetPostsComments from '@/hooks/query/comments/use-get-post-comments';
@@ -195,7 +194,7 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
               </DialogDescription>
             </div>
 
-            <div className="col-start-1 row-start-1">
+            <div className="col-start-1 row-start-1 justify-self-start">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -261,11 +260,26 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
             <Typography className="break-words whitespace-pre-line mt-2">{post.content}</Typography>
 
             {post.image && (
-              <PostMediaPreview author={post.author.username} src={post.image} type="image" />
+              <div className="h-96 aspect-video max-w-full rounded-xl overflow-hidden relative bg-primary/5 mt-2">
+                <img
+                  alt={`zdjęcie do postu użytkownika ${post.author.username}`}
+                  className="w-full h-full object-contain rounded-xl dark:grayscale-[0.2] dark:contrast-110"
+                  loading="lazy"
+                  src={post.image}
+                />
+              </div>
             )}
 
             {post.video && (
-              <PostMediaPreview author={post.author.username} src={post.video} type="video" />
+              <div className="h-96 aspect-video max-w-full rounded-xl overflow-hidden relative bg-primary/5 mt-2">
+                <video
+                  className="w-full h-full object-contain rounded-xl dark:grayscale-[0.2] dark:contrast-110"
+                  controls
+                  src={post.video}
+                >
+                  Twoja przeglądarka nie obsługuje odtwarzania filmów.
+                </video>
+              </div>
             )}
 
             {post.hashtags && post.hashtags.length > 0 && (
