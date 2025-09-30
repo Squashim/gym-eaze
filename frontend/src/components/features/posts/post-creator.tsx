@@ -157,7 +157,7 @@ function PostCreator({ mode, post, onEditCancel }: PostCreatorProps) {
     <Form {...form}>
       <form
         className={cn(
-          ' gap-4 rounded-xl shadow-sm flex w-full min-w-0',
+          'gap-4 rounded-xl shadow-sm flex w-full min-w-0',
           isEditMode
             ? 'bg-transparent text-popover-foreground'
             : 'bg-card text-card-foreground border p-4',

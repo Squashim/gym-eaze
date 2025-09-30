@@ -40,7 +40,7 @@ const comments = [
     updatedAt: new Date(),
   },
   {
-    _id: '6888da3e88ab14770092a2ec',
+    _id: '68dadbd433172047abc8636e',
     content:
       'Dzięki wielkie Monika! Cieszymy się, że jesteś z nami i że możemy wspierać Cię na Twojej drodze do lepszej formy. 💪😊',
     author: userIds.admin,

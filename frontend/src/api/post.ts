@@ -4,6 +4,7 @@ import { objectToFormData, serializeQuery } from '@/lib/utils';
 import type { ApiResponse } from '@/types/api';
 import type { CreatePostPayload, GetPostsApiResponse, UpdatePostPayload } from '@/types/post';
 import type { CursorPaginatedResponse, PostQueryParams } from '@/types/filters';
+import type { GetCommentsApiResponse } from '@/types/comment';
 
 const create = async (payload: CreatePostPayload): Promise<ApiResponse> => {
   const formData = objectToFormData(payload);
@@ -38,9 +39,22 @@ const getAll = async (
   return data;
 };
 
+const getComments = async (
+  id: string,
+  cursor?: string | null,
+): Promise<CursorPaginatedResponse<GetCommentsApiResponse>> => {
+  const { data } = await API.get<CursorPaginatedResponse<GetCommentsApiResponse>>(
+    endpoints.comments(id),
+    {
+      params: { cursor },
+    },
+  );
+  return data;
+};
+
 const toggleLike = async (id: string): Promise<ApiResponse> => {
   const { data } = await API.patch<ApiResponse>(endpoints.toggleLike(id));
   return data;
 };
 
-export { create, update, remove, getAll, toggleLike };
+export { create, update, remove, getAll, toggleLike, getComments };

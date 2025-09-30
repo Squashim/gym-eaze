@@ -251,12 +251,14 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
           {isLoggedIn && user && (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild tabIndex={0}>
-                <ReusableAvatar
-                  className="cursor-pointer shadow-sm"
-                  fallbackClassName="dark:bg-background"
-                  profilePicture={user.profileDetails.profilePicture}
-                  username={user.username}
-                />
+                <button aria-label="Otwórz menu użytkownika" className="rounded-full" type="button">
+                  <ReusableAvatar
+                    className="cursor-pointer shadow-sm"
+                    fallbackClassName="dark:bg-background"
+                    profilePicture={user.profileDetails.profilePicture}
+                    username={user.username}
+                  />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="hidden lg:flex flex-col">
                 <DropdownMenuLabel>

@@ -21,6 +21,7 @@ export type UserLikesApiResponse = {
   trainingPlans: string[];
   exercises: string[];
   posts: string[];
+  comments: string[];
 };
 
-export type UserFavoritesApiResponse = Omit<UserLikesApiResponse, 'posts'>;
+export type UserFavoritesApiResponse = Omit<UserLikesApiResponse, 'posts' | 'comments'>;

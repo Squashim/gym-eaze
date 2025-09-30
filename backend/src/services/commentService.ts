@@ -264,7 +264,7 @@ export const toggleCommentLikeService = async (userId: string, commentId: string
     await comment.save();
     return { message: 'Usunięto polubienie', likes: comment.likes };
   } else {
-    user.likes.exercises.push(comment._id as Types.ObjectId);
+    user.likes.comments.push(comment._id as Types.ObjectId);
     comment.likes = (comment.likes || 0) + 1;
     await user.save();
     await comment.save();
