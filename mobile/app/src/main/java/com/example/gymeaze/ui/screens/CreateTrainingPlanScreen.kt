@@ -1,97 +1,65 @@
 package com.example.gymeaze.ui.screens
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.Goals
-import com.example.gymeaze.ui.components.DifficultySelectionDialog
+import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.ui.components.GoalSelectionDialog
-import com.example.gymeaze.ui.components.HashtagInputDialog
-import com.example.gymeaze.ui.components.TrainingDayCard
-import com.example.gymeaze.ui.theme.getBackgroundColor
-import com.example.gymeaze.ui.theme.getInputBorderColor
-import com.example.gymeaze.ui.theme.getOnSurfaceColor
-import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
-import com.example.gymeaze.ui.theme.getPrimaryColor
-import com.example.gymeaze.ui.theme.getSurfaceColor
-import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
-import kotlin.toString
+import com.example.gymeaze.ui.components.DifficultySelectionDialog
+import com.example.gymeaze.ui.components.HashtagInputField
+import com.example.gymeaze.ui.theme.*
+import com.example.gymeaze.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTrainingPlanScreen(
+    viewModel: CreateTrainingPlanViewModel,
     onBackClick: () -> Unit,
-    onNavigateToExerciseSelection: (dayIndex: Int) -> Unit,
-    viewModel: CreateTrainingPlanViewModel = viewModel()
+    onNavigateToExerciseSelection: (Int) -> Unit
 ) {
-
-    val context = androidx.compose.ui.platform.LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    val formData by viewModel.formData.collectAsState()
+    var showExitDialog by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
-    var showGoalDialog by remember { mutableStateOf(false) }
-    var showDifficultyDialog by remember { mutableStateOf(false) }
-    var showHashtagDialog by remember { mutableStateOf(false) }
-
-    val imageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { viewModel.updateSelectedImage(it) }
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            showSuccessDialog = true
+            viewModel.clearSuccess()
+        }
     }
 
     Scaffold(
@@ -99,39 +67,18 @@ fun CreateTrainingPlanScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Nowy plan treningowy",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = getOnSurfaceColor()
+                        text = "Kreator planu treningowego",
+                        color = getOnSurfaceColor(),
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { showExitDialog = true }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Wstecz",
                             tint = getOnSurfaceColor()
                         )
-                    }
-                },
-                actions = {
-                    TextButton(
-                        onClick = { viewModel.createTrainingPlan() },
-                        enabled = !uiState.isLoading
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                color = getPrimaryColor(),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "Zapisz",
-                                color = getPrimaryColor(),
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -141,149 +88,451 @@ fun CreateTrainingPlanScreen(
         },
         containerColor = getBackgroundColor()
     ) { paddingValues ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(paddingValues)
         ) {
-            item {
-                ImageSelectionSection(
-                    selectedImageUri = formData.selectedImageUri,
-                    onImageClick = { imageLauncher.launch("image/*") }
-                )
-            }
+            TrainingPlanStepper(
+                currentStep = uiState.currentStep,
+                modifier = Modifier.padding(16.dp)
+            )
 
-            item {
-                OutlinedTextField(
-                    value = formData.title,
-                    onValueChange = viewModel::updateTitle,
-                    label = { Text("Tytuł planu") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = getPrimaryColor(),
-                        unfocusedBorderColor = getInputBorderColor(),
-                        focusedTextColor = getOnSurfaceColor(),
-                        unfocusedTextColor = getOnSurfaceColor()
-                    ),
-                    singleLine = true,
-                    supportingText = {
-                        Text("${formData.title.length}/150")
-                    }
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = formData.description,
-                    onValueChange = viewModel::updateDescription,
-                    label = { Text("Opis (opcjonalny)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = getPrimaryColor(),
-                        unfocusedBorderColor = getInputBorderColor(),
-                        focusedTextColor = getOnSurfaceColor(),
-                        unfocusedTextColor = getOnSurfaceColor()
-                    ),
-                    minLines = 3,
-                    maxLines = 5,
-                    supportingText = {
-                        Text("${formData.description.length}/850")
-                    }
-                )
-            }
-
-            item {
-                SelectionCard(
-                    title = "Cel treningu",
-                    selectedValue = getGoalDisplayName(formData.goal),
-                    onClick = { showGoalDialog = true }
-                )
-            }
-
-            item {
-                SelectionCard(
-                    title = "Poziom trudności",
-                    selectedValue = getDifficultyDisplayName(formData.advancedLevel),
-                    onClick = { showDifficultyDialog = true }
-                )
-            }
-
-            item {
-                HashtagsSection(
-                    hashtags = formData.hashtags,
-                    onAddHashtag = { showHashtagDialog = true },
-                    onRemoveHashtag = viewModel::removeHashtag
-                )
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Dni treningowe",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = getOnSurfaceColor()
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                when (uiState.currentStep) {
+                    TrainingPlanCreatorStep.BASIC -> BasicInfoStep(uiState, viewModel)
+                    TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> DaysAndExercisesStep(
+                        uiState,
+                        viewModel,
+                        onNavigateToExerciseSelection
                     )
-
-                    IconButton(
-                        onClick = { viewModel.addTrainingDay() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Dodaj dzień",
-                            tint = getPrimaryColor()
-                        )
-                    }
+                    TrainingPlanCreatorStep.SUMMARY -> SummaryStep(uiState)
                 }
             }
 
-            itemsIndexed(formData.days) { index, day ->
-                TrainingDayCard(
-                    day = day,
-                    dayIndex = index + 1,
-                    onEditName = { newName -> viewModel.updateDayName(index, newName) },
-                    onToggleRestDay = { viewModel.toggleRestDay(index) },
-                    onAddExercise = { onNavigateToExerciseSelection(index) },
-                    onRemoveExercise = { exerciseIndex ->
-                        viewModel.removeExercise(index, exerciseIndex)
-                    },
-                    onRemoveDay = { viewModel.removeTrainingDay(index) },
-                    onEditExercise = { exerciseIndex ->
-                        // TODO Implementacja nawigacji do edycji ćwiczenia
+
+            TrainingPlanBottomBar(
+                step = uiState.currentStep,
+                isLoading = uiState.isLoading,
+                canProceed = when (uiState.currentStep) {
+                    TrainingPlanCreatorStep.BASIC -> uiState.basicValid
+                    TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> uiState.daysAndExercisesValid
+                    TrainingPlanCreatorStep.SUMMARY -> true
+                },
+                onPrev = viewModel::prevStep,
+                onNext = viewModel::nextStep,
+                onCreate = viewModel::createTrainingPlan,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+
+
+    uiState.error?.let { error ->
+        AlertDialog(
+            onDismissRequest = viewModel::clearError,
+            title = { Text("Błąd") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = viewModel::clearError) {
+                    Text("OK", color = getPrimaryColor())
+                }
+            }
+        )
+    }
+
+    if (showSuccessDialog) {
+        TrainingPlanSuccessDialog(
+            onDismiss = {
+                showSuccessDialog = false
+                viewModel.clearData()
+                onBackClick()
+            }
+        )
+    }
+
+
+    if (showExitDialog) {
+        TrainingPlanExitConfirmationDialog(
+            onDismiss = { showExitDialog = false },
+            onConfirm = {
+                showExitDialog = false
+                viewModel.clearData()
+                onBackClick()
+            }
+        )
+    }
+}
+
+@Composable
+private fun TrainingPlanSuccessDialog(
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(
+                            getPrimaryColor().copy(alpha = 0.1f),
+                            RoundedCornerShape(40.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = getPrimaryColor()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+
+                Text(
+                    text = "Plan utworzony!",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getOnSurfaceColor(),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+
+                Text(
+                    text = "Twój plan treningowy został pomyślnie utworzony. Możesz go znaleźć w sekcji \"Moje plany\".",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = getPrimaryColor(),
+                        contentColor = getOnPrimaryColor()
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Świetnie!",
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun TrainingPlanExitConfirmationDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = getSurfaceColor(),
+        shape = RoundedCornerShape(20.dp),
+        title = {
+            Text(
+                text = "Przerwać tworzenie planu?",
+                color = getOnSurfaceColor(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+        },
+        text = {
+            Text(
+                text = "Wszystkie wprowadzone dane zostaną utracone.",
+                color = getOnSurfaceSecondaryColor(),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 18.sp
+            )
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Kontynuuj",
+                        color = getOnSurfaceColor(),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Button(
+                    onClick = onConfirm,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = getErrorColor()
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Przerwij",
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun TrainingPlanStepper(
+    currentStep: TrainingPlanCreatorStep,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        val steps = listOf(
+            "Podstawy",
+            "Dni i ćwiczenia",
+            "Podsumowanie"
+        )
+
+        steps.forEachIndexed { index, label ->
+            val isActive = currentStep.ordinal == index
+            val isDone = currentStep.ordinal > index
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = if (isActive || isDone) getPrimaryColor() else getNavBarUnselectedColor()
+                ) {
+                    Box(
+                        modifier = Modifier.size(36.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            color = getOnPrimaryColor(),
+                            fontWeight = FontWeight.Bold
+                        )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = label,
+                    color = if (isActive) getPrimaryColor() else getOnSurfaceSecondaryColor(),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
                 )
             }
 
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
+            if (index < steps.size - 1) {
+                HorizontalDivider(
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically)
+                        .padding(horizontal = 8.dp),
+                    color = getInputBorderColor()
+                )
             }
         }
     }
+}
 
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let { error ->
-            //TODO Obsluga różnych typów błędów
-        }
-    }
+@Composable
+private fun BasicInfoStep(
+    uiState: CreateTrainingPlanState,
+    viewModel: CreateTrainingPlanViewModel
+) {
+    var showGoalDialog by remember { mutableStateOf(false) }
+    var showDifficultyDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            // TODO Pokazanie komunikatu o sukcesie
-            onBackClick()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+
+        OutlinedTextField(
+            value = uiState.name,
+            onValueChange = viewModel::setName,
+            label = { Text("Nazwa planu treningowego *") },
+            placeholder = { Text("Wpisz nazwę planu...") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            supportingText = {
+                Text("${uiState.name.length}/150")
+            },
+            isError = uiState.name.length > 150
+        )
+
+        ImageUploadSection(
+            selectedImageUri = uiState.imageUri,
+            onImageSelected = viewModel::setImage
+        )
+
+        OutlinedTextField(
+            value = uiState.goal,
+            onValueChange = { },
+            label = { Text("Cel treningu *") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showGoalDialog = true },
+            enabled = false,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledBorderColor = getInputBorderColor(),
+                disabledTextColor = getOnSurfaceColor()
+            ),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = getOnSurfaceSecondaryColor()
+                )
+            }
+        )
+
+        OutlinedTextField(
+            value = uiState.advancedLevel,
+            onValueChange = { },
+            label = { Text("Poziom zaawansowania *") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDifficultyDialog = true },
+            enabled = false,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledBorderColor = getInputBorderColor(),
+                disabledTextColor = getOnSurfaceColor()
+            ),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = getOnSurfaceSecondaryColor()
+                )
+            }
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Plan publiczny",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = getOnSurfaceColor()
+                )
+                Text(
+                    text = "Inni użytkownicy będą mogli zobaczyć Twój plan",
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor()
+                )
+            }
+
+            Switch(
+                checked = uiState.visibility == PrivacySettings.PUBLIC,
+                onCheckedChange = { isPublic ->
+                    viewModel.setVisibility(
+                        if (isPublic) PrivacySettings.PUBLIC else PrivacySettings.PRIVATE
+                    )
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = getOnPrimaryColor(),
+                    checkedTrackColor = getPrimaryColor()
+                )
+            )
         }
+
+        OutlinedTextField(
+            value = uiState.description,
+            onValueChange = viewModel::setDescription,
+            label = { Text("Opis (opcjonalny)") },
+            placeholder = { Text("Opisz swój plan treningowy...") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 4,
+            maxLines = 8,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = getPrimaryColor(),
+                unfocusedBorderColor = getInputBorderColor(),
+                focusedTextColor = getOnSurfaceColor(),
+                unfocusedTextColor = getOnSurfaceColor(),
+                cursorColor = getPrimaryColor()
+            ),
+            supportingText = {
+                Text("${uiState.description.length}/850")
+            },
+            isError = uiState.description.length > 850
+        )
+
+        HashtagInputField(
+            selectedHashtags = uiState.hashtags,
+            onHashtagsChange = viewModel::setHashtags,
+            maxHashtags = 50
+        )
     }
 
     if (showGoalDialog) {
         GoalSelectionDialog(
-            selectedGoal = formData.goal,
+            selectedGoal = uiState.goal,
             onGoalSelected = { goal ->
-                viewModel.updateGoal(goal)
+                viewModel.setGoal(goal)
                 showGoalDialog = false
             },
             onDismiss = { showGoalDialog = false }
@@ -292,65 +541,89 @@ fun CreateTrainingPlanScreen(
 
     if (showDifficultyDialog) {
         DifficultySelectionDialog(
-            selectedDifficulty = formData.advancedLevel,
+            selectedDifficulty = uiState.advancedLevel,
             onDifficultySelected = { difficulty ->
-                viewModel.updateDifficulty(difficulty)
+                viewModel.setAdvancedLevel(difficulty)
                 showDifficultyDialog = false
             },
             onDismiss = { showDifficultyDialog = false }
         )
     }
-
-    if (showHashtagDialog) {
-        HashtagInputDialog(
-            onHashtagAdded = { hashtag ->
-                viewModel.addHashtag(hashtag)
-                showHashtagDialog = false
-            },
-            onDismiss = { showHashtagDialog = false }
-        )
-    }
 }
 
+
 @Composable
-private fun ImageSelectionSection(
-    selectedImageUri: String?,
-    onImageClick: () -> Unit
+private fun DaysAndExercisesStep(
+    uiState: CreateTrainingPlanState,
+    viewModel: CreateTrainingPlanViewModel,
+    onNavigateToExerciseSelection: (Int) -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .clickable { onImageClick() },
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        shape = RoundedCornerShape(12.dp)
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selectedImageUri != null) {
-                AsyncImage(
-                    model = selectedImageUri,
-                    contentDescription = "Zdjęcie planu treningowego",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Text(
+                text = "Dni treningowe i ćwiczenia",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+
+            if (uiState.days.size < 30) {
+                FloatingActionButton(
+                    onClick = viewModel::addDay,
+                    modifier = Modifier.size(48.dp),
+                    containerColor = getPrimaryColor()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PhotoCamera,
-                        contentDescription = "Dodaj zdjęcie",
-                        modifier = Modifier.size(48.dp),
-                        tint = getOnSurfaceSecondaryColor()
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Dodaj dzień",
+                        tint = getOnPrimaryColor()
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Dotknij, aby dodać zdjęcie",
-                        color = getOnSurfaceSecondaryColor(),
-                        fontSize = 14.sp
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (uiState.days.isEmpty()) {
+            EmptyDaysMessage()
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                itemsIndexed(uiState.days) { index, day ->
+                    DayWithExercisesCard(
+                        day = day,
+                        dayIndex = index,
+                        onNameChange = { name -> viewModel.updateDayName(index, name) },
+                        onToggleRestDay = { viewModel.toggleRestDay(index) },
+                        onRemoveDay = { viewModel.removeDay(index) },
+                        onAddExercise = { onNavigateToExerciseSelection(index) },
+                        onRemoveExercise = { exerciseIndex ->
+                            viewModel.removeExerciseFromDay(index, exerciseIndex)
+                        },
+                        onUpdateRestTime = { exerciseIndex, restTime ->
+                            viewModel.updateExerciseRestTime(index, exerciseIndex, restTime)
+                        },
+                        onToggleExerciseType = { exerciseIndex ->
+                            viewModel.toggleExerciseType(index, exerciseIndex)
+                        },
+                        onAddSet = { exerciseIndex ->
+                            viewModel.addSetToExercise(index, exerciseIndex)
+                        },
+                        onRemoveSet = { exerciseIndex, setIndex ->
+                            viewModel.removeSetFromExercise(index, exerciseIndex, setIndex)
+                        },
+                        onUpdateSet = { exerciseIndex, setIndex, set ->
+                            viewModel.updateSet(index, exerciseIndex, setIndex, set)
+                        }
                     )
                 }
             }
@@ -359,57 +632,311 @@ private fun ImageSelectionSection(
 }
 
 @Composable
-private fun SelectionCard(
-    title: String,
-    selectedValue: String,
-    onClick: () -> Unit
+private fun DayWithExercisesCard(
+    day: TrainingDay,
+    dayIndex: Int,
+    onNameChange: (String) -> Unit,
+    onToggleRestDay: () -> Unit,
+    onRemoveDay: () -> Unit,
+    onAddExercise: () -> Unit,
+    onRemoveExercise: (Int) -> Unit,
+    onUpdateRestTime: (Int, Int) -> Unit,
+    onToggleExerciseType: (Int) -> Unit,
+    onAddSet: (Int) -> Unit,
+    onRemoveSet: (Int, Int) -> Unit,
+    onUpdateSet: (Int, Int, TrainingSet) -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            Column {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = title,
-                    fontSize = 14.sp,
-                    color = getOnSurfaceSecondaryColor()
-                )
-                Text(
-                    text = selectedValue,
+                    text = "Dzień ${day.dayNumber}",
                     fontSize = 16.sp,
-                    color = getOnSurfaceColor(),
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Bold,
+                    color = getOnSurfaceColor()
+                )
+
+                IconButton(onClick = onRemoveDay) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Usuń dzień",
+                        tint = getErrorColor()
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = day.name,
+                onValueChange = onNameChange,
+                label = { Text("Nazwa dnia") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = getPrimaryColor(),
+                    unfocusedBorderColor = getInputBorderColor()
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Dzień odpoczynku",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+
+                Switch(
+                    checked = day.isRestDay,
+                    onCheckedChange = { onToggleRestDay() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = getOnPrimaryColor(),
+                        checkedTrackColor = getPrimaryColor()
+                    )
                 )
             }
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                tint = getOnSurfaceSecondaryColor()
-            )
+
+
+            if (!day.isRestDay) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Ćwiczenia (${day.exercises.size})",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = getOnSurfaceColor()
+                    )
+
+                    if (day.exercises.size < 15) {
+                        IconButton(onClick = onAddExercise) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Dodaj ćwiczenie",
+                                tint = getPrimaryColor()
+                            )
+                        }
+                    }
+                }
+
+                if (day.exercises.isEmpty()) {
+                    Text(
+                        text = "Brak ćwiczeń. Kliknij + aby dodać.",
+                        fontSize = 12.sp,
+                        color = getOnSurfaceSecondaryColor(),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    day.exercises.forEachIndexed { exerciseIndex, dayExercise ->
+                        ExerciseItem(
+                            dayExercise = dayExercise,
+                            exerciseIndex = exerciseIndex,
+                            onRemove = { onRemoveExercise(exerciseIndex) },
+                            onUpdateRestTime = { restTime -> onUpdateRestTime(exerciseIndex, restTime) },
+                            onToggleType = { onToggleExerciseType(exerciseIndex) },
+                            onAddSet = { onAddSet(exerciseIndex) },
+                            onRemoveSet = { setIndex -> onRemoveSet(exerciseIndex, setIndex) },
+                            onUpdateSet = { setIndex, set -> onUpdateSet(exerciseIndex, setIndex, set) }
+                        )
+
+                        if (exerciseIndex < day.exercises.size - 1) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@Composable
+private fun ImageUploadSection(
+    selectedImageUri: Uri?,
+    onImageSelected: (Uri?) -> Unit
+) {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri -> onImageSelected(uri) }
+
+    Column {
+        Text(
+            text = "Zdjęcie planu treningowego *",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = getOnSurfaceColor()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (selectedImageUri != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Box {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = "Zdjęcie planu",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    IconButton(
+                        onClick = { onImageSelected(null) },
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Usuń zdjęcie",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clickable { launcher.launch("image/*") }
+                    .border(
+                        1.dp,
+                        getInputBorderColor(),
+                        RoundedCornerShape(12.dp)
+                    ),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CloudUpload,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = getPrimaryColor()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Kliknij, aby dodać zdjęcie",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = getOnSurfaceColor()
+                    )
+
+                    Text(
+                        text = "JPG, PNG, WebP (maks. 5MB)",
+                        fontSize = 12.sp,
+                        color = getOnSurfaceSecondaryColor()
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun HashtagsSection(
-    hashtags: List<String>,
-    onAddHashtag: () -> Unit,
-    onRemoveHashtag: (Int) -> Unit
+private fun DaysStep(
+    uiState: CreateTrainingPlanState,
+    viewModel: CreateTrainingPlanViewModel
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Dni treningowe",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+
+            if (uiState.days.size < 30) {
+                FloatingActionButton(
+                    onClick = viewModel::addDay,
+                    modifier = Modifier.size(48.dp),
+                    containerColor = getPrimaryColor()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Dodaj dzień",
+                        tint = getOnPrimaryColor()
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (uiState.days.isEmpty()) {
+            EmptyDaysMessage()
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                itemsIndexed(uiState.days) { index, day ->
+                    DayCard(
+                        day = day,
+                        onNameChange = { name -> viewModel.updateDayName(index, name) },
+                        onToggleRestDay = { viewModel.toggleRestDay(index) },
+                        onRemoveDay = { viewModel.removeDay(index) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DayCard(
+    day: TrainingDay,
+    onNameChange: (String) -> Unit,
+    onToggleRestDay: () -> Unit,
+    onRemoveDay: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
     ) {
         Column(
             modifier = Modifier
@@ -422,37 +949,64 @@ private fun HashtagsSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Hashtagi",
+                    text = "Dzień ${day.dayNumber}",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
                 )
-                IconButton(onClick = onAddHashtag) {
+
+                IconButton(onClick = onRemoveDay) {
                     Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Dodaj hashtag",
-                        tint = getPrimaryColor()
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Usuń dzień",
+                        tint = getErrorColor()
                     )
                 }
             }
 
-            if (hashtags.isNotEmpty()) {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    itemsIndexed(hashtags) { index, hashtag ->
-                        HashtagChip(
-                            hashtag = hashtag,
-                            onRemove = { onRemoveHashtag(index) }
-                        )
-                    }
-                }
-            } else {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = day.name,
+                onValueChange = onNameChange,
+                label = { Text("Nazwa dnia") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = getPrimaryColor(),
+                    unfocusedBorderColor = getInputBorderColor()
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "Brak hashtagów",
-                    color = getOnSurfaceSecondaryColor(),
-                    fontSize = 14.sp
+                    text = "Dzień odpoczynku",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+
+                Switch(
+                    checked = day.isRestDay,
+                    onCheckedChange = { onToggleRestDay() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = getOnPrimaryColor(),
+                        checkedTrackColor = getPrimaryColor()
+                    )
+                )
+            }
+
+            if (!day.isRestDay) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Ćwiczenia: ${day.exercises.size}",
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor()
                 )
             }
         }
@@ -460,62 +1014,725 @@ private fun HashtagsSection(
 }
 
 @Composable
-private fun HashtagChip(
-    hashtag: String,
-    onRemove: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = getPrimaryColor().copy(alpha = 0.1f),
-        modifier = Modifier.border(
-            1.dp,
-            getPrimaryColor().copy(alpha = 0.3f),
-            RoundedCornerShape(16.dp)
-        )
+private fun EmptyDaysMessage() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(
-                text = "#$hashtag",
-                fontSize = 12.sp,
-                color = getPrimaryColor()
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Usuń hashtag",
-                modifier = Modifier
-                    .size(16.dp)
-                    .clickable { onRemove() },
-                tint = getPrimaryColor()
+        Icon(
+            imageVector = Icons.Default.CalendarToday,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = getOnSurfaceSecondaryColor()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Brak dni treningowych",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = getOnSurfaceColor()
+        )
+
+        Text(
+            text = "Dodaj pierwszy dzień, aby rozpocząć",
+            fontSize = 14.sp,
+            color = getOnSurfaceSecondaryColor()
+        )
+    }
+}
+
+@Composable
+private fun ExercisesStep(
+    uiState: CreateTrainingPlanState,
+    viewModel: CreateTrainingPlanViewModel,
+    onNavigateToExerciseSelection: (Int) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        itemsIndexed(uiState.days.filter { !it.isRestDay }) { index, day ->
+            val dayIndex = uiState.days.indexOf(day)
+
+            ExerciseDayCard(
+                day = day,
+                dayIndex = dayIndex,
+                onAddExercise = { onNavigateToExerciseSelection(dayIndex) },
+                onRemoveExercise = { exerciseIndex ->
+                    viewModel.removeExerciseFromDay(dayIndex, exerciseIndex)
+                },
+                onUpdateRestTime = { exerciseIndex, restTime ->
+                    viewModel.updateExerciseRestTime(dayIndex, exerciseIndex, restTime)
+                },
+                onToggleExerciseType = { exerciseIndex ->
+                    viewModel.toggleExerciseType(dayIndex, exerciseIndex)
+                },
+                onAddSet = { exerciseIndex ->
+                    viewModel.addSetToExercise(dayIndex, exerciseIndex)
+                },
+                onRemoveSet = { exerciseIndex, setIndex ->
+                    viewModel.removeSetFromExercise(dayIndex, exerciseIndex, setIndex)
+                },
+                onUpdateSet = { exerciseIndex, setIndex, set ->
+                    viewModel.updateSet(dayIndex, exerciseIndex, setIndex, set)
+                }
             )
         }
     }
 }
 
-private fun getGoalDisplayName(goal: String): String = when (goal) {
-    Goals.NONE -> "Nie wybrano"
-    Goals.RECOVERY -> "Regeneracja i odpoczynek"
-    Goals.STRENGTH -> "Zwiększanie siły"
-    Goals.POSTURE -> "Poprawa postawy ciała"
-    Goals.MASS_GAIN -> "Zwiększenie masy ciała"
-    Goals.COORDINATION -> "Poprawa koordynacji"
-    Goals.CALORIE_BURN -> "Spalanie kalorii"
-    Goals.MOBILITY -> "Poprawa mobilności"
-    Goals.LEGS_GLUTES -> "Rozwój nóg i pośladków"
-    Goals.ENDURANCE -> "Poprawa wytrzymałości"
-    Goals.FAT_LOSS -> "Redukcja tkanki tłuszczowej"
-    Goals.MUSCLE_GAIN -> "Budowanie masy mięśniowej"
-    Goals.FLEXIBILITY -> "Poprawa gibkości"
-    else -> "Nie wybrano"
+@Composable
+private fun ExerciseDayCard(
+    day: TrainingDay,
+    dayIndex: Int,
+    onAddExercise: () -> Unit,
+    onRemoveExercise: (Int) -> Unit,
+    onUpdateRestTime: (Int, Int) -> Unit,
+    onToggleExerciseType: (Int) -> Unit,
+    onAddSet: (Int) -> Unit,
+    onRemoveSet: (Int, Int) -> Unit,
+    onUpdateSet: (Int, Int, TrainingSet) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = day.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getOnSurfaceColor()
+                )
+
+                if (day.exercises.size < 15) {
+                    IconButton(onClick = onAddExercise) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Dodaj ćwiczenie",
+                            tint = getPrimaryColor()
+                        )
+                    }
+                }
+            }
+
+            if (day.exercises.isEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Brak ćwiczeń. Kliknij +, aby dodać pierwsze ćwiczenie.",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                day.exercises.forEachIndexed { exerciseIndex, dayExercise ->
+                    ExerciseItem(
+                        dayExercise = dayExercise,
+                        exerciseIndex = exerciseIndex,
+                        onRemove = { onRemoveExercise(exerciseIndex) },
+                        onUpdateRestTime = { restTime -> onUpdateRestTime(exerciseIndex, restTime) },
+                        onToggleType = { onToggleExerciseType(exerciseIndex) },
+                        onAddSet = { onAddSet(exerciseIndex) },
+                        onRemoveSet = { setIndex -> onRemoveSet(exerciseIndex, setIndex) },
+                        onUpdateSet = { setIndex, set -> onUpdateSet(exerciseIndex, setIndex, set) }
+                    )
+
+                    if (exerciseIndex < day.exercises.size - 1) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = getInputBorderColor())
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
+        }
+    }
 }
 
-private fun getDifficultyDisplayName(difficulty: String): String = when (difficulty) {
-    AdvancedLevel.NONE -> "Nie wybrano"
-    AdvancedLevel.EASY -> "Początkujący"
-    AdvancedLevel.MEDIUM -> "Średniozaawansowany"
-    AdvancedLevel.HARD -> "Zaawansowany"
-    else -> "Nie wybrano"
+@Composable
+private fun ExerciseItem(
+    dayExercise: DayExercise,
+    exerciseIndex: Int,
+    onRemove: () -> Unit,
+    onUpdateRestTime: (Int) -> Unit,
+    onToggleType: () -> Unit,
+    onAddSet: () -> Unit,
+    onRemoveSet: (Int) -> Unit,
+    onUpdateSet: (Int, TrainingSet) -> Unit
+) {
+    var showRestTimeDialog by remember { mutableStateOf(false) }
+
+    Column {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = dayExercise.exercise.image,
+                    contentDescription = dayExercise.exercise.name,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(
+                        text = dayExercise.exercise.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = getOnSurfaceColor(),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Text(
+                        text = if (dayExercise.isRepsSet) "Powtórzenia" else "Czas",
+                        fontSize = 12.sp,
+                        color = getOnSurfaceSecondaryColor()
+                    )
+                }
+            }
+
+            IconButton(onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Usuń ćwiczenie",
+                    tint = getErrorColor()
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Typ:",
+                fontSize = 14.sp,
+                color = getOnSurfaceColor()
+            )
+
+            Row {
+                FilterChip(
+                    selected = dayExercise.isRepsSet,
+                    onClick = { if (!dayExercise.isRepsSet) onToggleType() },
+                    label = { Text("Powtórzenia") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = getPrimaryColor(),
+                        selectedLabelColor = getOnPrimaryColor()
+                    )
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                FilterChip(
+                    selected = !dayExercise.isRepsSet,
+                    onClick = { if (dayExercise.isRepsSet) onToggleType() },
+                    label = { Text("Czas") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = getPrimaryColor(),
+                        selectedLabelColor = getOnPrimaryColor()
+                    )
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Odpoczynek po serii:",
+                fontSize = 14.sp,
+                color = getOnSurfaceColor()
+            )
+
+            TextButton(onClick = { showRestTimeDialog = true }) {
+                Text(
+                    text = "${dayExercise.restAfterSet}s",
+                    color = getPrimaryColor()
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Serie:",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = getOnSurfaceColor()
+            )
+
+            if (dayExercise.sets.size < 15) {
+                IconButton(onClick = onAddSet) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Dodaj serię",
+                        tint = getPrimaryColor()
+                    )
+                }
+            }
+        }
+
+        dayExercise.sets.forEachIndexed { setIndex, set ->
+            SetItem(
+                set = set,
+                setIndex = setIndex,
+                isRepsSet = dayExercise.isRepsSet,
+                canRemove = dayExercise.sets.size > 1,
+                onRemove = { onRemoveSet(setIndex) },
+                onUpdate = { updatedSet -> onUpdateSet(setIndex, updatedSet) }
+            )
+
+            if (setIndex < dayExercise.sets.size - 1) {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+
+
+    if (showRestTimeDialog) {
+        RestTimeDialog(
+            currentRestTime = dayExercise.restAfterSet,
+            onConfirm = { restTime ->
+                onUpdateRestTime(restTime)
+                showRestTimeDialog = false
+            },
+            onDismiss = { showRestTimeDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun SetItem(
+    set: TrainingSet,
+    setIndex: Int,
+    isRepsSet: Boolean,
+    canRemove: Boolean,
+    onRemove: () -> Unit,
+    onUpdate: (TrainingSet) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = getBackgroundColor())
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Seria ${setIndex + 1}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = getOnSurfaceColor()
+            )
+
+            if (isRepsSet) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = set.repetitions?.toString() ?: "",
+                        onValueChange = { value ->
+                            val reps = value.toIntOrNull()
+                            if (reps != null && reps in 1..100) {
+                                onUpdate(set.copy(repetitions = reps))
+                            }
+                        },
+                        label = { Text("Powt.") },
+                        modifier = Modifier.width(80.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedTextField(
+                        value = set.weight?.toString() ?: "",
+                        onValueChange = { value ->
+                            val weight = value.toDoubleOrNull()
+                            if (weight == null || weight in 0.0..300.0) {
+                                onUpdate(set.copy(weight = weight))
+                            }
+                        },
+                        label = { Text("kg") },
+                        modifier = Modifier.width(80.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        placeholder = { Text("0") }
+                    )
+                }
+            } else {
+                OutlinedTextField(
+                    value = set.duration?.toString() ?: "",
+                    onValueChange = { value ->
+                        val duration = value.toIntOrNull()
+                        if (duration != null && duration in 30..21600) {
+                            onUpdate(set.copy(duration = duration))
+                        }
+                    },
+                    label = { Text("Sekundy") },
+                    modifier = Modifier.width(100.dp),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+
+            if (canRemove) {
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        imageVector = Icons.Default.Remove,
+                        contentDescription = "Usuń serię",
+                        tint = getErrorColor()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RestTimeDialog(
+    currentRestTime: Int,
+    onConfirm: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var restTimeText by remember { mutableStateOf(currentRestTime.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Czas odpoczynku") },
+        text = {
+            Column {
+                Text("Ustaw czas odpoczynku po serii (30-5400 sekund)")
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = restTimeText,
+                    onValueChange = { restTimeText = it },
+                    label = { Text("Sekundy") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val restTime = restTimeText.toIntOrNull()
+                    if (restTime != null && restTime in 30..5400) {
+                        onConfirm(restTime)
+                    }
+                }
+            ) {
+                Text("OK", color = getPrimaryColor())
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Anuluj")
+            }
+        }
+    )
+}
+
+@Composable
+private fun SummaryStep(uiState: CreateTrainingPlanState) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = "Podsumowanie planu treningowego",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+        }
+
+        item {
+            SummaryCard(title = "Podstawowe informacje") {
+                SummaryField("Nazwa", uiState.name)
+                SummaryField("Cel", uiState.goal)
+                SummaryField("Poziom", uiState.advancedLevel)
+                SummaryField("Widoczność", uiState.visibility)
+                if (uiState.description.isNotBlank()) {
+                    SummaryField("Opis", uiState.description)
+                }
+                if (uiState.hashtags.isNotEmpty()) {
+                    SummaryField("Hashtagi", uiState.hashtags.joinToString(", ") { "#$it" })
+                }
+            }
+        }
+
+        item {
+            SummaryCard(title = "Struktura treningowa") {
+                Text(
+                    text = "Łączna liczba dni: ${uiState.days.size}",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+
+                val workoutDays = uiState.days.count { !it.isRestDay }
+                val restDays = uiState.days.count { it.isRestDay }
+
+                Text(
+                    text = "Dni treningowe: $workoutDays",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+
+                Text(
+                    text = "Dni odpoczynku: $restDays",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+
+                val totalExercises = uiState.days.sumOf { it.exercises.size }
+                Text(
+                    text = "Łączna liczba ćwiczeń: $totalExercises",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+            }
+        }
+
+        items(uiState.days) { day ->
+            DaySummaryCard(day = day)
+        }
+    }
+}
+
+@Composable
+private fun SummaryCard(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            content()
+        }
+    }
+}
+
+@Composable
+private fun SummaryField(label: String, value: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label:",
+            fontSize = 12.sp,
+            color = getOnSurfaceSecondaryColor(),
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = getOnSurfaceColor()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun DaySummaryCard(day: TrainingDay) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = day.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getOnSurfaceColor()
+                )
+
+                if (day.isRestDay) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = getOnSurfaceColor().copy(alpha = 0.1f)
+                    ) {
+                        Text(
+                            text = "Odpoczynek",
+                            fontSize = 12.sp,
+                            color = getOnSurfaceColor(),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            if (!day.isRestDay) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Ćwiczenia (${day.exercises.size}):",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = getOnSurfaceColor()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                day.exercises.forEach { exercise ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = exercise.exercise.image,
+                            contentDescription = exercise.exercise.name,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(6.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = exercise.exercise.name,
+                                fontSize = 14.sp,
+                                color = getOnSurfaceColor(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Text(
+                                text = "${exercise.sets.size} ${if (exercise.sets.size == 1) "seria" else "serie"}",
+                                fontSize = 12.sp,
+                                color = getOnSurfaceSecondaryColor()
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrainingPlanBottomBar(
+    step: TrainingPlanCreatorStep,
+    isLoading: Boolean,
+    canProceed: Boolean,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
+    onCreate: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (step != TrainingPlanCreatorStep.BASIC) {
+            OutlinedButton(
+                onClick = onPrev,
+                modifier = Modifier.weight(1f),
+                enabled = !isLoading,
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Transparent
+                ),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
+            ) {
+                Text("Wstecz", color = getOnSurfaceColor())
+            }
+        }
+
+        Button(
+            onClick = if (step == TrainingPlanCreatorStep.SUMMARY) onCreate else onNext,
+            modifier = Modifier.weight(1f),
+            enabled = canProceed && !isLoading,
+            colors = ButtonDefaults.buttonColors(containerColor = getPrimaryColor()),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            if (isLoading && step == TrainingPlanCreatorStep.SUMMARY) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = getOnPrimaryColor(),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = if (step == TrainingPlanCreatorStep.SUMMARY) "Utwórz plan" else "Dalej",
+                    color = getOnPrimaryColor()
+                )
+            }
+        }
+    }
 }

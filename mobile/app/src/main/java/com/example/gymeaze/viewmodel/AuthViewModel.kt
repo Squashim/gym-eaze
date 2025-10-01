@@ -99,9 +99,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
     val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
 
-    private val _showCreateTrainingPlan = MutableStateFlow(false)
-    val showCreateTrainingPlan: StateFlow<Boolean> = _showCreateTrainingPlan.asStateFlow()
-
     private val _showTrainingPlanDetail = MutableStateFlow(false)
     val showTrainingPlanDetail: StateFlow<Boolean> = _showTrainingPlanDetail.asStateFlow()
 
@@ -114,13 +111,30 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedDayIndex = MutableStateFlow<Int?>(null)
     val selectedDayIndex: StateFlow<Int?> = _selectedDayIndex.asStateFlow()
 
+    private val _showCreateTrainingPlan = MutableStateFlow(false)
+    val showCreateTrainingPlan: StateFlow<Boolean> = _showCreateTrainingPlan.asStateFlow()
+
+    private val _showTrainingPlansMenu = MutableStateFlow(false)
+    val showTrainingPlansMenu: StateFlow<Boolean> = _showTrainingPlansMenu.asStateFlow()
+
     fun showCreateTrainingPlanScreen() {
         _showCreateTrainingPlan.value = true
     }
 
-
+    fun showExerciseSelectionForDayScreen(dayIndex: Int) {
+        _selectedDayIndex.value = dayIndex
+        _showExerciseSelectionForDay.value = true
+    }
     fun hideCreateTrainingPlanScreen() {
         _showCreateTrainingPlan.value = false
+    }
+
+    fun showTrainingPlansMenuScreen() {
+        _showTrainingPlansMenu.value = true
+    }
+
+    fun hideTrainingPlansMenuScreen() {
+        _showTrainingPlansMenu.value = false
     }
 
     fun showTrainingPlanDetailScreen(planId: String) {
@@ -132,13 +146,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _showTrainingPlanDetail.value = false
         _selectedTrainingPlanId.value = null
     }
-
-
-    fun showExerciseSelectionForDayScreen(dayIndex: Int) {
-        _selectedDayIndex.value = dayIndex
-        _showExerciseSelectionForDay.value = true
-    }
-
 
     fun hideExerciseSelectionForDayScreen() {
         _showExerciseSelectionForDay.value = false

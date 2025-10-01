@@ -3,18 +3,21 @@ package com.example.gymeaze.data.repository
 import android.content.Context
 import android.net.Uri
 import com.example.gymeaze.BuildConfig
+import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.TrainingPlanApiService
-import com.example.gymeaze.data.models.*
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
+import com.example.gymeaze.viewmodel.TrainingDay
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -22,6 +25,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 
 class TrainingPlanRepository(private val context: Context) {
 
@@ -47,161 +51,110 @@ class TrainingPlanRepository(private val context: Context) {
             .create(TrainingPlanApiService::class.java)
     }
 
-    private val MAX_IMAGE_BYTES = 5L * 1024L * 1024L // 5MB
-
     suspend fun createTrainingPlan(
-        request: CreateTrainingPlanRequest,
-        imageUri: Uri
-    ): Result<TrainingPlan> = withContext(Dispatchers.IO) {
+        name: String,
+        description: String,
+        goal: String,
+        visibility: String,
+        advancedLevel: String,
+        hashtags: List<String>,
+        imageUri: Uri,
+        days: List<TrainingDay>
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            // Validate image
-            val imageSuffix = guessSuffix(imageUri)
-            if (imageSuffix !in listOf(".png", ".webp", ".jpg", ".jpeg")) {
-                return@withContext Result.failure(
-                    IllegalArgumentException("Dozwolone formaty obrazów: PNG, WEBP, JPG, JPEG")
-                )
-            }
+            val imageFile = uriToTempFile(imageUri, "training_plan_image", ".jpg")
 
-            // Convert Uri to file
-            val imageFile = uriToTempFile(imageUri, "training_plan_image", imageSuffix)
-
-            if (imageFile.length() > MAX_IMAGE_BYTES) {
+            if (imageFile.length() > 5L * 1024L * 1024L) {
                 imageFile.delete()
                 return@withContext Result.failure(
-                    IllegalArgumentException("Zdjęcie jest zbyt duże (maksymalnie 5MB)")
+                    IllegalArgumentException(context.getString(R.string.error_max_image_size))
                 )
             }
 
-            // Prepare form data
             val text = "text/plain".toMediaType()
             val json = "application/json".toMediaType()
 
-            val titleBody = request.title.toRequestBody(text)
-            val descriptionBody = (request.description ?: "").toRequestBody(text)
-            val goalBody = request.goal.toRequestBody(text)
-            val visibilityBody = request.visibility.toRequestBody(text)
-            val advancedLevelBody = request.advancedLevel.toRequestBody(text)
-            val hashtagsBody = Gson().toJson(request.hashtags).toRequestBody(json)
-            val daysBody = Gson().toJson(request.days).toRequestBody(json)
+            val namePart = name.toRequestBody(text)
+            val descriptionPart = description.toRequestBody(text)
+            val goalPart = goal.toRequestBody(text)
+            val visibilityPart = visibility.toRequestBody(text)
+            val advancedLevelPart = advancedLevel.toRequestBody(text)
+            val hashtagsPart = Gson().toJson(hashtags).toRequestBody(json)
 
-            // Prepare image part
-            val imageMime = when (imageSuffix) {
-                ".png" -> "image/png"
-                ".jpg", ".jpeg" -> "image/jpeg"
-                ".webp" -> "image/webp"
-                else -> "application/octet-stream"
+            val backendDays = days.mapIndexed { index, day ->
+                mapOf(
+                    "name" to day.name,
+                    "dayNumber" to (index + 1),
+                    "isRestDay" to day.isRestDay,
+                    "exercises" to if (day.isRestDay) {
+                        emptyList<Map<String, Any>>()
+                    } else {
+                        day.exercises.map { exercise ->
+                            mapOf(
+                                "id" to exercise.exercise.id,
+                                "isRepsSet" to exercise.isRepsSet,
+                                "restAfterSet" to exercise.restAfterSet,
+                                "sets" to exercise.sets.map { set ->
+                                    val setMap = mutableMapOf<String, Any>()
+                                    if (set.isRepsSet && set.repetitions != null) {
+                                        setMap["repetitions"] = set.repetitions
+                                        if (set.weight != null) {
+                                            setMap["weight"] = set.weight
+                                        }
+                                    } else if (set.isDurationSet && set.duration != null) {
+                                        setMap["duration"] = set.duration
+                                    }
+                                    setMap
+                                }
+                            )
+                        }
+                    }
+                )
             }
+
+            val daysPart = Gson().toJson(backendDays).toRequestBody(json)
 
             val imagePart = MultipartBody.Part.createFormData(
                 "image",
                 imageFile.name,
-                imageFile.asRequestBody(imageMime.toMediaType())
+                imageFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
             )
 
-            // Make API call
             val response = api.createTrainingPlan(
-                title = titleBody,
-                description = descriptionBody,
-                goal = goalBody,
-                visibility = visibilityBody,
-                advancedLevel = advancedLevelBody,
-                hashtags = hashtagsBody,
-                days = daysBody,
+                name = namePart,
+                description = descriptionPart,
+                goal = goalPart,
+                visibility = visibilityPart,
+                advancedLevel = advancedLevelPart,
+                hashtags = hashtagsPart,
+                days = daysPart,
                 image = imagePart
             )
 
-            // Cleanup temp file
             imageFile.delete()
-
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                val raw = response.errorBody()?.string()
-                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
-                Result.failure(IllegalStateException(msg))
-            }
-
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun getTrainingPlans(
-        page: Int = 1,
-        pageSize: Int = 9,
-        sortBy: String = "latest"
-    ): Result<TrainingPlansResponse> = withContext(Dispatchers.IO) {
-        try {
-            val response = api.getTrainingPlans(
-                page = page,
-                pageSize = pageSize,
-                sortBy = sortBy
-            )
-
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                val raw = response.errorBody()?.string()
-                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
-                Result.failure(IllegalStateException(msg))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun getTrainingPlanById(id: String): Result<TrainingPlan> = withContext(Dispatchers.IO) {
-        try {
-            val response = api.getTrainingPlanById(id)
-
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                val raw = response.errorBody()?.string()
-                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
-                Result.failure(IllegalStateException(msg))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun toggleTrainingPlanLike(id: String): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val response = api.toggleTrainingPlanLike(id)
 
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                val raw = response.errorBody()?.string()
-                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
-                Result.failure(IllegalStateException(msg))
+                val errorMessage = AuthErrorMapper.mapAuthErrorToUserMessage(
+                    context,
+                    response.errorBody()?.string(),
+                    response.code()
+                )
+                Result.failure(IllegalStateException(errorMessage))
             }
+
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     private fun uriToTempFile(uri: Uri, prefix: String, suffix: String): File {
-        val input = context.contentResolver.openInputStream(uri)
-            ?: throw IllegalArgumentException("Nie można odczytać pliku")
-
+        val input: InputStream? = context.contentResolver.openInputStream(uri)
         val file = File.createTempFile(prefix, suffix, context.cacheDir)
         FileOutputStream(file).use { out ->
-            input.use { inputStream ->
-                inputStream.copyTo(out)
-            }
+            input?.use { inputStream -> inputStream.copyTo(out) }
         }
         return file
-    }
-
-    private fun guessSuffix(uri: Uri): String {
-        val type = context.contentResolver.getType(uri) ?: return ".bin"
-        return when {
-            type.startsWith("image/png") -> ".png"
-            type.startsWith("image/jpeg") -> ".jpg"
-            type.startsWith("image/webp") -> ".webp"
-            else -> ".bin"
-        }
     }
 }

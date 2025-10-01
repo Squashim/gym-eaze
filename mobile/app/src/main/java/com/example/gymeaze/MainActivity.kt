@@ -29,9 +29,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import com.example.gymeaze.ui.components.WorkoutLoginRequiredDialog
 import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
 import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
-import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
@@ -88,8 +88,7 @@ class MainActivity : ComponentActivity() {
             val logoutEvent by authViewModel.logoutEvent.collectAsState()
 
             val showCreateTrainingPlan by authViewModel.showCreateTrainingPlan.collectAsState()
-            val showTrainingPlanDetail by authViewModel.showTrainingPlanDetail.collectAsState()
-            val selectedTrainingPlanId by authViewModel.selectedTrainingPlanId.collectAsState()
+            val showTrainingPlansMenu by authViewModel.showTrainingPlansMenu.collectAsState()
             val showExerciseSelectionForDay by authViewModel.showExerciseSelectionForDay.collectAsState()
             val selectedDayIndex by authViewModel.selectedDayIndex.collectAsState()
 
@@ -208,13 +207,6 @@ class MainActivity : ComponentActivity() {
                                         authViewModel.showExerciseSelectionForDayScreen(dayIndex)
                                     },
                                     viewModel = createTrainingPlanViewModel
-                                )
-                            }
-
-                            showTrainingPlanDetail && selectedTrainingPlanId != null -> {
-                                TrainingPlanDetailScreen(
-                                    trainingPlanId = selectedTrainingPlanId!!,
-                                    onBackClick = authViewModel::hideTrainingPlanDetailScreen
                                 )
                             }
 

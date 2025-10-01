@@ -382,4 +382,74 @@
     <!-- Posts -->
     <string name="community">Społeczność</string>
     <string name="succes_created_post">Post został dodany</string>
+
+
+    <string name="training_plan_creator">Kreator planu treningowego</string>
+    <string name="training_plan_name">Nazwa planu treningowego</string>
+    <string name="training_plan_description">Opis planu treningowego</string>
+    <string name="training_plan_goal">Cel treningu</string>
+    <string name="training_plan_difficulty">Poziom zaawansowania</string>
+    <string name="training_plan_visibility">Widoczność planu</string>
+    <string name="training_plan_hashtags">Hashtagi</string>
+    <string name="training_plan_image">Zdjęcie planu</string>
+
+    <string name="training_days">Dni treningowe</string>
+    <string name="add_day">Dodaj dzień</string>
+    <string name="day_name">Nazwa dnia</string>
+    <string name="rest_day">Dzień odpoczynku</string>
+    <string name="remove_day">Usuń dzień</string>
+
+    <string name="exercises_count">Ćwiczenia: %d</string>
+    <string name="add_exercise">Dodaj ćwiczenie</string>
+    <string name="remove_exercise">Usuń ćwiczenie</string>
+    <string name="exercise_type">Typ ćwiczenia</string>
+    <string name="repetitions">Powtórzenia</string>
+    <string name="duration">Czas trwania</string>
+    <string name="rest_time">Czas odpoczynku</string>
+    <string name="add_set">Dodaj serię</string>
+    <string name="remove_set">Usuń serię</string>
+    <string name="set_number">Seria %d</string>
+
+    <string name="error_training_plan_creation_failed">Nie udało się utworzyć planu treningowego</string>
+    <string name="error_max_days_reached">Maksymalnie 30 dni w planie</string>
+    <string name="error_max_exercises_per_day">Maksymalnie 15 ćwiczeń na dzień</string>
+    <string name="error_max_sets_per_exercise">Maksymalnie 15 serii na ćwiczenie</string>
+    <string name="error_min_rest_time">Minimalny czas odpoczynku: 30 sekund</string>
+    <string name="error_max_rest_time">Maksymalny czas odpoczynku: 1.5 godziny</string>
+    <string name="error_invalid_repetitions">Liczba powtórzeń musi być między 1-100</string>
+    <string name="error_invalid_weight">Ciężar musi być między 0-300kg</string>
+    <string name="error_invalid_duration">Czas trwania musi być między 30s-6h</string>
+
+    <string name="training_plan_created_successfully">Plan treningowy został utworzony!</string>
+
+    <string name="step_basic_info">Podstawy</string>
+    <string name="step_days">Dni</string>
+    <string name="step_exercises">Ćwiczenia</string>
+    <string name="step_summary">Podsumowanie</string>
+    <string name="create_plan">Utwórz plan</string>
+
+    <string name="training_plan_summary">Podsumowanie planu treningowego</string>
+    <string name="basic_information">Podstawowe informacje</string>
+    <string name="training_structure">Struktura treningowa</string>
+    <string name="total_days">Łączna liczba dni: %d</string>
+    <string name="workout_days">Dni treningowe: %d</string>
+    <string name="rest_days">Dni odpoczynku: %d</string>
+    <string name="total_exercises">Łączna liczba ćwiczeń: %d</string>
+
+    <string name="login_required_title">Logowanie wymagane</string>
+    <string name="login_required_workout_title">Zaloguj się, aby tworzyć plany</string>
+    <string name="login_required_workout_message">Tworzenie i zarządzanie planami treningowymi wymaga posiadania konta. Zaloguj się lub zarejestruj, aby korzystać z pełni możliwości aplikacji!</string>
+    <string name="login_required_message">Aby korzystać z tej funkcji, musisz być zalogowany.</string>
+    <string name="login_required_action">Zaloguj się</string>
+    <string name="login_required_action_goto">Przejdź do logowania</string>
+    <string name="training_plans_menu_description">Twórz spersonalizowane plany treningowe, śledź postęp i osiągaj swoje cele fitness!</string>
+    <string name="create_training_plan">Kreator planu</string>
+    <string name="create_training_plan_subtitle">Stwórz własny plan treningowy</string>
+    <string name="my_training_plans">Moje plany</string>
+    <string name="my_training_plans_subtitle">Zarządzaj swoimi planami</string>
+    <string name="browse_training_plans">Przeglądaj plany</string>
+    <string name="browse_training_plans_subtitle">Odkrywaj plany innych użytkowników</string>
+    <string name="active_training_plan">Aktywny plan</string>
+    <string name="active_training_plan_subtitle">Kontynuuj swój bieżący trening</string>
+
 </resources>

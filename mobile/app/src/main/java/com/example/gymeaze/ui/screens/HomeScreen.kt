@@ -90,7 +90,9 @@ fun HomeScreen(
             if (showBottomBar) {
                 GymEazeBottomNavigationBar(
                     selectedRoute = selectedRoute,
-                    onItemSelected = { route -> selectedRoute = route }
+                    onItemSelected = { route ->
+                        selectedRoute = route
+                    }
                 )
             }
         },
@@ -99,10 +101,18 @@ fun HomeScreen(
     ) { paddingValues ->
         when (selectedRoute) {
             "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn,onExerciseCreatorClick)
-            "workouts" -> TrainingsPlanScreen(
-                onSettingsClick = onSettingsClick,
-                onCreateTrainingPlanClick = onCreateTrainingPlanClick
-            )
+            "workouts" -> {
+                if (isUserLoggedIn) {
+                    TrainingPlansMenuScreen(
+                        onSettingsClick = onSettingsClick,
+                        onCreateTrainingPlanClick = onCreateTrainingPlanClick
+                    )
+                } else {
+                    WorkoutsNotLoggedInScreen(
+                        paddingValues = paddingValues
+                    )
+                }
+            }
             "community" -> PostScreen(
                 onSettingsClick = onSettingsClick,
                 isUserLoggedIn = isUserLoggedIn,
@@ -116,7 +126,8 @@ fun HomeScreen(
                 onExerciseCreatorClick = onExerciseCreatorClick,
                 onBrowseExercisesClick = onBrowseExercisesClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick,
-                paddingValues = paddingValues
+                paddingValues = paddingValues,
+                isUserLoggedIn = isUserLoggedIn
             )
         }
     }
@@ -124,6 +135,7 @@ fun HomeScreen(
 
 @Composable
 fun ProfileScreen(
+    isUserLoggedIn: Boolean,
     username: String,
     currentDate: String,
     onEditProfileClick: () -> Unit,
@@ -152,6 +164,7 @@ fun ProfileScreen(
         }
         item {
             QuickActionSection(
+                isUserLoggedIn = isUserLoggedIn,
                 onExerciseCreatorClick = onExerciseCreatorClick,
                 onBrowseExercisesClick = onBrowseExercisesClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick
@@ -327,9 +340,10 @@ private fun StatCard(
 
 @Composable
 private fun QuickActionSection(
+    isUserLoggedIn: Boolean,
     onExerciseCreatorClick: () -> Unit,
     onBrowseExercisesClick: () -> Unit,
-    onCreateTrainingPlanClick: () -> Unit
+    onCreateTrainingPlanClick: () -> Unit,
     ) {
     Column {
         Text(
