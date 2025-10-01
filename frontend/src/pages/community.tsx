@@ -12,6 +12,7 @@ import { usePost } from '@/hooks/query/posts/use-post';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import usePostParamsQuery from '@/hooks/use-post-params-query';
 import useOpen from '@/hooks/utils/use-open';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import { Info, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -19,6 +20,7 @@ import { toast } from 'sonner';
 
 function Community() {
   const { params, setHashtags, setParam, clearParams } = usePostParamsQuery();
+
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
@@ -33,6 +35,7 @@ function Community() {
   const { ref, inView } = useInView({
     threshold: 1,
   });
+  usePageTitle('Przeglądaj posty');
   const prevCountRef = useRef<number>(0);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [pendingLikePostId, setPendingLikePostId] = useState<string | null>(null);
