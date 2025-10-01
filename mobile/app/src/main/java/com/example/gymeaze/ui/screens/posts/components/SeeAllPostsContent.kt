@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.screens.comments.CommentsPanel
 import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
@@ -161,7 +162,7 @@ fun SeeAllPostsContent(
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Search bar - z paddingiem tylko z góry dla TopBar
+
                     if (isSearchActive) {
                         Box(
                             modifier = Modifier.padding(
@@ -222,13 +223,11 @@ fun SeeAllPostsContent(
                             }
                         }
 
-                        // Informacja o braku postów
                         if (posts.isEmpty() && !isLoading) {
                             item {
                                 NoPostsInfo(isSearchActive, selectedHashtags.isNotEmpty())
                             }
                         } else {
-                            // Lista postów
                             itemsIndexed(
                                 items = posts,
                                 key = { _, post -> post.id }
@@ -260,7 +259,6 @@ fun SeeAllPostsContent(
 
                                 )
 
-                                // Trigger do ładowania więcej postów
                                 if (index == posts.size - 3) {
                                     LaunchedEffect(Unit) { onLoadMore() }
                                 }
@@ -269,7 +267,6 @@ fun SeeAllPostsContent(
                     }
                 }
 
-                // Dialog pełnoekranowy dla mediów
                 fullScreenMedia?.let { (post, isVideo) ->
                     MediaFullScreenDialog(
                         post = post,

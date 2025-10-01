@@ -1,6 +1,5 @@
 package com.example.gymeaze.ui.screens.posts.components
 
-import android.R.attr.onClick
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,16 +11,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.ThumbUpAlt
 import androidx.compose.material.icons.filled.ThumbUpOffAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,14 +27,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.PostUi
+import com.example.gymeaze.ui.components.VideoPlayer
+import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
-import com.example.gymeaze.ui.theme.getOnPrimaryColor
-import com.example.gymeaze.ui.theme.getOnSecondaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor

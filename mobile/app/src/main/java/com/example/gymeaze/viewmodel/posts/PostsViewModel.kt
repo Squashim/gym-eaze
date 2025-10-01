@@ -91,6 +91,10 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
     private var lastLoadTime = 0L
 
     private var likedPosts: List<String> = emptyList()
+    private val authRepository = AuthRepository(application.applicationContext)
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser
 
     init {
         fetchPosts()
@@ -122,7 +126,7 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                 _uiState.value = _uiState.value.copy(error = "Dozwolone formaty zdjęć: JPG, PNG, WEBP.")
                 return
             }
-            size != null && size > 5 * 1024 * 1024 -> { // 5MB
+            size != null && size > 5 * 1024 * 1024 -> {
                 _uiState.value = _uiState.value.copy(error = "Obraz jest za duży (maks. 5MB).")
                 return
             }
@@ -433,9 +437,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         fetchFollowedUsersPosts(refresh = true)
     }
 
-
-
-
     suspend fun fetchUserLikes() {
         val result = repository.getUserLikes()
         result.onSuccess { likesResponse ->
@@ -556,12 +557,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
-    private val authRepository = AuthRepository(application.applicationContext)
-
-    private val _currentUser = MutableStateFlow<User?>(null)
-    val currentUser: StateFlow<User?> = _currentUser
-
     fun fetchCurrentUser() {
         viewModelScope.launch {
             val result = authRepository.getCurrentUser()
@@ -571,6 +566,7 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
     fun searchByHashtagsForCurrentUser(hashtags: List<String>) {
         searchJob?.cancel()
         loadMoreJob?.cancel()
@@ -611,7 +607,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         fetchCurrentUserPosts(refresh = true)
     }
 
-
     fun refreshCurrentUserPosts() {
         viewModelScope.launch {
             _isRefreshing.value = true
@@ -632,7 +627,6 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 
     fun setCurrentUser(user: User) {
         _currentUser.value = user
@@ -661,6 +655,13 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    //---------------------------------------------------KOMENTARZE W POSTACH---------------------
+    private val _isLoadingComments = MutableStateFlow(false)
+    val isLoadingComments: StateFlow<Boolean> = _isLoadingComments
+
+    private val _repliesMap = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
+
+    private val _likedComments = MutableStateFlow<Set<String>>(emptySet())
     private val _comments = MutableStateFlow<List<Comment>>(emptyList())
     val comments: StateFlow<List<Comment>> = _comments
 
@@ -670,38 +671,15 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
     private val _nextCursorComment = MutableStateFlow<String?>(null)
     val nextCursorComment: StateFlow<String?> = _nextCursorComment
 
-    //private val _commentsCount = MutableStateFlow(0)
-    //val commentsCount: StateFlow<Int> = _commentsCount
-
-/*
-    fun loadComments(postId: String, cursor: String? = null, limit: Int = 10) {
+    fun loadComments(postId: String, cursor: String? = null, limit: Int = 10, refresh: Boolean = false) {
         viewModelScope.launch {
-            val response = repository.getCommentsForPost(postId, cursor, limit)
-            //_commentsCount.value = response?.items?.size ?: 0
+            val effectiveCursor = if (refresh) null else cursor
+            val response = repository.getCommentsForPost(postId, effectiveCursor, limit)
             _comments.value = response?.items ?: emptyList()
             _hasMoreComment.value = response?.hasMore ?: false
             _nextCursorComment.value = response?.nextCursor
-            //_commentsCount.value = _comments.value.size
         }
     }
-
- */
-fun loadComments(postId: String, cursor: String? = null, limit: Int = 10, refresh: Boolean = false) {
-    viewModelScope.launch {
-        val effectiveCursor = if (refresh) null else cursor
-        val response = repository.getCommentsForPost(postId, effectiveCursor, limit)
-        _comments.value = response?.items ?: emptyList()
-        _hasMoreComment.value = response?.hasMore ?: false
-        _nextCursorComment.value = response?.nextCursor
-    }
-}
-
-    private val _isLoadingComments = MutableStateFlow(false)
-    val isLoadingComments: StateFlow<Boolean> = _isLoadingComments
-
-    private val _repliesMap = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
-
-    private val _likedComments = MutableStateFlow<Set<String>>(emptySet())
 
     fun loadMoreComments(postId: String, limit: Int = 10) {
         val cursor = _nextCursorComment.value

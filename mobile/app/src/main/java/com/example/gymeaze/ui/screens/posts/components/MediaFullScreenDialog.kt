@@ -15,6 +15,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.PostUi
+import com.example.gymeaze.ui.components.VideoPlayer
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor

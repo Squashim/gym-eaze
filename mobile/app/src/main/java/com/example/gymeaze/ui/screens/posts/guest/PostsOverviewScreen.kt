@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.posts.components.DeletePostDialog
-import com.example.gymeaze.ui.screens.posts.components.LoginToLikeDialog
+import com.example.gymeaze.ui.screens.posts.guest.components.LoginToLikeDialog
 import com.example.gymeaze.ui.screens.posts.components.SeeAllPostsContent
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor

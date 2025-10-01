@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.posts.components
+package com.example.gymeaze.ui.screens.comments
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,25 +13,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.timeAgo
-import com.example.gymeaze.ui.screens.posts.components.comments.DeleteCommentDialog
+import com.example.gymeaze.ui.screens.posts.guest.components.LoginToLikeDialog
+import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSecondaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
-import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.posts.cleanedCommentLength
 import kotlinx.coroutines.launch
@@ -173,7 +168,7 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                                 showDeleteDialog = replyToDelete
                                 deleteMessage = ""
                             },
-                            onLoginRequired = { showLoginDialog = true } // Dodany callback
+                            onLoginRequired = { showLoginDialog = true }
                         )
                         Spacer(Modifier.padding(3.dp))
                     }
@@ -196,7 +191,6 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
             }
         }
 
-        // Dialog logowania
         if (showLoginDialog) {
             LoginToLikeDialog(
                 onDismiss = { showLoginDialog = false },
@@ -331,9 +325,7 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
             )
         }
 
-        // Sprawdzenie czy użytkownik jest zalogowany
         if (currentUsername.isNotEmpty()) {
-            // Użytkownik zalogowany - pokaż normalny interfejs
             if (replyingTo != null) {
                 Row(
                     modifier = Modifier
@@ -399,7 +391,7 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                                     viewModel.loadReplies(replyingTo!!)
                                 } else {
                                     viewModel.addComment(postId, newCommentText.trim())
-                                    commentsCount += 1 // zwiększ licznik komentarzy
+                                    commentsCount += 1
                                     shouldScrollToTop = true
                                 }
                                 newCommentText = ""
@@ -414,7 +406,6 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                 }
             }
         } else {
-            // Użytkownik niezalogowany - pokaż komunikat
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -463,7 +454,7 @@ fun CommentItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
-    onLoginRequired: () -> Unit = {} // Nowy callback dla wymagania logowania
+    onLoginRequired: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(comment._id).collectAsState(initial = false)
@@ -479,7 +470,6 @@ fun CommentItem(
         comment.content.trim()
     }
 
-    // Funkcja pomocnicza do sprawdzania czy wymagane jest logowanie
     fun requireLogin(action: () -> Unit) {
         if (currentUsername.isEmpty()) {
             onLoginRequired()
@@ -645,7 +635,6 @@ fun CommentItem(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Like button
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -682,7 +671,6 @@ fun CommentItem(
                         )
                     }
 
-                    // Reply button
                     TextButton(
                         onClick = {
                             requireLogin {
@@ -699,7 +687,6 @@ fun CommentItem(
                         )
                     }
 
-                    // View replies button
                     if (comment.repliesCount != null && comment.repliesCount > 0) {
                         TextButton(
                             onClick = onToggleReplies,
@@ -727,12 +714,11 @@ fun ReplyItem(
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
-    onLoginRequired: () -> Unit = {} // Nowy callback dla wymagania logowania
+    onLoginRequired: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(reply._id).collectAsState(initial = false)
 
-    // Funkcja pomocnicza do sprawdzania czy wymagane jest logowanie
     fun requireLogin(action: () -> Unit) {
         if (currentUsername.isEmpty()) {
             onLoginRequired()
@@ -866,7 +852,6 @@ fun ReplyItem(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Like button
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),

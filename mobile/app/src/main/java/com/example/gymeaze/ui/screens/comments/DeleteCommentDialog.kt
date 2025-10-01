@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.posts.components.comments
+package com.example.gymeaze.ui.screens.comments
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*

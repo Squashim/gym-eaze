@@ -1,9 +1,6 @@
-package com.example.gymeaze.ui.screens.posts.components
-import androidx.compose.foundation.BorderStroke
+package com.example.gymeaze.ui.screens.posts.guest.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment

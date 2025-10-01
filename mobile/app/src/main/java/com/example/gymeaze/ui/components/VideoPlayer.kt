@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens.posts.components
+package com.example.gymeaze.ui.components
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
