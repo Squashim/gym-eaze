@@ -81,9 +81,21 @@ export function useComment({ parentType, parentId }: useCommentProps) {
     mutationFn: (id: string) => remove(id),
     onSuccess: async (response) => {
       if (parentType === 'Post') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POST_COMMENTS(parentId) });
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
+        await queryClient.invalidateQueries({
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return (
+              Array.isArray(queryKey) &&
+              queryKey.length === 3 &&
+              queryKey[0] === 'posts' &&
+              queryKey[2] === 'comments'
+            );
+          },
+        });
       }
 
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_LIKED_ITEMS(user!._id) });

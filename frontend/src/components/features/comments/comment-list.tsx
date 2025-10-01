@@ -62,7 +62,7 @@ function CommentList({
   }, [replyCommentId]);
 
   if (isLoading) {
-    return Array.from({ length: 6 }).map((_, index) => <Skeleton className="h-20" key={index} />);
+    return Array.from({ length: 4 }).map((_, index) => <Skeleton className="h-16" key={index} />);
   }
 
   if (isError) {
@@ -74,7 +74,7 @@ function CommentList({
     );
   }
 
-  if (!comments || comments.length === 0) {
+  if (!comments || (comments.length === 0 && onReply)) {
     return (
       <Alert>
         <Info />

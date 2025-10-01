@@ -13,10 +13,10 @@ import useGetReplies from '@/hooks/query/comments/use-get-replies';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useComment } from '@/hooks/query/comments/use-comment';
 import { useInView } from 'react-intersection-observer';
-import { Alert, AlertTitle } from '@/components/ui/alert';
 import useOpen from '@/hooks/utils/use-open';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import { EditCommentDialog } from '../posts/post-dialogs';
+import ScrollLoader from '@/components/ui/scroll-loader';
 
 interface CommentItemProps {
   auth: {
@@ -128,23 +128,6 @@ function CommentItem({
     },
     [editDialog],
   );
-
-  const renderReplyLoader = () => {
-    if (!isFetchingNextPage && hasNextPage && comments.length > 0) {
-      return <div className="h-2" ref={ref} />;
-    }
-
-    if (!hasNextPage) {
-      return null;
-    }
-
-    return (
-      <Alert>
-        <Loader2 className="animate-spin" />
-        <AlertTitle>Ładowanie kolejnych odpowiedzi...</AlertTitle>
-      </Alert>
-    );
-  };
 
   const handleReplyReport = useCallback((replyId: string) => {
     console.log('TODO: Report reply', replyId);
@@ -306,7 +289,13 @@ function CommentItem({
                   openDropdownId={openDropdownId}
                   setOpenDropdownId={setOpenDropdownId}
                 />
-                {renderReplyLoader()}
+                <ScrollLoader
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  itemLength={comments.length}
+                  itemType="reply"
+                  ref={ref}
+                />
               </div>
             )}
           </div>

@@ -4,8 +4,8 @@ import { EditPostDialog } from '@/components/features/posts/post-dialogs';
 import PostFilters from '@/components/features/posts/post-filters';
 import PostList from '@/components/features/posts/post-list';
 import PageLayout from '@/components/layout/page';
-import { Alert, AlertTitle } from '@/components/ui/alert';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
+import ScrollLoader from '@/components/ui/scroll-loader';
 import ScrollToTopButton from '@/components/ui/scroll-to-top-button';
 import { useUser } from '@/context/user';
 import useGetPosts from '@/hooks/query/posts/use-get-posts';
@@ -13,7 +13,6 @@ import { usePost } from '@/hooks/query/posts/use-post';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import usePostParamsQuery from '@/hooks/use-post-params-query';
 import useOpen from '@/hooks/utils/use-open';
-import { Info, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
@@ -96,29 +95,6 @@ function Community() {
     console.log('TODO: Report post', postId);
   }, []);
 
-  const renderPostLoader = () => {
-    if (!isFetchingNextPage) {
-      return (
-        <>
-          {hasNextPage && posts.length > 0 && <div className="h-2" ref={ref} />}
-          {!hasNextPage && posts.length > 0 && (
-            <Alert>
-              <Info />
-              <AlertTitle>Brak kolejnych postów.</AlertTitle>
-            </Alert>
-          )}
-        </>
-      );
-    }
-
-    return (
-      <Alert>
-        <Loader2 className="animate-spin" />
-        <AlertTitle>Ładowanie kolejnych postów...</AlertTitle>
-      </Alert>
-    );
-  };
-
   return (
     <>
       <PageLayout className="max-w-xl sm:max-w-2xl" title="Posty">
@@ -147,7 +123,14 @@ function Community() {
           params={params}
           posts={posts}
         />
-        {renderPostLoader()}
+        <ScrollLoader
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          itemLength={posts.length}
+          itemType="post"
+          ref={ref}
+          showEndMessage
+        />
         <ScrollToTopButton />
       </PageLayout>
 
