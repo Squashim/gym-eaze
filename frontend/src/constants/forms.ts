@@ -66,3 +66,10 @@ export const workoutCreatorConstants = {
   steps: workoutCreatorSteps,
   defaultValues: workoutCreatorDefaultValues,
 };
+
+export const postCreatorDefaultValues = {
+  content: '',
+  image: undefined,
+  video: undefined,
+  hashtags: [],
+};

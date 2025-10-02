@@ -7,6 +7,9 @@ export const QUERY_KEYS = {
 
   POST: (id: string) => ['posts', id],
   POSTS: (params: PostQueryParams) => ['posts', params],
+  POST_COMMENTS: (postId: string) => ['posts', postId, 'comments'],
+
+  COMMENT_REPLIES: (commentId: string) => ['comments', commentId, 'replies'],
 
   EQUIPMENT: ['equipment'],
   MUSCLE_GROUPS: ['muscle-groups'],

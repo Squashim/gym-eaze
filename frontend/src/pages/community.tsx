@@ -1,10 +1,11 @@
 import PostCreator from '@/components/features/posts/post-creator';
+import PostDetails from '@/components/features/posts/post-details';
 import { EditPostDialog } from '@/components/features/posts/post-dialogs';
 import PostFilters from '@/components/features/posts/post-filters';
 import PostList from '@/components/features/posts/post-list';
 import PageLayout from '@/components/layout/page';
-import { Alert, AlertTitle } from '@/components/ui/alert';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
+import ScrollLoader from '@/components/ui/scroll-loader';
 import ScrollToTopButton from '@/components/ui/scroll-to-top-button';
 import { useUser } from '@/context/user';
 import useGetPosts from '@/hooks/query/posts/use-get-posts';
@@ -12,16 +13,15 @@ import { usePost } from '@/hooks/query/posts/use-post';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import usePostParamsQuery from '@/hooks/use-post-params-query';
 import useOpen from '@/hooks/utils/use-open';
-import { Info, Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { toast } from 'sonner';
 
 function Community() {
   const { params, setHashtags, setParam, clearParams } = usePostParamsQuery();
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
+  const detailsDialog = useOpen();
   const { toggleLikePost, deletePost } = usePost();
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useGetPosts(params);
@@ -33,7 +33,6 @@ function Community() {
   const { ref, inView } = useInView({
     threshold: 1,
   });
-  const prevCountRef = useRef<number>(0);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [pendingLikePostId, setPendingLikePostId] = useState<string | null>(null);
 
@@ -49,21 +48,6 @@ function Community() {
       void fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading]);
-
-  useEffect(() => {
-    if (prevCountRef.current && posts.length > prevCountRef.current) {
-      toast.info('Dostępne są nowe posty.', {
-        duration: 5000,
-        action: {
-          label: 'Zobacz',
-          onClick: () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          },
-        },
-      });
-    }
-    prevCountRef.current = posts.length;
-  }, [posts.length]);
 
   const handleToggleLike = useCallback(
     (postId: string) => {
@@ -85,6 +69,14 @@ function Community() {
     [editDialog],
   );
 
+  const handleShowPostDetails = useCallback(
+    (postId: string) => {
+      setSelectedPostId(postId);
+      detailsDialog.open();
+    },
+    [detailsDialog],
+  );
+
   const handlePostDelete = useCallback(
     (postId: string) => {
       setSelectedPostId(postId);
@@ -95,36 +87,13 @@ function Community() {
 
   const handleConfirmDelete = () => {
     if (selectedPostId) {
-      deletePost.mutate(selectedPostId, {
-        onSuccess: () => {
-          prevCountRef.current = Math.max(0, prevCountRef.current - 1);
-        },
-      });
+      deletePost.mutate(selectedPostId);
     }
   };
 
-  const renderPostLoader = () => {
-    if (!isFetchingNextPage) {
-      return (
-        <>
-          {hasNextPage && posts.length > 0 && <div className="h-2" ref={ref} />}
-          {!hasNextPage && posts.length > 0 && (
-            <Alert>
-              <Info />
-              <AlertTitle>Brak kolejnych postów.</AlertTitle>
-            </Alert>
-          )}
-        </>
-      );
-    }
-
-    return (
-      <Alert>
-        <Loader2 className="animate-spin" />
-        <AlertTitle>Ładowanie kolejnych postów...</AlertTitle>
-      </Alert>
-    );
-  };
+  const handlePostReport = useCallback((postId: string) => {
+    console.log('TODO: Report post', postId);
+  }, []);
 
   return (
     <>
@@ -149,16 +118,40 @@ function Community() {
           onDelete={handlePostDelete}
           onEdit={handlePostEdit}
           onLikeToggle={handleToggleLike}
+          onReport={handlePostReport}
+          onShowDetails={handleShowPostDetails}
           params={params}
           posts={posts}
         />
-        {renderPostLoader()}
+        <ScrollLoader
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          itemLength={posts.length}
+          itemType="post"
+          ref={ref}
+          showEndMessage
+        />
         <ScrollToTopButton />
       </PageLayout>
 
+      {selectedPost && (
+        <PostDetails
+          onClose={() => {
+            setSelectedPostId(null);
+            detailsDialog.close();
+          }}
+          onOpenChange={detailsDialog.setIsOpen}
+          open={detailsDialog.isOpen}
+          post={selectedPost}
+        />
+      )}
+
       {!!user && selectedPost && (
         <EditPostDialog
-          onClose={editDialog.close}
+          onClose={() => {
+            setSelectedPostId(null);
+            editDialog.close();
+          }}
           onOpenChange={editDialog.setIsOpen}
           open={editDialog.isOpen}
           post={selectedPost}
@@ -171,7 +164,10 @@ function Community() {
           confirmLabel="Usuń"
           description="Usunięcie posta jest nieodwracalne. Wszystkie komentarze i polubienia zostaną usunięte."
           isLoading={deletePost.isPending}
-          onClose={deleteDialog.close}
+          onClose={() => {
+            setSelectedPostId(null);
+            deleteDialog.close();
+          }}
           onConfirm={handleConfirmDelete}
           open={deleteDialog.isOpen}
           title="Czy na pewno chcesz usunąć ten post?"

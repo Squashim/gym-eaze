@@ -20,7 +20,9 @@ interface PostListProps {
   likePendingId: string | null;
   onDelete: (postId: string) => void;
   onEdit: (postId: string) => void;
+  onReport: (postId: string) => void;
   onLikeToggle: (postId: string) => void;
+  onShowDetails: (postId: string) => void;
 }
 
 function PostList({
@@ -32,7 +34,9 @@ function PostList({
   likePendingId,
   onDelete,
   onEdit,
+  onReport,
   onLikeToggle,
+  onShowDetails,
 }: PostListProps) {
   const { user } = useUser();
 
@@ -103,6 +107,8 @@ function PostList({
             onDelete={onDelete}
             onEdit={onEdit}
             onLikeToggle={onLikeToggle}
+            onReport={onReport}
+            onShowDetails={onShowDetails}
             post={post}
           />
         ))}
