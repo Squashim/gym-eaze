@@ -22,6 +22,14 @@ const PostMediaPreview = ({ type, src, author }: PostMediaPreviewProps) => {
       <DialogTrigger asChild>
         <div
           className="h-96 aspect-video rounded-xl overflow-hidden relative bg-primary/5 cursor-pointer"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              (e.target as HTMLDivElement).click();
+            }
+          }}
+          role="button"
+          tabIndex={0}
           title="Kliknij, aby powiększyć"
         >
           {type === 'image' ? (
@@ -35,6 +43,9 @@ const PostMediaPreview = ({ type, src, author }: PostMediaPreviewProps) => {
             <video
               className="w-full h-full object-contain rounded-xl dark:grayscale-[0.2] dark:contrast-110"
               controls
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               src={src}
             >
               Twoja przeglądarka nie obsługuje odtwarzania filmów.
@@ -42,7 +53,7 @@ const PostMediaPreview = ({ type, src, author }: PostMediaPreviewProps) => {
           )}
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-7xl border-0 bg-transparent shadow-none [&>button]:hidden">
+      <DialogContent className="sm:max-w-5xl border-0 bg-transparent shadow-none [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="sr-only">
             {type === 'image' ? 'Zdjęcie' : 'Filmik'} do postu użytkownika {author}

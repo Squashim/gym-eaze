@@ -1,5 +1,5 @@
 import type { PostSchema } from '@/schemas/post-schema';
-import { useFormContext } from 'react-hook-form';
+import { useForm, useFormContext } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -7,11 +7,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { FormControl, FormField, FormItem } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { TagsInput } from '@/components/ui/tags-input';
 import { Button } from '@/components/ui/button';
 import type { GetPostsApiResponse } from '@/types/post';
 import PostCreator from './post-creator';
+import { Loader2, Pencil } from 'lucide-react';
+import ReusableAvatar from '@/components/ui/reusable-avatar';
+import Typography from '@/components/ui/typography';
+import { useComment } from '@/hooks/query/comments/use-comment';
+import { useUser } from '@/context/user';
+import type { GetCommentsApiResponse } from '@/types/comment';
+import { updateCommentSchema, type UpdateCommentSchema } from '@/schemas/comment-schema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Textarea } from '@/components/ui/textarea';
+import { useEffect, useRef } from 'react';
 
 interface HashtagDialogProps {
   open: boolean;
@@ -93,4 +103,139 @@ const EditPostDialog = ({ open, post, onOpenChange, onClose }: EditPostDialogPro
   );
 };
 
-export { HashtagDialog, EditPostDialog };
+interface EditCommentDialogProps {
+  open: boolean;
+  parentId: string;
+  comment: GetCommentsApiResponse;
+  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  type: 'comment' | 'reply';
+}
+
+const EditCommentDialog = ({
+  open,
+  comment,
+  parentId,
+  onOpenChange,
+  onClose,
+  type,
+}: EditCommentDialogProps) => {
+  const { user } = useUser();
+  const { updateComment } = useComment({
+    parentType: type === 'comment' ? 'Post' : 'Komentarz',
+    parentId: parentId,
+  });
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const form = useForm<UpdateCommentSchema>({
+    resolver: zodResolver(updateCommentSchema),
+    defaultValues: {
+      content: '',
+    },
+  });
+
+  useEffect(() => {
+    if (!comment || !open) return;
+
+    form.reset({
+      content: comment.content,
+    });
+
+    requestAnimationFrame(() => {
+      const textarea = textAreaRef.current;
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      }
+    });
+  }, [form, comment, open]);
+
+  const onSubmit = (data: UpdateCommentSchema) => {
+    updateComment.mutate(
+      { id: comment._id, payload: data },
+      {
+        onSuccess: () => {
+          onClose();
+        },
+      },
+    );
+  };
+
+  return (
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogContent className="[&>button]:hidden" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>
+            {type === 'comment' ? 'Edytuj swój komentarz' : 'Edytuj swoją odpowiedź'}
+          </DialogTitle>
+          <DialogDescription>
+            {type === 'comment'
+              ? 'Wprowadź zmiany w swoim komentarzu i zapisz je.'
+              : 'Wprowadź zmiany w swojej odpowiedzi i zapisz je.'}
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form className="flex flex-col gap-2" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex items-start gap-2 w-full">
+              <ReusableAvatar
+                className="shadow-sm size-10"
+                profilePicture={user?.profileDetails.profilePicture}
+                username={user?.username}
+              />
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        autoComplete="off"
+                        className="resize-none dark:bg-card bg-card max-h-24 scrollbar overflow-y-auto break-words"
+                        maxLength={1000}
+                        ref={textAreaRef}
+                      />
+                    </FormControl>
+                    <div className="flex justify-between items-center min-h-5">
+                      <FormMessage />
+                      <Typography className="text-xs text-muted-foreground ml-auto" variant="small">
+                        {field.value?.length ?? 0}/1000
+                      </Typography>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <Button onClick={onClose} type="button" variant="outline">
+                Anuluj
+              </Button>
+
+              <Button
+                disabled={
+                  !form.formState.isValid || updateComment.isPending || !form.formState.isDirty
+                }
+                type="submit"
+              >
+                {updateComment.isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Edytowanie...
+                  </>
+                ) : (
+                  <>
+                    <Pencil />
+                    {type === 'comment' ? 'Edytuj komentarz' : 'Edytuj odpowiedź'}
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export { HashtagDialog, EditPostDialog, EditCommentDialog };
