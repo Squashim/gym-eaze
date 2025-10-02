@@ -2,7 +2,16 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import Typography from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
-import { ExternalLink, Flag, Heart, Loader2, Pencil, ThumbsUp, Trash } from 'lucide-react';
+import {
+  Download,
+  ExternalLink,
+  Flag,
+  Heart,
+  Loader2,
+  Pencil,
+  ThumbsUp,
+  Trash,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type BaseBtnProps = {
@@ -91,12 +100,25 @@ const FavoriteActionBtn = ({ onClick, isActive, isLoading }: ToggleBtnProps) => 
 
 const ReportActionBtn = ({ onClick }: BaseBtnProps) => {
   return (
-    <>
-      <Button onClick={onClick} variant="outline">
-        <Flag />
-        Zgłoś
-      </Button>
-    </>
+    <Button onClick={onClick} variant="outline">
+      <Flag />
+      Zgłoś
+    </Button>
+  );
+};
+
+const DownloadActionBtn = ({ onClick, isLoading }: BaseBtnProps & { isLoading: boolean }) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button disabled={isLoading} onClick={onClick} size="icon" variant="secondary">
+          {isLoading ? <Loader2 className="animate-spin" /> : <Download />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <Typography variant="small">Pobierz plan (plik .pdf)</Typography>
+      </TooltipContent>
+    </Tooltip>
   );
 };
 
@@ -142,5 +164,6 @@ export {
   LikeActionBtn,
   FavoriteActionBtn,
   ReportActionBtn,
+  DownloadActionBtn,
   DetailsActionBtn,
 };
