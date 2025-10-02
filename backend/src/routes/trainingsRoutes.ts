@@ -1,5 +1,15 @@
 import express from 'express';
-import { addTrainingPlan } from '../controllers/trainingController';
+import {
+  addTrainingPlan,
+  deleteTrainingPlan,
+  getFavoriteTrainingPlans,
+  getTrainingPlanById,
+  getTrainingPlans,
+  getTrainingPlansByUser,
+  toggleTrainingPlanFavorite,
+  toggleTrainingPlanLike,
+  updateTrainingPlan,
+} from '../controllers/trainingController';
 import { authenticate, optionalAuth } from '../middlewares/authMiddleware';
 import {
   checkFileSizes,
@@ -19,6 +29,29 @@ router.post(
   checkFileSizes,
   addTrainingPlan,
 );
+
+router.delete('/:id', authenticate, deleteTrainingPlan);
+
+router.patch(
+  '/:id',
+  authenticate,
+  uploadTrainingPlanFile.fields([{ name: 'image', maxCount: 1 }]),
+  handleMulterError,
+  checkFileSizes,
+  updateTrainingPlan,
+);
+
+router.get('/favorite', authenticate, getFavoriteTrainingPlans);
+
+router.patch('/:id/like', authenticate, toggleTrainingPlanLike);
+
+router.patch('/:id/favorite', authenticate, toggleTrainingPlanFavorite);
+
+router.get('/:id', optionalAuth, getTrainingPlanById);
+
+router.post('/search', optionalAuth, getTrainingPlans);
+
+router.get('/user/:userId', optionalAuth, getTrainingPlansByUser);
 
 router.get('/:id/comments', optionalAuth, (req, res) => {
   req.params.parentType = CommentParentType.post;
