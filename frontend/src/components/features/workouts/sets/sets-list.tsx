@@ -65,10 +65,7 @@ const SetsList = ({
         />
       </header>
 
-      <div
-        className="flex flex-col gap-2 overflow-y-auto scrollbar"
-        style={{ maxHeight: 'calc(100vh - 44rem)' }}
-      >
+      <div className="flex flex-col gap-2 overflow-y-auto scrollbar max-h-[40vh]">
         {sets.map((_, i) => (
           <SetItem
             dayNumber={dayNumber}

@@ -39,7 +39,7 @@ import {
 } from '@/schemas/workout-schema';
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import ActiveDay from '@/components/features/workouts/active-day';
+import ActiveDay from '@/components/features/workouts/views/active-day';
 import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Badge } from '@/components/ui/badge';
@@ -210,7 +210,7 @@ function WorkoutCreatorStepOne() {
             </FormLabel>
             <FormControl>
               <FileInput
-                accept="image/jpg, image/webp, image/png"
+                accept="image/jpeg, image/webp, image/png"
                 id="image"
                 invalid={!!fieldState.error}
                 onChange={field.onChange}
@@ -347,7 +347,7 @@ function WorkoutCreatorStepThree() {
   const formData = watch();
 
   const { totalDays, totalExercises, totalSets, avgDailyWorkoutTime } = useMemo(() => {
-    const totalDays = formData.stepTwo.days.length;
+    const totalDays = formData.stepTwo.days.filter((day) => day.exercises.length > 0).length;
     const totalExercises = formData.stepTwo.days.reduce(
       (acc, day) => acc + day.exercises.length,
       0,

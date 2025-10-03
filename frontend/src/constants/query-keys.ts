@@ -24,4 +24,6 @@ export const QUERY_KEYS = {
     'exercises',
     params,
   ],
+
+  WORKOUT: (id: string) => ['workouts', id],
 } as const;

@@ -13,6 +13,7 @@ import {
   Trash,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ReusableAvatar from './reusable-avatar';
 
 type BaseBtnProps = {
   onClick: () => void;
@@ -25,6 +26,12 @@ type RedirectBtnProps = Partial<BaseBtnProps> & {
 type ToggleBtnProps = BaseBtnProps & {
   isActive?: boolean;
   isLoading?: boolean;
+};
+
+type DetailsAuthorBtnProps = RedirectBtnProps & {
+  authorName?: string;
+  authorAvatar?: string;
+  isAuthor: boolean;
 };
 
 const EditActionBtn = ({ redirectTo, onClick }: RedirectBtnProps) => {
@@ -111,7 +118,7 @@ const DownloadActionBtn = ({ onClick, isLoading }: BaseBtnProps & { isLoading: b
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button disabled={isLoading} onClick={onClick} size="icon" variant="secondary">
+        <Button disabled={isLoading} onClick={onClick} size="icon" variant="outline">
           {isLoading ? <Loader2 className="animate-spin" /> : <Download />}
         </Button>
       </TooltipTrigger>
@@ -122,7 +129,12 @@ const DownloadActionBtn = ({ onClick, isLoading }: BaseBtnProps & { isLoading: b
   );
 };
 
-const DetailsActionBtn = ({ redirectTo }: RedirectBtnProps) => {
+const DetailsActionBtn = ({
+  redirectTo,
+  className,
+}: RedirectBtnProps & {
+  className?: string;
+}) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLAnchorElement>) => {
     if (e.key === ' ') {
       e.preventDefault();
@@ -135,6 +147,7 @@ const DetailsActionBtn = ({ redirectTo }: RedirectBtnProps) => {
       <TooltipTrigger asChild>
         <Button
           asChild
+          className={className}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
           size="icon"
@@ -158,6 +171,39 @@ const DetailsActionBtn = ({ redirectTo }: RedirectBtnProps) => {
   );
 };
 
+const DetailsAuthorBtn = ({
+  redirectTo,
+  authorName,
+  authorAvatar,
+  isAuthor,
+}: DetailsAuthorBtnProps) => {
+  return (
+    <div className="flex items-center gap-2 md:justify-end">
+      <Button
+        asChild
+        className="flex items-center gap-2 p-0 hover:bg-transparent rounded-tl-2xl rounded-bl-2xl"
+        variant="ghost"
+      >
+        <a
+          className="flex items-center gap-2 pr-2"
+          href={redirectTo}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <ReusableAvatar
+            className="shadow-sm"
+            fallbackClassName="dark:bg-background"
+            profilePicture={authorAvatar}
+            username={authorName}
+          />
+          {authorName}
+          {isAuthor && ' (Ty)'}
+        </a>
+      </Button>
+    </div>
+  );
+};
+
 export {
   EditActionBtn,
   DeleteActionBtn,
@@ -166,4 +212,5 @@ export {
   ReportActionBtn,
   DownloadActionBtn,
   DetailsActionBtn,
+  DetailsAuthorBtn,
 };

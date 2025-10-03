@@ -17,17 +17,17 @@ import { useParams } from 'react-router-dom';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
 import { useExercise } from '@/hooks/query/exercises/use-exercise';
-
 import { toast } from 'sonner';
 import ResourceActions from '@/components/ui/resource-actions';
 import PageLayout from '@/components/layout/page';
-import ReusableAvatar from '@/components/ui/reusable-avatar';
+import { DetailsAuthorBtn } from '@/components/ui/reusable-buttons';
 
 const ExerciseDetails = () => {
   const { id } = useParams();
   const { user } = useUser();
   const { data: exercise, isLoading, isError, error } = useGetExercise(id!);
   const { toggleLikeExercise, toggleFavoriteExercise, deleteExercise } = useExercise();
+
   const isAuthor = useMemo(() => {
     if (!user || !exercise) return false;
     return user._id === exercise.author._id;
@@ -51,22 +51,6 @@ const ExerciseDetails = () => {
     if (isAuthor) return false;
     if (userFavorites.has(exercise?._id)) return true;
   }, [userFavorites, exercise, isAuthor]);
-
-  const handleLike = () => {
-    toggleLikeExercise.mutate(exercise!._id);
-  };
-
-  const handleFavorite = () => {
-    toggleFavoriteExercise.mutate(exercise!._id);
-  };
-
-  const handleDelete = () => {
-    deleteExercise.mutate(exercise!._id);
-  };
-
-  const handleReport = () => {
-    toast.info('Funkcja zgłaszania nie jest jeszcze dostępna.');
-  };
 
   const guards = useMemo(
     () => [
@@ -92,29 +76,20 @@ const ExerciseDetails = () => {
   useSequentialGuards(guards);
   usePageTitle(exercise?.name ?? 'Szczegóły ćwiczenia');
 
-  const renderAuthorBtn = () => {
-    if (!exercise) return null;
+  const handleLike = () => {
+    toggleLikeExercise.mutate(exercise!._id);
+  };
 
-    return (
-      <div className="flex items-center gap-2 md:justify-end">
-        <Button
-          asChild
-          className="flex items-center gap-2 p-0 hover:bg-transparent rounded-tl-2xl rounded-bl-2xl"
-          variant="ghost"
-        >
-          <a className="flex items-center gap-2 pr-2" href={`/profile/${exercise.author._id}`}>
-            <ReusableAvatar
-              className="shadow-sm"
-              fallbackClassName="dark:bg-background"
-              profilePicture={user?.profileDetails.profilePicture}
-              username={user?.username}
-            />
-            {exercise.author.username}
-            {isAuthor && ' (Ty)'}
-          </a>
-        </Button>
-      </div>
-    );
+  const handleFavorite = () => {
+    toggleFavoriteExercise.mutate(exercise!._id);
+  };
+
+  const handleDelete = () => {
+    deleteExercise.mutate(exercise!._id);
+  };
+
+  const handleReport = () => {
+    toast.info('Funkcja zgłaszania nie jest jeszcze dostępna.');
   };
 
   return (
@@ -168,7 +143,7 @@ const ExerciseDetails = () => {
               </video>
             </div>
             <div className="flex flex-col gap-4 min-w-0">
-              <div className="flex justify-between items-center gap-3">
+              <div className="flex justify-between items-center gap-3 flex-wrap">
                 <div className="inline-flex gap-2">
                   {isAuthor && (
                     <VisibilityBadge
@@ -224,7 +199,12 @@ const ExerciseDetails = () => {
 
             <div className="flex flex-col gap-1 md:justify-self-end md:text-right md:ml-auto">
               <Typography className="font-semibold">Dodane przez:</Typography>
-              {renderAuthorBtn()}
+              <DetailsAuthorBtn
+                authorAvatar={exercise.author.profileDetails?.profilePicture}
+                authorName={exercise.author.username}
+                isAuthor={isAuthor}
+                redirectTo={`/profile/${exercise.author._id}`}
+              />
             </div>
           </div>
 

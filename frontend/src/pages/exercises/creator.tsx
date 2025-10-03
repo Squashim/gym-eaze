@@ -273,7 +273,7 @@ const ExerciseCreatorStepOne = () => {
             </FormLabel>
             <FormControl>
               <FileInput
-                accept="image/jpg, image/webp, image/png"
+                accept="image/jpeg, image/webp, image/png"
                 id="image"
                 invalid={!!fieldState.error}
                 onChange={field.onChange}
