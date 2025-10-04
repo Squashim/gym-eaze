@@ -43,6 +43,7 @@ import com.example.gymeaze.ui.components.DifficultySelectionDialog
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.*
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +55,17 @@ fun CreateTrainingPlanScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.validationToast) {
+        uiState.validationToast?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.clearValidationToast()
+        }
+    }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
@@ -86,6 +98,17 @@ fun CreateTrainingPlanScreen(
                 )
             )
         },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { data ->
+                    CustomErrorSnackbar(
+                        message = data.visuals.message,
+                        onDismiss = { data.dismiss() }
+                    )
+                }
+            )
+        },
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         Column(
@@ -97,6 +120,8 @@ fun CreateTrainingPlanScreen(
                 currentStep = uiState.currentStep,
                 modifier = Modifier.padding(16.dp)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(
                 modifier = Modifier
@@ -114,15 +139,10 @@ fun CreateTrainingPlanScreen(
                 }
             }
 
-
             TrainingPlanBottomBar(
                 step = uiState.currentStep,
                 isLoading = uiState.isLoading,
-                canProceed = when (uiState.currentStep) {
-                    TrainingPlanCreatorStep.BASIC -> uiState.basicValid
-                    TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> uiState.daysAndExercisesValid
-                    TrainingPlanCreatorStep.SUMMARY -> true
-                },
+                canProceed = true,
                 onPrev = viewModel::prevStep,
                 onNext = viewModel::nextStep,
                 onCreate = viewModel::createTrainingPlan,
@@ -167,6 +187,61 @@ fun CreateTrainingPlanScreen(
         )
     }
 }
+
+@Composable
+private fun CustomErrorSnackbar(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = getErrorColor()
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Error,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = message,
+                color = Color.White,
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                modifier = Modifier.weight(1f)
+            )
+
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Zamknij",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+
+
 
 @Composable
 private fun TrainingPlanSuccessDialog(
@@ -746,7 +821,7 @@ private fun DayWithExercisesCard(
 
                 if (day.exercises.isEmpty()) {
                     Text(
-                        text = "Brak ćwiczeń. Kliknij + aby dodać.",
+                        text = "Brak ćwiczeń. Kliknij + aby dodać.\nKażde ćwiczenie można dodać tylko raz na dzień treningowy.",
                         fontSize = 12.sp,
                         color = getOnSurfaceSecondaryColor(),
                         textAlign = TextAlign.Center,
@@ -1373,50 +1448,82 @@ private fun SetItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val repsError = set.repetitions == null || set.repetitions!! !in 1..100
                     OutlinedTextField(
                         value = set.repetitions?.toString() ?: "",
                         onValueChange = { value ->
-                            val reps = value.toIntOrNull()
-                            if (reps != null && reps in 1..100) {
-                                onUpdate(set.copy(repetitions = reps))
+                            if (value.isEmpty()) {
+                                onUpdate(set.copy(repetitions = null))
+                            } else {
+                                val reps = value.toIntOrNull()
+                                if (reps != null) {
+                                    onUpdate(set.copy(repetitions = reps))
+                                }
                             }
                         },
                         label = { Text("Powt.") },
                         modifier = Modifier.width(80.dp),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        isError = repsError,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = if (repsError) getErrorColor() else getPrimaryColor(),
+                            unfocusedBorderColor = if (repsError) getErrorColor() else getInputBorderColor()
+                        )
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
+                    val weightError = set.weight == null || set.weight!! < 0.5 || set.weight!! > 300.0
                     OutlinedTextField(
-                        value = set.weight?.toString() ?: "",
+                        value = set.weight?.toString() ?: "0.5",
                         onValueChange = { value ->
-                            val weight = value.toDoubleOrNull()
-                            if (weight == null || weight in 0.0..300.0) {
-                                onUpdate(set.copy(weight = weight))
+                            if (value.isEmpty()) {
+
+                                onUpdate(set.copy(weight = 0.5))
+                            } else {
+                                val weight = value.toDoubleOrNull()
+                                if (weight != null && weight >= 0.5 && weight <= 300.0) {
+                                    onUpdate(set.copy(weight = weight))
+                                }
                             }
                         },
                         label = { Text("kg") },
                         modifier = Modifier.width(80.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        placeholder = { Text("0") }
+                        placeholder = { Text("0.5") },
+                        isError = weightError,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = if (weightError) getErrorColor() else getPrimaryColor(),
+                            unfocusedBorderColor = if (weightError) getErrorColor() else getInputBorderColor()
+                        )
                     )
                 }
             } else {
+                val durationError = set.duration == null || set.duration!! !in 30..21600
                 OutlinedTextField(
                     value = set.duration?.toString() ?: "",
                     onValueChange = { value ->
-                        val duration = value.toIntOrNull()
-                        if (duration != null && duration in 30..21600) {
-                            onUpdate(set.copy(duration = duration))
+                        if (value.isEmpty()) {
+                            onUpdate(set.copy(duration = null))
+                        } else {
+                            val duration = value.toIntOrNull()
+                            if (duration != null) {
+                                onUpdate(set.copy(duration = duration))
+                            }
                         }
                     },
                     label = { Text("Sekundy") },
                     modifier = Modifier.width(100.dp),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    placeholder = { Text("60") },
+                    isError = durationError,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = if (durationError) getErrorColor() else getPrimaryColor(),
+                        unfocusedBorderColor = if (durationError) getErrorColor() else getInputBorderColor()
+                    )
                 )
             }
 
@@ -1440,40 +1547,135 @@ private fun RestTimeDialog(
     onDismiss: () -> Unit
 ) {
     var restTimeText by remember { mutableStateOf(currentRestTime.toString()) }
+    var restTimeError by remember { mutableStateOf<String?>(null) }
+
+    val restTimeInt = restTimeText.toIntOrNull()
+    val isValid = restTimeInt != null && restTimeInt in 30..5400
+
+    LaunchedEffect(restTimeText) {
+        restTimeError = when {
+            restTimeText.isEmpty() -> "Czas odpoczynku jest wymagany"
+            restTimeInt == null -> "Podaj poprawną liczbę"
+            restTimeInt < 30 -> "Minimum 30 sekund"
+            restTimeInt > 5400 -> "Maksimum 1.5 godziny (5400 sekund)"
+            else -> null
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Czas odpoczynku") },
+        title = {
+            Text(
+                text = "Czas odpoczynku po serii",
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+        },
         text = {
             Column {
-                Text("Ustaw czas odpoczynku po serii (30-5400 sekund)")
-                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Ustaw czas odpoczynku między seriami (w sekundach)",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
                 OutlinedTextField(
                     value = restTimeText,
-                    onValueChange = { restTimeText = it },
+                    onValueChange = { value ->
+                        if (value.all { it.isDigit() } || value.isEmpty()) {
+                            restTimeText = value
+                        }
+                    },
                     label = { Text("Sekundy") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true
+                    placeholder = { Text("60") },
+                    isError = !isValid && restTimeText.isNotEmpty(),
+                    supportingText = if (restTimeError != null) {
+                        {
+                            Text(
+                                text = restTimeError!!,
+                                color = getErrorColor(),
+                                fontSize = 12.sp
+                            )
+                        }
+                    } else {
+                        {
+                            Text(
+                                text = "Zalecane: 30-120 sekund",
+                                color = getOnSurfaceSecondaryColor(),
+                                fontSize = 12.sp
+                            )
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = if (restTimeError != null) getErrorColor() else getPrimaryColor(),
+                        unfocusedBorderColor = if (restTimeError != null) getErrorColor() else getInputBorderColor(),
+                        focusedLabelColor = if (restTimeError != null) getErrorColor() else getPrimaryColor(),
+                        unfocusedLabelColor = if (restTimeError != null) getErrorColor() else getOnSurfaceSecondaryColor()
+                    )
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = getPrimaryColor().copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Text(
+                            text = "Sugerowane czasy:",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = getOnSurfaceColor()
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "• Siła: 120-180s\n• Masa: 60-90s\n• Wytrzymałość: 30-60s",
+                            fontSize = 11.sp,
+                            color = getOnSurfaceSecondaryColor(),
+                            lineHeight = 14.sp
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    val restTime = restTimeText.toIntOrNull()
-                    if (restTime != null && restTime in 30..5400) {
-                        onConfirm(restTime)
+                    restTimeInt?.let { validTime ->
+                        onConfirm(validTime)
                     }
-                }
+                },
+                enabled = isValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isValid) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
+                    contentColor = getOnPrimaryColor()
+                )
             ) {
-                Text("OK", color = getPrimaryColor())
+                Text("Potwierdź")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            OutlinedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
+            ) {
                 Text("Anuluj")
             }
-        }
+        },
+        containerColor = getSurfaceColor(),
+        shape = RoundedCornerShape(16.dp)
     )
 }
 

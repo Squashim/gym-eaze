@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 data class TrainingSet(
     val repetitions: Int? = null,
-    val weight: Double? = null,
+    val weight: Double? = 0.5,
     val duration: Int? = null
 ) {
     val isRepsSet: Boolean get() = repetitions != null
@@ -29,7 +29,7 @@ data class DayExercise(
     val isRepsSet: Boolean = true,
     val duration: Int = 0,
     val restAfterSet: Int = 60,
-    val sets: List<TrainingSet> = listOf(TrainingSet(repetitions = 10))
+    val sets: List<TrainingSet> = listOf(TrainingSet(repetitions = 10, weight = 0.5))
 )
 
 data class TrainingDay(
@@ -40,12 +40,25 @@ data class TrainingDay(
     val totalDuration: Int = 0
 )
 
+data class ValidationError(
+    val field: String,
+    val message: String
+)
+
+data class SetValidation(
+    val repetitionsError: String? = null,
+    val weightError: String? = null,
+    val durationError: String? = null,
+    val restTimeError: String? = null
+)
+
 enum class TrainingPlanCreatorStep { BASIC, DAYS_AND_EXERCISES, SUMMARY }
 
 data class CreateTrainingPlanState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val success: Boolean = false,
+    val validationToast: String? = null,
 
 
     val name: String = "",
@@ -67,32 +80,41 @@ data class CreateTrainingPlanState(
             (description.isEmpty() || description.length <= 850) &&
             hashtags.size <= 50
 
-    val daysAndExercisesValid: Boolean get() = days.isNotEmpty() &&
-            days.size <= 30 &&
-            days.all { day ->
-                day.name.isNotBlank() &&
-                        day.name.length <= 100 &&
-                        if (!day.isRestDay && day.exercises.isNotEmpty()) {
-                            day.exercises.all { dayExercise ->
-                                dayExercise.sets.isNotEmpty() &&
-                                        dayExercise.sets.size <= 15 &&
-                                        dayExercise.restAfterSet >= 30 &&
-                                        dayExercise.restAfterSet <= 5400 &&
-                                        dayExercise.sets.all { set ->
-                                            if (set.isRepsSet) {
-                                                set.repetitions != null &&
-                                                        set.repetitions!! in 1..100 &&
-                                                        (set.weight == null || set.weight!! in 0.0..300.0)
-                                            } else {
-                                                set.duration != null &&
-                                                        set.duration!! in 30..21600
-                                            }
-                                        }
-                            }
-                        } else {
-                            true
-                        }
+    val daysAndExercisesValid: Boolean get() {
+        if (days.isEmpty() || days.size > 30) return false
+
+        return days.all { day ->
+
+            if (day.name.isBlank() || day.name.length > 100) return@all false
+
+            val exerciseIds = day.exercises.map { it.exercise.id }
+            if (exerciseIds.toSet().size != exerciseIds.size) return@all false
+
+            if (day.isRestDay) return@all true
+
+            if (day.exercises.isEmpty()) return@all true
+
+            day.exercises.all { dayExercise ->
+
+                if (dayExercise.sets.isEmpty() || dayExercise.sets.size > 15) return@all false
+
+                if (dayExercise.restAfterSet !in 30..5400) return@all false
+
+                dayExercise.sets.all { set ->
+                    if (set.isRepsSet) {
+
+                        val repsValid = set.repetitions != null && set.repetitions!! in 1..100
+                        val weightValid = set.weight != null && set.weight!! >= 0.5 && set.weight!! <= 300.0
+                        repsValid && weightValid
+                    } else {
+
+                        set.duration != null && set.duration!! in 30..21600
+                    }
+                }
             }
+        }
+    }
+
 }
 
 class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(application) {
@@ -181,11 +203,22 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         val currentDays = _uiState.value.days.toMutableList()
         if (dayIndex in currentDays.indices && !currentDays[dayIndex].isRestDay) {
             val day = currentDays[dayIndex]
-            if (day.exercises.size < 15) {
-                val dayExercise = DayExercise(exercise = exercise)
+
+            val exerciseAlreadyExists = day.exercises.any { it.exercise.id == exercise.id }
+
+            if (!exerciseAlreadyExists && day.exercises.size < 15) {
+                val dayExercise = DayExercise(
+                    exercise = exercise,
+                    isRepsSet = true,
+                    sets = listOf(TrainingSet(repetitions = 10, weight = 0.5))
+                )
                 val updatedExercises = day.exercises + dayExercise
                 currentDays[dayIndex] = day.copy(exercises = updatedExercises)
                 _uiState.value = _uiState.value.copy(days = currentDays)
+            } else if (exerciseAlreadyExists) {
+                _uiState.value = _uiState.value.copy(
+                    error = "To ćwiczenie zostało już dodane do tego dnia treningowego"
+                )
             }
         }
     }
@@ -228,7 +261,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                 exercises[exerciseIndex] = exercise.copy(
                     isRepsSet = !exercise.isRepsSet,
                     sets = if (!exercise.isRepsSet) {
-                        listOf(TrainingSet(repetitions = 10))
+                        listOf(TrainingSet(repetitions = 10, weight = 0.5))
                     } else {
                         listOf(TrainingSet(duration = 60))
                     }
@@ -248,7 +281,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                 val exercise = exercises[exerciseIndex]
                 if (exercise.sets.size < 15) {
                     val newSet = if (exercise.isRepsSet) {
-                        TrainingSet(repetitions = 10)
+                        TrainingSet(repetitions = 10, weight = 0.5)
                     } else {
                         TrainingSet(duration = 60)
                     }
@@ -296,13 +329,16 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
+
     fun nextStep() {
-        val newStep = when (_uiState.value.currentStep) {
-            TrainingPlanCreatorStep.BASIC -> TrainingPlanCreatorStep.DAYS_AND_EXERCISES
-            TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> TrainingPlanCreatorStep.SUMMARY
-            TrainingPlanCreatorStep.SUMMARY -> TrainingPlanCreatorStep.SUMMARY
+        if (validateCurrentStep()) {
+            val newStep = when (_uiState.value.currentStep) {
+                TrainingPlanCreatorStep.BASIC -> TrainingPlanCreatorStep.DAYS_AND_EXERCISES
+                TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> TrainingPlanCreatorStep.SUMMARY
+                TrainingPlanCreatorStep.SUMMARY -> TrainingPlanCreatorStep.SUMMARY
+            }
+            _uiState.value = _uiState.value.copy(currentStep = newStep)
         }
-        _uiState.value = _uiState.value.copy(currentStep = newStep)
     }
 
     fun prevStep() {
@@ -363,4 +399,123 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
     fun clearSuccess() {
         _uiState.value = _uiState.value.copy(success = false)
     }
+
+    fun clearValidationToast() {
+        _uiState.value = _uiState.value.copy(validationToast = null)
+    }
+
+    fun showValidationError(message: String) {
+        _uiState.value = _uiState.value.copy(validationToast = message)
+    }
+
+    private fun validateDaysAndExercises(days: List<TrainingDay>): List<String> {
+        val errors = mutableListOf<String>()
+
+        if (days.isEmpty()) {
+            errors.add("Dodaj przynajmniej jeden dzień treningowy")
+            return errors
+        }
+
+        if (days.size > 30) {
+            errors.add("Maksymalnie 30 dni w planie")
+            return errors
+        }
+
+        days.forEachIndexed { dayIndex, day ->
+
+            if (day.name.isBlank()) {
+                errors.add("Dzień ${dayIndex + 1}: Nazwa dnia jest wymagana")
+            }
+            if (day.name.length > 100) {
+                errors.add("Dzień ${dayIndex + 1}: Nazwa dnia może mieć maksymalnie 100 znaków")
+            }
+
+            val exerciseIds = day.exercises.map { it.exercise.id }
+            if (exerciseIds.toSet().size != exerciseIds.size) {
+                errors.add("Dzień ${dayIndex + 1}: Każde ćwiczenie może być dodane tylko raz")
+            }
+
+            if (!day.isRestDay && day.exercises.isNotEmpty()) {
+                day.exercises.forEachIndexed { exerciseIndex, dayExercise ->
+                    val exerciseName = dayExercise.exercise.name
+
+                    if (dayExercise.sets.isEmpty()) {
+                        errors.add("Dzień ${dayIndex + 1}, $exerciseName: Dodaj przynajmniej jedną serię")
+                    }
+                    if (dayExercise.sets.size > 15) {
+                        errors.add("Dzień ${dayIndex + 1}, $exerciseName: Maksymalnie 15 serii")
+                    }
+
+                    if (dayExercise.restAfterSet !in 30..5400) {
+                        errors.add("Dzień ${dayIndex + 1}, $exerciseName: Czas odpoczynku musi być między 30s a 1.5h")
+                    }
+
+                    dayExercise.sets.forEachIndexed { setIndex, set ->
+                        if (set.isRepsSet) {
+
+                            if (set.repetitions == null || set.repetitions!! !in 1..100) {
+                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Powtórzenia muszą być między 1 a 100")
+                            }
+
+                            if (set.weight != null && (set.weight!! < 0.5 || set.weight!! > 400.0)) {
+                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga musi być między 0.5kg a 400kg")
+                            }
+
+                            if (set.weight == null) {
+                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga jest wymagana")
+                            }
+                        } else {
+
+                            if (set.duration == null || set.duration!! !in 30..21600) {
+                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Czas musi być między 30s a 6h")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return errors
+    }
+
+
+    fun validateCurrentStep(): Boolean {
+        val state = _uiState.value
+
+        return when (state.currentStep) {
+            TrainingPlanCreatorStep.BASIC -> {
+                if (!state.basicValid) {
+                    when {
+                        state.name.isBlank() -> showValidationError("Nazwa planu jest wymagana")
+                        state.name.length > 150 -> showValidationError("Nazwa planu może mieć maksymalnie 150 znaków")
+                        state.imageUri == null -> showValidationError("Zdjęcie planu jest wymagane")
+                        state.description.length > 850 -> showValidationError("Opis może mieć maksymalnie 850 znaków")
+                        state.hashtags.size > 50 -> showValidationError("Maksymalnie 50 hashtagów")
+                        else -> showValidationError("Uzupełnij wszystkie wymagane pola")
+                    }
+                    false
+                } else {
+                    true
+                }
+            }
+
+            TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> {
+                if (!state.daysAndExercisesValid) {
+
+                    val validationErrors = validateDaysAndExercises(state.days)
+                    if (validationErrors.isNotEmpty()) {
+                        showValidationError(validationErrors.first())
+                        false
+                    } else {
+                        true
+                    }
+                } else {
+                    true
+                }
+            }
+
+            TrainingPlanCreatorStep.SUMMARY -> true
+        }
+    }
+
 }
