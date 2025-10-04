@@ -518,4 +518,23 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
+    fun shouldWarnBeforeRestDayConversion(dayIndex: Int): Boolean {
+        val days = _uiState.value.days
+        return dayIndex in days.indices &&
+                !days[dayIndex].isRestDay &&
+                days[dayIndex].exercises.isNotEmpty()
+    }
+
+    fun forceToggleRestDay(dayIndex: Int) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (dayIndex in currentDays.indices) {
+            val day = currentDays[dayIndex]
+            currentDays[dayIndex] = day.copy(
+                isRestDay = !day.isRestDay,
+                exercises = if (!day.isRestDay) emptyList() else day.exercises
+            )
+            _uiState.value = _uiState.value.copy(days = currentDays)
+        }
+    }
+
 }

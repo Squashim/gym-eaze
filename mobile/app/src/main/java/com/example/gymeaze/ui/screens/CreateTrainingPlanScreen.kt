@@ -46,6 +46,202 @@ import com.example.gymeaze.viewmodel.*
 import kotlinx.coroutines.delay
 
 @Composable
+private fun RestDayConversionWarningDialog(
+    dayName: String,
+    exercisesCount: Int,
+    totalSetsCount: Int,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = Color(0xFFFF9800),
+                modifier = Modifier.size(36.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Zmiana na dzień odpoczynku",
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor(),
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Czy na pewno chcesz zmienić dzień:",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "\"$dayName\"",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getPrimaryColor()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "na dzień odpoczynku?",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFF9800).copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Color(0xFFFF9800).copy(alpha = 0.3f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color(0xFFFF9800),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "OSTRZEŻENIE - Utrata danych",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF9800)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Ta akcja spowoduje TRWAŁE usunięcie:",
+                            fontSize = 12.sp,
+                            color = getOnSurfaceColor(),
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "•",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFFFF9800),
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "$exercisesCount ćwiczeń",
+                                    fontSize = 12.sp,
+                                    color = getOnSurfaceColor()
+                                )
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "•",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFFFF9800),
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "$totalSetsCount serii z wagami i powtórzeniami",
+                                    fontSize = 12.sp,
+                                    color = getOnSurfaceColor()
+                                )
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "•",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFFFF9800),
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Wszystkie ustawienia czasów odpoczynku",
+                                    fontSize = 12.sp,
+                                    color = getOnSurfaceColor()
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Tej akcji nie można cofnąć!",
+                            fontSize = 13.sp,
+                            color = getErrorColor(),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(8.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getPrimaryColor(),
+                    contentColor = getOnPrimaryColor()
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Tak, zmień na odpoczynek",
+                        fontSize = 13.sp
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Anuluj")
+                }
+            }
+        },
+        containerColor = getSurfaceColor(),
+        shape = RoundedCornerShape(20.dp)
+    )
+}
+
+@Composable
 private fun DeleteDayConfirmationDialog(
     dayName: String,
     onConfirm: () -> Unit,
@@ -336,6 +532,9 @@ fun CreateTrainingPlanScreen(
     var exerciseToDelete by remember { mutableStateOf<Triple<Int, Int, String>?>(null) }
     var setToDelete by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
 
+    var showRestDayWarningDialog by remember { mutableStateOf(false) }
+    var dayToConvertToRest by remember { mutableStateOf<Int?>(null) }
+
     LaunchedEffect(uiState.validationToast) {
         uiState.validationToast?.let { message ->
             snackbarHostState.showSnackbar(
@@ -427,6 +626,10 @@ fun CreateTrainingPlanScreen(
                         onRequestDeleteSet = { dayIndex, exerciseIndex, setIndex ->
                             setToDelete = Triple(dayIndex, exerciseIndex, setIndex)
                             showDeleteSetDialog = true
+                        },
+                        onRequestRestDayConversion = { dayIndex ->
+                            dayToConvertToRest = dayIndex
+                            showRestDayWarningDialog = true
                         }
                     )
                     TrainingPlanCreatorStep.SUMMARY -> SummaryStep(uiState)
@@ -445,18 +648,26 @@ fun CreateTrainingPlanScreen(
         }
     }
 
+    if (showRestDayWarningDialog) {
+        dayToConvertToRest?.let { dayIndex ->
+            val day = uiState.days[dayIndex]
+            val totalSets = day.exercises.sumOf { it.sets.size }
 
-    uiState.error?.let { error ->
-        AlertDialog(
-            onDismissRequest = viewModel::clearError,
-            title = { Text("Błąd") },
-            text = { Text(error) },
-            confirmButton = {
-                TextButton(onClick = viewModel::clearError) {
-                    Text("OK", color = getPrimaryColor())
+            RestDayConversionWarningDialog(
+                dayName = day.name,
+                exercisesCount = day.exercises.size,
+                totalSetsCount = totalSets,
+                onConfirm = {
+                    viewModel.toggleRestDay(dayIndex)
+                    showRestDayWarningDialog = false
+                    dayToConvertToRest = null
+                },
+                onDismiss = {
+                    showRestDayWarningDialog = false
+                    dayToConvertToRest = null
                 }
-            }
-        )
+            )
+        }
     }
 
     if (showDeleteDayDialog) {
@@ -530,6 +741,18 @@ fun CreateTrainingPlanScreen(
         )
     }
 
+    uiState.error?.let { error ->
+        AlertDialog(
+            onDismissRequest = viewModel::clearError,
+            title = { Text("Błąd") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = viewModel::clearError) {
+                    Text("OK", color = getPrimaryColor())
+                }
+            }
+        )
+    }
 
     if (showExitDialog) {
         TrainingPlanExitConfirmationDialog(
@@ -989,7 +1212,8 @@ private fun DaysAndExercisesStep(
     onNavigateToExerciseSelection: (Int) -> Unit,
     onRequestDeleteDay: (Int) -> Unit,
     onRequestDeleteExercise: (Int, Int) -> Unit,
-    onRequestDeleteSet: (Int, Int, Int) -> Unit
+    onRequestDeleteSet: (Int, Int, Int) -> Unit,
+    onRequestRestDayConversion: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -1036,7 +1260,12 @@ private fun DaysAndExercisesStep(
                         day = day,
                         dayIndex = index,
                         onNameChange = { name -> viewModel.updateDayName(index, name) },
-                        onToggleRestDay = { viewModel.toggleRestDay(index) },
+                        onToggleRestDay = {
+                            if (viewModel.shouldWarnBeforeRestDayConversion(index)) {
+                                onRequestRestDayConversion(index)
+                            } else {
+                                viewModel.toggleRestDay(index)
+                        } },
                         onRemoveDay = { onRequestDeleteDay(index) },
                         onAddExercise = { onNavigateToExerciseSelection(index) },
                         onRemoveExercise = { exerciseIndex ->
