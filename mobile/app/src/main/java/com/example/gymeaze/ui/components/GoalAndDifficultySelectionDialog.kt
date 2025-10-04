@@ -58,6 +58,7 @@ fun GoalSelectionDialog(
         Goals.ENDURANCE to "Poprawa wytrzymałości",
         Goals.FAT_LOSS to "Redukcja tkanki tłuszczowej",
         Goals.CALORIE_BURN to "Spalanie kalorii",
+        Goals.MASS_GAIN to "Zwiększenie masy ciała",
         Goals.COORDINATION to "Poprawa koordynacji",
         Goals.MOBILITY to "Poprawa mobilności",
         Goals.FLEXIBILITY to "Poprawa gibkości",
@@ -122,6 +123,7 @@ fun DifficultySelectionDialog(
     onDismiss: () -> Unit
 ) {
     val difficulties = listOf(
+        AdvancedLevel.NONE to "Nie wybrano",
         AdvancedLevel.EASY to "Początkujący",
         AdvancedLevel.MEDIUM to "Średniozaawansowany",
         AdvancedLevel.HARD to "Zaawansowany"
@@ -366,6 +368,7 @@ private fun getGoalDescription(goal: String): String = when (goal) {
     Goals.ENDURANCE -> "Poprawa wytrzymałości mięśniowej"
     Goals.FAT_LOSS -> "Spalanie tkanki tłuszczowej"
     Goals.CALORIE_BURN -> "Intensywne spalanie kalorii"
+    Goals.MASS_GAIN -> "Zwiększenie masy ciała"
     Goals.COORDINATION -> "Rozwój koordynacji ruchowej"
     Goals.MOBILITY -> "Poprawa zakresu ruchów"
     Goals.FLEXIBILITY -> "Zwiększenie elastyczności"
@@ -376,6 +379,7 @@ private fun getGoalDescription(goal: String): String = when (goal) {
 }
 
 private fun getDifficultyDescription(difficulty: String): String = when (difficulty) {
+    AdvancedLevel.NONE -> "Nie wybrano poziomu trudności"
     AdvancedLevel.EASY -> "Do 6 miesięcy doświadczenia"
     AdvancedLevel.MEDIUM -> "6 miesięcy - 2 lata doświadczenia"
     AdvancedLevel.HARD -> "Ponad 2 lata doświadczenia"
@@ -384,6 +388,7 @@ private fun getDifficultyDescription(difficulty: String): String = when (difficu
 
 @Composable
 private fun getDifficultyColor(difficulty: String): Color = when (difficulty) {
+    AdvancedLevel.NONE -> getOnSurfaceSecondaryColor()
     AdvancedLevel.EASY -> Color(0xFF4CAF50)
     AdvancedLevel.MEDIUM -> Color(0xFFFF9800)
     AdvancedLevel.HARD -> Color(0xFFF44336)

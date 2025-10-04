@@ -45,6 +45,7 @@ object EnumMappers {
 
     fun mapAdvancedLevelFromBackend(backendValue: String): String {
         return when (backendValue) {
+            "Nie wybrano" -> AdvancedLevel.NONE
             "Początkujący" -> AdvancedLevel.EASY
             "Średniozaawansowany" -> AdvancedLevel.MEDIUM
             "Zaawansowany" -> AdvancedLevel.HARD

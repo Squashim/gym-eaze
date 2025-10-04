@@ -192,6 +192,7 @@ private fun DifficultyBadge(
     modifier: Modifier = Modifier
 ) {
     val (text, backgroundColor, textColor) = when (difficulty) {
+        AdvancedLevel.NONE -> Triple("B", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
         AdvancedLevel.EASY -> Triple("P", getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
         AdvancedLevel.MEDIUM -> Triple("Ś", getYellowColor(), getOnYellowColor())
         AdvancedLevel.HARD -> Triple("Z", getOnSurfaceColor().copy(alpha = 0.2f), getOnSurfaceColor())

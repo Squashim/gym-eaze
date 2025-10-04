@@ -475,6 +475,7 @@ private fun DifficultySelector(
             modifier = Modifier.fillMaxWidth()
         ) {
             val difficultyOptions = listOf(
+                Triple(AdvancedLevel.NONE, "Nie wybrano", Color(0xFF9E9E9E)),
                 Triple(AdvancedLevel.EASY, "Łatwy", Color(0xFF4CAF50)),
                 Triple(AdvancedLevel.MEDIUM, "Średni", Color(0xFFFF9800)),
                 Triple(AdvancedLevel.HARD, "Trudny", Color(0xFFF44336))

@@ -247,6 +247,7 @@ private fun DifficultySection(difficulty: String) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             val (text, badgeColor, textColor) = when (difficulty) {
+                AdvancedLevel.NONE -> Triple("Nie wybrano", getOnSurfaceColor().copy(alpha = 0.2f), getOnSurfaceColor())
                 AdvancedLevel.EASY -> Triple("Początkujący", Color(0xFF4CAF50), getOnPrimaryColor())
                 AdvancedLevel.MEDIUM -> Triple("Średni", Color(0xFFFF9800), getOnPrimaryColor())
                 AdvancedLevel.HARD -> Triple("Zaawansowany", Color(0xFFF44336), getOnPrimaryColor())

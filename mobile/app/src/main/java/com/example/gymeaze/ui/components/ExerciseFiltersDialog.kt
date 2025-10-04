@@ -542,6 +542,7 @@ private fun DifficultyDropdown(
 
     val difficulties = listOf(
         null to "Nie wybrano",
+        AdvancedLevel.NONE to AdvancedLevel.NONE,
         AdvancedLevel.EASY to AdvancedLevel.EASY,
         AdvancedLevel.MEDIUM to AdvancedLevel.MEDIUM,
         AdvancedLevel.HARD to AdvancedLevel.HARD
