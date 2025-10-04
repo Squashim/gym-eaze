@@ -250,20 +250,6 @@ export const toggleTrainingPlanFavoriteService = async (userId: string, planId: 
 export const getTrainingPlanByIdService = async (planId: string, currentUserId?: string) => {
   const trainingPlan = await TrainingPlan.findById(planId)
     .populate('author', 'username profileDetails.profilePicture')
-    .populate({
-      path: 'days.exercises.id',
-      select: 'name image muscleGroup equipment advancedLevel description',
-      populate: [
-        {
-          path: 'muscleGroup',
-          select: 'name image',
-        },
-        {
-          path: 'equipment',
-          select: 'name image',
-        },
-      ],
-    })
     .lean();
 
   if (!trainingPlan) {

@@ -51,18 +51,20 @@ type ExerciseCreatorProps = {
 };
 
 const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
+  const { id } = useParams();
+
+  const { user } = useUser();
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: exerciseSchema,
     defaultValues: exerciseCreatorConstants.defaultValues,
     totalSteps: exerciseCreatorConstants.steps.length,
   });
-
   const { createExercise, updateExercise } = useExercise();
-  const { user } = useUser();
+
   const { handleSubmit } = form;
 
-  const isEditMode = mode === 'edit';
-  const { id } = useParams();
+  const isEditMode = useMemo(() => mode === 'edit', [mode]);
+
   const {
     data: exerciseData,
     isLoading,
@@ -94,7 +96,9 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     ],
     [isEditMode, isLoading, isError, exerciseData, user],
   );
+
   const { passed: guardsPassed, ready: guardsReady } = useSequentialGuards(guards);
+
   const {
     imageFile: defaultImageFile,
     videoFile: defaultVideoFile,
@@ -105,6 +109,17 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     videoUrl: exerciseData?.video,
     enabled: isEditMode && Boolean(exerciseData),
   });
+
+  const imageFile = form.watch('stepOne.image');
+  const videoFile = form.watch('stepOne.video');
+
+  const { isImageDefault, isVideoDefault } = useMemo(() => {
+    return compareFiles(imageFile, videoFile);
+  }, [imageFile, videoFile, compareFiles]);
+
+  const { onCancel, bypassBlocker } = useUnsavedChangesWarning(
+    form.formState.isDirty || (isEditMode && (!isImageDefault || !isVideoDefault)),
+  );
 
   usePageTitle(isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia');
 
@@ -129,21 +144,8 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
       });
     };
 
-    void fillForm();
+    fillForm();
   }, [guardsPassed, exerciseData, defaultImageFile, defaultVideoFile, isError, form]);
-
-  const imageFile = form.watch('stepOne.image');
-  const videoFile = form.watch('stepOne.video');
-
-  const fileComparison = useMemo(() => {
-    return compareFiles(imageFile, videoFile);
-  }, [imageFile, videoFile, compareFiles]);
-
-  const { isImageDefault, isVideoDefault } = fileComparison;
-
-  const { onCancel, bypassBlocker } = useUnsavedChangesWarning(
-    form.formState.isDirty || (isEditMode && (!isImageDefault || !isVideoDefault)),
-  );
 
   const handleUpdate = (formData: ExerciseSchema) => {
     const dirtyFields = form.formState.dirtyFields;

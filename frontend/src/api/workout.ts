@@ -27,9 +27,19 @@ const remove = async (id: string): Promise<ApiResponse> => {
   return data;
 };
 
+const toggleLike = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.toggleLike(id));
+  return data;
+};
+
+const toggleFavorite = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.toggleFavorite(id));
+  return data;
+};
+
 const getById = async (id: string): Promise<WorkoutApiResponse> => {
   const { data } = await API.get<WorkoutApiResponse>(endpoints.byId(id));
   return data;
 };
 
-export { create, update, remove, getById };
+export { create, update, remove, toggleLike, toggleFavorite, getById };

@@ -19,7 +19,7 @@ function WorkoutDetails() {
   const { user } = useUser();
   const { id } = useParams();
   const { data: workout, isLoading, isError, error } = useGetWorkout(id!);
-  const { deleteWorkout } = useWorkout();
+  const { deleteWorkout, toggleFavoriteWorkout, toggleLikeWorkout } = useWorkout();
 
   const isAuthor = useMemo(() => {
     if (!user || !workout) return false;
@@ -70,16 +70,16 @@ function WorkoutDetails() {
   usePageTitle(workout?.name ?? 'Szczegóły planu');
 
   const handleLike = useCallback(() => {
-    //TODO: implement like functionality
-  }, []);
+    toggleLikeWorkout.mutate(workout!._id);
+  }, [toggleLikeWorkout, workout]);
 
   const handleFavorite = useCallback(() => {
-    //TODO: implement favorite functionality
-  }, []);
+    toggleFavoriteWorkout.mutate(workout!._id);
+  }, [toggleFavoriteWorkout, workout]);
 
   const handleDelete = useCallback(() => {
-    //TODO: implement delete functionality
-  }, []);
+    deleteWorkout.mutate(workout!._id);
+  }, [deleteWorkout, workout]);
 
   const handleReport = useCallback(() => {
     //TODO: implement report functionality
@@ -116,13 +116,13 @@ function WorkoutDetails() {
                   edit={{ redirectTo: `/workouts/${workout._id}/edit` }}
                   favorite={{
                     isFavorited: favorited || false,
-                    isFavoriteLoading: false, //TODO: toggleFavoriteExercise.isPending || isFavoritedItemsLoading,
+                    isFavoriteLoading: toggleFavoriteWorkout.isPending || isFavoritedItemsLoading,
                     onFavorite: handleFavorite,
                   }}
                   isAuthor={isAuthor}
                   like={{
                     isLiked: liked || false,
-                    isLikeLoading: false, //TODO: toggleLikeExercise.isPending || isLikedItemsLoading,
+                    isLikeLoading: toggleLikeWorkout.isPending || isLikedItemsLoading,
                     onLike: handleLike,
                   }}
                   report={{ onReport: handleReport }}

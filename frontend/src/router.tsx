@@ -99,7 +99,13 @@ const router = createBrowserRouter([
           },
           {
             path: 'workouts',
-            children: [{ path: 'create', element: <WorkoutCreator mode="create" /> }],
+            children: [
+              { path: 'create', element: <WorkoutCreator mode="create" /> },
+              {
+                path: ':id/edit',
+                element: <WorkoutCreator mode="edit" />,
+              },
+            ],
           },
         ],
       },

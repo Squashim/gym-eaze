@@ -43,39 +43,121 @@ import ActiveDay from '@/components/features/workouts/views/active-day';
 import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Badge } from '@/components/ui/badge';
-import { calculateWorkoutTime } from '@/lib/utils';
+import { calculateWorkoutTime, extractDirtyFieldsData } from '@/lib/utils';
 import {
   parseDayLabel,
   parseExerciseLabel,
   parseTimeBrackets,
   parseWorkoutSetsLabel,
 } from '@/lib/parsers';
-import { BicepsFlexed, CalendarDays, Clock, Flame } from 'lucide-react';
+import { BicepsFlexed, CalendarDays, Clock, Flame, Loader2 } from 'lucide-react';
 import { useWorkout } from '@/hooks/query/workouts/use-workout';
-import type { CreateWorkoutPayload } from '@/types/workout';
+import type { CreateWorkoutPayload, UpdateWorkoutPayload } from '@/types/workout';
 import HashtagList from '@/components/ui/hashtag-list';
 import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 import { toast } from 'sonner';
+import { useUser } from '@/context/user';
+import { useParams } from 'react-router-dom';
+import useGetWorkout from '@/hooks/query/workouts/use-get-workout';
+import { useSequentialGuards } from '@/guards/use-sequential-guards';
+import useFormFiles from '@/hooks/use-form-files';
 
 interface WorkoutCreatorProps {
   mode: 'create' | 'edit';
 }
 
 function WorkoutCreator({ mode }: WorkoutCreatorProps) {
+  const { id } = useParams();
+
+  const { user } = useUser();
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: workoutSchema,
     defaultValues: workoutCreatorConstants.defaultValues,
     totalSteps: workoutCreatorConstants.steps.length,
   });
+  const { createWorkout, updateWorkout } = useWorkout();
 
-  const { createWorkout } = useWorkout();
   const { handleSubmit } = form;
 
-  const isEditMode = mode === 'edit';
+  const isEditMode = useMemo(() => mode === 'edit', [mode]);
 
-  const { onCancel, bypassBlocker } = useUnsavedChangesWarning(form.formState.isDirty);
+  const {
+    data: workoutData,
+    isLoading,
+    isError,
+  } = useGetWorkout(id!, {
+    enabled: isEditMode && Boolean(id),
+  });
+
+  const guards = useMemo(
+    () => [
+      {
+        check: () => {
+          if (!isEditMode) return true;
+          if (isLoading) return 'wait';
+          return !isError && !!workoutData;
+        },
+        redirectTo: '/workouts/browse',
+        errorMessage: 'Identyfikator planu jest niepoprawny.',
+      },
+      {
+        check: () => {
+          if (!isEditMode) return true;
+          if (isLoading) return 'wait';
+          return workoutData?.author._id === user?._id;
+        },
+        redirectTo: `/workouts/${workoutData?._id}`,
+        errorMessage: 'Nie masz uprawnień do edytowania tego planu.',
+      },
+    ],
+    [isEditMode, isLoading, isError, workoutData, user],
+  );
+
+  const { passed: guardsPassed, ready: guardsReady } = useSequentialGuards(guards);
+
+  const {
+    imageFile: defaultImageFile,
+    isLoading: isFilesLoading,
+    compareFiles,
+  } = useFormFiles({
+    imageUrl: workoutData?.image,
+    enabled: isEditMode && Boolean(workoutData),
+  });
+
+  const imageFile = form.watch('stepOne.image');
+
+  const { isImageDefault } = useMemo(() => {
+    return compareFiles(imageFile);
+  }, [imageFile, compareFiles]);
+
+  const { onCancel, bypassBlocker } = useUnsavedChangesWarning(
+    form.formState.isDirty || (isEditMode && !isImageDefault),
+  );
 
   usePageTitle(isEditMode ? 'Edytor planu treningowego' : 'Kreator planu treningowego');
+
+  useEffect(() => {
+    if (!guardsPassed || !workoutData || !defaultImageFile || isError) return;
+
+    const fillForm = () => {
+      form.reset({
+        stepOne: {
+          name: workoutData.name,
+          image: defaultImageFile,
+          advancedLevel: workoutData.advancedLevel,
+          visibility: workoutData.visibility,
+          goal: workoutData.goal,
+          description: workoutData.description || '',
+          hashtags: workoutData.hashtags || [],
+        },
+        stepTwo: {
+          days: workoutData.days,
+        },
+      });
+    };
+
+    fillForm();
+  }, [guardsPassed, workoutData, defaultImageFile, isError, form]);
 
   useEffect(() => {
     const daysError = form.formState.errors?.stepTwo?.days;
@@ -85,6 +167,22 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
       toast.error('Upewnij się, że każdy dzień treningowy jest poprawnie wypełniony.');
     }
   }, [form.formState.errors?.stepTwo?.days]);
+
+  const handleUpdate = (formData: WorkoutSchema) => {
+    const dirtyFields = form.formState.dirtyFields;
+
+    const formattedData = extractDirtyFieldsData<WorkoutSchema, UpdateWorkoutPayload>(
+      dirtyFields,
+      formData,
+    );
+
+    if (!isImageDefault) {
+      formattedData.image = formData.stepOne.image;
+    }
+
+    bypassBlocker();
+    updateWorkout.mutate({ id: id!, payload: formattedData });
+  };
 
   const handleCreate = (formData: WorkoutSchema) => {
     const formattedData = {
@@ -98,7 +196,7 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
 
   const onSubmit = (formData: WorkoutSchema) => {
     if (isEditMode) {
-      console.log('TODO');
+      handleUpdate(formData);
     } else {
       handleCreate(formData);
     }
@@ -113,32 +211,41 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
       <Stepper step={step} steps={workoutCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-start">
         <CardContent className="w-full">
-          <Form {...form}>
-            <form
-              className="grid gap-y-4 md:grid-cols-3 md:gap-x-6 mb-8"
-              onKeyDown={handleKeyDown}
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              {step === 0 && <WorkoutCreatorStepOne />}
-              {step === 1 && <WorkoutCreatorStepTwo />}
-              {step === 2 && <WorkoutCreatorStepThree />}
+          {isEditMode && (isLoading || isFilesLoading || !guardsReady || !guardsPassed) ? (
+            <>
+              <Loader2 className="mx-auto my-4 animate-spin" size={32} />
+              <Typography className="text-center" variant="p">
+                Ładowanie danych planu...
+              </Typography>
+            </>
+          ) : (
+            <Form {...form}>
+              <form
+                className="grid gap-y-4 md:grid-cols-3 md:gap-x-6 mb-8"
+                onKeyDown={handleKeyDown}
+                onSubmit={handleSubmit(onSubmit)}
+              >
+                {step === 0 && <WorkoutCreatorStepOne />}
+                {step === 1 && <WorkoutCreatorStepTwo />}
+                {step === 2 && <WorkoutCreatorStepThree />}
 
-              <StepActions
-                exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
-                fixed
-                isSubmitting={createWorkout.isPending}
-                nextStep={nextStep}
-                onCancel={onCancel}
-                prevStep={prevStep}
-                refs={refs}
-                step={step}
-                submitDisabled={isEditMode && !form.formState.isDirty}
-                submitLabel={isEditMode ? 'Edytuj plan' : 'Stwórz plan'}
-                submittingLabel={isEditMode ? 'Edytowanie...' : 'Tworzenie...'}
-                totalSteps={totalSteps}
-              />
-            </form>
-          </Form>
+                <StepActions
+                  exitLabel={isEditMode ? 'Wyjdź z edytora' : 'Wyjdź z kreatora'}
+                  fixed
+                  isSubmitting={createWorkout.isPending || updateWorkout.isPending}
+                  nextStep={nextStep}
+                  onCancel={onCancel}
+                  prevStep={prevStep}
+                  refs={refs}
+                  step={step}
+                  submitDisabled={isEditMode && !form.formState.isDirty && isImageDefault}
+                  submitLabel={isEditMode ? 'Edytuj plan' : 'Stwórz plan'}
+                  submittingLabel={isEditMode ? 'Edytowanie...' : 'Tworzenie...'}
+                  totalSteps={totalSteps}
+                />
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
     </PageLayout>
@@ -183,7 +290,11 @@ function WorkoutCreatorStepOne() {
               Cel treningowy*
             </FormLabel>
             <FormControl>
-              <Select name={field.name} onValueChange={field.onChange} value={field.value}>
+              <Select
+                name={field.name}
+                onValueChange={(value) => value && field.onChange(value)}
+                value={field.value}
+              >
                 <SelectTrigger className="w-full md:max-w-[223px]" id={field.name}>
                   <SelectValue placeholder="Wybierz cel treningowy..." />
                 </SelectTrigger>
