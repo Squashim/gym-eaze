@@ -45,6 +45,277 @@ import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.*
 import kotlinx.coroutines.delay
 
+@Composable
+private fun DeleteDayConfirmationDialog(
+    dayName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = getErrorColor(),
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Usuń dzień treningowy",
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Czy na pewno chcesz usunąć dzień:",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "\"$dayName\"",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getPrimaryColor()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Ta akcja spowoduje trwałe usunięcie dnia wraz ze wszystkimi ćwiczeniami i seriami.",
+                    fontSize = 12.sp,
+                    color = getErrorColor(),
+                    lineHeight = 16.sp
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getErrorColor(),
+                    contentColor = Color.White
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Usuń")
+                }
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
+            ) {
+                Text("Anuluj")
+            }
+        },
+        containerColor = getSurfaceColor(),
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+private fun DeleteExerciseConfirmationDialog(
+    exerciseName: String,
+    dayName: String,
+    setsCount: Int,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = getErrorColor(),
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Usuń ćwiczenie",
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Czy na pewno chcesz usunąć ćwiczenie:",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "\"$exerciseName\"",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = getPrimaryColor()
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "z dnia: \"$dayName\"",
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = getErrorColor().copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = getErrorColor(),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Zostaną usunięte:",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = getErrorColor()
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "• Wszystkie $setsCount serii\n• Ustawienia wagi i powtórzeń\n• Czas odpoczynku",
+                            fontSize = 11.sp,
+                            color = getErrorColor(),
+                            lineHeight = 14.sp
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getErrorColor(),
+                    contentColor = Color.White
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Usuń")
+                }
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
+            ) {
+                Text("Anuluj")
+            }
+        },
+        containerColor = getSurfaceColor(),
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+private fun DeleteSetConfirmationDialog(
+    setIndex: Int,
+    exerciseName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = getErrorColor(),
+                modifier = Modifier.size(28.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Usuń serię",
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Czy na pewno chcesz usunąć serię ${setIndex + 1}?",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceColor()
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Ćwiczenie: \"$exerciseName\"",
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Ustawienia wagi i powtórzeń zostaną utracone.",
+                    fontSize = 11.sp,
+                    color = getErrorColor()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getErrorColor(),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Usuń")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
+            ) {
+                Text("Anuluj")
+            }
+        },
+        containerColor = getSurfaceColor(),
+        shape = RoundedCornerShape(12.dp)
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTrainingPlanScreen(
@@ -56,6 +327,14 @@ fun CreateTrainingPlanScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var showDeleteDayDialog by remember { mutableStateOf(false) }
+    var showDeleteExerciseDialog by remember { mutableStateOf(false) }
+    var showDeleteSetDialog by remember { mutableStateOf(false) }
+
+    var dayToDelete by remember { mutableStateOf<Pair<Int, String>?>(null) }
+    var exerciseToDelete by remember { mutableStateOf<Triple<Int, Int, String>?>(null) }
+    var setToDelete by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
 
     LaunchedEffect(uiState.validationToast) {
         uiState.validationToast?.let { message ->
@@ -131,9 +410,24 @@ fun CreateTrainingPlanScreen(
                 when (uiState.currentStep) {
                     TrainingPlanCreatorStep.BASIC -> BasicInfoStep(uiState, viewModel)
                     TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> DaysAndExercisesStep(
-                        uiState,
-                        viewModel,
-                        onNavigateToExerciseSelection
+                        uiState = uiState,
+                        viewModel = viewModel,
+                        onNavigateToExerciseSelection = onNavigateToExerciseSelection,
+                        onRequestDeleteDay = { dayIndex ->
+                            val day = uiState.days[dayIndex]
+                            dayToDelete = dayIndex to day.name
+                            showDeleteDayDialog = true
+                        },
+                        onRequestDeleteExercise = { dayIndex, exerciseIndex ->
+                            val day = uiState.days[dayIndex]
+                            val exercise = day.exercises[exerciseIndex]
+                            exerciseToDelete = Triple(dayIndex, exerciseIndex, exercise.exercise.name)
+                            showDeleteExerciseDialog = true
+                        },
+                        onRequestDeleteSet = { dayIndex, exerciseIndex, setIndex ->
+                            setToDelete = Triple(dayIndex, exerciseIndex, setIndex)
+                            showDeleteSetDialog = true
+                        }
                     )
                     TrainingPlanCreatorStep.SUMMARY -> SummaryStep(uiState)
                 }
@@ -164,6 +458,67 @@ fun CreateTrainingPlanScreen(
             }
         )
     }
+
+    if (showDeleteDayDialog) {
+        dayToDelete?.let { (dayIndex, dayName) ->
+            DeleteDayConfirmationDialog(
+                dayName = dayName,
+                onConfirm = {
+                    viewModel.removeDay(dayIndex)
+                    showDeleteDayDialog = false
+                    dayToDelete = null
+                },
+                onDismiss = {
+                    showDeleteDayDialog = false
+                    dayToDelete = null
+                }
+            )
+        }
+    }
+
+    if (showDeleteExerciseDialog) {
+        exerciseToDelete?.let { (dayIndex, exerciseIndex, exerciseName) ->
+            val day = uiState.days[dayIndex]
+            val exercise = day.exercises[exerciseIndex]
+
+            DeleteExerciseConfirmationDialog(
+                exerciseName = exerciseName,
+                dayName = day.name,
+                setsCount = exercise.sets.size,
+                onConfirm = {
+                    viewModel.removeExerciseFromDay(dayIndex, exerciseIndex)
+                    showDeleteExerciseDialog = false
+                    exerciseToDelete = null
+                },
+                onDismiss = {
+                    showDeleteExerciseDialog = false
+                    exerciseToDelete = null
+                }
+            )
+        }
+    }
+
+    if (showDeleteSetDialog) {
+        setToDelete?.let { (dayIndex, exerciseIndex, setIndex) ->
+            val day = uiState.days[dayIndex]
+            val exercise = day.exercises[exerciseIndex]
+
+            DeleteSetConfirmationDialog(
+                setIndex = setIndex,
+                exerciseName = exercise.exercise.name,
+                onConfirm = {
+                    viewModel.removeSetFromExercise(dayIndex, exerciseIndex, setIndex)
+                    showDeleteSetDialog = false
+                    setToDelete = null
+                },
+                onDismiss = {
+                    showDeleteSetDialog = false
+                    setToDelete = null
+                }
+            )
+        }
+    }
+
 
     if (showSuccessDialog) {
         TrainingPlanSuccessDialog(
@@ -631,7 +986,10 @@ private fun BasicInfoStep(
 private fun DaysAndExercisesStep(
     uiState: CreateTrainingPlanState,
     viewModel: CreateTrainingPlanViewModel,
-    onNavigateToExerciseSelection: (Int) -> Unit
+    onNavigateToExerciseSelection: (Int) -> Unit,
+    onRequestDeleteDay: (Int) -> Unit,
+    onRequestDeleteExercise: (Int, Int) -> Unit,
+    onRequestDeleteSet: (Int, Int, Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -679,10 +1037,10 @@ private fun DaysAndExercisesStep(
                         dayIndex = index,
                         onNameChange = { name -> viewModel.updateDayName(index, name) },
                         onToggleRestDay = { viewModel.toggleRestDay(index) },
-                        onRemoveDay = { viewModel.removeDay(index) },
+                        onRemoveDay = { onRequestDeleteDay(index) },
                         onAddExercise = { onNavigateToExerciseSelection(index) },
                         onRemoveExercise = { exerciseIndex ->
-                            viewModel.removeExerciseFromDay(index, exerciseIndex)
+                            onRequestDeleteExercise(index, exerciseIndex)
                         },
                         onUpdateRestTime = { exerciseIndex, restTime ->
                             viewModel.updateExerciseRestTime(index, exerciseIndex, restTime)
@@ -694,7 +1052,7 @@ private fun DaysAndExercisesStep(
                             viewModel.addSetToExercise(index, exerciseIndex)
                         },
                         onRemoveSet = { exerciseIndex, setIndex ->
-                            viewModel.removeSetFromExercise(index, exerciseIndex, setIndex)
+                            onRequestDeleteSet(index, exerciseIndex, setIndex)
                         },
                         onUpdateSet = { exerciseIndex, setIndex, set ->
                             viewModel.updateSet(index, exerciseIndex, setIndex, set)
