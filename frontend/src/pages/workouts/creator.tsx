@@ -43,7 +43,7 @@ import ActiveDay from '@/components/features/workouts/views/active-day';
 import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Badge } from '@/components/ui/badge';
-import { calculateWorkoutTime, extractDirtyFieldsData } from '@/lib/utils';
+import { calculateWorkoutTime, cn, extractDirtyFieldsData } from '@/lib/utils';
 import {
   parseDayLabel,
   parseExerciseLabel,
@@ -125,6 +125,10 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
   });
 
   const imageFile = form.watch('stepOne.image');
+
+  const isEditModeReady = useMemo(() => {
+    return isEditMode && (isLoading || isFilesLoading || !guardsReady || !guardsPassed);
+  }, [isEditMode, isLoading, isFilesLoading, guardsReady, guardsPassed]);
 
   const { isImageDefault } = useMemo(() => {
     return compareFiles(imageFile);
@@ -209,11 +213,16 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
       titleClassName="text-center"
     >
       <Stepper step={step} steps={workoutCreatorConstants.steps} />
-      <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-start">
+      <Card
+        className={cn(
+          'overflow-hidden min-h-[60dvh] flex flex-col items-center justify-start',
+          isEditModeReady && 'justify-center',
+        )}
+      >
         <CardContent className="w-full">
-          {isEditMode && (isLoading || isFilesLoading || !guardsReady || !guardsPassed) ? (
+          {isEditModeReady ? (
             <>
-              <Loader2 className="mx-auto my-4 animate-spin" size={32} />
+              <Loader2 className="mx-auto mb-4 animate-spin" size={32} />
               <Typography className="text-center" variant="p">
                 Ładowanie danych planu...
               </Typography>

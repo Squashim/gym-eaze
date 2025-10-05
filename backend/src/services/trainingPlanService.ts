@@ -263,7 +263,6 @@ export const getTrainingPlanByIdService = async (planId: string, currentUserId?:
     throw new Error('Nie masz uprawnień do przeglądania tego planu treningowego');
   }
 
-  const daysCount = trainingPlan.days?.length || 0;
   const totalExercises =
     trainingPlan.days?.reduce((sum, day) => sum + (day.exercises?.length || 0), 0) || 0;
   const totalDuration =
@@ -271,7 +270,6 @@ export const getTrainingPlanByIdService = async (planId: string, currentUserId?:
 
   return {
     ...trainingPlan,
-    daysCount,
     totalExercises,
     totalDuration,
   };

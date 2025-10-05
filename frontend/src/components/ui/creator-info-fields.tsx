@@ -1,20 +1,22 @@
 import { cn } from '@/lib/utils';
 import type { PropsWithChildren } from 'react';
 import { type LucideIcon } from 'lucide-react';
-import Typography from './typography';
+import Typography, { type Variant } from './typography';
 
 const InfoField = ({
   label,
   fullWidth = false,
   children,
+  variant = 'small',
   className,
 }: PropsWithChildren & {
   fullWidth?: boolean;
   className?: string;
+  variant?: Variant;
   label: string;
 }) => (
   <div className={cn('flex flex-col gap-1', fullWidth && 'md:col-span-full', className)}>
-    <Typography className="font-semibold" variant="small">
+    <Typography className="font-semibold" variant={variant}>
       {label}:
     </Typography>
     {children}

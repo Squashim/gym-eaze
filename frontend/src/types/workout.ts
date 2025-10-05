@@ -39,6 +39,11 @@ export type WorkoutApiResponse = BaseWorkout<string, WorkoutApiDay[]> & {
   updatedAt: string;
 };
 
+export type GetWorkoutApiResponse = WorkoutApiResponse & {
+  totalDuration: number;
+  totalExercises: number;
+};
+
 type WorkoutApiDay = {
   name: string;
   dayNumber: number;

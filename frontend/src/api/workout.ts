@@ -4,6 +4,7 @@ import { objectToFormData } from '@/lib/utils';
 import type {
   CreateWorkoutPayload,
   UpdateWorkoutPayload,
+  GetWorkoutApiResponse,
   WorkoutApiResponse,
 } from '@/types/workout';
 import type { ApiResponse } from '@/types/api';
@@ -37,8 +38,8 @@ const toggleFavorite = async (id: string): Promise<ApiResponse> => {
   return data;
 };
 
-const getById = async (id: string): Promise<WorkoutApiResponse> => {
-  const { data } = await API.get<WorkoutApiResponse>(endpoints.byId(id));
+const getById = async (id: string): Promise<GetWorkoutApiResponse> => {
+  const { data } = await API.get<GetWorkoutApiResponse>(endpoints.byId(id));
   return data;
 };
 

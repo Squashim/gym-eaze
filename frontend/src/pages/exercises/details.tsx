@@ -97,7 +97,7 @@ const ExerciseDetails = () => {
       {isLoading ? (
         <ExerciseSkeleton />
       ) : !exercise ? (
-        <EmptyExerciseCard error={error} isError={isError} />
+        <EmptyExerciseCard error={error} />
       ) : (
         <>
           <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
@@ -219,37 +219,35 @@ const ExerciseDetails = () => {
 
 export default ExerciseDetails;
 
-const EmptyExerciseCard = ({ error, isError }: { error: Error | null; isError: boolean }) => {
+const EmptyExerciseCard = ({ error }: { error: Error | null }) => {
   return (
-    isError && (
-      <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
-        <Skeleton className="col-span-full min-h-18 animate-none bg-card border text-card-foreground flex items-center p-6">
-          <Typography variant="h1">Coś poszło nie tak...</Typography>
+    <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4">
+      <Skeleton className="col-span-full min-h-18 animate-none bg-card border text-card-foreground flex items-center p-6">
+        <Typography variant="h1">Coś poszło nie tak...</Typography>
+      </Skeleton>
+      <div className="w-full rounded-xl max-w-xl mx-auto">
+        <Skeleton className="w-full aspect-square animate-none rounded-xl h-full bg-card border text-card-foreground flex items-center justify-center">
+          <div className="size-124 rounded-full flex items-center justify-center">
+            <VideoOff className="size-12 text-muted-foreground animate-pulse" />
+          </div>
         </Skeleton>
-        <div className="w-full rounded-xl max-w-xl mx-auto">
-          <Skeleton className="w-full aspect-square animate-none rounded-xl h-full bg-card border text-card-foreground flex items-center justify-center">
-            <div className="size-124 rounded-full flex items-center justify-center">
-              <VideoOff className="size-12 text-muted-foreground animate-pulse" />
-            </div>
-          </Skeleton>
-        </div>
-        <div className="flex flex-col gap-4">
-          <Skeleton className="w-full min-h-60 animate-none bg-card border text-card-foreground p-6 flex flex-col gap-4">
-            <Typography variant="h2">
-              {getApiErrorMsg(error) || 'Wystąpił nieoczekiwany błąd'}
-            </Typography>
-            <Typography className="max-w-xl" variant="lead">
-              Nie udało się wczytać ćwiczenia. Spróbuj odświeżyć stronę lub wróć do listy ćwiczeń.
-            </Typography>
-            <Button asChild className="w-full sm:w-fit" size="lg">
-              <a href="/exercises/browse">Powrót do listy ćwiczeń</a>
-            </Button>
-          </Skeleton>
-          <Skeleton className="w-full h-40" />
-          <Skeleton className="w-full h-40" />
-        </div>
-      </section>
-    )
+      </div>
+      <div className="flex flex-col gap-4">
+        <Skeleton className="w-full min-h-60 animate-none bg-card border text-card-foreground p-6 flex flex-col gap-4">
+          <Typography variant="h2">
+            {getApiErrorMsg(error) || 'Wystąpił nieoczekiwany błąd'}
+          </Typography>
+          <Typography className="max-w-xl" variant="lead">
+            Nie udało się wczytać ćwiczenia. Spróbuj odświeżyć stronę lub wróć do listy ćwiczeń.
+          </Typography>
+          <Button asChild className="w-full sm:w-fit" size="lg">
+            <a href="/exercises/browse">Powrót do listy ćwiczeń</a>
+          </Button>
+        </Skeleton>
+        <Skeleton className="w-full h-40" />
+        <Skeleton className="w-full h-40" />
+      </div>
+    </section>
   );
 };
 
