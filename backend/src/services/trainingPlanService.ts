@@ -248,6 +248,10 @@ export const toggleTrainingPlanFavoriteService = async (userId: string, planId: 
 };
 
 export const getTrainingPlanByIdService = async (planId: string, currentUserId?: string) => {
+  if (!mongoose.Types.ObjectId.isValid(planId)) {
+    throw new Error('Nieprawidłowy identyfikator planu treningowego');
+  }
+
   const trainingPlan = await TrainingPlan.findById(planId)
     .populate('author', 'username profileDetails.profilePicture')
     .lean();

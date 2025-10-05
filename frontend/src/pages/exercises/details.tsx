@@ -4,7 +4,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevel } from '@/constants/advanced-level';
 import { useUser } from '@/context/user';
-import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import { cn, getApiErrorMsg } from '@/lib/utils';
@@ -33,28 +32,6 @@ const ExerciseDetails = () => {
     return user._id === exercise.author._id;
   }, [user, exercise]);
 
-  const guards = useMemo(
-    () => [
-      {
-        check: () => {
-          if (isLoading) return 'wait';
-          if (isError || !exercise) return true;
-          if (exercise.visibility === 'Publiczny') return true;
-          if (exercise.visibility === 'Prywatny') {
-            if (!user) return false;
-            return isAuthor;
-          }
-
-          return false;
-        },
-        redirectTo: '/exercises/browse',
-        errorMessage: 'Nie masz uprawnień do wyświetlenia tego ćwiczenia.',
-      },
-    ],
-    [isLoading, isError, exercise, user, isAuthor],
-  );
-
-  useSequentialGuards(guards);
   usePageTitle(exercise?.name ?? 'Szczegóły ćwiczenia');
 
   return (

@@ -43,7 +43,7 @@ import ActiveDay from '@/components/features/workouts/views/active-day';
 import { IconInfoField, InfoField } from '@/components/ui/info-fields';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Badge } from '@/components/ui/badge';
-import { calculateWorkoutTime, cn, extractDirtyFieldsData } from '@/lib/utils';
+import { calculateWorkoutTime, cn, extractDirtyFieldsData, getApiErrorMsg } from '@/lib/utils';
 import {
   parseDayLabel,
   parseExerciseLabel,
@@ -56,11 +56,10 @@ import type { CreateWorkoutPayload, UpdateWorkoutPayload } from '@/types/workout
 import HashtagList from '@/components/ui/hashtag-list';
 import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 import { toast } from 'sonner';
-import { useUser } from '@/context/user';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useGetWorkout from '@/hooks/query/workouts/use-get-workout';
-import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
+import { Button } from '@/components/ui/button';
 
 interface WorkoutCreatorProps {
   mode: 'create' | 'edit';
@@ -68,8 +67,8 @@ interface WorkoutCreatorProps {
 
 function WorkoutCreator({ mode }: WorkoutCreatorProps) {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const { user } = useUser();
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: workoutSchema,
     defaultValues: workoutCreatorConstants.defaultValues,
@@ -85,35 +84,10 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
     data: workoutData,
     isLoading,
     isError,
+    error,
   } = useGetWorkout(id!, {
     enabled: isEditMode && Boolean(id),
   });
-
-  const guards = useMemo(
-    () => [
-      {
-        check: () => {
-          if (!isEditMode) return true;
-          if (isLoading) return 'wait';
-          return !isError && !!workoutData;
-        },
-        redirectTo: '/workouts/browse',
-        errorMessage: 'Identyfikator planu jest niepoprawny.',
-      },
-      {
-        check: () => {
-          if (!isEditMode) return true;
-          if (isLoading) return 'wait';
-          return workoutData?.author._id === user?._id;
-        },
-        redirectTo: `/workouts/${workoutData?._id}`,
-        errorMessage: 'Nie masz uprawnień do edytowania tego planu.',
-      },
-    ],
-    [isEditMode, isLoading, isError, workoutData, user],
-  );
-
-  const { passed: guardsPassed, ready: guardsReady } = useSequentialGuards(guards);
 
   const {
     imageFile: defaultImageFile,
@@ -126,9 +100,9 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
 
   const imageFile = form.watch('stepOne.image');
 
-  const isEditModeReady = useMemo(() => {
-    return isEditMode && (isLoading || isFilesLoading || !guardsReady || !guardsPassed);
-  }, [isEditMode, isLoading, isFilesLoading, guardsReady, guardsPassed]);
+  const isEditModeLoading = useMemo(() => {
+    return isEditMode && (isLoading || isFilesLoading);
+  }, [isEditMode, isLoading, isFilesLoading]);
 
   const { isImageDefault } = useMemo(() => {
     return compareFiles(imageFile);
@@ -136,12 +110,13 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
 
   const { onCancel, bypassBlocker } = useUnsavedChangesWarning(
     form.formState.isDirty || (isEditMode && !isImageDefault),
+    isEditMode ? `/workouts/${id}` : '/workouts/browse',
   );
 
   usePageTitle(isEditMode ? 'Edytor planu treningowego' : 'Kreator planu treningowego');
 
   useEffect(() => {
-    if (!guardsPassed || !workoutData || !defaultImageFile || isError) return;
+    if (!workoutData || !defaultImageFile || isError) return;
 
     const fillForm = () => {
       form.reset({
@@ -161,7 +136,7 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
     };
 
     fillForm();
-  }, [guardsPassed, workoutData, defaultImageFile, isError, form]);
+  }, [workoutData, defaultImageFile, isError, form]);
 
   useEffect(() => {
     const daysError = form.formState.errors?.stepTwo?.days;
@@ -171,6 +146,11 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
       toast.error('Upewnij się, że każdy dzień treningowy jest poprawnie wypełniony.');
     }
   }, [form.formState.errors?.stepTwo?.days]);
+
+  const handleNavigateAway = () => {
+    bypassBlocker();
+    void navigate('/workouts/browse', { replace: true });
+  };
 
   const handleUpdate = (formData: WorkoutSchema) => {
     const dirtyFields = form.formState.dirtyFields;
@@ -215,17 +195,31 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
       <Stepper step={step} steps={workoutCreatorConstants.steps} />
       <Card
         className={cn(
-          'overflow-hidden min-h-[60dvh] flex flex-col items-center justify-start',
-          isEditModeReady && 'justify-center',
+          'overflow-hidden flex flex-col items-center justify-start w-full min-h-[60dvh]',
+          (isEditModeLoading || isError) && 'justify-center',
         )}
       >
         <CardContent className="w-full">
-          {isEditModeReady ? (
+          {isEditModeLoading ? (
             <>
-              <Loader2 className="mx-auto mb-4 animate-spin" size={32} />
-              <Typography className="text-center" variant="p">
+              <Loader2 className="mx-auto mb-2 animate-spin" size={32} />
+              <Typography className="text-center text-lg" variant="p">
                 Ładowanie danych planu...
               </Typography>
+            </>
+          ) : isError ? (
+            <>
+              <Typography className="text-center border-0" variant="h2">
+                {getApiErrorMsg(error) || 'Wystąpił nieoczekiwany błąd.'}
+              </Typography>
+              <Button
+                className="w-full sm:w-fit mt-2 block mx-auto"
+                onClick={handleNavigateAway}
+                size="lg"
+                type="button"
+              >
+                Powrót do listy planów
+              </Button>
             </>
           ) : (
             <Form {...form}>

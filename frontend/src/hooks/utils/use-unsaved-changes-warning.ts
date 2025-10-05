@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { useBlocker } from 'react-router-dom';
+import { useBlocker, useNavigate } from 'react-router-dom';
 
-export function useUnsavedChangesWarning(hasUnsavedChanges: boolean) {
+export function useUnsavedChangesWarning(hasUnsavedChanges: boolean, cancelPath: string) {
+  const navigate = useNavigate();
   const shouldBypassBlocker = useRef(false);
 
   const blocker = useBlocker(
@@ -30,7 +31,7 @@ export function useUnsavedChangesWarning(hasUnsavedChanges: boolean) {
   };
 
   const handleCancel = () => {
-    window.history.back();
+    void navigate(cancelPath, { replace: true });
   };
 
   useEffect(() => {

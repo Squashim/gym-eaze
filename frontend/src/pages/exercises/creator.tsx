@@ -21,7 +21,12 @@ import StepActions from '@/components/ui/step-actions';
 import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
-import { apiResponseToMultiSelectOptions, cn, extractDirtyFieldsData } from '@/lib/utils';
+import {
+  apiResponseToMultiSelectOptions,
+  cn,
+  extractDirtyFieldsData,
+  getApiErrorMsg,
+} from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedLevel } from '@/constants/advanced-level';
 import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
@@ -32,19 +37,18 @@ import { useEffect, useMemo } from 'react';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { exerciseCreatorConstants } from '@/constants/forms';
 import { useExercise } from '@/hooks/query/exercises/use-exercise';
-import { useUser } from '@/context/user';
 import type { CreateExercisePayload, UpdateExercisePayload } from '@/types/exercise';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
 import { Loader2 } from 'lucide-react';
 import { Visibility } from '@/constants/visibility';
-import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import PageLayout from '@/components/layout/page';
 import { InfoField } from '@/components/ui/info-fields';
 import HashtagList from '@/components/ui/hashtag-list';
 import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
+import { Button } from '@/components/ui/button';
 
 type ExerciseCreatorProps = {
   mode: 'create' | 'edit';
@@ -52,8 +56,8 @@ type ExerciseCreatorProps = {
 
 const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const { user } = useUser();
   const { form, step, nextStep, prevStep, totalSteps, refs, handleKeyDown } = useStepForm({
     schema: exerciseSchema,
     defaultValues: exerciseCreatorConstants.defaultValues,
@@ -69,35 +73,10 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     data: exerciseData,
     isLoading,
     isError,
+    error,
   } = useGetExercise(id!, {
     enabled: isEditMode && Boolean(id),
   });
-
-  const guards = useMemo(
-    () => [
-      {
-        check: () => {
-          if (!isEditMode) return true;
-          if (isLoading) return 'wait';
-          return !isError && !!exerciseData;
-        },
-        redirectTo: '/exercises/browse',
-        errorMessage: 'Identyfikator ćwiczenia jest niepoprawny.',
-      },
-      {
-        check: () => {
-          if (!isEditMode) return true;
-          if (isLoading) return 'wait';
-          return exerciseData?.author._id === user?._id;
-        },
-        redirectTo: `/exercises/${exerciseData?._id}`,
-        errorMessage: 'Nie masz uprawnień do edytowania tego ćwiczenia.',
-      },
-    ],
-    [isEditMode, isLoading, isError, exerciseData, user],
-  );
-
-  const { passed: guardsPassed, ready: guardsReady } = useSequentialGuards(guards);
 
   const {
     imageFile: defaultImageFile,
@@ -113,18 +92,23 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
   const imageFile = form.watch('stepOne.image');
   const videoFile = form.watch('stepOne.video');
 
+  const isEditModeLoading = useMemo(() => {
+    return isEditMode && (isLoading || isFilesLoading);
+  }, [isEditMode, isLoading, isFilesLoading]);
+
   const { isImageDefault, isVideoDefault } = useMemo(() => {
     return compareFiles(imageFile, videoFile);
   }, [imageFile, videoFile, compareFiles]);
 
   const { onCancel, bypassBlocker } = useUnsavedChangesWarning(
     form.formState.isDirty || (isEditMode && (!isImageDefault || !isVideoDefault)),
+    isEditMode ? `/exercises/${id}` : '/exercises/browse',
   );
 
   usePageTitle(isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia');
 
   useEffect(() => {
-    if (!guardsPassed || !exerciseData || !defaultImageFile || !defaultVideoFile || isError) return;
+    if (!exerciseData || !defaultImageFile || !defaultVideoFile || isError) return;
 
     const fillForm = () => {
       form.reset({
@@ -145,7 +129,12 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
     };
 
     fillForm();
-  }, [guardsPassed, exerciseData, defaultImageFile, defaultVideoFile, isError, form]);
+  }, [exerciseData, defaultImageFile, defaultVideoFile, isError, form]);
+
+  const handleNavigateAway = () => {
+    bypassBlocker();
+    void navigate('/exercises/browse', { replace: true });
+  };
 
   const handleUpdate = (formData: ExerciseSchema) => {
     const dirtyFields = form.formState.dirtyFields;
@@ -194,12 +183,26 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
       <Stepper step={step} steps={exerciseCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-center">
         <CardContent className="w-full">
-          {isEditMode && (isLoading || isFilesLoading || !guardsReady || !guardsPassed) ? (
+          {isEditModeLoading ? (
             <>
-              <Loader2 className="mx-auto mb-4 animate-spin" size={32} />
-              <Typography className="text-center" variant="p">
+              <Loader2 className="mx-auto mb-2 animate-spin" size={32} />
+              <Typography className="text-center text-lg" variant="p">
                 Ładowanie danych ćwiczenia...
               </Typography>
+            </>
+          ) : isError ? (
+            <>
+              <Typography className="text-center border-0" variant="h2">
+                {getApiErrorMsg(error) || 'Wystąpił nieoczekiwany błąd.'}
+              </Typography>
+              <Button
+                className="w-full sm:w-fit mt-2 block mx-auto"
+                onClick={handleNavigateAway}
+                size="lg"
+                type="button"
+              >
+                Powrót do listy ćwiczeń
+              </Button>
             </>
           ) : (
             <Form {...form}>

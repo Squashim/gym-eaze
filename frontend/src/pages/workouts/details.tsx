@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevel } from '@/constants/advanced-level';
 import { useUser } from '@/context/user';
-import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
@@ -49,28 +48,6 @@ function WorkoutDetails() {
     return getWeeks(workout.days);
   }, [workout]);
 
-  const guards = useMemo(
-    () => [
-      {
-        check: () => {
-          if (isLoading) return 'wait';
-          if (isError || !workout) return true;
-          if (workout.visibility === 'Publiczny') return true;
-          if (workout.visibility === 'Prywatny') {
-            if (!user) return false;
-            return isAuthor;
-          }
-
-          return false;
-        },
-        redirectTo: '/workouts/browse',
-        errorMessage: 'Nie masz uprawnień do wyświetlenia tego planu.',
-      },
-    ],
-    [isLoading, isError, workout, user, isAuthor],
-  );
-
-  useSequentialGuards(guards);
   usePageTitle(workout?.name ?? 'Szczegóły planu');
 
   return (
