@@ -42,7 +42,7 @@ import { useSequentialGuards } from '@/guards/use-sequential-guards';
 import useFormFiles from '@/hooks/use-form-files';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import PageLayout from '@/components/layout/page';
-import { InfoField } from '@/components/ui/creator-info-fields';
+import { InfoField } from '@/components/ui/info-fields';
 import HashtagList from '@/components/ui/hashtag-list';
 import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 

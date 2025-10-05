@@ -40,7 +40,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import ActiveDay from '@/components/features/workouts/views/active-day';
-import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
+import { IconInfoField, InfoField } from '@/components/ui/info-fields';
 import { AdvancedLevelBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Badge } from '@/components/ui/badge';
 import { calculateWorkoutTime, cn, extractDirtyFieldsData } from '@/lib/utils';

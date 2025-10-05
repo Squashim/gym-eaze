@@ -3,7 +3,8 @@ import PageLayout from '@/components/layout/page';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { IconInfoField, InfoField } from '@/components/ui/creator-info-fields';
+import HashtagList from '@/components/ui/hashtag-list';
+import { IconInfoField, InfoField } from '@/components/ui/info-fields';
 import { AdvancedLevelBadge, LikesBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import ResourceActions from '@/components/ui/resource-actions';
 import { DetailsActionBtn, DetailsAuthorBtn } from '@/components/ui/reusable-buttons';
@@ -512,18 +513,13 @@ function WorkoutMetaInfo({ workout, isAuthor }: WorkoutMetaInfoProps) {
 
       <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center flex-1">
         {workout.hashtags && workout.hashtags.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <Typography className="font-semibold">Hasztagi:</Typography>
-            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto scrollbar">
-              {workout.hashtags.map((hashtag) => {
-                return (
-                  <Badge className="min-h-7" key={hashtag} variant="outline">
-                    {`#${hashtag}`}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
+          <HashtagList
+            badgeClassName="min-h-7"
+            className="max-h-24"
+            fullWidth={false}
+            hashtags={workout.hashtags}
+            variant="p"
+          />
         )}
 
         <div className="flex flex-col gap-1 md:justify-self-end md:text-right md:ml-auto">
