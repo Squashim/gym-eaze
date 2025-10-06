@@ -2,6 +2,7 @@ import express from 'express';
 import {
   addTrainingPlan,
   deleteTrainingPlan,
+  downloadTrainingPlanPDF,
   getFavoriteTrainingPlans,
   getTrainingPlanById,
   getTrainingPlans,
@@ -46,6 +47,8 @@ router.get('/favorite', authenticate, getFavoriteTrainingPlans);
 router.patch('/:id/like', authenticate, toggleTrainingPlanLike);
 
 router.patch('/:id/favorite', authenticate, toggleTrainingPlanFavorite);
+
+router.get('/:id/pdf', authenticate, downloadTrainingPlanPDF);
 
 router.get('/:id', optionalAuth, getTrainingPlanById);
 

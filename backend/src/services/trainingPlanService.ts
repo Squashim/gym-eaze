@@ -15,6 +15,8 @@ import {
 } from '../utils/trainingPlanValidation';
 import { PrivacySettings } from '../constants/privacySettings';
 import User from '../models/userModel';
+import puppeteer from 'puppeteer';
+import { generateTrainingPlanHTML } from '../utils/trainingPlanPDF';
 
 export const createTrainingPlan = async (
   data: CreateTrainingPlanData,
@@ -434,4 +436,31 @@ export const getTrainingPlansByUserService = async (
   ]);
 
   return { items, total, page, pageSize };
+};
+
+export const generateTrainingPlanPDFService = async (planId: string, userId?: string) => {
+  const trainingPlan = await getTrainingPlanByIdService(planId, userId);
+
+  if (!trainingPlan) {
+    throw new Error('Plan treningowy nie został znaleziony');
+  }
+
+  const html = generateTrainingPlanHTML(trainingPlan);
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+  });
+
+  await browser.close();
+
+  return pdfBuffer;
 };
