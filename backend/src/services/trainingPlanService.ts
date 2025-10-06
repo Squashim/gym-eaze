@@ -263,9 +263,6 @@ export const getTrainingPlansService = async (
   const query: FilterQuery<ITrainingPlan> = {};
 
   query.visibility = PrivacySettings.public;
-  if (userId) {
-    query.author = { $ne: userId };
-  }
 
   const andFilters: FilterQuery<ITrainingPlan>[] = [];
 
@@ -359,7 +356,6 @@ export const getTrainingPlansService = async (
       .then((plans) =>
         plans.map((plan) => ({
           ...plan,
-          daysCount: plan.days?.length || 0,
           totalExercises:
             plan.days?.reduce((sum, day) => sum + (day.exercises?.length || 0), 0) || 0,
           totalDuration: plan.days?.reduce((sum, day) => sum + (day.totalDuration || 0), 0) || 0,

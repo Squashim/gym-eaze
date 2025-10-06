@@ -206,9 +206,6 @@ export const getExercisesService = async (
   const query: FilterQuery<IExercise> = {};
 
   query.visibility = PrivacySettings.public;
-  if (userId) {
-    query.author = { $ne: userId };
-  }
 
   const andFilters: FilterQuery<IExercise>[] = [];
 

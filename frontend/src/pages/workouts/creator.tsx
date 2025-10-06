@@ -460,7 +460,7 @@ function WorkoutCreatorStepThree() {
   const { watch } = useFormContext<WorkoutSchema>();
   const formData = watch();
 
-  const { totalDays, totalExercises, totalSets, avgDailyWorkoutTime } = useMemo(() => {
+  const { totalExercises, totalSets, avgDailyWorkoutTime } = useMemo(() => {
     const totalDays = formData.stepTwo.days.filter((day) => day.exercises.length > 0).length;
     const totalExercises = formData.stepTwo.days.reduce(
       (acc, day) => acc + day.exercises.length,
@@ -526,7 +526,10 @@ function WorkoutCreatorStepThree() {
             Plan zawiera:
           </Typography>
           <div className="flex flex-wrap gap-2 items-center">
-            <IconInfoField icon={CalendarDays} label={parseDayLabel(totalDays)} />
+            <IconInfoField
+              icon={CalendarDays}
+              label={parseDayLabel(formData.stepTwo.days.length)}
+            />
             <IconInfoField icon={BicepsFlexed} label={parseExerciseLabel(totalExercises)} />
             <IconInfoField icon={Flame} label={parseWorkoutSetsLabel(totalSets)} />
           </div>
