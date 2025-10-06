@@ -9,6 +9,7 @@ import {
 } from '../utils/trainingPlanValidation';
 import {
   createTrainingPlan,
+  generateTrainingPlanPDFService,
   getFavoriteTrainingPlansService,
   getTrainingPlanByIdService,
   getTrainingPlansByUserService,
@@ -311,6 +312,31 @@ export const getTrainingPlansByUser = async (req: AuthRequest, res: Response) =>
     return res.json(plans);
   } catch (error) {
     if (error instanceof Error) {
+      return res.status(500).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
+  }
+};
+
+export const downloadTrainingPlanPDF = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    const pdfBuffer = await generateTrainingPlanPDFService(id, userId);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="plan-treningowy-${id}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Plan treningowy nie został znaleziony') {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message === 'Plan treningowy jest prywatny') {
+        return res.status(403).json({ message: error.message });
+      }
       return res.status(500).json({ message: error.message });
     } else {
       return res.status(500).json({ message: 'Błąd serwera' });
