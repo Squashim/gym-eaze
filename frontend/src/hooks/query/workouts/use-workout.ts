@@ -1,4 +1,4 @@
-import { create, remove, toggleFavorite, toggleLike, update } from '@/api/workout';
+import { create, download, remove, toggleFavorite, toggleLike, update } from '@/api/workout';
 import queryClient from '@/config/query-client';
 import { QUERY_KEYS } from '@/constants/query-keys';
 import { useUser } from '@/context/user';
@@ -110,11 +110,37 @@ export function useWorkout() {
     },
   });
 
+  const downloadMutation = useMutation({
+    mutationFn: (id: string) => download(id),
+    onSuccess: (data, id) => {
+      const url = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `plan-treningowy-${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    },
+    onError: (error) => {
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          'Wystąpił nieoczekiwany błąd podczas pobierania planu treningowego. Spróbuj ponownie później.',
+        );
+      }
+    },
+  });
+
   return {
     createWorkout: createMutation,
     updateWorkout: updateMutation,
     deleteWorkout: deleteMutation,
     toggleLikeWorkout: toggleLikeMutation,
     toggleFavoriteWorkout: toggleFavoriteMutation,
+    downloadWorkout: downloadMutation,
   };
 }

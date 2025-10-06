@@ -39,4 +39,14 @@ export type ExerciseQuery = {
   pageSize: PageSize;
 };
 
+export type TrainingPlanExercise = {
+  _id: string;
+  name: string;
+  image: string;
+  muscleGroup: {
+    _id: string;
+    name: string;
+  }[];
+};
+
 export type UpdateExerciseData = Partial<CreateExerciseData>;

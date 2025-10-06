@@ -6,17 +6,18 @@ import {
   PageSize,
   SortBy,
   TrainingPlanFilters,
-  UpdateTrainingPlanData,
 } from '../types/trainingPlan';
 import {
   calculateExerciseDuration,
   validateTrainingPlanData,
   validateTrainingPlanFile,
+  validateTrainingPlanUpdateData,
 } from '../utils/trainingPlanValidation';
 import { PrivacySettings } from '../constants/privacySettings';
 import User from '../models/userModel';
 import puppeteer from 'puppeteer';
 import { generateTrainingPlanHTML } from '../utils/trainingPlanPDF';
+import { getExercisesByIdsService } from './exerciseService';
 
 export const createTrainingPlan = async (
   data: CreateTrainingPlanData,
@@ -103,35 +104,25 @@ export const getFavoriteTrainingPlansService = async (
 };
 
 export const updateTrainingPlanService = async (
-  planId: string,
-  updateData: Partial<UpdateTrainingPlanData>,
+  trainingPlan: ITrainingPlan,
+  updateData: Partial<CreateTrainingPlanData>,
   imageBuffer?: Buffer,
-  userId?: string,
 ) => {
-  const existingPlan = await TrainingPlan.findById(planId);
-  if (!existingPlan) {
-    throw new Error('Plan treningowy nie został znaleziony');
+  validateTrainingPlanUpdateData(updateData);
+
+  let imageUrl = trainingPlan.image;
+
+  if (imageBuffer) {
+    validateTrainingPlanFile(imageBuffer);
+    const uploaded = await uploadTrainingPlanMedia(imageBuffer);
+    if (uploaded.imageUrl) imageUrl = uploaded.imageUrl;
   }
-
-  if (existingPlan.author.toString() !== userId) {
-    throw new Error('Brak uprawnień do edycji tego planu');
-  }
-
-  const finalUpdateData: any = {};
-
-  if (updateData.name !== undefined) finalUpdateData.name = updateData.name;
-  if (updateData.description !== undefined) finalUpdateData.description = updateData.description;
-  if (updateData.goal !== undefined) finalUpdateData.goal = updateData.goal;
-  if (updateData.visibility !== undefined) finalUpdateData.visibility = updateData.visibility;
-  if (updateData.advancedLevel !== undefined)
-    finalUpdateData.advancedLevel = updateData.advancedLevel;
-  if (updateData.hashtags !== undefined) finalUpdateData.hashtags = updateData.hashtags;
 
   if (updateData.days) {
-    const daysWithDuration = updateData.days.map((day) => {
+    updateData.days = updateData.days.map((day) => {
       const exercisesWithDuration = day.exercises.map((exercise, idx, arr) => {
         const isLastExercise = idx === arr.length - 1;
-        const duration = calculateExerciseDuration(exercise as any, isLastExercise);
+        const duration = calculateExerciseDuration(exercise, isLastExercise ? true : false);
         return {
           ...exercise,
           duration,
@@ -143,42 +134,23 @@ export const updateTrainingPlanService = async (
         0,
       );
 
-      return {
-        ...day,
-        totalDuration,
-        exercises: exercisesWithDuration,
-      };
+      return { ...day, totalDuration, exercises: exercisesWithDuration };
     });
-
-    finalUpdateData.days = daysWithDuration;
   }
 
-  if (imageBuffer) {
-    validateTrainingPlanFile(imageBuffer);
-    const { imageUrl } = await uploadTrainingPlanMedia(imageBuffer);
-    finalUpdateData.image = imageUrl;
-  }
+  Object.assign(trainingPlan, {
+    name: updateData.name || trainingPlan.name,
+    description: updateData.description || trainingPlan.description,
+    goal: updateData.goal || trainingPlan.goal,
+    visibility: updateData.visibility || trainingPlan.visibility,
+    advancedLevel: updateData.advancedLevel || trainingPlan.advancedLevel,
+    hashtags: updateData.hashtags || trainingPlan.hashtags,
+    days: updateData.days || trainingPlan.days,
+    image: imageUrl,
+    updatedAt: new Date(),
+  });
 
-  if (Object.keys(finalUpdateData).length > 0) {
-    const dataToValidate = {
-      name: finalUpdateData.name || existingPlan.name,
-      goal: finalUpdateData.goal || existingPlan.goal,
-      visibility: finalUpdateData.visibility || existingPlan.visibility,
-      advancedLevel: finalUpdateData.advancedLevel || existingPlan.advancedLevel,
-      days: finalUpdateData.days || existingPlan.days,
-      hashtags: finalUpdateData.hashtags || existingPlan.hashtags,
-    };
-
-    validateTrainingPlanData(dataToValidate);
-  }
-
-  const updatedPlan = await TrainingPlan.findByIdAndUpdate(
-    planId,
-    { $set: finalUpdateData },
-    { new: true, runValidators: true },
-  );
-
-  return updatedPlan;
+  return await trainingPlan.save();
 };
 
 export const toggleTrainingPlanLikeService = async (userId: string, planId: string) => {
@@ -315,7 +287,7 @@ export const getTrainingPlansService = async (
   }
 
   if (filters.minDuration !== undefined || filters.maxDuration !== undefined) {
-    const durationFilter: any = {};
+    const durationFilter: { $gte?: number; $lte?: number } = {};
 
     if (filters.minDuration !== undefined) {
       durationFilter.$gte = filters.minDuration;
@@ -433,7 +405,28 @@ export const generateTrainingPlanPDFService = async (planId: string, userId?: st
     throw new Error('Plan treningowy nie został znaleziony');
   }
 
-  const html = generateTrainingPlanHTML(trainingPlan);
+  const exerciseIds: string[] = [];
+  trainingPlan.days.forEach((day) => {
+    day.exercises.forEach((exercise) => {
+      exerciseIds.push(exercise.id.toString());
+    });
+  });
+
+  const exerciseArray = await getExercisesByIdsService(exerciseIds);
+  const exercisesMap: Record<string, unknown> = {};
+  exerciseArray.forEach((ex) => {
+    exercisesMap[ex._id.toString()] = ex;
+  });
+
+  const daysExercises = trainingPlan.days.map((day) => ({
+    ...day,
+    exercises: day.exercises.map((ex) => ({
+      ...ex,
+      details: exercisesMap[ex.id.toString()] || null,
+    })),
+  }));
+
+  const html = generateTrainingPlanHTML(trainingPlan, daysExercises);
 
   const browser = await puppeteer.launch({
     headless: true,

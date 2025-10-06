@@ -174,7 +174,7 @@ interface WorkoutHeaderProps {
 }
 
 function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
-  const { deleteWorkout, toggleFavoriteWorkout, toggleLikeWorkout } = useWorkout();
+  const { deleteWorkout, toggleFavoriteWorkout, toggleLikeWorkout, downloadWorkout } = useWorkout();
   const { data: userLikes, isLoading: isLikedItemsLoading } = useGetLikedItems('trainingPlans');
   const { data: userFavorites, isLoading: isFavoritedItemsLoading } = useGetFavoritedItems(
     'trainingPlans',
@@ -211,8 +211,8 @@ function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
   }, []);
 
   const handleDownload = useCallback(() => {
-    //TODO: implement download functionality
-  }, []);
+    downloadWorkout.mutate(workout._id);
+  }, [downloadWorkout, workout]);
 
   return (
     <header className="col-span-full flex flex-col md:flex-row md:items-center md:justify-between md:gap-4">
@@ -229,7 +229,7 @@ function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
             deleteDescription:
               'Ta akcja jest nieodwracalna. Wszystkie dane związane z tym planem zostaną trwale usunięte.',
           }}
-          download={{ isDownloading: false, onDownload: handleDownload }}
+          download={{ isDownloading: downloadWorkout.isPending, onDownload: handleDownload }}
           edit={{ redirectTo: `/workouts/${workout._id}/edit` }}
           favorite={{
             isFavorited: favorited || false,

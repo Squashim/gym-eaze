@@ -1,4 +1,4 @@
-export const generateTrainingPlanHTML = (trainingPlan: any): string => {
+export const generateTrainingPlanHTML = (trainingPlan: any, daysExercises: any): string => {
   const goalTranslations: Record<string, string> = {
     weight_loss: 'Redukcja',
     muscle_gain: 'Masa mięśniowa',
@@ -76,6 +76,7 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
     <html lang="pl">
     <head>
       <meta charset="UTF-8">
+      <title>Plan treningowy ${trainingPlan.name}</title>
       <style>
         * {
           margin: 0;
@@ -404,7 +405,7 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
               <span class="meta-label">Cel:</span> ${goalTranslations[trainingPlan.goal] || trainingPlan.goal}
             </div>
             <div class="meta-item">
-              <span class="meta-label">Dni:</span> ${trainingPlan.daysCount}
+              <span class="meta-label">Dni:</span> ${trainingPlan.days.length}
             </div>
             <div class="meta-item">
               <span class="meta-label">Ćwiczenia:</span> ${trainingPlan.totalExercises}
@@ -420,12 +421,18 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
           }
         </div>
 
-        ${trainingPlan.days
+        ${daysExercises
           .map(
             (day: any, dayIndex: number) => `
           <div class="day">
             <div class="day-header ${day.isRestDay ? 'rest-day' : ''}">
-              <div class="day-title">Dzień ${dayIndex + 1}: ${day.name}</div>
+              ${
+                day.name.startsWith('Dzień')
+                  ? `
+                 <div class="day-title">${day.name}</div>
+                `
+                  : `<div class="day-title">Dzień ${dayIndex + 1}: ${day.name}</div>`
+              }
               ${
                 !day.isRestDay && day.totalDuration > 0
                   ? `<div class="day-duration">${formatDuration(day.totalDuration)}</div>`
@@ -445,11 +452,11 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
                       (exercise: any) => `
               <div class="exercise">
                 <div class="exercise-header">
-                  <div class="exercise-name">${exercise.id?.name || 'Ćwiczenie'}</div>
+                  <div class="exercise-name">${exercise.details?.name || 'Ćwiczenie'}</div>
                   ${
-                    exercise.id?.muscleGroup?.name
+                    exercise.details?.muscleGroup?.name
                       ? `
-                    <div class="exercise-muscle">${exercise.id.muscleGroup.name}</div>
+                    <div class="exercise-muscle">${exercise.details?.muscleGroup.name}</div>
                   `
                       : ''
                   }
@@ -478,7 +485,7 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
                 </div>
 
                 ${
-                  exercise.restAfterSet
+                  exercise.restAfterSet && exercise.sets.length > 1
                     ? `
                   <div class="rest-info">Odpoczynek: ${formatSetDuration(exercise.restAfterSet)}</div>
                 `

@@ -43,4 +43,9 @@ const getById = async (id: string): Promise<GetWorkoutApiResponse> => {
   return data;
 };
 
-export { create, update, remove, toggleLike, toggleFavorite, getById };
+const download = async (id: string): Promise<Blob> => {
+  const { data } = await API.get<Blob>(endpoints.download(id), { responseType: 'blob' });
+  return data;
+};
+
+export { create, update, remove, toggleLike, toggleFavorite, getById, download };

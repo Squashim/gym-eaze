@@ -18,6 +18,7 @@ interface NumberInputProps {
   suffix?: string;
   className?: string;
   labelClassName?: string;
+  disabled?: boolean;
   autoFocus?: boolean;
 }
 
@@ -33,6 +34,7 @@ function NumberInput({
   suffix,
   labelClassName,
   autoFocus = false,
+  disabled = false,
   className,
 }: NumberInputProps) {
   const uid = useId();
@@ -77,7 +79,7 @@ function NumberInput({
   const component = (
     <div className="inline-flex gap-2">
       <Button
-        disabled={value <= min}
+        disabled={value <= min || disabled}
         onClick={decrement}
         size="icon"
         type="button"
@@ -89,6 +91,7 @@ function NumberInput({
         <Input
           autoFocus={autoFocus}
           className={cn('w-20 text-center', className)}
+          disabled={disabled}
           id={id || uid}
           inputMode="numeric"
           max={max}
@@ -107,7 +110,7 @@ function NumberInput({
         )}
       </div>
       <Button
-        disabled={value >= max}
+        disabled={value >= max || disabled}
         onClick={increment}
         size="icon"
         type="button"

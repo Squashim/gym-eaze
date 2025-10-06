@@ -24,6 +24,7 @@ export const WORKOUT = {
   byId: (id: string) => `training-plans/${id}`,
   toggleLike: (id: string) => `training-plans/${id}/like`,
   toggleFavorite: (id: string) => `training-plans/${id}/favorite`,
+  download: (id: string) => `training-plans/${id}/pdf`,
 } as const;
 
 export const POST = {
