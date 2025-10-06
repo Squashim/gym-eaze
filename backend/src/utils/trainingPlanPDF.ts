@@ -90,24 +90,22 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
 
         body {
           font-family: 'Arial', sans-serif;
-          background: linear-gradient(to bottom, #f5f5f5 0%, #e8f5e9 100%);
+          background-image: radial-gradient(circle, #c5c0c0ff 1.5px, transparent 1.5px);
+          background-size: 8mm 8mm;
+          background-position: 4mm 4mm;
           position: relative;
           margin: 0;
           padding: 0;
         }
 
-        body::before {
-          content: '';
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-image: radial-gradient(circle, #c5c0c0ff 1.5px, transparent 1.5px);
-          background-size: 8mm 8mm;
-          background-position: 4mm 4mm;
-          z-index: 0;
-          pointer-events: none;
+        @page:first{
+          padding-top: 0mm;
+        }
+        
+        @page{
+          size: A4;
+          margin: 0;
+          padding-top: 15mm;
         }
 
         .page-background {
@@ -121,46 +119,35 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
         }
 
         .green-circle-top {
-          position: absolute;
-          top: -100mm;
-          right: -80mm;
-          width: 250mm;
-          height: 250mm;
+          position: fixed;
+          top: 80mm;
+          left: -80mm;
+          width: 200mm;
+          height: 200mm;
           background: radial-gradient(circle, rgba(139, 195, 74, 0.15) 0%, transparent 70%);
           border-radius: 50%;
-          filter: blur(60px);
-        }
-
-        .green-circle-bottom {
-          position: absolute;
-          bottom: -120mm;
-          right: -100mm;
-          width: 280mm;
-          height: 280mm;
-          background: radial-gradient(circle, rgba(139, 195, 74, 0.12) 0%, transparent 70%);
-          border-radius: 50%;
-          filter: blur(80px);
+          filter: blur(50px);
         }
 
         .green-stripe {
           position: fixed;
-          top: 4px;
-          bottom: 4px;
+          top: 2mm;
+          bottom: 2mm;
           right: 10px;
           width: 3mm;
-          height: auto; 
-          background: linear-gradient(180deg, #c8e4b1ff 0%, #5b9020ff 100%);
+          height: 250mm;
+          border-radius: 12px;
+          background: linear-gradient(180deg, #c8e4b1ff 0%, #5b9020ff 50%, #c8e4b1ff 100%);
           z-index: 1;
-          clip-path: polygon(0 0, 100% 15mm, 100% 100%, 0 100%);
         }
 
         .logo {
-          position: fixed;
+          position: absolute;
           top: 4mm;
-          right: 6mm;
+          right: 12mm;
           z-index: 2;
-          width: 80px;
-          height: 80px;
+          width: 25mm;
+          height: 25mm;
         }
 
         .logo img {
@@ -247,7 +234,8 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
           color: #555;
           line-height: 1.6;
           margin-top: 10px;
-          background: rgba(255,255,255,0.7);
+          background: rgba(255,255,255);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.08);
           padding: 12px;
           border-radius: 8px;
         }
@@ -264,6 +252,7 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
           margin-bottom: 8px;
           display: flex;
           justify-content: space-between;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.08);
           align-items: center;
           page-break-after: avoid;
         }
@@ -389,51 +378,12 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
           font-size: 11px;
           font-weight: 500;
         }
-
-      @media print {
-
-        @page :first {
-          margin-top: 0mm;
-        }
-        
-          body::before {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-            
-          .body::before,
-          .page-background,
-          .green-stripe,
-          .logo {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          
-          .day {
-            page-break-inside: auto;
-          }
-          
-          .exercise {
-            page-break-inside: avoid;
-            break-inside: avoid;
-          }
-          
-          .day-header {
-            page-break-after: avoid;
-          }
-          
-          .summary {
-            page-break-inside: avoid;
-          }
-        }
       </style>
     </head>
     <body>
 
       <div class="page-background">
-        <!-- Zielone koła w tle -->
         <div class="green-circle-top"></div>
-        <div class="green-circle-bottom"></div>
       </div>
 
       <div class="green-stripe"></div>
@@ -557,7 +507,7 @@ export const generateTrainingPlanHTML = (trainingPlan: any): string => {
             </div>
             <div class="stat">
               <div class="stat-value">${trainingPlan.totalExercises}</div>
-              <div class="stat-label">Łączna ilość ćwiczeń</div>
+              <div class="stat-label">Łączna liczba ćwiczeń</div>
             </div>
             <div class="stat">
               <div class="stat-value">${formatTotalDuration(trainingPlan.totalDuration)}</div>
