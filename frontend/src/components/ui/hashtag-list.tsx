@@ -1,14 +1,30 @@
+import { cn } from '@/lib/utils';
 import { Badge } from './badge';
-import { InfoField } from './creator-info-fields';
+import { InfoField } from './info-fields';
+import type { Variant } from './typography';
 
-function HashtagList({ hashtags }: { hashtags: string[] }) {
+interface HashtagListProps {
+  hashtags: string[];
+  fullWidth?: boolean;
+  className?: string;
+  variant?: Variant;
+  badgeClassName?: string;
+}
+
+function HashtagList({
+  hashtags,
+  fullWidth = true,
+  className,
+  badgeClassName,
+  variant = 'small',
+}: HashtagListProps) {
   if (!hashtags.length) return null;
 
   return (
-    <InfoField fullWidth label="Hasztagi">
-      <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar">
+    <InfoField fullWidth={fullWidth} label="Hasztagi" variant={variant}>
+      <div className={cn('flex flex-wrap gap-1 max-h-16 overflow-y-auto scrollbar', className)}>
         {hashtags.map((hashtag) => (
-          <Badge key={hashtag} variant="outline">
+          <Badge className={badgeClassName} key={hashtag} variant="outline">
             {`#${hashtag}`}
           </Badge>
         ))}

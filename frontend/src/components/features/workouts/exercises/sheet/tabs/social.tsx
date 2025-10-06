@@ -27,8 +27,6 @@ import {
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
 
-const FILTERS_MAX_HEIGHT = 650;
-
 const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {
   const { params, setPage, setFilters, setSortBy, clearFilters } =
     useFilterQuery<ExerciseFilters>(initialExerciseFilters);
@@ -62,10 +60,6 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
     [muscleGroups],
   );
   const equipmentOptions = useMemo(() => apiResponseToMultiSelectOptions(equipment), [equipment]);
-
-  const listMaxHeight = isMoreFiltersOpen
-    ? `calc(100vh - min(${FILTERS_MAX_HEIGHT}px, 70vh))`
-    : `calc(100vh - 15rem)`;
 
   useEffect(() => {
     setFilters({ search: debouncedSearch });
@@ -117,51 +111,53 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
 
   return (
     <>
-      <header className="flex items-center w-full gap-3">
+      <header className="flex items-center w-full gap-2 sm:gap-3">
         {renderSearchInput()}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button className="relative" onClick={handleMoreFiltersToggle} size="icon">
-              <Filter />
-              {activeFiltersCount > 0 && (
-                <Badge
-                  className="absolute -top-1 -right-1 rounded-full min-w-5 h-5 px-1 tabular-nums"
-                  variant="secondary"
-                >
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <Typography variant="small">
-              {isMoreFiltersOpen ? 'Ukryj filtry' : 'Pokaż filtry'}
-            </Typography>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className={cn(activeFiltersCount > 0 ? 'visible' : 'invisible')}
-              onClick={clearFilters}
-              size="icon"
-              variant="ghost"
-            >
-              <Eraser />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <Typography variant="small">Wyczyść filtry</Typography>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex gap-1 sm:gap-2 shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button className="relative" onClick={handleMoreFiltersToggle} size="icon">
+                <Filter />
+                {activeFiltersCount > 0 && (
+                  <Badge
+                    className="absolute -top-1 -right-1 rounded-full min-w-5 h-5 px-1 tabular-nums"
+                    variant="secondary"
+                  >
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <Typography variant="small">
+                {isMoreFiltersOpen ? 'Ukryj filtry' : 'Pokaż filtry'}
+              </Typography>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className={cn(activeFiltersCount > 0 ? 'visible' : 'invisible')}
+                onClick={clearFilters}
+                size="icon"
+                variant="ghost"
+              >
+                <Eraser />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <Typography variant="small">Wyczyść filtry</Typography>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </header>
       <div
         className={cn(
           'overflow-hidden transition-all duration-300 ease-in-out flex flex-col gap-3 mt-3 p-0.5',
-          isMoreFiltersOpen ? 'max-h-[500px] opacity-100 mb-3' : 'max-h-0 opacity-0',
+          isMoreFiltersOpen ? 'max-h-[600px] opacity-100 mb-3' : 'max-h-0 opacity-0',
         )}
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Typography className="font-semibold" variant="small">
               Sortuj według:
@@ -286,7 +282,7 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
           </div>
         </div>
       </div>
-      <div className="flex flex-col h-full pb-3" style={{ maxHeight: listMaxHeight }}>
+      <div className="flex flex-col h-full pb-3 max-h-[63dvh] sm:max-h-[calc(100dvh_-_14.5rem)] min-h-[30dvh]">
         <ExerciseList
           exercises={exercises}
           isError={isError}

@@ -2,8 +2,18 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import Typography from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
-import { ExternalLink, Flag, Heart, Loader2, Pencil, ThumbsUp, Trash } from 'lucide-react';
+import {
+  Download,
+  ExternalLink,
+  Flag,
+  Heart,
+  Loader2,
+  Pencil,
+  ThumbsUp,
+  Trash,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ReusableAvatar from './reusable-avatar';
 
 type BaseBtnProps = {
   onClick: () => void;
@@ -16,6 +26,12 @@ type RedirectBtnProps = Partial<BaseBtnProps> & {
 type ToggleBtnProps = BaseBtnProps & {
   isActive?: boolean;
   isLoading?: boolean;
+};
+
+type DetailsAuthorBtnProps = RedirectBtnProps & {
+  authorName?: string;
+  authorAvatar?: string;
+  isAuthor: boolean;
 };
 
 const EditActionBtn = ({ redirectTo, onClick }: RedirectBtnProps) => {
@@ -91,16 +107,34 @@ const FavoriteActionBtn = ({ onClick, isActive, isLoading }: ToggleBtnProps) => 
 
 const ReportActionBtn = ({ onClick }: BaseBtnProps) => {
   return (
-    <>
-      <Button onClick={onClick} variant="outline">
-        <Flag />
-        Zgłoś
-      </Button>
-    </>
+    <Button onClick={onClick} variant="outline">
+      <Flag />
+      Zgłoś
+    </Button>
   );
 };
 
-const DetailsActionBtn = ({ redirectTo }: RedirectBtnProps) => {
+const DownloadActionBtn = ({ onClick, isLoading }: BaseBtnProps & { isLoading: boolean }) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button disabled={isLoading} onClick={onClick} size="icon" variant="outline">
+          {isLoading ? <Loader2 className="animate-spin" /> : <Download />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <Typography variant="small">Pobierz plan (plik .pdf)</Typography>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+const DetailsActionBtn = ({
+  redirectTo,
+  className,
+}: RedirectBtnProps & {
+  className?: string;
+}) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLAnchorElement>) => {
     if (e.key === ' ') {
       e.preventDefault();
@@ -113,6 +147,7 @@ const DetailsActionBtn = ({ redirectTo }: RedirectBtnProps) => {
       <TooltipTrigger asChild>
         <Button
           asChild
+          className={className}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
           size="icon"
@@ -136,11 +171,46 @@ const DetailsActionBtn = ({ redirectTo }: RedirectBtnProps) => {
   );
 };
 
+const DetailsAuthorBtn = ({
+  redirectTo,
+  authorName,
+  authorAvatar,
+  isAuthor,
+}: DetailsAuthorBtnProps) => {
+  return (
+    <div className="flex items-center gap-2 md:justify-end">
+      <Button
+        asChild
+        className="flex items-center gap-2 p-0 hover:bg-transparent rounded-tl-2xl rounded-bl-2xl"
+        variant="ghost"
+      >
+        <a
+          className="flex items-center gap-2 pr-2"
+          href={redirectTo}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <ReusableAvatar
+            className="shadow-sm"
+            fallbackClassName="dark:bg-background"
+            profilePicture={authorAvatar}
+            username={authorName}
+          />
+          {authorName}
+          {isAuthor && ' (Ty)'}
+        </a>
+      </Button>
+    </div>
+  );
+};
+
 export {
   EditActionBtn,
   DeleteActionBtn,
   LikeActionBtn,
   FavoriteActionBtn,
   ReportActionBtn,
+  DownloadActionBtn,
   DetailsActionBtn,
+  DetailsAuthorBtn,
 };

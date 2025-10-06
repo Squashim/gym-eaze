@@ -13,11 +13,13 @@ import { usePost } from '@/hooks/query/posts/use-post';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import usePostParamsQuery from '@/hooks/use-post-params-query';
 import useOpen from '@/hooks/utils/use-open';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 function Community() {
   const { params, setHashtags, setParam, clearParams } = usePostParamsQuery();
+
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
@@ -33,6 +35,7 @@ function Community() {
   const { ref, inView } = useInView({
     threshold: 1,
   });
+  usePageTitle('Przeglądaj posty');
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [pendingLikePostId, setPendingLikePostId] = useState<string | null>(null);
 

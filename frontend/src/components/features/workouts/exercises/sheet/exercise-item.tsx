@@ -24,34 +24,39 @@ const ExerciseItem = ({ item, onExerciseToggle, isExerciseAdded }: ExerciseItemP
   );
 
   return (
-    <div className="rounded-md p-3 shadow-md flex gap-2 border bg-card text-card-foreground h-26 max-[425px]:h-auto">
-      <div className="flex gap-3 max-[425px]:flex-col">
-        <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-[425px]:max-h-26">
+    <div className="rounded-md p-3 shadow-md flex flex-col sm:flex-row gap-3 border bg-card text-card-foreground min-h-26 max-sm:min-h-auto">
+      <div className="flex gap-3 sm:flex-1">
+        <div className="shrink-0 overflow-hidden size-20">
           <img
             alt={`zdjęcie poglądowe ćwiczenia ${item.name}`}
-            className="h-full aspect-square object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
+            className="w-full h-full aspect-square object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
             src={item.image}
           />
         </div>
-        <div className="flex flex-col items-start justify-between h-full">
-          <Typography className="text-sm font-semibold line-clamp-1">{item.name}</Typography>
-          <Typography className="text-sm line-clamp-1" variant="muted">
+        <div className="flex flex-col justify-between min-h-20 sm:h-auto flex-1 min-w-0">
+          <Typography className="text-sm sm:text-base font-semibold line-clamp-2 sm:line-clamp-1">
+            {item.name}
+          </Typography>
+          <Typography className="text-xs sm:text-sm line-clamp-1" variant="muted">
             {displayMuscleGroups}
           </Typography>
-          <div className="flex gap-2 items-center flex-wrap">
+          <div className="flex gap-1 sm:gap-2 items-center flex-wrap">
             <AdvancedLevelBadge advancedLevel={item.advancedLevel} />
             <LikesBadge likes={item.likes} />
           </div>
         </div>
       </div>
 
-      <div className="flex gap-2 ml-auto flex-col h-full">
-        <DetailsActionBtn redirectTo={`/exercises/${item._id}`} />
+      <div className="flex gap-2 sm:flex-col justify-end sm:justify-start">
+        <DetailsActionBtn
+          className='"sm:w-auto w-full flex-1 sm:flex-none"'
+          redirectTo={`/exercises/${item._id}`}
+        />
 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="relative"
+              className="relative max-sm:w-full max-sm:flex-1"
               onClick={() => handleExerciseToggle(item._id)}
               size="icon"
               variant={isAdded ? 'destructive' : 'outline'}

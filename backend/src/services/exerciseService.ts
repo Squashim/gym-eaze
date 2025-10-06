@@ -165,6 +165,10 @@ export const getExerciseByIdService = async (
   id: string,
   userId?: string,
 ): Promise<typeof exercise | null | 'forbidden'> => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error('Nieprawidłowy identyfikator ćwiczenia');
+  }
+
   const exercise = await Exercise.findById(id)
     .populate([
       { path: 'muscleGroup' },
