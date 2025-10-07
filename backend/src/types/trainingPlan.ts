@@ -51,7 +51,6 @@ export interface TrainingPlanFilters {
   search?: string;
   goal?: Goal;
   difficulty?: AdvancedLevel;
-  duration?: number;
   minDuration?: number;
   maxDuration?: number;
   hashtags?: string[];

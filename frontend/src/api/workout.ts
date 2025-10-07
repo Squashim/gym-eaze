@@ -6,8 +6,10 @@ import type {
   UpdateWorkoutPayload,
   GetWorkoutApiResponse,
   WorkoutApiResponse,
+  GetWorkoutsApiResponse,
 } from '@/types/workout';
 import type { ApiResponse } from '@/types/api';
+import type { PaginatedResponse, WorkoutQueryParams } from '@/types/filters';
 
 const create = async (payload: CreateWorkoutPayload): Promise<WorkoutApiResponse> => {
   const parsedPayload = { ...payload, days: JSON.stringify(payload.days) };
@@ -43,9 +45,22 @@ const getById = async (id: string): Promise<GetWorkoutApiResponse> => {
   return data;
 };
 
+const getAll = async (
+  params: WorkoutQueryParams,
+): Promise<PaginatedResponse<GetWorkoutsApiResponse>> => {
+  const { data } = await API.post<PaginatedResponse<GetWorkoutsApiResponse>>(endpoints.search, {
+    filters: params.filters,
+    page: params.page,
+    pageSize: params.pageSize,
+    sortBy: params.sortBy,
+  });
+
+  return data;
+};
+
 const download = async (id: string): Promise<Blob> => {
   const { data } = await API.get<Blob>(endpoints.download(id), { responseType: 'blob' });
   return data;
 };
 
-export { create, update, remove, toggleLike, toggleFavorite, getById, download };
+export { create, update, remove, toggleLike, toggleFavorite, getById, download, getAll };

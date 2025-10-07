@@ -91,12 +91,10 @@ export const getFavoriteTrainingPlansService = async (
   const skip = (page - 1) * pageSize;
 
   const [items, total] = await Promise.all([
-    TrainingPlan.find(query)
-      .sort({ createdAt: -1, _id: -1 })
-      .skip(skip)
-      .limit(pageSize)
-      .populate('author', 'username profileDetails.profilePicture')
-      .lean(),
+    TrainingPlan.aggregate([
+      { $match: query },
+      ...getTrainingPlanAggregationPipeline(skip, pageSize),
+    ]),
     TrainingPlan.countDocuments(query),
   ]);
 
@@ -278,11 +276,6 @@ export const getTrainingPlansService = async (
     andFilters.push({ advancedLevel: filters.difficulty });
   }
 
-  if (filters.duration) {
-    const daysCount = filters.duration;
-    andFilters.push({ days: { $size: daysCount } });
-  }
-
   if (filters.minDuration !== undefined || filters.maxDuration !== undefined) {
     const durationFilter: { $gte?: number; $lte?: number } = {};
 
@@ -292,6 +285,19 @@ export const getTrainingPlansService = async (
     if (filters.maxDuration !== undefined) {
       durationFilter.$lte = filters.maxDuration;
     }
+
+    andFilters.push({
+      $expr: {
+        $and: [
+          ...(filters.minDuration !== undefined
+            ? [{ $gte: [{ $size: '$days' }, filters.minDuration] }]
+            : []),
+          ...(filters.maxDuration !== undefined
+            ? [{ $lte: [{ $size: '$days' }, filters.maxDuration] }]
+            : []),
+        ],
+      },
+    });
   }
 
   if (filters.hashtags?.length) {
@@ -331,36 +337,11 @@ export const getTrainingPlansService = async (
 
   const skip = (page - 1) * pageSize;
 
-  const projection = {
-    name: 1,
-    image: 1,
-    goal: 1,
-    advancedLevel: 1,
-    hashtags: 1,
-    likes: 1,
-    createdAt: 1,
-    author: 1,
-    'days.dayNumber': 1,
-    'days.totalDuration': 1,
-    'days.exercises': 1,
-  };
-
   const [items, total] = await Promise.all([
-    TrainingPlan.find(query)
-      .select(projection)
-      .sort(sort)
-      .skip(skip)
-      .limit(pageSize)
-      .populate('author', 'username profileDetails.profilePicture')
-      .lean()
-      .then((plans) =>
-        plans.map((plan) => ({
-          ...plan,
-          totalExercises:
-            plan.days?.reduce((sum, day) => sum + (day.exercises?.length || 0), 0) || 0,
-          totalDuration: plan.days?.reduce((sum, day) => sum + (day.totalDuration || 0), 0) || 0,
-        })),
-      ),
+    TrainingPlan.aggregate([
+      { $match: query },
+      ...getTrainingPlanAggregationPipeline(skip, pageSize, sort),
+    ]),
     TrainingPlan.countDocuments(query),
   ]);
 
@@ -373,7 +354,7 @@ export const getTrainingPlansByUserService = async (
   pageSize: PageSize,
   currentUserId?: string,
 ) => {
-  const query: FilterQuery<ITrainingPlan> = { author: targetUserId };
+  const query: FilterQuery<ITrainingPlan> = { author: new Types.ObjectId(targetUserId) };
 
   if (!currentUserId || currentUserId !== targetUserId) {
     query.visibility = PrivacySettings.public;
@@ -382,12 +363,10 @@ export const getTrainingPlansByUserService = async (
   const skip = (page - 1) * pageSize;
 
   const [items, total] = await Promise.all([
-    TrainingPlan.find(query)
-      .sort({ createdAt: -1, _id: -1 })
-      .skip(skip)
-      .limit(pageSize)
-      .populate('author', 'username profileDetails.profilePicture')
-      .lean(),
+    TrainingPlan.aggregate([
+      { $match: query },
+      ...getTrainingPlanAggregationPipeline(skip, pageSize),
+    ]),
     TrainingPlan.countDocuments(query),
   ]);
 
@@ -441,3 +420,76 @@ export const generateTrainingPlanPDFService = async (planId: string, userId?: st
 
   return pdfBuffer;
 };
+
+function getTrainingPlanAggregationPipeline(
+  skip: number,
+  pageSize: number,
+  sort: Record<string, 1 | -1> = { createdAt: -1, _id: -1 },
+) {
+  return [
+    {
+      $project: {
+        name: 1,
+        image: 1,
+        goal: 1,
+        visibility: 1,
+        advancedLevel: 1,
+        hashtags: 1,
+        likes: 1,
+        author: 1,
+        createdAt: 1,
+        daysCount: {
+          total: { $size: '$days' },
+          rest: {
+            $size: {
+              $filter: {
+                input: '$days',
+                cond: { $eq: ['$$this.isRestDay', true] },
+              },
+            },
+          },
+          training: {
+            $size: {
+              $filter: {
+                input: '$days',
+                cond: { $eq: ['$$this.isRestDay', false] },
+              },
+            },
+          },
+        },
+        totalExercises: {
+          $sum: {
+            $map: {
+              input: '$days',
+              as: 'day',
+              in: { $size: { $ifNull: ['$$day.exercises', []] } },
+            },
+          },
+        },
+        totalDuration: {
+          $sum: '$days.totalDuration',
+        },
+      },
+    },
+    { $sort: sort },
+    { $skip: skip },
+    { $limit: pageSize },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'author',
+        foreignField: '_id',
+        as: 'author',
+        pipeline: [
+          {
+            $project: {
+              username: 1,
+              'profileDetails.profilePicture': 1,
+            },
+          },
+        ],
+      },
+    },
+    { $unwind: '$author' },
+  ];
+}

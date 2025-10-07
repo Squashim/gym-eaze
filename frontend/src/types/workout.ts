@@ -44,6 +44,26 @@ export type GetWorkoutApiResponse = WorkoutApiResponse & {
   totalExercises: number;
 };
 
+export type GetWorkoutsApiResponse = {
+  _id: string;
+  name: string;
+  author: Author;
+  image: string;
+  goal: Goal;
+  advancedLevel: AdvancedLevel;
+  visibility: Visibility;
+  likes: number;
+  daysCount: {
+    total: number;
+    rest: number;
+    training: number;
+  };
+  totalDuration: number;
+  totalExercises: number;
+  hashtags?: string[];
+  createdAt: string;
+};
+
 type WorkoutApiDay = {
   name: string;
   dayNumber: number;
