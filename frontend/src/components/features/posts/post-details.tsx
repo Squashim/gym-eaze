@@ -255,7 +255,7 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
           onOpenChange={editDialog.setIsOpen}
           open={editDialog.isOpen}
           parentId={post._id}
-          type="comment"
+          parentType="Post"
         />
       )}
     </>

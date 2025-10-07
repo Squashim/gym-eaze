@@ -9,7 +9,13 @@ import type {
   GetWorkoutsApiResponse,
 } from '@/types/workout';
 import type { ApiResponse } from '@/types/api';
-import type { PaginatedQueryParams, PaginatedResponse, WorkoutQueryParams } from '@/types/filters';
+import type {
+  CursorPaginatedResponse,
+  PaginatedQueryParams,
+  PaginatedResponse,
+  WorkoutQueryParams,
+} from '@/types/filters';
+import type { GetCommentsApiResponse } from '@/types/comment';
 
 const create = async (payload: CreateWorkoutPayload): Promise<WorkoutApiResponse> => {
   const parsedPayload = { ...payload, days: JSON.stringify(payload.days) };
@@ -85,6 +91,19 @@ const download = async (id: string): Promise<Blob> => {
   return data;
 };
 
+const getComments = async (
+  id: string,
+  cursor?: string | null,
+): Promise<CursorPaginatedResponse<GetCommentsApiResponse>> => {
+  const { data } = await API.get<CursorPaginatedResponse<GetCommentsApiResponse>>(
+    endpoints.comments(id),
+    {
+      params: { cursor },
+    },
+  );
+  return data;
+};
+
 export {
   create,
   update,
@@ -96,4 +115,5 @@ export {
   getAll,
   getByUser,
   getFavorite,
+  getComments,
 };

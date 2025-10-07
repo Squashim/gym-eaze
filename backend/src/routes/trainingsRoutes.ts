@@ -57,7 +57,7 @@ router.post('/search', optionalAuth, getTrainingPlans);
 router.get('/user/:userId', optionalAuth, getTrainingPlansByUser);
 
 router.get('/:id/comments', optionalAuth, (req, res) => {
-  req.params.parentType = CommentParentType.post;
+  req.params.parentType = CommentParentType.training;
   req.params.parentId = req.params.id;
   return getComments(req, res);
 });

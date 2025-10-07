@@ -21,7 +21,8 @@ import type { GetCommentsApiResponse } from '@/types/comment';
 import { updateCommentSchema, type UpdateCommentSchema } from '@/schemas/comment-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import type { ItemType } from '@/constants/item-type';
 
 interface HashtagDialogProps {
   open: boolean;
@@ -106,23 +107,23 @@ const EditPostDialog = ({ open, post, onOpenChange, onClose }: EditPostDialogPro
 interface EditCommentDialogProps {
   open: boolean;
   parentId: string;
+  parentType: ItemType;
   comment: GetCommentsApiResponse;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
-  type: 'comment' | 'reply';
 }
 
 const EditCommentDialog = ({
   open,
   comment,
   parentId,
+  parentType,
   onOpenChange,
   onClose,
-  type,
 }: EditCommentDialogProps) => {
   const { user } = useUser();
   const { updateComment } = useComment({
-    parentType: type === 'comment' ? 'Post' : 'Komentarz',
+    parentType: parentType,
     parentId: parentId,
   });
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -133,6 +134,10 @@ const EditCommentDialog = ({
       content: '',
     },
   });
+
+  const isReply = useMemo(() => {
+    return parentType === 'Komentarz';
+  }, [parentType]);
 
   useEffect(() => {
     if (!comment || !open) return;
@@ -165,11 +170,9 @@ const EditCommentDialog = ({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="[&>button]:hidden" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>
-            {type === 'comment' ? 'Edytuj swój komentarz' : 'Edytuj swoją odpowiedź'}
-          </DialogTitle>
+          <DialogTitle>{!isReply ? 'Edytuj swój komentarz' : 'Edytuj swoją odpowiedź'}</DialogTitle>
           <DialogDescription>
-            {type === 'comment'
+            {!isReply
               ? 'Wprowadź zmiany w swoim komentarzu i zapisz je.'
               : 'Wprowadź zmiany w swojej odpowiedzi i zapisz je.'}
           </DialogDescription>
@@ -226,7 +229,7 @@ const EditCommentDialog = ({
                 ) : (
                   <>
                     <Pencil />
-                    {type === 'comment' ? 'Edytuj komentarz' : 'Edytuj odpowiedź'}
+                    {!isReply ? 'Edytuj komentarz' : 'Edytuj odpowiedź'}
                   </>
                 )}
               </Button>

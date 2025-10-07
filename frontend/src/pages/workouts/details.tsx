@@ -1,4 +1,5 @@
 import BackHeader from '@/components/features/workouts/back-header';
+import WorkoutComments from '@/components/features/workouts/workout-comments';
 import PageLayout from '@/components/layout/page';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -124,6 +125,8 @@ function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: Wor
       </div>
 
       <WorkoutMetaInfo isAuthor={auth.isAuthor} workout={workout} />
+
+      <WorkoutComments workout={workout} />
     </section>
   );
 }

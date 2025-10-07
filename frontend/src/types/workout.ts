@@ -35,6 +35,7 @@ export type WorkoutApiResponse = BaseWorkout<string, WorkoutApiDay[]> & {
   _id: string;
   author: Author;
   likes: number;
+  commentsCount?: number;
   createdAt: string;
   updatedAt: string;
 };

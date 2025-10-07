@@ -18,6 +18,7 @@ interface CommentCreatorProps {
   parentId: string;
   className?: string;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
+  ref?: React.RefObject<HTMLTextAreaElement | null>;
   replyingTo?: string | null;
   onClose?: () => void;
 }
@@ -28,6 +29,7 @@ function CommentCreator({
   className,
   replyingTo,
   scrollRef,
+  ref,
   onClose,
 }: CommentCreatorProps) {
   const { user } = useUser();
@@ -49,7 +51,7 @@ function CommentCreator({
         }
 
         if (scrollRef?.current) {
-          scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+          scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         form.reset();
@@ -114,6 +116,7 @@ function CommentCreator({
                             ? 'Napisz komentarz...'
                             : 'Zaloguj się, aby dodać komentarz...'
                       }
+                      ref={ref}
                     />
                   </FormControl>
                   <div className="flex justify-between items-center min-h-5">
