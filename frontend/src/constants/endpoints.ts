@@ -21,12 +21,25 @@ export const EXERCISE = {
 
 export const WORKOUT = {
   base: 'training-plans',
+  search: 'training-plans/search',
+  byId: (id: string) => `training-plans/${id}`,
+  toggleLike: (id: string) => `training-plans/${id}/like`,
+  toggleFavorite: (id: string) => `training-plans/${id}/favorite`,
+  download: (id: string) => `training-plans/${id}/pdf`,
 } as const;
 
 export const POST = {
   base: 'posts',
   toggleLike: (id: string) => `posts/${id}/like`,
   byId: (id: string) => `posts/${id}`,
+  comments: (id: string) => `posts/${id}/comments`,
+} as const;
+
+export const COMMENT = {
+  base: 'comments',
+  replies: (id: string) => `comments/${id}/replies`,
+  byId: (id: string) => `comments/${id}`,
+  toggleLike: (id: string) => `comments/${id}/like`,
 } as const;
 
 export const USER = {

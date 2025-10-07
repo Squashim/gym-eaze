@@ -51,6 +51,7 @@ const SetsList = ({
               </FormLabel>
               <FormControl>
                 <NumberInput
+                  disabled={isLastExercise && sets.length === 1}
                   id={field.name}
                   max={WORKOUT.MAX_REST_AFTER_SET}
                   min={WORKOUT.DEFAULT_REST_AFTER_SET}
@@ -65,10 +66,7 @@ const SetsList = ({
         />
       </header>
 
-      <div
-        className="flex flex-col gap-2 overflow-y-auto scrollbar"
-        style={{ maxHeight: 'calc(100vh - 44rem)' }}
-      >
+      <div className="flex flex-col gap-2 overflow-y-auto scrollbar max-h-[40vh]">
         {sets.map((_, i) => (
           <SetItem
             dayNumber={dayNumber}

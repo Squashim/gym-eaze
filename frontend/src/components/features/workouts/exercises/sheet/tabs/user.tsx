@@ -12,16 +12,18 @@ const UserExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTab
   } = useGetUserExercises(params, { ownExercises: true });
 
   return (
-    <ExerciseList
-      exercises={exercises}
-      isError={isError}
-      isExerciseAdded={isExerciseAdded}
-      isLoading={isLoading}
-      listType="own"
-      onExerciseToggle={onExerciseToggle}
-      params={params}
-      setPage={setPage}
-    />
+    <div className="flex flex-col h-full pb-3 max-h-[75dvh] sm:max-h-[calc(100dvh_-_11.5rem)] min-h-[30dvh]">
+      <ExerciseList
+        exercises={exercises}
+        isError={isError}
+        isExerciseAdded={isExerciseAdded}
+        isLoading={isLoading}
+        listType="own"
+        onExerciseToggle={onExerciseToggle}
+        params={params}
+        setPage={setPage}
+      />
+    </div>
   );
 };
 

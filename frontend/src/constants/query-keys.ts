@@ -1,4 +1,9 @@
-import type { ExerciseQueryParams, PaginatedQueryParams, PostQueryParams } from '@/types/filters';
+import type {
+  ExerciseQueryParams,
+  PaginatedQueryParams,
+  PostQueryParams,
+  WorkoutQueryParams,
+} from '@/types/filters';
 
 export const QUERY_KEYS = {
   AUTH_USER: ['user', 'authenticated'],
@@ -7,6 +12,9 @@ export const QUERY_KEYS = {
 
   POST: (id: string) => ['posts', id],
   POSTS: (params: PostQueryParams) => ['posts', params],
+  POST_COMMENTS: (postId: string) => ['posts', postId, 'comments'],
+
+  COMMENT_REPLIES: (commentId: string) => ['comments', commentId, 'replies'],
 
   EQUIPMENT: ['equipment'],
   MUSCLE_GROUPS: ['muscle-groups'],
@@ -21,4 +29,7 @@ export const QUERY_KEYS = {
     'exercises',
     params,
   ],
+
+  WORKOUT: (id: string) => ['workouts', id],
+  WORKOUTS: (params: WorkoutQueryParams) => ['workouts', params],
 } as const;

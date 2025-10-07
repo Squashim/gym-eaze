@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import type { ComponentPropsWithRef, ElementType } from 'react';
 
-type Variant = keyof typeof typographyVariants;
+export type Variant = keyof typeof typographyVariants;
 
 const typographyVariants = {
   h1: 'scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance',

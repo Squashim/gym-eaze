@@ -46,3 +46,23 @@ export interface TrainingPlanRequest extends Request {
     image?: Express.Multer.File[];
   };
 }
+
+export interface TrainingPlanFilters {
+  search?: string;
+  goal?: Goal;
+  difficulty?: AdvancedLevel;
+  minDuration?: number;
+  maxDuration?: number;
+  hashtags?: string[];
+  followers?: boolean;
+}
+
+export interface TrainingPlanQuery {
+  filters?: TrainingPlanFilters;
+  sortBy?: SortBy;
+  page?: number;
+  pageSize?: PageSize;
+}
+
+export type SortBy = 'latest' | 'popular' | 'top-rated';
+export type PageSize = 9 | 18 | 27;

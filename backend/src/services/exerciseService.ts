@@ -8,6 +8,7 @@ import {
   ExerciseFilters,
   PageSize,
   SortBy,
+  TrainingPlanExercise,
   UpdateExerciseData,
 } from '../types/exercise';
 import { PrivacySettings } from '../constants/privacySettings';
@@ -165,6 +166,10 @@ export const getExerciseByIdService = async (
   id: string,
   userId?: string,
 ): Promise<typeof exercise | null | 'forbidden'> => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error('Nieprawidłowy identyfikator ćwiczenia');
+  }
+
   const exercise = await Exercise.findById(id)
     .populate([
       { path: 'muscleGroup' },
@@ -201,9 +206,6 @@ export const getExercisesService = async (
   const query: FilterQuery<IExercise> = {};
 
   query.visibility = PrivacySettings.public;
-  if (userId) {
-    query.author = { $ne: userId };
-  }
 
   const andFilters: FilterQuery<IExercise>[] = [];
 
@@ -293,7 +295,8 @@ export const getExercisesByIdsService = async (ids: string[]) => {
   const exercises = await Exercise.find({ _id: { $in: ids } })
     .select('image name muscleGroup')
     .populate('muscleGroup', 'name')
-    .lean();
+    .lean<TrainingPlanExercise[]>();
+
   return exercises;
 };
 

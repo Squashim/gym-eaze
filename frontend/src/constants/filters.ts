@@ -6,3 +6,13 @@ export const initialExerciseFilters = {
   difficulty: undefined,
   followers: false,
 };
+
+export const initialWorkoutFilters = {
+  search: '',
+  goal: undefined,
+  difficulty: undefined,
+  minDuration: undefined,
+  maxDuration: undefined,
+  hashtags: [],
+  followers: false,
+};

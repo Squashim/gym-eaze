@@ -1,4 +1,5 @@
 import type { AdvancedLevel } from '@/constants/advanced-level';
+import type { Goal } from '@/constants/goals';
 
 export type SortBy = 'popular' | 'top-rated' | 'latest';
 
@@ -26,6 +27,7 @@ export type PaginatedQueryParams = {
 };
 
 export type ExerciseQueryParams = FilteredQueryParams<ExerciseFilters>;
+export type WorkoutQueryParams = FilteredQueryParams<WorkoutFilters>;
 
 export type ExerciseFilters = {
   search?: string;
@@ -33,6 +35,16 @@ export type ExerciseFilters = {
   equipment?: string[];
   hashtags?: string[];
   difficulty?: AdvancedLevel;
+  followers?: boolean;
+};
+
+export type WorkoutFilters = {
+  search?: string;
+  goal?: Goal;
+  difficulty?: AdvancedLevel;
+  minDuration?: number;
+  maxDuration?: number;
+  hashtags?: string[];
   followers?: boolean;
 };
 

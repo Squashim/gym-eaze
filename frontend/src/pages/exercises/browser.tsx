@@ -16,7 +16,7 @@ const ExerciseBrowser = () => {
 
   return (
     <PageLayout
-      description="Przeglądaj najnowsze ćwiczenia udostępniane przez innych użytkowników. Możesz filtrować
+      description="Przeglądaj ćwiczenia udostępniane przez innych użytkowników. Możesz filtrować
           ćwiczenia według różnych kryteriów, aby znaleźć te, które najlepiej pasują do Twoich
           potrzeb."
       title="Przeglądaj ćwiczenia"

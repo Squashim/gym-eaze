@@ -2,11 +2,11 @@ import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import useOpen from '@/hooks/utils/use-open';
 import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import { useState } from 'react';
-import ExercisesSheet from './exercises/sheet/sheet';
+import ExercisesSheet from '../exercises/sheet/sheet';
 import { Button } from '@/components/ui/button';
 import { Info, Plus, TriangleAlert } from 'lucide-react';
 import Typography from '@/components/ui/typography';
-import BackHeader from './back-header';
+import BackHeader from '../back-header';
 import {
   FormControl,
   FormDescription,
@@ -21,7 +21,7 @@ import { WORKOUT } from '@/constants/workout';
 import { Separator } from '@/components/ui/separator';
 import ActiveExercise from './active-exercise';
 import useExercisesManager from '@/hooks/workout/exercises/use-exercises-manager';
-import ExercisesList from './exercises/exercises-list';
+import ExercisesList from '../exercises/exercises-list';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 
 interface ActiveDayViewProps {
@@ -136,10 +136,7 @@ const ActiveDay = ({ day, onDaySelect }: ActiveDayViewProps) => {
           </div>
         )}
 
-        <div
-          className="grid gap-3 overflow-y-auto scrollbar focus-within:outline-none p-0.5"
-          style={{ maxHeight: 'calc(100vh - 43rem)' }}
-        >
+        <div className="grid gap-3 overflow-y-auto scrollbar focus-within:outline-none p-0.5 max-h-[40vh]">
           {isRestDay ? (
             <Alert>
               <Info />

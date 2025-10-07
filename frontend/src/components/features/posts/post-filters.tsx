@@ -63,42 +63,39 @@ const PostFilters = ({
         </div>
       </div>
 
-      <div
-        className={cn(
-          'overflow-hidden transition-all duration-300 ease-in-out flex flex-col gap-3 w-full',
-          isFiltersOpen ? 'max-h-[350px] opacity-100 p-0.5 mt-3' : 'max-h-0 opacity-0',
-        )}
-      >
-        <div className="grid gap-2">
-          <Typography className="font-semibold" variant="small">
-            Wyszukaj po hasztagach:
-          </Typography>
-          <TagsInput
-            id="post-search-hashtags"
-            onChange={(tags) => setHashtags(tags)}
-            placeholder="Podaj hasztagi, np. biceps, triceps - użyj Entera lub przecinka"
-            value={params.hashtags || []}
-          />
-        </div>
-        {isLogged && (
+      {isFiltersOpen && (
+        <div className="flex flex-col gap-3 w-full transition-opacity duration-300 opacity-100">
           <div className="grid gap-2">
             <Typography className="font-semibold" variant="small">
-              Pokaż posty obserwowanych użytkowników:
+              Wyszukaj po hasztagach:
             </Typography>
-            <div className="flex flex-row items-center justify-between rounded-md border border-input p-3 bg-transparent dark:bg-input/30 shadow-xs">
-              <div className="grid gap-1">
-                <Typography variant="muted">
-                  Włącz, aby wyświetlać tylko posty osób, które obserwujesz
-                </Typography>
-              </div>
-              <Switch
-                checked={params.followedOnly === true}
-                onCheckedChange={(checked) => setParam('followedOnly', checked)}
-              />
-            </div>
+            <TagsInput
+              id="post-search-hashtags"
+              onChange={(tags) => setHashtags(tags)}
+              placeholder="Podaj hasztagi, np. biceps, triceps - użyj Entera lub przecinka"
+              value={params.hashtags || []}
+            />
           </div>
-        )}
-      </div>
+          {isLogged && (
+            <div className="grid gap-2">
+              <Typography className="font-semibold" variant="small">
+                Pokaż posty obserwowanych użytkowników:
+              </Typography>
+              <div className="flex flex-row items-center justify-between rounded-md border border-input p-3 bg-transparent dark:bg-input/30 shadow-xs">
+                <div className="grid gap-1">
+                  <Typography variant="muted">
+                    Włącz, aby wyświetlać tylko posty osób, które obserwujesz
+                  </Typography>
+                </div>
+                <Switch
+                  checked={params.followedOnly === true}
+                  onCheckedChange={(checked) => setParam('followedOnly', checked)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

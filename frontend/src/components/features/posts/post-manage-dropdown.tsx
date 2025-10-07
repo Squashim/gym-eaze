@@ -13,9 +13,10 @@ interface PostManageDropdownProps {
   isAuthor: boolean;
   onDelete: () => void;
   onEdit: () => void;
+  onReport: () => void;
 }
 
-const PostManageDropdown = ({ isAuthor, onDelete, onEdit }: PostManageDropdownProps) => {
+const PostManageDropdown = ({ isAuthor, onDelete, onEdit, onReport }: PostManageDropdownProps) => {
   return (
     <DropdownMenu>
       <Tooltip>
@@ -43,7 +44,7 @@ const PostManageDropdown = ({ isAuthor, onDelete, onEdit }: PostManageDropdownPr
             </DropdownMenuItem>
           </>
         ) : (
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={onReport}>
             <Flag />
             Zgłoś post
           </DropdownMenuItem>

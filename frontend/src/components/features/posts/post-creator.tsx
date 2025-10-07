@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { HashtagDialog } from './post-dialogs';
 import PostUploadedFile from './post-uploaded-file';
+import { postCreatorDefaultValues } from '@/constants/forms';
 
 interface PostCreatorProps {
   mode: 'edit' | 'create';
@@ -34,18 +35,15 @@ function PostCreator({ mode, post, onEditCancel }: PostCreatorProps) {
   const videoRef = useRef<HTMLInputElement>(null);
   const form = useForm<PostSchema>({
     resolver: zodResolver(postSchema),
-    defaultValues: {
-      content: '',
-      image: undefined,
-      video: undefined,
-      hashtags: [],
-    },
+    defaultValues: postCreatorDefaultValues,
   });
   const { watch, setValue } = form;
   const imageFile = watch('image');
   const videoFile = watch('video');
   const hashtags = watch('hashtags');
-  const isEditMode = mode === 'edit';
+  const isEditMode = useMemo(() => {
+    return mode === 'edit';
+  }, [mode]);
 
   const {
     imageFile: defaultImageFile,
@@ -157,7 +155,7 @@ function PostCreator({ mode, post, onEditCancel }: PostCreatorProps) {
     <Form {...form}>
       <form
         className={cn(
-          ' gap-4 rounded-xl shadow-sm flex w-full min-w-0',
+          'gap-4 rounded-xl shadow-sm flex w-full min-w-0',
           isEditMode
             ? 'bg-transparent text-popover-foreground'
             : 'bg-card text-card-foreground border p-4',

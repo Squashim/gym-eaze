@@ -32,15 +32,17 @@ const PostLike = ({
     }
 
     let buttonText = isLiked
-      ? `Cofnij polubienie: ${likesCount}`
-      : `Dodaj polubienie: ${likesCount}`;
+      ? `Cofnij polubienie (${likesCount})`
+      : likesCount > 0
+        ? `Dodaj polubienie (${likesCount})`
+        : 'Polub jako pierwszy';
     if (isPending) {
       buttonText = isLiked ? 'Cofanie...' : 'Dodawanie...';
     }
 
     return (
       <Button
-        className="w-full flex-1/2"
+        className={cn('w-full flex-1/2', isLiked && 'text-secondary')}
         disabled={isPending}
         onClick={onToggleLike}
         variant="ghost"
@@ -58,7 +60,7 @@ const PostLike = ({
   return (
     <Button className="w-full flex-1/2 pointer-events-none" variant="ghost">
       <ThumbsUp className="size-5" />
-      Lubi to: {likesCount}
+      {likesCount > 0 ? `Lubi to (${likesCount})` : 'Brak polubień'}
     </Button>
   );
 };

@@ -15,6 +15,8 @@ export type GetPostsApiResponse = BasePost & {
   _id: string;
   author: Author;
   likes: number;
+  commentsCount?: number;
+  isEdited?: boolean;
   createdAt: string;
   updatedAt: string;
 };

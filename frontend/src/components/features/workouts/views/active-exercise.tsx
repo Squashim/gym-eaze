@@ -1,14 +1,14 @@
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
 import { useMemo } from 'react';
-import BackHeader from './back-header';
+import BackHeader from '../back-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevelBadge, LikesBadge } from '@/components/ui/item-info-badges';
 import { Button } from '@/components/ui/button';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import SetsList from './sets/sets-list';
+import SetsList from '../sets/sets-list';
 import { DetailsActionBtn } from '@/components/ui/reusable-buttons';
 import useActiveExerciseManager from '@/hooks/workout/sets/use-active-exercise-manager';
 import { Alert, AlertTitle } from '@/components/ui/alert';
@@ -93,8 +93,11 @@ const ActiveExercise = ({
               </Button>
             </div>
 
-            <div className="ml-auto">
-              <DetailsActionBtn redirectTo={`/exercises/${exercise._id}`} />
+            <div className="sm:ml-auto max-[425px]:w-full">
+              <DetailsActionBtn
+                className="max-[425px]:w-full"
+                redirectTo={`/exercises/${exercise._id}`}
+              />
             </div>
           </div>
         )}

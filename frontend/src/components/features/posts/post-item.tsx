@@ -25,13 +25,32 @@ interface PostItemProps {
   };
   onDelete: (postId: string) => void;
   onEdit: (postId: string) => void;
+  onReport: (postId: string) => void;
   onLikeToggle: (postId: string) => void;
+  onShowDetails: (postId: string) => void;
 }
 
-function PostItem({ post, auth, like, onDelete, onEdit, onLikeToggle }: PostItemProps) {
+function PostItem({
+  post,
+  auth,
+  like,
+  onDelete,
+  onEdit,
+  onReport,
+  onLikeToggle,
+  onShowDetails,
+}: PostItemProps) {
+  const handleShowPostDetails = useCallback(() => {
+    onShowDetails(post._id);
+  }, [onShowDetails, post._id]);
+
   const handlePostDelete = useCallback(() => {
     onDelete(post._id);
   }, [onDelete, post._id]);
+
+  const handlePostReport = useCallback(() => {
+    onReport(post._id);
+  }, [onReport, post._id]);
 
   const handlePostEdit = useCallback(() => {
     onEdit(post._id);
@@ -70,7 +89,7 @@ function PostItem({ post, auth, like, onDelete, onEdit, onLikeToggle }: PostItem
             </Button>
 
             <Typography className="text-sm" variant="muted">
-              {parseTimeAgo(post.createdAt)}
+              {parseTimeAgo(post.createdAt)} {post.isEdited && '(edytowano)'}
             </Typography>
           </div>
         </div>
@@ -79,6 +98,7 @@ function PostItem({ post, auth, like, onDelete, onEdit, onLikeToggle }: PostItem
             isAuthor={auth.isAuthor}
             onDelete={handlePostDelete}
             onEdit={handlePostEdit}
+            onReport={handlePostReport}
           />
         )}
       </header>
@@ -120,9 +140,11 @@ function PostItem({ post, auth, like, onDelete, onEdit, onLikeToggle }: PostItem
           orientation="vertical"
         />
 
-        <Button className="w-full flex-1/2" variant="ghost">
+        <Button className="w-full flex-1/2" onClick={handleShowPostDetails} variant="ghost">
           <MessageSquare className="size-5" />
-          Zobacz komentarze: 0
+          {post.commentsCount && post.commentsCount > 0
+            ? `Zobacz komentarze (${post.commentsCount})`
+            : 'Skomentuj jako pierwszy'}
         </Button>
       </div>
     </div>

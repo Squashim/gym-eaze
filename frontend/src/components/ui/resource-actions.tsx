@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import {
   DeleteActionBtn,
+  DownloadActionBtn,
   EditActionBtn,
   FavoriteActionBtn,
   LikeActionBtn,
@@ -34,6 +35,10 @@ type ResourceActionsProps = {
   report?: {
     onReport: () => void;
   };
+  download?: {
+    onDownload: () => void;
+    isDownloading: boolean;
+  };
   className?: string;
 };
 
@@ -44,6 +49,7 @@ const ResourceActions = ({
   edit,
   delete: deleteAction,
   report,
+  download,
   className,
 }: ResourceActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -77,6 +83,9 @@ const ResourceActions = ({
             isLoading={favorite.isFavoriteLoading}
             onClick={favorite.onFavorite}
           />
+        )}
+        {download && (
+          <DownloadActionBtn isLoading={download.isDownloading} onClick={download.onDownload} />
         )}
         {report && !isAuthor && <ReportActionBtn onClick={report.onReport} />}
         {edit && isAuthor && <EditActionBtn onClick={edit.onEdit} redirectTo={edit.redirectTo} />}

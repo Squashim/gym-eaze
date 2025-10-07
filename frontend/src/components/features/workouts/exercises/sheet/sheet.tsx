@@ -32,7 +32,7 @@ function ExercisesSheet({
 
   return (
     <Sheet onOpenChange={(open) => setIsOpen(open)} open={isOpen}>
-      <SheetContent className="[&>button:first-of-type]:hidden sm:max-w-2xl scrollbar max-h-dvh overflow-y-auto h-screen">
+      <SheetContent className="[&>button:first-of-type]:hidden sm:max-w-2xl h-screen overflow-y-auto scrollbar">
         <SheetHeader className="pb-0">
           <SheetTitle className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Dodaj ćwiczenia
@@ -50,13 +50,22 @@ function ExercisesSheet({
             <Tabs onValueChange={setActiveTab} value={activeTab}>
               <div className="relative overflow-x-auto h-12 scrollbar">
                 <TabsList className="w-full gap-4">
-                  <TabsTrigger className="h-8 px-4" value="social">
+                  <TabsTrigger
+                    className="h-8 px-2 sm:px-4 sm:text-sm whitespace-nowrap"
+                    value="social"
+                  >
                     Społecznościowe
                   </TabsTrigger>
-                  <TabsTrigger className="h-8 px-4" value="own">
+                  <TabsTrigger
+                    className="h-8 px-2 sm:px-4 sm:text-sm whitespace-nowrap"
+                    value="own"
+                  >
                     Moje
                   </TabsTrigger>
-                  <TabsTrigger className="h-8 px-4" value="favorite">
+                  <TabsTrigger
+                    className="h-8 px-2 sm:px-4 sm:text-sm whitespace-nowrap"
+                    value="favorite"
+                  >
                     Ulubione
                   </TabsTrigger>
                 </TabsList>
