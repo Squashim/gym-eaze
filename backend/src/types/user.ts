@@ -1,11 +1,5 @@
-export interface UserFollowInfo {
-  id: string;
-  username: string;
-  profilePicture: string | null;
-}
-
 export interface UserProfile {
-  id: string;
+  _id: string;
   username: string;
   profilePicture: string | null;
   description: string | null;
@@ -24,7 +18,7 @@ export interface UserProfile {
     gender: string | null;
   };
   pinnedBadges?: Array<{
-    id: string;
+    _id: string;
     title: string;
     description: string;
     image: string;

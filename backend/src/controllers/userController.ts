@@ -334,6 +334,10 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     const profile = await getUserProfileService(currentUserId, profileUserId);
     return res.json(profile);
   } catch (error) {
-    return res.status(500).json({ message: 'Błąd serwera' });
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };

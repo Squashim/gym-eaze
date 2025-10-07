@@ -343,13 +343,7 @@ export const getFollowersService = async (userId: string) => {
     throw new Error('Nie znaleziono użytkownika');
   }
 
-  const followers = user.followers.map((follower) => ({
-    id: (follower as IUser)._id,
-    username: (follower as IUser).username,
-    profilePicture: (follower as IUser).profileDetails?.profilePicture || null,
-  }));
-
-  return followers;
+  return user.followers;
 };
 
 export const getFollowingService = async (userId: string) => {
@@ -362,13 +356,7 @@ export const getFollowingService = async (userId: string) => {
     throw new Error('Nie znaleziono użytkownika');
   }
 
-  const following = user.followedUsers.map((followedUser) => ({
-    id: (followedUser as IUser)._id,
-    username: (followedUser as IUser).username,
-    profilePicture: (followedUser as IUser).profileDetails?.profilePicture || null,
-  }));
-
-  return following;
+  return user.followedUsers;
 };
 
 export const toggleUserFollowService = async (userId: string, targetUserId: string) => {
@@ -443,7 +431,7 @@ export const getUserProfileService = async (
   const isOwnProfile = currentUserId === profileUserId;
 
   const profile: UserProfile = {
-    id: user._id.toString(),
+    _id: user._id.toString(),
     username: user.username,
     profilePicture: user.profileDetails?.profilePicture || null,
     description: user.profileDetails?.description || null,
@@ -477,7 +465,7 @@ export const getUserProfileService = async (
       user.badges
         ?.filter((b) => b.isPinned && b.badge)
         .map((b) => ({
-          id: (b.badge as IBadge)._id.toString(),
+          _id: (b.badge as IBadge)._id.toString(),
           title: (b.badge as IBadge).title,
           description: (b.badge as IBadge).description,
           image: (b.badge as IBadge).image,
