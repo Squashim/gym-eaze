@@ -6,6 +6,7 @@ import { Goal } from '../constants/goals';
 import bcrypt from 'bcryptjs';
 import { Gender } from '../constants/genders';
 import { Country } from '../constants/countries';
+import mongoose from 'mongoose';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -329,4 +330,94 @@ export const updatePrivacySettingsService = async (
   const result = await User.findByIdAndUpdate(userId, { $set: updateFields });
 
   return !!result;
+};
+
+export const getFollowersService = async (userId: string) => {
+  const user = await User.findById(userId).populate({
+    path: 'followers',
+    select: 'username profileDetails.profilePicture',
+  });
+
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  const followers = user.followers.map((follower) => ({
+    id: (follower as IUser)._id,
+    username: (follower as IUser).username,
+    profilePicture: (follower as IUser).profileDetails?.profilePicture || null,
+  }));
+
+  return followers;
+};
+
+export const getFollowingService = async (userId: string) => {
+  const user = await User.findById(userId).populate({
+    path: 'followedUsers',
+    select: 'username profileDetails.profilePicture',
+  });
+
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  const following = user.followedUsers.map((followedUser) => ({
+    id: (followedUser as IUser)._id,
+    username: (followedUser as IUser).username,
+    profilePicture: (followedUser as IUser).profileDetails?.profilePicture || null,
+  }));
+
+  return following;
+};
+
+export const toggleUserFollowService = async (userId: string, targetUserId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+    throw new Error('Nieprawidłowe ID użytkownika');
+  }
+
+  if (userId === targetUserId) {
+    throw new Error('Nie można obserwować samego siebie');
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  const targetUser = await User.findById(targetUserId);
+  if (!targetUser) {
+    throw new Error('Nie znaleziono użytkownika do obserwowania');
+  }
+
+  const isFollowing = user.followedUsers.some(
+    (followedId) => followedId.toString() === targetUserId,
+  );
+
+  if (isFollowing) {
+    user.followedUsers = user.followedUsers.filter(
+      (followedId) => followedId.toString() !== targetUserId,
+    );
+
+    targetUser.followers = targetUser.followers.filter(
+      (followerId) => followerId.toString() !== userId,
+    );
+
+    await user.save();
+    await targetUser.save();
+
+    return {
+      message: 'Przestałeś obserwować użytkownika',
+    };
+  } else {
+    user.followedUsers.push(targetUser._id);
+
+    targetUser.followers.push(user._id);
+
+    await user.save();
+    await targetUser.save();
+
+    return {
+      message: 'Zacząłeś obserwować użytkownika',
+    };
+  }
 };
