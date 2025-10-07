@@ -51,7 +51,6 @@ export interface TrainingPlanFilters {
   search?: string;
   goal?: Goal;
   difficulty?: AdvancedLevel;
-  duration?: number;
   minDuration?: number;
   maxDuration?: number;
   hashtags?: string[];
@@ -67,23 +66,3 @@ export interface TrainingPlanQuery {
 
 export type SortBy = 'latest' | 'popular' | 'top-rated';
 export type PageSize = 9 | 18 | 27;
-
-export interface UpdateTrainingPlanData {
-  name?: string;
-  description?: string;
-  goal?: Goal;
-  visibility?: PrivacySettings;
-  advancedLevel?: AdvancedLevel;
-  hashtags?: string[];
-  days?: Array<{
-    name: string;
-    dayNumber: number;
-    isRestDay: boolean;
-    exercises: Array<{
-      id: Types.ObjectId | IExercise;
-      isRepsSet: boolean;
-      restAfterSet: number;
-      sets: Set[];
-    }>;
-  }>;
-}

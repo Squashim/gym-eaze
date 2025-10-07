@@ -329,7 +329,7 @@ function CommentItem({
           onOpenChange={editDialog.setIsOpen}
           open={editDialog.isOpen}
           parentId={comment._id}
-          type="reply"
+          parentType="Komentarz"
         />
       )}
     </>

@@ -21,6 +21,7 @@ import { DetailsAuthorBtn } from '@/components/ui/reusable-buttons';
 import type { GetExerciseApiResponse } from '@/types/exercise';
 import { InfoField } from '@/components/ui/info-fields';
 import HashtagList from '@/components/ui/hashtag-list';
+import ExerciseComments from '@/components/features/exercises/exercise-comments';
 
 const ExerciseDetails = () => {
   const { id } = useParams();
@@ -115,6 +116,8 @@ function ExerciseContent({ auth, exercise, isLoading, isError, error }: Exercise
       </div>
 
       <ExerciseMetaInfo exercise={exercise} isAuthor={auth.isAuthor} />
+
+      <ExerciseComments exercise={exercise} />
     </section>
   );
 }

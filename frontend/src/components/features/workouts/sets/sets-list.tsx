@@ -51,6 +51,7 @@ const SetsList = ({
               </FormLabel>
               <FormControl>
                 <NumberInput
+                  disabled={isLastExercise && sets.length === 1}
                   id={field.name}
                   max={WORKOUT.MAX_REST_AFTER_SET}
                   min={WORKOUT.DEFAULT_REST_AFTER_SET}

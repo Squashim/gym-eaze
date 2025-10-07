@@ -18,7 +18,9 @@ interface CommentCreatorProps {
   parentId: string;
   className?: string;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
+  ref?: React.RefObject<HTMLTextAreaElement | null>;
   replyingTo?: string | null;
+  autoFocus?: boolean;
   onClose?: () => void;
 }
 
@@ -28,6 +30,8 @@ function CommentCreator({
   className,
   replyingTo,
   scrollRef,
+  autoFocus = true,
+  ref,
   onClose,
 }: CommentCreatorProps) {
   const { user } = useUser();
@@ -49,7 +53,7 @@ function CommentCreator({
         }
 
         if (scrollRef?.current) {
-          scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+          scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         form.reset();
@@ -103,7 +107,7 @@ function CommentCreator({
                     <Textarea
                       {...field}
                       autoComplete="off"
-                      autoFocus
+                      autoFocus={autoFocus}
                       className="resize-none dark:bg-card bg-card max-h-16 scrollbar overflow-y-auto break-words"
                       disabled={!user}
                       maxLength={1000}
@@ -114,6 +118,7 @@ function CommentCreator({
                             ? 'Napisz komentarz...'
                             : 'Zaloguj się, aby dodać komentarz...'
                       }
+                      ref={ref}
                     />
                   </FormControl>
                   <div className="flex justify-between items-center min-h-5">

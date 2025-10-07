@@ -42,6 +42,22 @@ export function parseExerciseLabel(count: number) {
   return parsePlurals(count, ['ćwiczenie', 'ćwiczenia', 'ćwiczeń']);
 }
 
+export function parseWorkoutDurationLabel(days: number) {
+  if (days === 7) return 'Tygodniowy';
+  if (days === 14) return 'Dwutygodniowy';
+  if (days === 21) return 'Trzytygodniowy';
+  if (days === 30) return 'Miesięczny';
+  return `${days}-dniowy`;
+}
+
+export function parseWorkoutDaysLabel(days: number, type: 'rest' | 'training') {
+  if (type === 'rest') {
+    return parsePlurals(days, ['dzień wolny', 'dni wolne', 'dni wolnych']);
+  } else {
+    return parsePlurals(days, ['dzień treningowy', 'dni treningowe', 'dni treningowych']);
+  }
+}
+
 export function parseDayLabel(count: number) {
   if (count === 1) return `${count} dzień`;
   if (count >= 2) return `${count} dni`;

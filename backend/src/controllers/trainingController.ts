@@ -1,12 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../types/auth';
 import { PageSize, TrainingPlanQuery, TrainingPlanRequest } from '../types/trainingPlan';
-import {
-  calculateExerciseDuration,
-  TrainingPlanValidationError,
-  validateTrainingPlanData,
-  validateTrainingPlanFile,
-} from '../utils/trainingPlanValidation';
+import { TrainingPlanValidationError } from '../utils/trainingPlanValidation';
 import {
   createTrainingPlan,
   generateTrainingPlanPDFService,
@@ -16,10 +11,10 @@ import {
   getTrainingPlansService,
   toggleTrainingPlanFavoriteService,
   toggleTrainingPlanLikeService,
+  updateTrainingPlanService,
 } from '../services/trainingPlanService';
 import { parseField } from '../utils/parsers';
 import TrainingPlan from '../models/trainingPlanModel';
-import { uploadTrainingPlanMedia } from '../config/cloudinary';
 import { deleteTrainingPlan as deleteTrainingPlanService } from '../services/trainingPlanService';
 
 export const addTrainingPlan = async (req: Request, res: Response) => {
@@ -64,11 +59,10 @@ export const addTrainingPlan = async (req: Request, res: Response) => {
 
     return res.status(201).json(trainingPlan);
   } catch (error) {
-    if (error instanceof TrainingPlanValidationError) {
+    if (error instanceof TrainingPlanValidationError || error instanceof Error) {
       return res.status(400).json({ message: error.message });
     }
 
-    console.error('Error:', error);
     return res.status(500).json({
       message: 'Błąd podczas dodawania planu treningowego',
     });
@@ -103,6 +97,9 @@ export const updateTrainingPlan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = authReq.userId;
+    const { name, description, goal, visibility, advancedLevel, hashtags } = trainingReq.body;
+    let { days } = trainingReq.body;
+
     const imageFile = trainingReq.files?.image?.[0];
 
     const existingPlan = await TrainingPlan.findById(id);
@@ -114,9 +111,6 @@ export const updateTrainingPlan = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'Brak uprawnień do edycji tego planu' });
     }
 
-    const { name, description, goal, visibility, advancedLevel, hashtags } = trainingReq.body;
-    let { days } = trainingReq.body;
-
     if (days && typeof days === 'string') {
       try {
         days = JSON.parse(days);
@@ -125,75 +119,30 @@ export const updateTrainingPlan = async (req: Request, res: Response) => {
       }
     }
 
-    const updateData: any = {};
+    const trimmedName = name?.trim() || undefined;
+    const trimmedDescription = description?.trim() || undefined;
+    const hashtagsArray = parseField(hashtags);
 
-    if (name !== undefined) updateData.name = name.trim();
-    if (description !== undefined) updateData.description = description?.trim();
-    if (goal !== undefined) updateData.goal = goal;
-    if (visibility !== undefined) updateData.visibility = visibility;
-    if (advancedLevel !== undefined) updateData.advancedLevel = advancedLevel;
-    if (hashtags !== undefined) updateData.hashtags = parseField(hashtags);
-
-    if (days) {
-      const daysWithDuration = days.map((day: any) => {
-        const exercisesWithDuration = day.exercises.map(
-          (exercise: any, idx: number, arr: any[]) => {
-            const isLastExercise = idx === arr.length - 1;
-            const duration = calculateExerciseDuration(exercise, isLastExercise);
-            return {
-              ...exercise,
-              duration,
-            };
-          },
-        );
-
-        const totalDuration = exercisesWithDuration.reduce(
-          (sum: number, exercise: any) => sum + exercise.duration,
-          0,
-        );
-
-        return {
-          ...day,
-          totalDuration,
-          exercises: exercisesWithDuration,
-        };
-      });
-
-      updateData.days = daysWithDuration;
-    }
-
-    if (imageFile) {
-      validateTrainingPlanFile(imageFile.buffer);
-      const { imageUrl } = await uploadTrainingPlanMedia(imageFile.buffer);
-      updateData.image = imageUrl;
-    }
-
-    if (Object.keys(updateData).length > 0) {
-      const dataToValidate = {
-        name: updateData.name || existingPlan.name,
-        goal: updateData.goal || existingPlan.goal,
-        visibility: updateData.visibility || existingPlan.visibility,
-        advancedLevel: updateData.advancedLevel || existingPlan.advancedLevel,
-        days: updateData.days || existingPlan.days,
-        hashtags: updateData.hashtags || existingPlan.hashtags,
-      };
-
-      validateTrainingPlanData(dataToValidate);
-    }
-
-    const updatedPlan = await TrainingPlan.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true },
+    const updated = await updateTrainingPlanService(
+      existingPlan,
+      {
+        name: trimmedName,
+        description: trimmedDescription,
+        goal,
+        visibility,
+        advancedLevel,
+        hashtags: hashtagsArray.length ? hashtagsArray : undefined,
+        days,
+      },
+      imageFile?.buffer,
     );
 
-    return res.status(200).json(updatedPlan);
+    return res.status(200).json(updated);
   } catch (error) {
-    if (error instanceof TrainingPlanValidationError) {
+    if (error instanceof TrainingPlanValidationError || error instanceof Error) {
       return res.status(400).json({ message: error.message });
     }
 
-    console.error('Error:', error);
     return res.status(500).json({
       message: 'Błąd podczas aktualizacji planu treningowego',
     });

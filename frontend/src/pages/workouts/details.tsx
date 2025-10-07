@@ -1,4 +1,5 @@
 import BackHeader from '@/components/features/workouts/back-header';
+import WorkoutComments from '@/components/features/workouts/workout-comments';
 import PageLayout from '@/components/layout/page';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevel } from '@/constants/advanced-level';
+import { Goal } from '@/constants/goals';
 import { useUser } from '@/context/user';
 import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
@@ -28,7 +30,14 @@ import {
 } from '@/lib/parsers';
 import { cn, getApiErrorMsg, getDayTimeRange, getWeeks } from '@/lib/utils';
 import type { GetExercisesByIdsApiResponse } from '@/types/exercise';
-import type { GetWorkoutApiResponse, WorkoutDay, WorkoutWeek } from '@/types/workout';
+import type {
+  DurationSet,
+  GetWorkoutApiResponse,
+  RepsSet,
+  WorkoutDay,
+  WorkoutExercise,
+  WorkoutWeek,
+} from '@/types/workout';
 import { BicepsFlexed, CalendarDays, Clock, ImageOff, Info } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -89,7 +98,7 @@ function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: Wor
     <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
       <WorkoutHeader auth={auth} workout={workout} />
 
-      <div className="w-full bg-accent/60 rounded-xl shadow-lg overflow-hidden">
+      <div className="w-full bg-accent/60 rounded-xl shadow-lg overflow-hidden h-[500px]">
         <img
           alt={`Zdjęcie planu treningowego ${workout.name}`}
           className="w-full rounded-xl h-full object-cover dark:grayscale-[0.2] dark:contrast-110"
@@ -98,7 +107,7 @@ function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: Wor
         />
       </div>
 
-      <div className="flex flex-col gap-4 min-w-0 h-full max-h-[600px]">
+      <div className="flex flex-col gap-4 min-w-0 h-full max-h-[500px]">
         <div className="flex justify-between items-center gap-3 flex-wrap">
           <div className="inline-flex gap-2">
             {auth.isAuthor && (
@@ -116,6 +125,8 @@ function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: Wor
       </div>
 
       <WorkoutMetaInfo isAuthor={auth.isAuthor} workout={workout} />
+
+      <WorkoutComments workout={workout} />
     </section>
   );
 }
@@ -174,7 +185,7 @@ interface WorkoutHeaderProps {
 }
 
 function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
-  const { deleteWorkout, toggleFavoriteWorkout, toggleLikeWorkout } = useWorkout();
+  const { deleteWorkout, toggleFavoriteWorkout, toggleLikeWorkout, downloadWorkout } = useWorkout();
   const { data: userLikes, isLoading: isLikedItemsLoading } = useGetLikedItems('trainingPlans');
   const { data: userFavorites, isLoading: isFavoritedItemsLoading } = useGetFavoritedItems(
     'trainingPlans',
@@ -211,8 +222,8 @@ function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
   }, []);
 
   const handleDownload = useCallback(() => {
-    //TODO: implement download functionality
-  }, []);
+    downloadWorkout.mutate(workout._id);
+  }, [downloadWorkout, workout]);
 
   return (
     <header className="col-span-full flex flex-col md:flex-row md:items-center md:justify-between md:gap-4">
@@ -229,7 +240,7 @@ function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
             deleteDescription:
               'Ta akcja jest nieodwracalna. Wszystkie dane związane z tym planem zostaną trwale usunięte.',
           }}
-          download={{ isDownloading: false, onDownload: handleDownload }}
+          download={{ isDownloading: downloadWorkout.isPending, onDownload: handleDownload }}
           edit={{ redirectTo: `/workouts/${workout._id}/edit` }}
           favorite={{
             isFavorited: favorited || false,
@@ -290,7 +301,7 @@ function WorkoutDays({ weeks }: WorkoutDaysProps) {
         <TabsList className="absolute flex flex-row justify-stretch w-full py-2 gap-2 bg-transparent">
           {weeks.map((week, i) => (
             <TabsTrigger
-              className="h-10 px-4 data-[state=active]:bg-card/70 dark:data-[state=active]:bg-card/70"
+              className="h-10 px-4 data-[state=active]:bg-card/70 dark:data-[state=active]:bg-card/70 bg-card/70 hover:border-input"
               key={week.name}
               value={`week-${i + 1}`}
             >
@@ -385,15 +396,14 @@ function WorkoutExercises({ selectedDay, onBack, exerciseIds }: WorkoutExercises
         ) : (
           exercisesByIds?.map((exercise) => {
             const dayExercise = selectedDay.exercises.find((fe) => fe.id === exercise._id);
-            const setsCount = dayExercise ? dayExercise.sets.length : 0;
             const restAfterSets = dayExercise ? dayExercise.restAfterSet : 0;
 
             return (
               <WorkoutExercise
+                dayExercise={dayExercise}
                 exercise={exercise}
                 key={exercise._id}
                 restAfterSets={restAfterSets}
-                setsCount={setsCount}
               />
             );
           })
@@ -406,18 +416,73 @@ function WorkoutExercises({ selectedDay, onBack, exerciseIds }: WorkoutExercises
 interface WorkoutExerciseProps {
   exercise: GetExercisesByIdsApiResponse;
   restAfterSets: number;
-  setsCount: number;
+  dayExercise: WorkoutExercise | undefined;
 }
 
-function WorkoutExercise({ exercise, restAfterSets, setsCount }: WorkoutExerciseProps) {
+function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerciseProps) {
   const displayMuscleGroups = exercise.muscleGroup.map((mg) => mg.name).join(' • ');
+
+  const groupedSets = useMemo(() => {
+    if (!dayExercise) return [];
+
+    if (dayExercise.sets.length === 0) return [];
+
+    const groups: {
+      count: number;
+      repetitions?: number;
+      weight?: number | null;
+      duration?: number;
+      isReps: boolean;
+    }[] = [];
+
+    let currentGroup: (typeof groups)[0] | null = null;
+
+    dayExercise.sets.forEach((set) => {
+      const isReps = dayExercise.isRepsSet;
+      const setData = {
+        repetitions: isReps ? (set as RepsSet).repetitions : undefined,
+        duration: !isReps ? (set as DurationSet).duration : undefined,
+        weight: isReps ? (set as RepsSet)?.weight : undefined,
+        isReps,
+      };
+
+      if (
+        currentGroup &&
+        currentGroup.repetitions === setData.repetitions &&
+        currentGroup.duration === setData.duration &&
+        currentGroup.weight === setData.weight &&
+        currentGroup.isReps === setData.isReps
+      ) {
+        currentGroup.count++;
+      } else {
+        currentGroup = { ...setData, count: 1 };
+        groups.push(currentGroup);
+      }
+    });
+
+    return groups;
+  }, [dayExercise]);
+
+  const maxVisibleGroupSets = 2;
+  const { visibleGroupedSets, hiddenGroupedSets, totalHiddenSets } = useMemo(() => {
+    const visible = groupedSets.slice(0, maxVisibleGroupSets);
+    const hiddenCount = groupedSets.length - maxVisibleGroupSets;
+    const totalHidden = groupedSets
+      .slice(maxVisibleGroupSets)
+      .reduce((acc, group) => acc + group.count, 0);
+    return {
+      visibleGroupedSets: visible,
+      hiddenGroupedSets: hiddenCount,
+      totalHiddenSets: totalHidden,
+    };
+  }, [groupedSets, maxVisibleGroupSets]);
 
   return (
     <div
-      className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground relative min-[425px]:h-24 flex-wrap min-[425px]:flex-nowrap"
+      className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground relative flex-wrap min-[425px]:flex-nowrap"
       key={exercise._id}
     >
-      <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-h-24">
+      <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-h-18">
         <img
           alt={`zdjęcie poglądowe ćwiczenia ${exercise.name}`}
           className="w-full h-full object-cover rounded-md bg-primary/5 dark:grayscale-[0.2] dark:contrast-110"
@@ -430,8 +495,21 @@ function WorkoutExercise({ exercise, restAfterSets, setsCount }: WorkoutExercise
         <Typography className="text-sm line-clamp-1" variant="muted">
           {displayMuscleGroups}
         </Typography>
-        <div className="flex items-center gap-1">
-          <Badge variant="accent">{parseWorkoutSetsLabel(setsCount)}</Badge>
+        <div className="flex items-center gap-1 flex-wrap">
+          {visibleGroupedSets.map((group, index) => (
+            <Badge className="text-xs" key={index} variant="outline">
+              {group.count > 1 && `${group.count} x `}
+              {group.isReps
+                ? `${group.repetitions} powtórzeń`
+                : parseSecondsToTimeString(group.duration!)}
+              {group.isReps && group.weight && ` • ${group.weight}kg`}
+            </Badge>
+          ))}
+          {hiddenGroupedSets > 0 && (
+            <Badge className="text-xs" variant="outline">
+              +{parseWorkoutSetsLabel(totalHiddenSets)}
+            </Badge>
+          )}
           <Badge className="justify-start" variant="secondary">
             przerwa {parseSecondsToTimeString(restAfterSets)}
           </Badge>
@@ -459,21 +537,23 @@ function WorkoutMetaInfo({ workout, isAuthor }: WorkoutMetaInfoProps) {
   return (
     <div className="flex flex-col gap-4 w-full col-span-full">
       <div className="flex flex-col gap-x-4 gap-y-4 sm:flex-row sm:flex-wrap sm:gap-x-8 md:gap-x-12">
-        <InfoField label="Cel treningowy" variant="p">
-          <Badge className="min-h-12 bg-accent-foreground/10 text-foreground font-semibold px-3 text-lg">
-            {workout.goal}
-          </Badge>
-        </InfoField>
-
-        <InfoField className="sm:justify-self-end" label="Czas na codzienny trening" variant="p">
-          <IconInfoField icon={Clock} label={parseTimeBrackets(avgWorkoutTime)} />
-        </InfoField>
+        {workout.goal !== Goal.none && (
+          <InfoField label="Cel treningowy" variant="p">
+            <Badge className="min-h-12 bg-accent-foreground/10 text-foreground font-semibold px-3 text-lg">
+              {workout.goal}
+            </Badge>
+          </InfoField>
+        )}
 
         <InfoField label="Plan zawiera" variant="p">
           <div className="flex flex-wrap gap-2 items-center">
             <IconInfoField icon={CalendarDays} label={parseDayLabel(workout.days.length)} />
             <IconInfoField icon={BicepsFlexed} label={parseExerciseLabel(workout.totalExercises)} />
           </div>
+        </InfoField>
+
+        <InfoField className="sm:justify-self-end" label="Czas na codzienny trening" variant="p">
+          <IconInfoField icon={Clock} label={parseTimeBrackets(avgWorkoutTime)} />
         </InfoField>
       </div>
 

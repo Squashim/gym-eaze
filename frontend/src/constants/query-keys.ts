@@ -1,4 +1,9 @@
-import type { ExerciseQueryParams, PaginatedQueryParams, PostQueryParams } from '@/types/filters';
+import type {
+  ExerciseQueryParams,
+  PaginatedQueryParams,
+  PostQueryParams,
+  WorkoutQueryParams,
+} from '@/types/filters';
 
 export const QUERY_KEYS = {
   AUTH_USER: ['user', 'authenticated'],
@@ -17,6 +22,7 @@ export const QUERY_KEYS = {
   EXERCISES: (params: ExerciseQueryParams) => ['exercises', params],
   EXERCISES_BY_IDS: (length: number) => ['exercises', 'by-ids', length],
   EXERCISE: (id: string) => ['exercises', id],
+  EXERCISE_COMMENTS: (exerciseId: string) => ['exercises', exerciseId, 'comments'],
   FAVORITE_EXERCISES: (params: PaginatedQueryParams) => ['exercises', 'favorite', params],
   USER_EXERCISES: (userId: string, params: PaginatedQueryParams) => [
     'user',
@@ -26,4 +32,13 @@ export const QUERY_KEYS = {
   ],
 
   WORKOUT: (id: string) => ['workouts', id],
+  WORKOUT_COMMENTS: (workoutId: string) => ['workouts', workoutId, 'comments'],
+  WORKOUTS: (params: WorkoutQueryParams) => ['workouts', params],
+  FAVORITE_WORKOUTS: (params: PaginatedQueryParams) => ['workouts', 'favorite', params],
+  USER_WORKOUTS: (userId: string, params: PaginatedQueryParams) => [
+    'user',
+    userId,
+    'workouts',
+    params,
+  ],
 } as const;

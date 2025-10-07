@@ -17,13 +17,19 @@ export const EXERCISE = {
   byUser: (userId: string) => `exercises/user/${userId}`,
   toggleLike: (id: string) => `exercises/${id}/like`,
   toggleFavorite: (id: string) => `exercises/${id}/favorite`,
+  comments: (id: string) => `exercises/${id}/comments`,
 } as const;
 
 export const WORKOUT = {
   base: 'training-plans',
+  search: 'training-plans/search',
+  favorite: 'training-plans/favorite',
   byId: (id: string) => `training-plans/${id}`,
+  byUser: (userId: string) => `training-plans/user/${userId}`,
   toggleLike: (id: string) => `training-plans/${id}/like`,
   toggleFavorite: (id: string) => `training-plans/${id}/favorite`,
+  download: (id: string) => `training-plans/${id}/pdf`,
+  comments: (id: string) => `training-plans/${id}/comments`,
 } as const;
 
 export const POST = {
