@@ -279,9 +279,12 @@ export const getFollowers = async (req: AuthRequest, res: Response) => {
 
     const followers = await getFollowersService(userId);
     return res.json(followers);
-  } catch (error: any) {
-    console.error('Błąd w getFollowers:', error);
-    return res.status(500).json({ message: error.message || 'Błąd serwera' });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -295,9 +298,12 @@ export const getFollowing = async (req: AuthRequest, res: Response) => {
 
     const following = await getFollowingService(userId);
     return res.json(following);
-  } catch (error: any) {
-    console.error('Błąd w getFollowing:', error);
-    return res.status(500).json({ message: error.message || 'Błąd serwera' });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
