@@ -20,6 +20,7 @@ interface CommentCreatorProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   ref?: React.RefObject<HTMLTextAreaElement | null>;
   replyingTo?: string | null;
+  autoFocus?: boolean;
   onClose?: () => void;
 }
 
@@ -29,6 +30,7 @@ function CommentCreator({
   className,
   replyingTo,
   scrollRef,
+  autoFocus = true,
   ref,
   onClose,
 }: CommentCreatorProps) {
@@ -105,7 +107,7 @@ function CommentCreator({
                     <Textarea
                       {...field}
                       autoComplete="off"
-                      autoFocus
+                      autoFocus={autoFocus}
                       className="resize-none dark:bg-card bg-card max-h-16 scrollbar overflow-y-auto break-words"
                       disabled={!user}
                       maxLength={1000}

@@ -183,7 +183,12 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
         )}
 
         {!replyCommentId && (
-          <CommentCreator className="p-0" parentId={exercise._id} parentType="Ćwiczenie" />
+          <CommentCreator
+            autoFocus={false}
+            className="p-0"
+            parentId={exercise._id}
+            parentType="Ćwiczenie"
+          />
         )}
 
         <div className="flex flex-col gap-3">

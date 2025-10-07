@@ -184,6 +184,7 @@ function WorkoutComments({ workout }: WorkoutCommentsProps) {
 
         {!replyCommentId && (
           <CommentCreator
+            autoFocus={false}
             className="p-0"
             parentId={workout._id}
             parentType="Trening"
