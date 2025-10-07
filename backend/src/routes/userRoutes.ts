@@ -9,6 +9,7 @@ import {
   getUserFitnessData,
   getUserLikes,
   getUserPersonalData,
+  getUserProfile,
   getUserProfileDetails,
   toggleUserFollow,
   updatePrivacySettings,
@@ -55,7 +56,11 @@ router.patch('/profile/fitness-details', authenticate, updateUserFitnessData);
 router.patch('/privacy-settings', authenticate, updatePrivacySettings);
 
 router.get('/followers', authenticate, getFollowers);
+
 router.get('/following', authenticate, getFollowing);
+
 router.patch('/:id/follow', authenticate, toggleUserFollow);
+
+router.get('/:id/profile', authenticate, getUserProfile);
 
 export default router;

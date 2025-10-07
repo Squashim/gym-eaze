@@ -9,6 +9,7 @@ import {
   getUserLikesService,
   getUserPersonalDataService,
   getUserProfileDetailsService,
+  getUserProfileService,
   toggleUserFollowService,
   updatePrivacySettingsService,
   updateUserFitnessDataService,
@@ -318,5 +319,21 @@ export const toggleUserFollow = async (req: AuthRequest, res: Response) => {
     } else {
       return res.status(500).json({ message: 'Błąd serwera' });
     }
+  }
+};
+
+export const getUserProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const currentUserId = req.userId;
+    const { id: profileUserId } = req.params;
+
+    if (!currentUserId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const profile = await getUserProfileService(currentUserId, profileUserId);
+    return res.json(profile);
+  } catch (error) {
+    return res.status(500).json({ message: 'Błąd serwera' });
   }
 };
