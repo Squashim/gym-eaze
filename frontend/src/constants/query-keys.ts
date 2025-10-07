@@ -32,4 +32,11 @@ export const QUERY_KEYS = {
 
   WORKOUT: (id: string) => ['workouts', id],
   WORKOUTS: (params: WorkoutQueryParams) => ['workouts', params],
+  FAVORITE_WORKOUTS: (params: PaginatedQueryParams) => ['workouts', 'favorite', params],
+  USER_WORKOUTS: (userId: string, params: PaginatedQueryParams) => [
+    'user',
+    userId,
+    'workouts',
+    params,
+  ],
 } as const;

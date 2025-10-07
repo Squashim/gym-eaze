@@ -1,6 +1,8 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdvancedLevelBadge, ItemDetailsBadge, LikesBadge } from '@/components/ui/item-info-badges';
+import { Separator } from '@/components/ui/separator';
 import { AdvancedLevel } from '@/constants/advanced-level';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
@@ -34,20 +36,16 @@ const ExerciseList = ({ exercises, isFetchingError, pageType = 'browser' }: Exer
     return <EmptyExerciseCard isFetchingError={isFetchingError} pageType={pageType} />;
   }
 
-  return (
-    <>
-      {exercises.map((ex) => (
-        <ExerciseCard
-          key={ex._id}
-          {...ex}
-          isDetailsLoading={isDetailsLoading}
-          isFavorited={favoritedExercises?.has(ex._id)}
-          isLiked={likedExercises?.has(ex._id)}
-          pageType={pageType}
-        />
-      ))}
-    </>
-  );
+  return exercises.map((ex) => (
+    <ExerciseCard
+      key={ex._id}
+      {...ex}
+      isDetailsLoading={isDetailsLoading}
+      isFavorited={favoritedExercises?.has(ex._id)}
+      isLiked={likedExercises?.has(ex._id)}
+      pageType={pageType}
+    />
+  ));
 };
 
 type EmptyExerciseCardProps = Omit<ExerciseListProps, 'exercises'>;
@@ -117,6 +115,23 @@ const ExerciseCard = ({
   ...exercise
 }: ExerciseCardProps) => {
   const displayMuscleGroups = exercise.muscleGroup.map((mg) => mg.name).join(' • ');
+
+  const maxVisibleHashtags = 3;
+  const { visibleHashtags, hiddenHashtagsCount } = useMemo(() => {
+    if (!exercise.hashtags) {
+      return {
+        visibleHashtags: [],
+        hiddenHashtagsCount: 0,
+      };
+    }
+    const visible = exercise.hashtags.slice(0, maxVisibleHashtags);
+    const hiddenCount = exercise.hashtags.length - maxVisibleHashtags;
+    return {
+      visibleHashtags: visible,
+      hiddenHashtagsCount: hiddenCount > 0 ? hiddenCount : 0,
+    };
+  }, [exercise.hashtags]);
+
   return (
     <a
       className="rounded-xl outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] max-w-md mx-auto w-full"
@@ -153,6 +168,22 @@ const ExerciseCard = ({
 
           <CardTitle className="text-xl line-clamp-2">{exercise.name}</CardTitle>
           <CardDescription>{displayMuscleGroups}</CardDescription>
+          <CardContent className="p-0 flex flex-col gap-3">
+            <Separator />
+
+            {exercise.hashtags && exercise.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {visibleHashtags.map((hashtag) => (
+                  <Badge key={hashtag} variant="outline">
+                    {`#${hashtag}`}
+                  </Badge>
+                ))}
+                {hiddenHashtagsCount > 0 && (
+                  <Badge variant="outline">+{hiddenHashtagsCount} więcej</Badge>
+                )}
+              </div>
+            )}
+          </CardContent>
         </CardHeader>
       </Card>
     </a>

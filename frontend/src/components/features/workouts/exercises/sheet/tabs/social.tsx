@@ -11,8 +11,7 @@ import useDebounce from '@/hooks/utils/use-debounce';
 import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-groups';
 import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
 import { AdvancedLevel } from '@/constants/advanced-level';
-import { ArrowUpDown, Eraser, Filter, Search, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { ArrowUpDown, Eraser, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TagsInput } from '@/components/ui/tags-input';
+import SearchInput from '@/components/ui/search-input';
 
 const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {
   const { params, setPage, setFilters, setSortBy, clearFilters } =
@@ -82,37 +82,17 @@ const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetT
     }
   };
 
-  const renderSearchInput = () => {
-    return (
-      <div className="relative flex items-center w-full">
-        <Search className="absolute left-3 size-4 text-muted-foreground pointer-events-none" />
-        <Input
-          className="pl-9"
-          id="exercise-search"
-          maxLength={64}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Wyszukaj ćwiczenie"
-          type="text"
-          value={searchText}
-        />
-        {searchText && (
-          <Button
-            className="absolute right-0 ease-in-out duration-200"
-            onClick={handleSearchClear}
-            size="icon"
-            variant="ghost"
-          >
-            <X className="size-4" />
-          </Button>
-        )}
-      </div>
-    );
-  };
-
   return (
     <>
       <header className="flex items-center w-full gap-2 sm:gap-3">
-        {renderSearchInput()}
+        <SearchInput
+          maxLength={64}
+          onChange={(newValue) => setSearchText(newValue)}
+          onClear={handleSearchClear}
+          placeholder="Wyszukaj ćwiczenie..."
+          value={searchText}
+        />
+
         <div className="flex gap-1 sm:gap-2 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>

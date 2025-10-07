@@ -16,6 +16,8 @@ import Community from './pages/community';
 import WorkoutCreator from './pages/workouts/creator';
 import WorkoutBrowser from './pages/workouts/browser';
 import WorkoutDetails from './pages/workouts/details';
+import UserWorkouts from './pages/workouts/user';
+import FavoriteWorkouts from './pages/workouts/favorite';
 
 const router = createBrowserRouter([
   {
@@ -101,6 +103,11 @@ const router = createBrowserRouter([
             path: 'workouts',
             children: [
               { path: 'create', element: <WorkoutCreator mode="create" /> },
+              { path: 'my', element: <UserWorkouts /> },
+              {
+                path: 'favorites',
+                element: <FavoriteWorkouts />,
+              },
               {
                 path: ':id/edit',
                 element: <WorkoutCreator mode="edit" />,
