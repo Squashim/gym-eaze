@@ -265,7 +265,7 @@ fun HashtagInputDialog(
 }
 
 @Composable
-private fun GoalOptionItem(
+fun GoalOptionItem(
     label: String,
     description: String,
     isSelected: Boolean,
@@ -313,7 +313,7 @@ private fun GoalOptionItem(
 }
 
 @Composable
-private fun DifficultyOptionItem(
+fun DifficultyOptionItem(
     label: String,
     description: String,
     isSelected: Boolean,
@@ -362,7 +362,7 @@ private fun DifficultyOptionItem(
     }
 }
 
-private fun getGoalDescription(goal: String): String = when (goal) {
+fun getGoalDescription(goal: String): String = when (goal) {
     Goals.MUSCLE_GAIN -> "Budowanie masy mięśniowej i objętości"
     Goals.STRENGTH -> "Zwiększanie siły maksymalnej"
     Goals.ENDURANCE -> "Poprawa wytrzymałości mięśniowej"
@@ -378,7 +378,7 @@ private fun getGoalDescription(goal: String): String = when (goal) {
     else -> "Brak konkretnego celu"
 }
 
-private fun getDifficultyDescription(difficulty: String): String = when (difficulty) {
+fun getDifficultyDescription(difficulty: String): String = when (difficulty) {
     AdvancedLevel.NONE -> "Nie wybrano poziomu trudności"
     AdvancedLevel.EASY -> "Do 6 miesięcy doświadczenia"
     AdvancedLevel.MEDIUM -> "6 miesięcy - 2 lata doświadczenia"
@@ -387,7 +387,7 @@ private fun getDifficultyDescription(difficulty: String): String = when (difficu
 }
 
 @Composable
-private fun getDifficultyColor(difficulty: String): Color = when (difficulty) {
+fun getDifficultyColor(difficulty: String): Color = when (difficulty) {
     AdvancedLevel.NONE -> getOnSurfaceSecondaryColor()
     AdvancedLevel.EASY -> Color(0xFF4CAF50)
     AdvancedLevel.MEDIUM -> Color(0xFFFF9800)

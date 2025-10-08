@@ -68,6 +68,9 @@ fun HomeScreen(
     onEditProfileClick: () -> Unit,
     onBrowseExercisesClick: () -> Unit,
     onCreateTrainingPlanClick: () -> Unit,
+    onMyTrainingPlansClick: () -> Unit = {},
+    onBrowseTrainingPlansClick: () -> Unit = {},
+    onFavoriteTrainingPlansClick: () -> Unit = {},
     onCreatePostClick: () -> Unit = {},
     onBrowsePostClick: () -> Unit = {},
     onFollowedUsersPosts: () -> Unit ={},
@@ -105,7 +108,10 @@ fun HomeScreen(
                 if (isUserLoggedIn) {
                     TrainingPlansMenuScreen(
                         onSettingsClick = onSettingsClick,
-                        onCreateTrainingPlanClick = onCreateTrainingPlanClick
+                        onCreateTrainingPlanClick = onCreateTrainingPlanClick,
+                        onMyTrainingPlansClick = onMyTrainingPlansClick,
+                        onBrowseTrainingPlansClick = onBrowseTrainingPlansClick,
+                        onFavoriteTrainingPlansClick = onFavoriteTrainingPlansClick
                     )
                 } else {
                     WorkoutsNotLoggedInScreen(

@@ -6,6 +6,7 @@ import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.TrainingPlanApiService
+import com.example.gymeaze.data.models.*
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
@@ -26,6 +27,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.concurrent.TimeUnit
 
 class TrainingPlanRepository(private val context: Context) {
 
@@ -40,6 +42,10 @@ class TrainingPlanRepository(private val context: Context) {
         .addInterceptor(logging)
         .addInterceptor(AuthInterceptor(userPreferences))
         .authenticator(TokenAuthenticator(userPreferences, authRepository))
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(180, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .callTimeout(300, TimeUnit.SECONDS)
         .build()
 
     private val api: TrainingPlanApiService by lazy {
@@ -146,6 +152,246 @@ class TrainingPlanRepository(private val context: Context) {
 
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun getTrainingPlans(
+        filters: TrainingPlanFilters = TrainingPlanFilters(),
+        sortBy: String = "latest",
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<TrainingPlansResponse> = withContext(Dispatchers.IO) {
+        try {
+            val query = TrainingPlanQuery(
+                filters = filters,
+                sortBy = sortBy,
+                page = page,
+                pageSize = pageSize
+            )
+            val response = api.getTrainingPlans(query)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getTrainingPlanById(planId: String): Result<TrainingPlan> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getTrainingPlanById(planId)
+
+            if (response.isSuccessful && response.body() != null) {
+                val plan = response.body()!!
+                Result.success(plan)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception("Nie można pobrać planu treningowego"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getMyTrainingPlans(
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<TrainingPlansResponse> = withContext(Dispatchers.IO) {
+        try {
+            val userId = authRepository.getCurrentUserId()
+
+            if (userId == null) {
+                return@withContext Result.failure(IllegalStateException("Nie można pobrać ID użytkownika"))
+            }
+
+            val response = api.getMyTrainingPlansByUserId(userId, page, pageSize)
+
+            if (response.isSuccessful && response.body() != null) {
+                val result = response.body()!!
+                Result.success(result)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getFavoriteTrainingPlans(
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<TrainingPlansResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getFavoriteTrainingPlans(page, pageSize)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleTrainingPlanLike(planId: String): Result<LikeResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.toggleTrainingPlanLike(planId)
+
+            if (response.isSuccessful && response.body() != null) {
+                val likeResponse = response.body()!!
+                Result.success(likeResponse)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleTrainingPlanFavorite(planId: String): Result<MessageResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.toggleTrainingPlanFavorite(planId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    suspend fun downloadTrainingPlanPDF(planId: String): Result<ByteArray> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.downloadTrainingPlanPDF(planId)
+
+            if (response.isSuccessful && response.body() != null) {
+                val pdfBytes = response.body()!!.bytes()
+                Result.success(pdfBytes)
+            } else {
+                val errorMessage = when (response.code()) {
+                    404 -> "Plan treningowy nie został znaleziony"
+                    403 -> "Plan treningowy jest prywatny"
+                    401 -> "Musisz być zalogowany aby pobrać PDF"
+                    408 -> "Timeout - spróbuj ponownie za chwilę"
+                    504 -> "Serwer nie odpowiada - spróbuj ponownie"
+                    else -> "Błąd podczas pobierania PDF (${response.code()})"
+                }
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Result.failure(Exception("Pobieranie PDF trwa zbyt długo. Plan jest duży - spróbuj ponownie."))
+        } catch (e: java.net.ConnectException) {
+            Result.failure(Exception("Brak połączenia z serwerem"))
+        } catch (e: java.io.IOException) {
+            Result.failure(Exception("Błąd pobierania pliku. Sprawdź połączenie internetowe."))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteTrainingPlan(planId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.deleteTrainingPlan(planId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateTrainingPlan(
+        planId: String,
+        updateData: UpdateTrainingPlanData
+    ): Result<TrainingPlan> = withContext(Dispatchers.IO) {
+        try {
+            val nameBody = updateData.name.toRequestBody("text/plain".toMediaTypeOrNull())
+            val descriptionBody = (updateData.description ?: "").toRequestBody("text/plain".toMediaTypeOrNull())
+            val goalBody = updateData.goal.toRequestBody("text/plain".toMediaTypeOrNull())
+            val visibilityBody = updateData.visibility.toRequestBody("text/plain".toMediaTypeOrNull())
+            val advancedLevelBody = updateData.advancedLevel.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            val hashtagsJson = Gson().toJson(updateData.hashtags)
+            val hashtagsBody = hashtagsJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+            val daysJson = Gson().toJson(updateData.days)
+            val daysBody = daysJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+            val imagePart = updateData.imageUri?.let { imageUri ->
+                try {
+                    val file = createTempFileFromUri(context, Uri.parse(imageUri))
+                    val mimeType = context.contentResolver.getType(Uri.parse(imageUri)) ?: "image/jpeg"
+
+                    val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
+                    MultipartBody.Part.createFormData("image", file.name, requestFile)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            val response = api.updateTrainingPlan(
+                planId = planId,
+                name = nameBody,
+                description = descriptionBody,
+                goal = goalBody,
+                visibility = visibilityBody,
+                advancedLevel = advancedLevelBody,
+                hashtags = hashtagsBody,
+                days = daysBody,
+                image = imagePart
+            )
+
+            if (response.isSuccessful && response.body() != null) {
+                val updatedPlan = response.body()!!
+                Result.success(updatedPlan)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun createTempFileFromUri(context: Context, uri: Uri): File {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+
+            val mimeType = context.contentResolver.getType(uri)
+            val extension = when (mimeType) {
+                "image/jpeg", "image/jpg" -> ".jpg"
+                "image/png" -> ".png"
+                "image/webp" -> ".webp"
+                else -> ".jpg"
+            }
+
+            val tempFile = File.createTempFile("training_plan_image", extension, context.cacheDir)
+
+            tempFile.outputStream().use { outputStream ->
+                inputStream?.copyTo(outputStream)
+            }
+            inputStream?.close()
+
+            tempFile
+        } catch (e: Exception) {
+            throw e
         }
     }
 

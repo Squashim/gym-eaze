@@ -120,8 +120,10 @@ class ExerciseRepository(private val context: Context) {
     suspend fun getExerciseById(exerciseId: String): Result<Exercise> = withContext(Dispatchers.IO) {
         try {
             val response = api.getExerciseById(exerciseId)
+
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val exercise = response.body()!!
+                Result.success(exercise)
             } else {
                 val raw = response.errorBody()?.string()
                 val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
@@ -141,6 +143,26 @@ class ExerciseRepository(private val context: Context) {
                 val raw = response.errorBody()?.string()
                 val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
                 Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getExercisesByIds(exerciseIds: List<String>): Result<List<Exercise>> = withContext(Dispatchers.IO) {
+        try {
+
+            if (exerciseIds.isEmpty()) {
+                return@withContext Result.success(emptyList())
+            }
+            val response = api.getExercisesByIds(exerciseIds)
+
+            if (response.isSuccessful && response.body() != null) {
+                val exercises = response.body()!!
+                Result.success(exercises)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception("Nie można pobrać ćwiczeń"))
             }
         } catch (e: Exception) {
             Result.failure(e)

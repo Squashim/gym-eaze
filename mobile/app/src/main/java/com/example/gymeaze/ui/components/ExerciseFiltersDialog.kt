@@ -496,7 +496,7 @@ private fun EquipmentDropdown(
 }
 
 @Composable
-private fun HashtagsInput(
+fun HashtagsInput(
     value: String,
     onValueChanged: (String) -> Unit
 ) {

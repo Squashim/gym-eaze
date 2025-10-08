@@ -36,6 +36,11 @@ interface ExerciseApiService {
         @Path("id") exerciseId: String
     ): Response<Exercise>
 
+    @POST("/api/exercises/batch")
+    suspend fun getExercisesByIds(
+        @Body exerciseIds: List<String>
+    ): Response<List<Exercise>>
+
     @PATCH("/api/exercises/{id}/like")
     suspend fun toggleExerciseLike(
         @Path("id") exerciseId: String

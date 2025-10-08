@@ -27,7 +27,7 @@ fun TrainingPlansMenuScreen(
     onCreateTrainingPlanClick: () -> Unit,
     onMyTrainingPlansClick: () -> Unit = {},
     onBrowseTrainingPlansClick: () -> Unit = {},
-    onActiveTrainingPlanClick: () -> Unit = {}
+    onFavoriteTrainingPlansClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -109,7 +109,7 @@ fun TrainingPlansMenuScreen(
                         imageRes = R.drawable.favorites_exercises,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),
-                        onClick = onActiveTrainingPlanClick
+                        onClick = onFavoriteTrainingPlansClick
                     )
                 }
             }

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.UserPreferences
+import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -105,6 +106,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedTrainingPlanId = MutableStateFlow<String?>(null)
     val selectedTrainingPlanId: StateFlow<String?> = _selectedTrainingPlanId.asStateFlow()
 
+    private val _showBrowseTrainingPlans = MutableStateFlow(false)
+    val showBrowseTrainingPlans = _showBrowseTrainingPlans.asStateFlow()
+
+    private val _showMyTrainingPlans = MutableStateFlow(false)
+    val showMyTrainingPlans = _showMyTrainingPlans.asStateFlow()
+
+    private val _showFavoriteTrainingPlans = MutableStateFlow(false)
+    val showFavoriteTrainingPlans = _showFavoriteTrainingPlans.asStateFlow()
+
     private val _showExerciseSelectionForDay = MutableStateFlow(false)
     val showExerciseSelectionForDay: StateFlow<Boolean> = _showExerciseSelectionForDay.asStateFlow()
 
@@ -117,10 +127,85 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _showTrainingPlansMenu = MutableStateFlow(false)
     val showTrainingPlansMenu: StateFlow<Boolean> = _showTrainingPlansMenu.asStateFlow()
 
+    private val _showEditTrainingPlan = MutableStateFlow(false)
+    val showEditTrainingPlan: StateFlow<Boolean> = _showEditTrainingPlan.asStateFlow()
+
+    private val _selectedEditPlanId = MutableStateFlow<String?>(null)
+    val selectedEditPlanId: StateFlow<String?> = _selectedEditPlanId.asStateFlow()
+
+    fun showEditTrainingPlanScreen(planId: String) {
+        _showMyTrainingPlans.value = false
+        _selectedEditPlanId.value = planId
+        _showEditTrainingPlan.value = true
+    }
+
+    fun hideEditTrainingPlanScreen() {
+        _showEditTrainingPlan.value = false
+        _selectedEditPlanId.value = null
+    }
+
+    private var exerciseSelectionCallback: ((Exercise) -> Unit)? = null
+
+    fun setExerciseSelectionCallback(callback: (Exercise) -> Unit) {
+        exerciseSelectionCallback = callback
+    }
+
+    fun clearExerciseSelectionCallback() {
+        exerciseSelectionCallback = null
+    }
+
+    fun onExerciseSelectedForDay(exercise: Exercise) {
+        exerciseSelectionCallback?.invoke(exercise)
+        clearExerciseSelectionCallback()
+    }
+
+    fun showBrowseTrainingPlansScreen() {
+        _showBrowseTrainingPlans.value = true
+    }
+
+    fun hideBrowseTrainingPlansScreen() {
+        _showBrowseTrainingPlans.value = false
+    }
+
+    fun showMyTrainingPlansScreen() {
+        _showMyTrainingPlans.value = true
+    }
+
+    fun hideMyTrainingPlansScreen() {
+        _showMyTrainingPlans.value = false
+    }
+
+    fun showFavoriteTrainingPlansScreen() {
+        _showFavoriteTrainingPlans.value = true
+    }
+
+    fun hideFavoriteTrainingPlansScreen() {
+        _showFavoriteTrainingPlans.value = false
+    }
+
     fun showCreateTrainingPlanScreen() {
         _showCreateTrainingPlan.value = true
     }
 
+    private var editPlanExerciseSelectionCallback: ((Exercise) -> Unit)? = null
+
+    fun isEditPlanExerciseSelectionActive(): Boolean {
+        return editPlanExerciseSelectionCallback != null
+    }
+
+    fun setEditPlanExerciseSelectionCallback(callback: (Exercise) -> Unit) {
+        editPlanExerciseSelectionCallback = callback
+    }
+
+    fun clearEditPlanExerciseSelectionCallback() {
+        editPlanExerciseSelectionCallback = null
+    }
+
+    fun onExerciseSelectedForEditPlan(exercise: Exercise) {
+        editPlanExerciseSelectionCallback?.invoke(exercise)
+        clearEditPlanExerciseSelectionCallback()
+        hideExerciseSelectionForDayScreen()
+    }
     fun showExerciseSelectionForDayScreen(dayIndex: Int) {
         _selectedDayIndex.value = dayIndex
         _showExerciseSelectionForDay.value = true
