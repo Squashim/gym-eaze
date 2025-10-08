@@ -2,13 +2,17 @@ import express from 'express';
 import { authenticate } from '../middlewares/authMiddleware';
 import {
   deleteUser,
+  getFollowers,
+  getFollowing,
   getPrivacySettings,
   getUserBadges,
   getUserFavorites,
   getUserFitnessData,
   getUserLikes,
   getUserPersonalData,
+  getUserProfile,
   getUserProfileDetails,
+  toggleUserFollow,
   updatePrivacySettings,
   updateUser,
   updateUserFitnessData,
@@ -52,5 +56,13 @@ router.patch('/profile/fitness-details', authenticate, updateUserFitnessData);
 
 router.get('/privacy-settings', authenticate, getPrivacySettings);
 router.patch('/privacy-settings', authenticate, updatePrivacySettings);
+
+router.get('/followers', authenticate, getFollowers);
+
+router.get('/following', authenticate, getFollowing);
+
+router.patch('/:id/follow', authenticate, toggleUserFollow);
+
+router.get('/:id/profile', authenticate, getUserProfile);
 
 export default router;

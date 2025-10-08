@@ -1,4 +1,5 @@
 import BackHeader from '@/components/features/workouts/back-header';
+import WorkoutComments from '@/components/features/workouts/workout-comments';
 import PageLayout from '@/components/layout/page';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevel } from '@/constants/advanced-level';
+import { Goal } from '@/constants/goals';
 import { useUser } from '@/context/user';
 import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
@@ -123,6 +125,8 @@ function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: Wor
       </div>
 
       <WorkoutMetaInfo isAuthor={auth.isAuthor} workout={workout} />
+
+      <WorkoutComments workout={workout} />
     </section>
   );
 }
@@ -297,7 +301,7 @@ function WorkoutDays({ weeks }: WorkoutDaysProps) {
         <TabsList className="absolute flex flex-row justify-stretch w-full py-2 gap-2 bg-transparent">
           {weeks.map((week, i) => (
             <TabsTrigger
-              className="h-10 px-4 data-[state=active]:bg-card/70 dark:data-[state=active]:bg-card/70"
+              className="h-10 px-4 data-[state=active]:bg-card/70 dark:data-[state=active]:bg-card/70 bg-card/70 hover:border-input"
               key={week.name}
               value={`week-${i + 1}`}
             >
@@ -475,7 +479,7 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
 
   return (
     <div
-      className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground relative min-[425px]:h-36 flex-wrap min-[425px]:flex-nowrap"
+      className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground relative flex-wrap min-[425px]:flex-nowrap"
       key={exercise._id}
     >
       <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-h-18">
@@ -533,11 +537,13 @@ function WorkoutMetaInfo({ workout, isAuthor }: WorkoutMetaInfoProps) {
   return (
     <div className="flex flex-col gap-4 w-full col-span-full">
       <div className="flex flex-col gap-x-4 gap-y-4 sm:flex-row sm:flex-wrap sm:gap-x-8 md:gap-x-12">
-        <InfoField label="Cel treningowy" variant="p">
-          <Badge className="min-h-12 bg-accent-foreground/10 text-foreground font-semibold px-3 text-lg">
-            {workout.goal}
-          </Badge>
-        </InfoField>
+        {workout.goal !== Goal.none && (
+          <InfoField label="Cel treningowy" variant="p">
+            <Badge className="min-h-12 bg-accent-foreground/10 text-foreground font-semibold px-3 text-lg">
+              {workout.goal}
+            </Badge>
+          </InfoField>
+        )}
 
         <InfoField label="Plan zawiera" variant="p">
           <div className="flex flex-wrap gap-2 items-center">

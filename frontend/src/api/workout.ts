@@ -9,7 +9,13 @@ import type {
   GetWorkoutsApiResponse,
 } from '@/types/workout';
 import type { ApiResponse } from '@/types/api';
-import type { PaginatedResponse, WorkoutQueryParams } from '@/types/filters';
+import type {
+  CursorPaginatedResponse,
+  PaginatedQueryParams,
+  PaginatedResponse,
+  WorkoutQueryParams,
+} from '@/types/filters';
+import type { GetCommentsApiResponse } from '@/types/comment';
 
 const create = async (payload: CreateWorkoutPayload): Promise<WorkoutApiResponse> => {
   const parsedPayload = { ...payload, days: JSON.stringify(payload.days) };
@@ -58,9 +64,56 @@ const getAll = async (
   return data;
 };
 
+const getFavorite = async (
+  params: PaginatedQueryParams,
+): Promise<PaginatedResponse<GetWorkoutsApiResponse>> => {
+  const { data } = await API.get<PaginatedResponse<GetWorkoutsApiResponse>>(endpoints.favorite, {
+    params: { ...params },
+  });
+
+  return data;
+};
+
+const getByUser = async (
+  userId: string,
+  params: PaginatedQueryParams,
+): Promise<PaginatedResponse<GetWorkoutsApiResponse>> => {
+  const { data } = await API.get<PaginatedResponse<GetWorkoutsApiResponse>>(
+    endpoints.byUser(userId),
+    { params: { ...params } },
+  );
+
+  return data;
+};
+
 const download = async (id: string): Promise<Blob> => {
   const { data } = await API.get<Blob>(endpoints.download(id), { responseType: 'blob' });
   return data;
 };
 
-export { create, update, remove, toggleLike, toggleFavorite, getById, download, getAll };
+const getComments = async (
+  id: string,
+  cursor?: string | null,
+): Promise<CursorPaginatedResponse<GetCommentsApiResponse>> => {
+  const { data } = await API.get<CursorPaginatedResponse<GetCommentsApiResponse>>(
+    endpoints.comments(id),
+    {
+      params: { cursor },
+    },
+  );
+  return data;
+};
+
+export {
+  create,
+  update,
+  remove,
+  toggleLike,
+  toggleFavorite,
+  getById,
+  download,
+  getAll,
+  getByUser,
+  getFavorite,
+  getComments,
+};

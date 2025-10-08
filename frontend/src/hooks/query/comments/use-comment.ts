@@ -14,6 +14,15 @@ interface useCommentProps {
   parentId: string;
 }
 
+function isItemReplyCommentsQuery(queryKey: unknown): boolean {
+  return (
+    Array.isArray(queryKey) &&
+    queryKey.length === 3 &&
+    queryKey[2] === 'comments' &&
+    (queryKey[0] === 'posts' || queryKey[0] === 'exercises' || queryKey[0] === 'workouts')
+  );
+}
+
 export function useComment({ parentType, parentId }: useCommentProps) {
   const { user } = useUser();
   const { params } = usePostParamsQuery();
@@ -27,16 +36,14 @@ export function useComment({ parentType, parentId }: useCommentProps) {
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
         await queryClient.invalidateQueries({
-          predicate: (query) => {
-            const queryKey = query.queryKey;
-            return (
-              Array.isArray(queryKey) &&
-              queryKey.length === 3 &&
-              queryKey[0] === 'posts' &&
-              queryKey[2] === 'comments'
-            );
-          },
+          predicate: (query) => isItemReplyCommentsQuery(query.queryKey),
         });
+      } else if (parentType === 'Ćwiczenie') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE(parentId) });
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE_COMMENTS(parentId) });
+      } else if (parentType === 'Trening') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORKOUT(parentId) });
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORKOUT_COMMENTS(parentId) });
       }
       toast.success(response.message);
     },
@@ -61,6 +68,10 @@ export function useComment({ parentType, parentId }: useCommentProps) {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POST_COMMENTS(parentId) });
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
+      } else if (parentType === 'Ćwiczenie') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE_COMMENTS(parentId) });
+      } else if (parentType === 'Trening') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORKOUT_COMMENTS(parentId) });
       }
       toast.success(response.message);
     },
@@ -86,16 +97,14 @@ export function useComment({ parentType, parentId }: useCommentProps) {
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
         await queryClient.invalidateQueries({
-          predicate: (query) => {
-            const queryKey = query.queryKey;
-            return (
-              Array.isArray(queryKey) &&
-              queryKey.length === 3 &&
-              queryKey[0] === 'posts' &&
-              queryKey[2] === 'comments'
-            );
-          },
+          predicate: (query) => isItemReplyCommentsQuery(query.queryKey),
         });
+      } else if (parentType === 'Ćwiczenie') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE(parentId) });
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE_COMMENTS(parentId) });
+      } else if (parentType === 'Trening') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORKOUT(parentId) });
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORKOUT_COMMENTS(parentId) });
       }
 
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_LIKED_ITEMS(user!._id) });
@@ -121,6 +130,10 @@ export function useComment({ parentType, parentId }: useCommentProps) {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POST_COMMENTS(parentId) });
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
+      } else if (parentType === 'Ćwiczenie') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE_COMMENTS(parentId) });
+      } else if (parentType === 'Trening') {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORKOUT_COMMENTS(parentId) });
       }
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_LIKED_ITEMS(user!._id) });
       toast.success(response.message);

@@ -1,6 +1,8 @@
 import { goalValues } from '../constants/goals';
 import {
   deleteUserService,
+  getFollowersService,
+  getFollowingService,
   getPrivacySettingsService,
   getUserBadgesService,
   getUserFavoritesService,
@@ -8,6 +10,8 @@ import {
   getUserLikesService,
   getUserPersonalDataService,
   getUserProfileDetailsService,
+  getUserProfileService,
+  toggleUserFollowService,
   updatePrivacySettingsService,
   updateUserFitnessDataService,
   updateUserPersonalDataService,
@@ -289,5 +293,84 @@ export const updatePrivacySettings = async (req: AuthRequest, res: Response) => 
       message: 'Błąd podczas aktualizacji ustawień prywatności',
       error,
     });
+  }
+};
+
+export const getFollowers = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const followers = await getFollowersService(userId);
+    return res.json(followers);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
+  }
+};
+
+export const getFollowing = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const following = await getFollowingService(userId);
+    return res.json(following);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
+  }
+};
+
+export const toggleUserFollow = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { id: targetUserId } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const result = await toggleUserFollowService(userId, targetUserId);
+
+    res.status(200).json(result);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
+  }
+};
+
+export const getUserProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const currentUserId = req.userId;
+    const { id: profileUserId } = req.params;
+
+    if (!currentUserId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const profile = await getUserProfileService(currentUserId, profileUserId);
+    return res.json(profile);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };

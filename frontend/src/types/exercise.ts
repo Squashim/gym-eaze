@@ -27,6 +27,7 @@ export type BaseExerciseApiResponse<
   TAuthor = string,
 > = BaseExercise<TMuscleGroup, TEquipment> & {
   _id: string;
+  commentsCount?: number;
   author: TAuthor;
   likes: number;
   createdAt: string;

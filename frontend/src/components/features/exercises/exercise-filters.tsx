@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/ui/multi-select';
 import {
   Sheet,
@@ -23,7 +22,7 @@ import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-group
 import useDebounce from '@/hooks/utils/use-debounce';
 import { apiResponseToMultiSelectOptions, cn } from '@/lib/utils';
 import type { ExerciseFilters as Filters, SortBy } from '@/types/filters';
-import { ArrowUpDown, Filter, Search, X } from 'lucide-react';
+import { ArrowUpDown, Filter, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AdvancedLevel } from '@/constants/advanced-level';
 import { Switch } from '@/components/ui/switch';
@@ -31,6 +30,8 @@ import { Badge } from '@/components/ui/badge';
 import type { MuscleGroup } from '@/types/muscle-group';
 import type { Equipment } from '@/types/equipment';
 import { Skeleton } from '@/components/ui/skeleton';
+import SearchInput from '@/components/ui/search-input';
+import { useUser } from '@/context/user';
 
 type ExerciseFiltersProps = {
   filters: Filters;
@@ -47,9 +48,7 @@ const ExerciseFilters = ({
   setFilters,
   clearFilters,
 }: ExerciseFiltersProps) => {
-  const [openFilterSheet, setOpenFilterSheet] = useState(false);
-  const [searchText, setSearchText] = useState(filters.search ?? '');
-  const debouncedSearch = useDebounce(searchText, 350);
+  const { user } = useUser();
   const {
     data: muscleGroups,
     isLoading: isMuscleGroupsLoading,
@@ -60,6 +59,10 @@ const ExerciseFilters = ({
     isLoading: isEquipmentLoading,
     isError: isEquipmentError,
   } = useGetEquipment();
+
+  const [openFilterSheet, setOpenFilterSheet] = useState(false);
+  const [searchText, setSearchText] = useState(filters.search ?? '');
+  const debouncedSearch = useDebounce(searchText, 350);
 
   const activeFiltersCount = useMemo(() => {
     return Object.entries(filters).reduce((acc, [key, value]) => {
@@ -93,32 +96,6 @@ const ExerciseFilters = ({
     } else {
       setFilters({ difficulty: value });
     }
-  };
-
-  const renderSearchInput = () => {
-    return (
-      <div className="relative flex items-center max-w-lg w-full">
-        <Search className="absolute left-3 size-4 text-muted-foreground pointer-events-none" />
-        <Input
-          className="pl-9"
-          maxLength={64}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Wyszukaj ćwiczenie"
-          type="text"
-          value={searchText}
-        />
-        {searchText && (
-          <Button
-            className="absolute right-0 ease-in-out duration-200"
-            onClick={handleSearchClear}
-            size="icon"
-            variant="ghost"
-          >
-            <X className="size-4" />
-          </Button>
-        )}
-      </div>
-    );
   };
 
   const renderFilterSheet = () => {
@@ -220,24 +197,26 @@ const ExerciseFilters = ({
               </Select>
             </div>
 
-            <div className="grid gap-2">
-              <Typography className="font-semibold" variant="small">
-                Pokaż ćwiczenia obserwowanych użytkowników:
-              </Typography>
-              <div className="flex flex-row items-center justify-between rounded-md border border-input p-3 bg-transparent dark:bg-input/30 shadow-xs">
-                <div className="grid gap-1">
-                  <Typography variant="muted">
-                    Włącz, aby wyświetlać tylko ćwiczenia osób, które obserwujesz
-                  </Typography>
+            {!!user && (
+              <div className="grid gap-2">
+                <Typography className="font-semibold" variant="small">
+                  Pokaż ćwiczenia obserwowanych użytkowników:
+                </Typography>
+                <div className="flex flex-row items-center justify-between rounded-md border border-input p-3 bg-transparent dark:bg-input/30 shadow-xs">
+                  <div className="grid gap-1">
+                    <Typography variant="muted">
+                      Włącz, aby wyświetlać tylko ćwiczenia osób, które obserwujesz
+                    </Typography>
+                  </div>
+                  <Switch
+                    checked={filters.followers === true}
+                    onCheckedChange={(checked) =>
+                      setFilters({ followers: checked ? true : undefined })
+                    }
+                  />
                 </div>
-                <Switch
-                  checked={filters.followers === true}
-                  onCheckedChange={(checked) =>
-                    setFilters({ followers: checked ? true : undefined })
-                  }
-                />
               </div>
-            </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>
@@ -248,7 +227,14 @@ const ExerciseFilters = ({
     <>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row gap-4 md:gap-2 md:items-end justify-center w-full">
-          {renderSearchInput()}
+          <SearchInput
+            className="max-w-lg"
+            maxLength={64}
+            onChange={(newValue) => setSearchText(newValue)}
+            onClear={handleSearchClear}
+            placeholder="Wyszukaj ćwiczenie..."
+            value={searchText}
+          />
 
           <div className="flex gap-2">
             <Button className="relative" onClick={() => setOpenFilterSheet(true)}>

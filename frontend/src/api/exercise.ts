@@ -9,8 +9,14 @@ import type {
 } from '@/types/exercise';
 import API from './api-client';
 import { objectToFormData } from '@/lib/utils';
-import type { ExerciseQueryParams, PaginatedQueryParams, PaginatedResponse } from '@/types/filters';
+import type {
+  CursorPaginatedResponse,
+  ExerciseQueryParams,
+  PaginatedQueryParams,
+  PaginatedResponse,
+} from '@/types/filters';
 import type { ApiResponse } from '@/types/api';
+import type { GetCommentsApiResponse } from '@/types/comment';
 
 const create = async (payload: CreateExercisePayload): Promise<BaseExerciseApiResponse> => {
   const formData = objectToFormData(payload);
@@ -87,6 +93,19 @@ const getByUser = async (
   return data;
 };
 
+const getComments = async (
+  id: string,
+  cursor?: string | null,
+): Promise<CursorPaginatedResponse<GetCommentsApiResponse>> => {
+  const { data } = await API.get<CursorPaginatedResponse<GetCommentsApiResponse>>(
+    endpoints.comments(id),
+    {
+      params: { cursor },
+    },
+  );
+  return data;
+};
+
 export {
   create,
   update,
@@ -98,4 +117,5 @@ export {
   remove,
   getByUser,
   getFavorite,
+  getComments,
 };
