@@ -1,4 +1,5 @@
 import FitnessDetailsTab from '@/components/features/profile/edit-tabs/fitness-details';
+import LoginDetailsTab from '@/components/features/profile/edit-tabs/login-details';
 import PersonalDetailsTab from '@/components/features/profile/edit-tabs/personal-details';
 import PageLayout from '@/components/layout/page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -61,7 +62,7 @@ function ProfileEdit({ defaultTab }: ProfileEditProps) {
           <div>Edytuj informacje o profilu</div>
         </TabsContent>
         <TabsContent value="auth-details">
-          <div>Edytuj logowanie</div>
+          <LoginDetailsTab />
         </TabsContent>
         <TabsContent value="personal-details">
           <PersonalDetailsTab />

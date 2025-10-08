@@ -47,3 +47,66 @@ export const fitnessDetailsSchema = z.object({
 });
 
 export type FitnessDetailsSchema = z.infer<typeof fitnessDetailsSchema>;
+
+const usernameValidator = z
+  .string()
+  .min(1, 'Nazwa użytkownika jest wymagana.')
+  .min(6, 'Nazwa użytkownika musi mieć co najmniej 6 znaków.')
+  .max(16, 'Nazwa użytkownika nie może być dłuższa niż 16 znaków.')
+  .regex(/[0-9a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/, 'Nazwa użytkownika może zawierać tylko litery i cyfry');
+
+const passwordValidator = z
+  .string()
+  .regex(/^.{14,20}$/, {
+    message: 'Hasło musi mieć od 14 do 32 znaków.',
+  })
+  .regex(/(?=.*[A-Z])/, {
+    message: 'Hasło musi zawierać co najmniej jedną wielką literę.',
+  })
+  .regex(/(?=.*[a-z])/, {
+    message: 'Hasło musi zawierać co najmniej jedną małą literę.',
+  })
+  .regex(/(?=.*\d)/, {
+    message: 'Hasło musi zawierać co najmniej jedną cyfrę.',
+  })
+  .regex(/[$&+,:;=?@#|'<>.^*()%!-]/, {
+    message: 'Hasło musi zawierać co najmniej jeden znak specjalny.',
+  })
+  .optional()
+  .or(z.literal(''));
+
+const confirmPasswordValidator = z.string().optional().or(z.literal(''));
+export const loginDetailsSchema = z
+  .object({
+    username: usernameValidator,
+    password: passwordValidator,
+    confirmPassword: confirmPasswordValidator,
+  })
+  .refine(
+    ({ password, confirmPassword }) => {
+      if (!password || password === '') {
+        return true;
+      }
+
+      return confirmPassword && confirmPassword !== '';
+    },
+    {
+      path: ['confirmPassword'],
+      message: 'Potwierdzenie hasła jest wymagane gdy podano nowe hasło.',
+    },
+  )
+  .refine(
+    ({ password, confirmPassword }) => {
+      if (!password || password === '' || !confirmPassword || confirmPassword === '') {
+        return true;
+      }
+
+      return password === confirmPassword;
+    },
+    {
+      path: ['confirmPassword'],
+      message: 'Hasła muszą być identyczne.',
+    },
+  );
+
+export type LoginDetailsSchema = z.infer<typeof loginDetailsSchema>;

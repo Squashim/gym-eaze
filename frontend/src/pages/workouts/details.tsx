@@ -24,6 +24,7 @@ import usePageTitle from '@/hooks/utils/use-page-title';
 import {
   parseDayLabel,
   parseExerciseLabel,
+  parseRepsLabel,
   parseSecondsToTimeString,
   parseTimeBrackets,
   parseWorkoutSetsLabel,
@@ -500,7 +501,7 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
             <Badge className="text-xs" key={index} variant="outline">
               {group.count > 1 && `${group.count} x `}
               {group.isReps
-                ? `${group.repetitions} powtórzeń`
+                ? parseRepsLabel(group.repetitions!)
                 : parseSecondsToTimeString(group.duration!)}
               {group.isReps && group.weight && ` • ${group.weight}kg`}
             </Badge>

@@ -77,6 +77,7 @@ const Signup = () => {
                             {...field}
                             autoComplete="off"
                             autoFocus
+                            maxLength={16}
                             placeholder="janek2000"
                             type="text"
                           />

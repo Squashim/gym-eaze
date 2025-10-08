@@ -4,6 +4,7 @@ import {
   type UserFitnessDetailsApiResponse,
   type UserFitnessDetailsPayload,
   type UserLikesApiResponse,
+  type UserLoginDetailsPayload,
   type UserPersonalDetailsApiResponse,
   type UserProfileDetailsPayload,
 } from '@/types/user';
@@ -40,6 +41,11 @@ const updateFitnessDetails = async (payload: UserFitnessDetailsPayload): Promise
   return data;
 };
 
+const updateLoginDetails = async (payload: UserLoginDetailsPayload): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.loginDetails, payload);
+  return data;
+};
+
 export {
   getLikedItems,
   getFavoritedItems,
@@ -47,4 +53,5 @@ export {
   updatePersonalDetails,
   getFitnessDetails,
   updateFitnessDetails,
+  updateLoginDetails,
 };

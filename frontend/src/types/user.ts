@@ -48,3 +48,8 @@ export type UserFitnessDetailsPayload = {
 export type UserFitnessDetailsApiResponse = UserFitnessDetailsPayload & {
   isFitnessDetailsPublic: boolean;
 };
+
+export type UserLoginDetailsPayload = {
+  username?: string;
+  password?: string;
+};

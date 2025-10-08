@@ -131,27 +131,31 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     switch (error.message) {
       case 'USERNAME_EXISTS':
-        return res.status(400).json({ error: 'Nazwa użytkownika już istnieje' });
+        return res.status(400).json({ message: 'Nazwa użytkownika już istnieje' });
       case 'USERNAME_LENGTH':
         return res
           .status(400)
-          .json({ error: 'Długość nazwy użytkownika musi wynosić od 6 do 14 znaków' });
+          .json({ message: 'Długość nazwy użytkownika musi wynosić od 6 do 14 znaków' });
       case 'PASSWORD_LENGTH':
-        return res.status(400).json({ error: 'Długość hasła musi wynosić od 14 do 32 znaków' });
+        return res.status(400).json({ message: 'Długość hasła musi wynosić od 14 do 32 znaków' });
       case 'PASSWORD_UPPERCASE':
         return res
           .status(400)
-          .json({ error: 'Hasło musi zawierać co najmniej jedną wielką literę' });
+          .json({ message: 'Hasło musi zawierać co najmniej jedną wielką literę' });
       case 'PASSWORD_LOWERCASE':
-        return res.status(400).json({ error: 'Hasło musi zawierać co najmniej jedną małą literę' });
+        return res
+          .status(400)
+          .json({ message: 'Hasło musi zawierać co najmniej jedną małą literę' });
       case 'PASSWORD_NUMBER':
-        return res.status(400).json({ error: 'Hasło musi zawierać co najmniej jedną cyfrę' });
+        return res.status(400).json({ message: 'Hasło musi zawierać co najmniej jedną cyfrę' });
       case 'PASSWORD_SPECIAL':
         return res
           .status(400)
-          .json({ error: 'Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&*()_+./)' });
+          .json({
+            message: 'Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&*()_+./)',
+          });
       default:
-        return res.status(500).json({ error: 'Błąd serwera' });
+        return res.status(500).json({ message: 'Błąd serwera' });
     }
   }
 };
@@ -168,7 +172,7 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({ message: 'Konto zostało usunięte pomyślnie' });
   } catch (error) {
-    res.status(500).json({ error: 'Błąd serwera podczas usuwania konta' });
+    res.status(500).json({ message: 'Błąd serwera podczas usuwania konta' });
   }
 };
 
