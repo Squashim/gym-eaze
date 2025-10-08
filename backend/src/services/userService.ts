@@ -6,6 +6,8 @@ import { Goal } from '../constants/goals';
 import bcrypt from 'bcryptjs';
 import { Gender } from '../constants/genders';
 import { Country } from '../constants/countries';
+import mongoose from 'mongoose';
+import { UserProfile } from '../types/user';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -329,4 +331,156 @@ export const updatePrivacySettingsService = async (
   const result = await User.findByIdAndUpdate(userId, { $set: updateFields });
 
   return !!result;
+};
+
+export const getFollowersService = async (userId: string) => {
+  const user = await User.findById(userId).populate({
+    path: 'followers',
+    select: 'username profileDetails.profilePicture',
+  });
+
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  return user.followers;
+};
+
+export const getFollowingService = async (userId: string) => {
+  const user = await User.findById(userId).populate({
+    path: 'followedUsers',
+    select: 'username profileDetails.profilePicture',
+  });
+
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  return user.followedUsers;
+};
+
+export const toggleUserFollowService = async (userId: string, targetUserId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+    throw new Error('Nieprawidłowe ID użytkownika');
+  }
+
+  if (userId === targetUserId) {
+    throw new Error('Nie można obserwować samego siebie');
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  const targetUser = await User.findById(targetUserId);
+
+  if (!targetUser) {
+    throw new Error('Nie znaleziono użytkownika do obserwowania');
+  }
+
+  const isFollowing = user.followedUsers.some(
+    (followedId) => followedId.toString() === targetUserId,
+  );
+
+  if (isFollowing) {
+    user.followedUsers = user.followedUsers.filter(
+      (followedId) => followedId.toString() !== targetUserId,
+    );
+
+    targetUser.followers = targetUser.followers.filter(
+      (followerId) => followerId.toString() !== userId,
+    );
+
+    await user.save();
+    await targetUser.save();
+
+    return {
+      message: 'Przestałeś obserwować użytkownika',
+    };
+  } else {
+    user.followedUsers.push(targetUser._id);
+
+    targetUser.followers.push(user._id);
+
+    await user.save();
+    await targetUser.save();
+
+    return {
+      message: 'Zacząłeś obserwować użytkownika',
+    };
+  }
+};
+
+export const getUserProfileService = async (
+  currentUserId: string,
+  profileUserId: string,
+): Promise<UserProfile> => {
+  if (!mongoose.Types.ObjectId.isValid(profileUserId)) {
+    throw new Error('Nieprawidłowe ID użytkownika');
+  }
+
+  const user = await User.findById(profileUserId).populate({
+    path: 'badges.badge',
+    model: Badge,
+  });
+
+  if (!user) {
+    throw new Error('Nie znaleziono użytkownika');
+  }
+
+  const isOwnProfile = currentUserId === profileUserId;
+
+  const profile: UserProfile = {
+    _id: user._id.toString(),
+    username: user.username,
+    profilePicture: user.profileDetails?.profilePicture || null,
+    description: user.profileDetails?.description || null,
+    followersCount: user.followers.length,
+    followingCount: user.followedUsers.length,
+  };
+
+  if (isOwnProfile || user.privacySettings.isGoalPublic) {
+    profile.goal = user.profileDetails?.goal || null;
+  }
+
+  if (isOwnProfile || user.privacySettings.isPersonalDetailsPublic) {
+    profile.personalDetails = {
+      firstName: user.personalDetails?.firstName || null,
+      lastName: user.personalDetails?.lastName || null,
+      country: user.personalDetails?.country || null,
+    };
+  }
+
+  if (isOwnProfile || user.privacySettings.isFitnessDetailsPublic) {
+    profile.fitnessDetails = {
+      height: user.fitnessDetails?.height || null,
+      weight: user.fitnessDetails?.weight || null,
+      age: user.fitnessDetails?.age || null,
+      gender: user.fitnessDetails?.gender || null,
+    };
+  }
+
+  if (isOwnProfile || user.privacySettings.isBadgesDetailsPublic) {
+    const pinnedBadges =
+      user.badges
+        ?.filter((b) => b.isPinned && b.badge)
+        .map((b) => ({
+          _id: (b.badge as IBadge)._id.toString(),
+          title: (b.badge as IBadge).title,
+          description: (b.badge as IBadge).description,
+          image: (b.badge as IBadge).image,
+          awardedAt: b.awardedAt,
+        })) || [];
+
+    profile.pinnedBadges = pinnedBadges;
+  }
+
+  if (!isOwnProfile) {
+    const currentUser = await User.findById(currentUserId);
+    profile.isFollowing =
+      currentUser?.followedUsers.some((id) => id.toString() === profileUserId) || false;
+  }
+
+  return profile;
 };
