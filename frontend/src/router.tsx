@@ -18,6 +18,7 @@ import WorkoutBrowser from './pages/workouts/browser';
 import WorkoutDetails from './pages/workouts/details';
 import UserWorkouts from './pages/workouts/user';
 import FavoriteWorkouts from './pages/workouts/favorite';
+import ProfileEdit from './pages/profile/edit';
 
 const router = createBrowserRouter([
   {
@@ -111,6 +112,15 @@ const router = createBrowserRouter([
               {
                 path: ':id/edit',
                 element: <WorkoutCreator mode="edit" />,
+              },
+            ],
+          },
+          {
+            path: 'profile',
+            children: [
+              {
+                path: 'edit',
+                element: <ProfileEdit />,
               },
             ],
           },

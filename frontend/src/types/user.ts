@@ -1,4 +1,6 @@
+import type { Country } from '@/constants/countries';
 import type { Notification } from './notification';
+import type { Gender } from '@/constants/gender';
 
 export type UserRole = 'admin' | 'user';
 
@@ -25,3 +27,24 @@ export type UserLikesApiResponse = {
 };
 
 export type UserFavoritesApiResponse = Omit<UserLikesApiResponse, 'posts' | 'comments'>;
+
+export type UserProfileDetailsPayload = {
+  firstName?: string;
+  lastName?: string;
+  country?: Country;
+};
+
+export type UserPersonalDetailsApiResponse = UserProfileDetailsPayload & {
+  isPersonalDetailsPublic: boolean;
+};
+
+export type UserFitnessDetailsPayload = {
+  age?: number;
+  height?: number;
+  weight?: number;
+  gender?: Gender;
+};
+
+export type UserFitnessDetailsApiResponse = UserFitnessDetailsPayload & {
+  isFitnessDetailsPublic: boolean;
+};

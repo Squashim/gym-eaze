@@ -49,6 +49,10 @@ export const COMMENT = {
 export const USER = {
   likedItems: 'user/likes',
   favoritedItems: 'user/favorites',
+
+  profileDetails: 'user/profile/profile-details',
+  personalDetails: 'user/profile/personal-details',
+  fitnessDetails: 'user/profile/fitness-details',
 };
 
 export const UTILS = {

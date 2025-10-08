@@ -18,6 +18,7 @@ interface NumberInputProps {
   suffix?: string;
   className?: string;
   labelClassName?: string;
+  fillOnBlur?: boolean;
   disabled?: boolean;
   autoFocus?: boolean;
 }
@@ -34,6 +35,7 @@ function NumberInput({
   suffix,
   labelClassName,
   autoFocus = false,
+  fillOnBlur = true,
   disabled = false,
   className,
 }: NumberInputProps) {
@@ -52,7 +54,8 @@ function NumberInput({
 
   const handleBlur = () => {
     let val = Number(internalValue);
-    if (isNaN(val)) {
+
+    if (isNaN(val) || (!fillOnBlur && internalValue === '')) {
       setInternalValue(value === 0 ? '' : String(value));
       return;
     }
@@ -65,7 +68,14 @@ function NumberInput({
   const increment = () => {
     if (value !== null) {
       const newVal = value + step;
-      onChange(newVal > max ? max : newVal);
+
+      if (newVal > max) {
+        onChange(max);
+      } else if (newVal < min) {
+        onChange(min);
+      } else {
+        onChange(newVal);
+      }
     }
   };
 
@@ -99,7 +109,6 @@ function NumberInput({
           onBlur={handleBlur}
           onChange={handleChange}
           placeholder={placeholder}
-          step={step}
           type="number"
           value={internalValue}
         />

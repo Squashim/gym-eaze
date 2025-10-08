@@ -100,7 +100,7 @@ export const authorizedLinks: MenuItem[] = [
     url: '/profile/:username',
   },
   {
-    title: 'Zarządzaj profilem',
+    title: 'Zarządzaj kontem',
     icon: UserPen,
     url: '/profile/edit',
   },
