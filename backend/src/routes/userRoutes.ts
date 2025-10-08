@@ -4,6 +4,7 @@ import {
   deleteUser,
   getFollowers,
   getFollowing,
+  getPrivacySettings,
   getUserBadges,
   getUserFavorites,
   getUserFitnessData,
@@ -53,6 +54,7 @@ router.patch('/profile/personal-details', authenticate, updateUserPersonalData);
 router.get('/profile/fitness-details', authenticate, getUserFitnessData);
 router.patch('/profile/fitness-details', authenticate, updateUserFitnessData);
 
+router.get('/privacy-settings', authenticate, getPrivacySettings);
 router.patch('/privacy-settings', authenticate, updatePrivacySettings);
 
 router.get('/followers', authenticate, getFollowers);

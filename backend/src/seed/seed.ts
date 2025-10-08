@@ -30,9 +30,9 @@ const checkAddedData = async () => {
     //await downloadedBadge();
     //await downloadedEquipment();
     await downloadedUsers();
-    //await downloadedPosts();
+    await downloadedPosts();
     //await downloadedTrainingPlans();
-    //await downloadedComments();
+    await downloadedComments();
     //await downloadedUserHasTrainingPlans();
   } catch (error) {
     console.error('Błąd', error);
@@ -46,10 +46,10 @@ const seed = async () => {
     //await seedEquipment();
     //await seedMuscleGroups();
     await seedUsers();
-    await seedExercises();
+    //await seedExercises();
     await seedPosts();
     //await seedTrainingPlans();
-    //await seedComments();
+    await seedComments();
     //await seedUserHasTrainingPlans();
     //await seedNotifications();
   } catch (error) {

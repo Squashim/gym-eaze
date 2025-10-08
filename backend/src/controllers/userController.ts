@@ -3,6 +3,7 @@ import {
   deleteUserService,
   getFollowersService,
   getFollowingService,
+  getPrivacySettingsService,
   getUserBadgesService,
   getUserFavoritesService,
   getUserFitnessDataService,
@@ -236,6 +237,32 @@ export const updateUserFitnessData = async (req: AuthRequest, res: Response) => 
     res.json({ message: 'Informacje fizyczne zaktualizowane pomyślnie' });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const getPrivacySettings = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
+    }
+
+    const privacySettings = await getPrivacySettingsService(userId);
+
+    if (!privacySettings) {
+      return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
+    }
+
+    return res.status(200).json({
+      message: 'Ustawienia prywatności pobrane pomyślnie',
+      data: privacySettings,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Błąd podczas pobierania ustawień prywatności',
+      error,
+    });
   }
 };
 

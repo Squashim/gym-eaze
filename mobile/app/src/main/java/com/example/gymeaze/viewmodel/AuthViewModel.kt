@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.UserPreferences
+import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.data.models.User
 import com.example.gymeaze.util.Validation
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -90,11 +92,150 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         checkTokenValidityOnStartup()
     }
 
+    private val _showBrowseExercises = MutableStateFlow(false)
+    val showBrowseExercises: StateFlow<Boolean> = _showBrowseExercises.asStateFlow()
     private val _isCheckingToken = MutableStateFlow(true)
     val isCheckingToken: StateFlow<Boolean> = _isCheckingToken.asStateFlow()
 
     private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
     val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
+
+    private val _showTrainingPlanDetail = MutableStateFlow(false)
+    val showTrainingPlanDetail: StateFlow<Boolean> = _showTrainingPlanDetail.asStateFlow()
+
+    private val _selectedTrainingPlanId = MutableStateFlow<String?>(null)
+    val selectedTrainingPlanId: StateFlow<String?> = _selectedTrainingPlanId.asStateFlow()
+
+    private val _showBrowseTrainingPlans = MutableStateFlow(false)
+    val showBrowseTrainingPlans = _showBrowseTrainingPlans.asStateFlow()
+
+    private val _showMyTrainingPlans = MutableStateFlow(false)
+    val showMyTrainingPlans = _showMyTrainingPlans.asStateFlow()
+
+    private val _showFavoriteTrainingPlans = MutableStateFlow(false)
+    val showFavoriteTrainingPlans = _showFavoriteTrainingPlans.asStateFlow()
+
+    private val _showExerciseSelectionForDay = MutableStateFlow(false)
+    val showExerciseSelectionForDay: StateFlow<Boolean> = _showExerciseSelectionForDay.asStateFlow()
+
+    private val _selectedDayIndex = MutableStateFlow<Int?>(null)
+    val selectedDayIndex: StateFlow<Int?> = _selectedDayIndex.asStateFlow()
+
+    private val _showCreateTrainingPlan = MutableStateFlow(false)
+    val showCreateTrainingPlan: StateFlow<Boolean> = _showCreateTrainingPlan.asStateFlow()
+
+    private val _showTrainingPlansMenu = MutableStateFlow(false)
+    val showTrainingPlansMenu: StateFlow<Boolean> = _showTrainingPlansMenu.asStateFlow()
+
+    private val _showEditTrainingPlan = MutableStateFlow(false)
+    val showEditTrainingPlan: StateFlow<Boolean> = _showEditTrainingPlan.asStateFlow()
+
+    private val _selectedEditPlanId = MutableStateFlow<String?>(null)
+    val selectedEditPlanId: StateFlow<String?> = _selectedEditPlanId.asStateFlow()
+
+    fun showEditTrainingPlanScreen(planId: String) {
+        _showMyTrainingPlans.value = false
+        _selectedEditPlanId.value = planId
+        _showEditTrainingPlan.value = true
+    }
+
+    fun hideEditTrainingPlanScreen() {
+        _showEditTrainingPlan.value = false
+        _selectedEditPlanId.value = null
+    }
+
+    private var exerciseSelectionCallback: ((Exercise) -> Unit)? = null
+
+    fun setExerciseSelectionCallback(callback: (Exercise) -> Unit) {
+        exerciseSelectionCallback = callback
+    }
+
+    fun clearExerciseSelectionCallback() {
+        exerciseSelectionCallback = null
+    }
+
+    fun onExerciseSelectedForDay(exercise: Exercise) {
+        exerciseSelectionCallback?.invoke(exercise)
+        clearExerciseSelectionCallback()
+    }
+
+    fun showBrowseTrainingPlansScreen() {
+        _showBrowseTrainingPlans.value = true
+    }
+
+    fun hideBrowseTrainingPlansScreen() {
+        _showBrowseTrainingPlans.value = false
+    }
+
+    fun showMyTrainingPlansScreen() {
+        _showMyTrainingPlans.value = true
+    }
+
+    fun hideMyTrainingPlansScreen() {
+        _showMyTrainingPlans.value = false
+    }
+
+    fun showFavoriteTrainingPlansScreen() {
+        _showFavoriteTrainingPlans.value = true
+    }
+
+    fun hideFavoriteTrainingPlansScreen() {
+        _showFavoriteTrainingPlans.value = false
+    }
+
+    fun showCreateTrainingPlanScreen() {
+        _showCreateTrainingPlan.value = true
+    }
+
+    private var editPlanExerciseSelectionCallback: ((Exercise) -> Unit)? = null
+
+    fun isEditPlanExerciseSelectionActive(): Boolean {
+        return editPlanExerciseSelectionCallback != null
+    }
+
+    fun setEditPlanExerciseSelectionCallback(callback: (Exercise) -> Unit) {
+        editPlanExerciseSelectionCallback = callback
+    }
+
+    fun clearEditPlanExerciseSelectionCallback() {
+        editPlanExerciseSelectionCallback = null
+    }
+
+    fun onExerciseSelectedForEditPlan(exercise: Exercise) {
+        editPlanExerciseSelectionCallback?.invoke(exercise)
+        clearEditPlanExerciseSelectionCallback()
+        hideExerciseSelectionForDayScreen()
+    }
+    fun showExerciseSelectionForDayScreen(dayIndex: Int) {
+        _selectedDayIndex.value = dayIndex
+        _showExerciseSelectionForDay.value = true
+    }
+    fun hideCreateTrainingPlanScreen() {
+        _showCreateTrainingPlan.value = false
+    }
+
+    fun showTrainingPlansMenuScreen() {
+        _showTrainingPlansMenu.value = true
+    }
+
+    fun hideTrainingPlansMenuScreen() {
+        _showTrainingPlansMenu.value = false
+    }
+
+    fun showTrainingPlanDetailScreen(planId: String) {
+        _selectedTrainingPlanId.value = planId
+        _showTrainingPlanDetail.value = true
+    }
+
+    fun hideTrainingPlanDetailScreen() {
+        _showTrainingPlanDetail.value = false
+        _selectedTrainingPlanId.value = null
+    }
+
+    fun hideExerciseSelectionForDayScreen() {
+        _showExerciseSelectionForDay.value = false
+        _selectedDayIndex.value = null
+    }
 
     private fun checkTokenValidityOnStartup() {
         viewModelScope.launch {
@@ -140,6 +281,30 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val privateLinkingError = MutableStateFlow<String?>(null)
     val linkingError = privateLinkingError.asStateFlow()
 
+    private val _showExerciseDetail = MutableStateFlow(false)
+    val showExerciseDetail = _showExerciseDetail.asStateFlow()
+
+    private val _selectedExerciseId = MutableStateFlow<String?>(null)
+    val selectedExerciseId = _selectedExerciseId.asStateFlow()
+
+
+    fun showExerciseDetailScreen(exerciseId: String) {
+        _selectedExerciseId.value = exerciseId
+        _showExerciseDetail.value = true
+    }
+
+    fun hideExerciseDetailScreen() {
+        _showExerciseDetail.value = false
+        _selectedExerciseId.value = null
+    }
+
+    fun showBrowseExercisesScreen() {
+        _showBrowseExercises.value = true
+    }
+
+    fun hideBrowseExercisesScreen() {
+        _showBrowseExercises.value = false
+    }
     fun toggleAuthMode() {
         privateUiState.value = privateUiState.value.copy(
             isRegistering = !privateUiState.value.isRegistering,
@@ -514,6 +679,22 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         privateShowProfileEdit.value = false
     }
 
+    private val _showPostScreen = MutableStateFlow(false)
+    val showPostScreen = _showPostScreen.asStateFlow()
+
+    private val _showCreatePost = MutableStateFlow(false)
+    val showCreatePost = _showCreatePost.asStateFlow()
+
+    private val _showBrowsePost = MutableStateFlow(false)
+    val showBrowsePost = _showBrowsePost.asStateFlow()
+
+    private val _showFollowedUserPosts = MutableStateFlow(false)
+    val showFollowedUserPosts = _showFollowedUserPosts.asStateFlow()
+
+    private val _showMyPosts = MutableStateFlow(false)
+    val showMyPosts = _showMyPosts.asStateFlow()
+
+
     fun showExerciseCreatorScreen() { privateShowExerciseCreator.value = true }
     fun hideExerciseCreatorScreen() { privateShowExerciseCreator.value = false }
 
@@ -522,6 +703,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             userPreferences.setDarkTheme(isDark)
         }
     }
+
+    suspend fun getCurrentUser(): Result<User> {
+        return authRepository.getCurrentUser()
+    }
+
 
     fun completeProfileSetup() {
         //TODO Zapisz dane
@@ -532,5 +718,44 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun cancelProfileSetup() {
         clearFirstLogin()
         hideProfileEditScreen()
+    }
+
+
+
+    fun showMyPostsScreen(){
+       _showMyPosts.value = true
+    }
+    fun hideMyPostsScreen(){
+        _showMyPosts.value = false
+    }
+
+    fun showFollowedUserPostsScreen(){
+       _showFollowedUserPosts.value = true
+    }
+    fun hideFollowedUserPostsScreen(){
+        _showFollowedUserPosts.value = false
+    }
+
+    fun showPostScreen() {
+        _showPostScreen.value = true
+    }
+
+    fun hidePostScreen() {
+        _showPostScreen.value = false
+    }
+
+    fun showCreatePostScreen() {
+       _showCreatePost.value = true
+    }
+
+    fun hideCreatePostScreen() {
+       _showCreatePost.value = false
+    }
+
+    fun showBrowsePostScreen(){
+        _showBrowsePost.value = true
+    }
+    fun hideBrowsePostScreen(){
+        _showBrowsePost.value = false
     }
 }

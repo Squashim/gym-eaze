@@ -1,12 +1,15 @@
 package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.GetPrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
 import com.example.gymeaze.data.models.UpdateLoginRequest
 import com.example.gymeaze.data.models.UpdateLoginResponse
 import com.example.gymeaze.data.models.UpdatePersonalDataRequest
 import com.example.gymeaze.data.models.UpdatePersonalDataResponse
+import com.example.gymeaze.data.models.UpdatePrivacySettingsRequest
+import com.example.gymeaze.data.models.UpdatePrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
@@ -63,4 +66,12 @@ interface UserApiService {
     suspend fun updateUserFitnessData(
         @Body fitnessData: UpdateFitnessDataRequest
     ): Response<UpdateFitnessDataResponse>
+
+    @GET("/api/user/privacy-settings")
+    suspend fun getPrivacySettings(): Response<GetPrivacySettingsResponse>
+
+    @PATCH("/api/user/privacy-settings")
+    suspend fun updatePrivacySettings(
+        @Body privacySettings: UpdatePrivacySettingsRequest
+    ): Response<UpdatePrivacySettingsResponse>
 }

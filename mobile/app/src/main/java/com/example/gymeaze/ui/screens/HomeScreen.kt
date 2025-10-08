@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
@@ -33,9 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,18 +40,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
-import com.example.gymeaze.ui.theme.GymEazeTheme
+import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
+import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
-import com.example.gymeaze.viewmodel.AuthViewModel
+import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -64,62 +60,124 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    isUserLoggedIn: Boolean,
     username: String,
     onLogout: () -> Unit,
     onExerciseCreatorClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    onBrowseExercisesClick: () -> Unit,
+    onCreateTrainingPlanClick: () -> Unit,
+    onMyTrainingPlansClick: () -> Unit = {},
+    onBrowseTrainingPlansClick: () -> Unit = {},
+    onFavoriteTrainingPlansClick: () -> Unit = {},
+    onCreatePostClick: () -> Unit = {},
+    onBrowsePostClick: () -> Unit = {},
+    onFollowedUsersPosts: () -> Unit ={},
+    onMyPosts: () -> Unit = {}
+
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
+    val createPostViewModel: PostsViewModel = viewModel()
+    var showBottomBar by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
-            GymEazeTopAppBar(
-                onSettingsClick = onSettingsClick
-            )
+            if (selectedRoute != "community"){
+                GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+            }
+
         },
         bottomBar = {
-            GymEazeBottomNavigationBar(
-                selectedRoute = selectedRoute,
-                onItemSelected = { route -> selectedRoute = route }
-            )
+            if (showBottomBar) {
+                GymEazeBottomNavigationBar(
+                    selectedRoute = selectedRoute,
+                    onItemSelected = { route ->
+                        selectedRoute = route
+                    }
+                )
+            }
         },
+
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         when (selectedRoute) {
-            "exercises" -> ExerciseScreen(onSettingsClick)
-            "workouts" -> TrainingsPlanScreen(onSettingsClick)
-            "community" -> CommunityScreen(onSettingsClick)
-            "profile" -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .background(getBackgroundColor()),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        WelcomeSection(
-                            username = username,
-                            currentDate = currentDate,
-                            onEditProfileClick = onEditProfileClick
-                        )
-                    }
-                    item {
-                        QuickStatsSection()
-                    }
-                    item {
-                        QuickActionSection(
-                            onExerciseCreatorClick = onExerciseCreatorClick
-                        )
-                    }
-                    item {
-                        RecentActivitySection()
-                    }
+            "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn,onExerciseCreatorClick)
+            "workouts" -> {
+                if (isUserLoggedIn) {
+                    TrainingPlansMenuScreen(
+                        onSettingsClick = onSettingsClick,
+                        onCreateTrainingPlanClick = onCreateTrainingPlanClick,
+                        onMyTrainingPlansClick = onMyTrainingPlansClick,
+                        onBrowseTrainingPlansClick = onBrowseTrainingPlansClick,
+                        onFavoriteTrainingPlansClick = onFavoriteTrainingPlansClick
+                    )
+                } else {
+                    WorkoutsNotLoggedInScreen(
+                        paddingValues = paddingValues
+                    )
                 }
             }
+            "community" -> PostScreen(
+                onSettingsClick = onSettingsClick,
+                isUserLoggedIn = isUserLoggedIn,
+                createPostViewModel = createPostViewModel,
+                setShowBottomBar = { showBottomBar = it }
+            )
+            "profile" -> ProfileScreen(
+                username = username,
+                currentDate = currentDate,
+                onEditProfileClick = onEditProfileClick,
+                onExerciseCreatorClick = onExerciseCreatorClick,
+                onBrowseExercisesClick = onBrowseExercisesClick,
+                onCreateTrainingPlanClick = onCreateTrainingPlanClick,
+                paddingValues = paddingValues,
+                isUserLoggedIn = isUserLoggedIn
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfileScreen(
+    isUserLoggedIn: Boolean,
+    username: String,
+    currentDate: String,
+    onEditProfileClick: () -> Unit,
+    onExerciseCreatorClick: () -> Unit,
+    onBrowseExercisesClick: () -> Unit,
+    onCreateTrainingPlanClick: () -> Unit,
+    paddingValues: PaddingValues
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .background(getBackgroundColor()),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            WelcomeSection(
+                username = username,
+                currentDate = currentDate,
+                onEditProfileClick = onEditProfileClick
+            )
+        }
+        item {
+            QuickStatsSection()
+        }
+        item {
+            QuickActionSection(
+                isUserLoggedIn = isUserLoggedIn,
+                onExerciseCreatorClick = onExerciseCreatorClick,
+                onBrowseExercisesClick = onBrowseExercisesClick,
+                onCreateTrainingPlanClick = onCreateTrainingPlanClick
+            )
+        }
+        item {
+            RecentActivitySection()
         }
     }
 }
@@ -288,8 +346,11 @@ private fun StatCard(
 
 @Composable
 private fun QuickActionSection(
-    onExerciseCreatorClick: () -> Unit
-) {
+    isUserLoggedIn: Boolean,
+    onExerciseCreatorClick: () -> Unit,
+    onBrowseExercisesClick: () -> Unit,
+    onCreateTrainingPlanClick: () -> Unit,
+    ) {
     Column {
         Text(
             text = "Szybkie akcje",
@@ -318,7 +379,7 @@ private fun QuickActionSection(
                 title = "Przeglądaj ćwiczenia",
                 subtitle = "Zobacz wszystkie",
                 icon = Icons.Default.Search,
-                onClick = {/*TODO Implementacja nawigacji*/},
+                onClick = onBrowseExercisesClick,
                 modifier = Modifier
                     .weight(1f)
             )
@@ -331,10 +392,10 @@ private fun QuickActionSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             ActionButton(
-                title = "Moje plany",
-                subtitle = "Treningowe",
+                title = "Nowy plan",
+                subtitle = "Treningowy",
                 icon = Icons.AutoMirrored.Filled.Assignment,
-                onClick = {/*TODO Implementacja nawigacji*/},
+                onClick = onCreateTrainingPlanClick,
                 modifier = Modifier
                     .weight(1f)
             )

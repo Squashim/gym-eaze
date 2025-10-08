@@ -383,4 +383,13 @@ class AuthRepository(private val context: Context){
             Result.failure(e)
         }
     }
+
+    suspend fun getCurrentUserId(): String? {
+        return try {
+            val result = getCurrentUser()
+            result.getOrNull()?._id
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

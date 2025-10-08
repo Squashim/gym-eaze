@@ -155,6 +155,8 @@
     <string name="country">Kraj</string>
     <string name="select_country_placeholder">Podaj kraj zamieszkania</string>
 
+    <string name="delete">Usuń</string>
+
     <string name="edit_physical_info">Edytuj swoje informacje fizyczne</string>
     <string name="edit_physical_info_description">Wprowadź nowe dane lub zaktualizuj już istniejące. Wszystkie dane są opcjonalne, a ich widoczność zależy od Twoich ustawień prywatności. Domyślnie są publiczne.</string>
     <string name="gender">Płeć</string>
@@ -234,7 +236,6 @@
     <string name="how_to_earn_badges">Jak zdobywać odznaki?</string>
     <string name="notifications">Powiadomienia</string>
     <string name="logout">Wyloguj się</string>
-    <string name="community">Społeczność</string>
     <string name="exercise_creator">Kreator ćwiczenia</string>
     <string name="cancel_creation">Anuluj tworzenie</string>
     <string name="exit_creation_confirmation_title">Czy na pewno chcesz przerwać tworzenie ćwiczenia?</string>
@@ -324,4 +325,131 @@
     <string name="enter_your_age">Wprowadź swoj wiek</string>
     <string name="enter_your_height">Wprowadź swoj wzrost</string>
     <string name="enter_your_weight">Wprowadź swoją wagę</string>
+
+    <!-- Sections Settings -->
+    <string name="appearance">Wygląd</string>
+    <string name="account">Konto</string>
+    <string name="help_and_support">Pomoc i wsparcie</string>
+
+    <!-- Subtitles Settings -->
+    <string name="theme_subtitle">Wybierz motyw aplikacji</string>
+    <string name="privacy_settings_subtitle">Zarządzaj widocznością danych</string>
+    <string name="notifications_subtitle">Kontroluj powiadomienia</string>
+    <string name="badges_help_subtitle">Dowiedz się jak zdobywać odznaki</string>
+    <string name="training_goals">Cel treningowy</string>
+    <string name="badge_reminders">Przypomnienia odznak</string>
+    <string name="training_stats">Statystyki treningów</string>
+
+    <!-- Privacy Settings -->
+    <string name="success_privacy_settings">Ustawienia prywatności zostały zaktualizowane.</string>
+    <string name="error_privacy_settings">Błąd przy zmianie ustawień prywatności</string>
+    <string name="privacy_settings_change">Zmień ustawienia prywatności</string>
+    <string name="privacy_settings_description">Dostosuj widoczność swoich danych. Możesz ukryć swoje dane przed innymi użytkownikami lub udostępnić je wszystkim odwiedzającym Twój profil.</string>
+    <string name="personal_data_description_settings">Pozwól innym użytkownikom zobaczyć Twoje dane personalne (imię, nazwisko, miasto, kraj) będą one widoczne dla innych użytkowników</string>
+    <string name="physical_info_description_settings">Twoje informacje fizyczne (płeć, waga, wzrost, wiek a także wsaźnik bmi) będą widoczne dla innych użytkowników</string>
+    <string name="training_goals_description_settings">Pozwól innym użytkownikom zobaczyć Twój cel treningowy</string>
+    <string name="badge_reminders_description_settings">Inni użytkownicy mogą przeglądać Twoje zdobyte odznaki. Jeśli chcesz ukryć je przed innymi, możesz wyłączyć tę opcję.</string>
+    <string name="training_stats_description_settings">Pozwól innym użytkownikom widzieć Twoje postępy w treningach i obserwować systematyczność.</string>
+
+    <!-- Help Screen Settings-->
+    <string name="how_to_earn_badges_title">Jak zdobywać odznaki w GymEaze?</string>
+    <string name="how_to_earn_badges_description">W naszej społeczności każda aktywność ma znaczenie. Twój progres, zaangażowanie i wsparcie dla innych są nagradzane wyjątkowymi odznakami, które podkreślają Twoje osiągnięcia i motywują do dalszego rozwoju.</string>
+    <string name="activity_and_usage">1. Aktywność na silowni i długość korzystania z aplikacji</string>
+    <string name="activity_and_usage_description">Z każdym rokiem korzystania z GymEaze zbliżasz się do kolejnych wyróżnień. To odznaki za systematyczność i wytrwałość.</string>
+    <string name="first_activity_badge">Po roku aktywności – "Rok z nami"</string>
+    <string name="workout_frequency_badges">Po dwóch latach – "2 lata wytrwałości"</string>
+    <string name="consistency_badges">…aż do "5 lat konsekwencji"</string>
+    <string name="training_with_detection">2. Podłącz czujnik i rozpocznij trening</string>
+    <string name="training_with_detection_example">Po pierwszym połączeniu z czujnikiem otrzymasz odznakę "Techniczny debiut" To znak, że trenujesz inteligentnie i nowocześnie!</string>
+    <string name="social_activity">3. Dodawaj treningi do społeczności</string>
+    <string name="social_activity_description">Twoje plany mogą inspirować całą społeczność!</string>
+    <string name="community_badges">Stwórz swój pierwszy publiczny trening – zdobądź "Trenera w akcji"</string>
+    <string name="sharing_badges">Z czasem możesz dojść do tytułu "Architekta siły"</string>
+    <string name="exercises_activity">4. Twórz własne ćwiczenia i dziel się nimi z innymi</string>
+    <string name="exercises_activity_description">To odznaki za twórczość i dzielenie się wiedzą </string>
+    <string name="milestone_exercises">Po stworzeniu pierwszego ćwiczenia otrzymasz odznakę "Kreatora ruchu"</string>
+    <string name="improvement_exercises">Tworząc ćwićzenia możesz awansować aż do "Mistrza tworzenia ćwiczeń"</string>
+    <string name="exploration_badges">5. Bądź aktywny w społeczności!</string>
+    <string name="feature_discovery_badges">Za pierwszy post – "Pierwszy głos"</string>
+    <string name="profile_completion_badges">Regularność nagradzamy aż do "Lidera dyskusji"  Wspieraj, motywuj i buduj atmosferę!</string>
+    <string name="popularity_profile">6. Zyskuj popularność dzięki wartościowym treściom</string>
+    <string name="popularity_profile_description">Podziel się swoją formą – ludzie Cię uwielbiają!</string>
+    <string name="milestone_profile">10 motywatorów? Otrzymasz odznakę "Pierwsza dziesiątka"</string>
+    <string name="second_milestone_profile">Przy 100 motywatorach możesz zostać "Fitness influencerem"</string>
+    <string name="tips_title">Wskazówki</string>
+    <string name="badges_tips">Możesz przypiąć maksymalnie 5 odznak do swojego profilu – pokaż innym z czego jesteś najbardziej dumny!</string>
+
+    <!-- Posts -->
+    <string name="community">Społeczność</string>
+    <string name="succes_created_post">Post został dodany</string>
+
+
+    <string name="training_plan_creator">Kreator planu treningowego</string>
+    <string name="training_plan_name">Nazwa planu treningowego</string>
+    <string name="training_plan_description">Opis planu treningowego</string>
+    <string name="training_plan_goal">Cel treningu</string>
+    <string name="training_plan_difficulty">Poziom zaawansowania</string>
+    <string name="training_plan_visibility">Widoczność planu</string>
+    <string name="training_plan_hashtags">Hashtagi</string>
+    <string name="training_plan_image">Zdjęcie planu</string>
+
+    <string name="training_days">Dni treningowe</string>
+    <string name="add_day">Dodaj dzień</string>
+    <string name="day_name">Nazwa dnia</string>
+    <string name="rest_day">Dzień odpoczynku</string>
+    <string name="remove_day">Usuń dzień</string>
+
+    <string name="exercises_count">Ćwiczenia: %d</string>
+    <string name="add_exercise">Dodaj ćwiczenie</string>
+    <string name="remove_exercise">Usuń ćwiczenie</string>
+    <string name="exercise_type">Typ ćwiczenia</string>
+    <string name="repetitions">Powtórzenia</string>
+    <string name="duration">Czas trwania</string>
+    <string name="rest_time">Czas odpoczynku</string>
+    <string name="add_set">Dodaj serię</string>
+    <string name="remove_set">Usuń serię</string>
+    <string name="set_number">Seria %d</string>
+
+    <string name="error_training_plan_creation_failed">Nie udało się utworzyć planu treningowego</string>
+    <string name="error_max_days_reached">Maksymalnie 30 dni w planie</string>
+    <string name="error_max_exercises_per_day">Maksymalnie 15 ćwiczeń na dzień</string>
+    <string name="error_max_sets_per_exercise">Maksymalnie 15 serii na ćwiczenie</string>
+    <string name="error_min_rest_time">Minimalny czas odpoczynku: 30 sekund</string>
+    <string name="error_max_rest_time">Maksymalny czas odpoczynku: 1.5 godziny</string>
+    <string name="error_invalid_repetitions">Liczba powtórzeń musi być między 1-100</string>
+    <string name="error_invalid_weight">Ciężar musi być między 0-300kg</string>
+    <string name="error_invalid_duration">Czas trwania musi być między 30s-6h</string>
+
+    <string name="training_plan_created_successfully">Plan treningowy został utworzony!</string>
+
+    <string name="step_basic_info">Podstawy</string>
+    <string name="step_days">Dni</string>
+    <string name="step_exercises">Ćwiczenia</string>
+    <string name="step_summary">Podsumowanie</string>
+    <string name="create_plan">Utwórz plan</string>
+
+    <string name="training_plan_summary">Podsumowanie planu treningowego</string>
+    <string name="basic_information">Podstawowe informacje</string>
+    <string name="training_structure">Struktura treningowa</string>
+    <string name="total_days">Łączna liczba dni: %d</string>
+    <string name="workout_days">Dni treningowe: %d</string>
+    <string name="rest_days">Dni odpoczynku: %d</string>
+    <string name="total_exercises">Łączna liczba ćwiczeń: %d</string>
+
+    <string name="login_required_title">Logowanie wymagane</string>
+    <string name="login_required_workout_title">Zaloguj się, aby tworzyć plany</string>
+    <string name="login_required_workout_message">Tworzenie i zarządzanie planami treningowymi wymaga posiadania konta. Zaloguj się lub zarejestruj, aby korzystać z pełni możliwości aplikacji!</string>
+    <string name="login_required_message">Aby korzystać z tej funkcji, musisz być zalogowany.</string>
+    <string name="login_required_action">Zaloguj się</string>
+    <string name="login_required_action_goto">Przejdź do logowania</string>
+    <string name="training_plans_menu_description">Twórz spersonalizowane plany treningowe, śledź postęp i osiągaj swoje cele fitness!</string>
+    <string name="create_training_plan">Kreator planu</string>
+    <string name="create_training_plan_subtitle">Stwórz własny plan treningowy</string>
+    <string name="my_training_plans">Moje plany</string>
+    <string name="my_training_plans_subtitle">Zarządzaj swoimi planami</string>
+    <string name="browse_training_plans">Przeglądaj plany</string>
+    <string name="browse_training_plans_subtitle">Odkrywaj plany innych użytkowników</string>
+    <string name="active_training_plan">Aktywny plan</string>
+    <string name="active_training_plan_subtitle">Kontynuuj swój bieżący trening</string>
+
 </resources>
