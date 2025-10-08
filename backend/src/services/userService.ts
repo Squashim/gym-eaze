@@ -374,6 +374,7 @@ export const toggleUserFollowService = async (userId: string, targetUserId: stri
   }
 
   const targetUser = await User.findById(targetUserId);
+
   if (!targetUser) {
     throw new Error('Nie znaleziono użytkownika do obserwowania');
   }
