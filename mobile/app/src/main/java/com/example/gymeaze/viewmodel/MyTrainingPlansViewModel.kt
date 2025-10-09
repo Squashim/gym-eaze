@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.TrainingPlan
+import com.example.gymeaze.data.models.TrainingPlanAuthor
 import com.example.gymeaze.data.models.TrainingPlansResponse
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
@@ -18,7 +19,9 @@ data class MyTrainingPlansUiState(
     val hasMorePages: Boolean = false,
     val isLoadingMore: Boolean = false,
     val showDeleteDialog: Boolean = false,
-    val planToDelete: TrainingPlan? = null
+    val planToDelete: TrainingPlan? = null,
+    val snackbarMessage: String? = null,
+    val snackbarType: SnackbarType = SnackbarType.SUCCESS
 )
 
 class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
@@ -82,6 +85,61 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
+    fun toggleLike(planId: String) {
+        viewModelScope.launch {
+            try {
+                val result = repository.toggleTrainingPlanLike(planId)
+                result.onSuccess { likeResponse ->
+
+                    _uiState.value = _uiState.value.copy(
+                        trainingPlans = _uiState.value.trainingPlans.map { plan ->
+                            if (plan.id == planId) {
+                                TrainingPlan(
+                                    id = plan.id,
+                                    name = plan.name ?: "",
+                                    author = plan.author ?: TrainingPlanAuthor("", "", null),
+                                    description = plan.description,
+                                    image = plan.image ?: "",
+                                    goal = plan.goal ?: "",
+                                    visibility = plan.visibility ?: "",
+                                    advancedLevel = plan.advancedLevel ?: "",
+                                    likes = likeResponse.likes,
+                                    days = plan.days ?: emptyList(),
+                                    hashtags = plan.hashtags ?: emptyList(),
+                                    createdAt = plan.createdAt ?: "",
+                                    updatedAt = plan.updatedAt ?: "",
+                                    totalExercises = plan.totalExercises,
+                                    totalDuration = plan.totalDuration,
+                                    daysCount = plan.daysCount
+                                )
+                            } else {
+                                plan
+                            }
+                        }
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        error = exception.message ?: "Błąd podczas polubienia planu"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Błąd podczas polubienia planu"
+                )
+            }
+        }
+    }
+
+    fun toggleFavorite(planId: String) {
+        viewModelScope.launch {
+
+            _uiState.value = _uiState.value.copy(
+                snackbarMessage = "Nie możesz dodać swojego planu do ulubionych",
+                snackbarType = SnackbarType.ERROR
+            )
+        }
+    }
+
     fun loadMoreTrainingPlans() {
         if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore) {
             loadMyTrainingPlans(append = true)
@@ -133,6 +191,10 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                 )
             }
         }
+    }
+
+    fun clearSnackbarMessage() {
+        _uiState.value = _uiState.value.copy(snackbarMessage = null)
     }
 
     fun clearError() {

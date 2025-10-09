@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.ThumbUpOffAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -31,11 +33,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,6 +56,7 @@ import com.example.gymeaze.ui.theme.getOnYellowColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.ui.theme.getYellowColor
+import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.util.formatToRelativeTime
 
 @Composable
@@ -64,6 +70,10 @@ fun TrainingPlanCard(
     showOwnerActions: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+
+    val context = LocalContext.current
+    val favoriteStates by GlobalFavoriteState.getInstance(context).favoriteStates.collectAsState()
+    val isFavoriteGlobal = favoriteStates[trainingPlan.id] ?: false
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -262,7 +272,7 @@ fun TrainingPlanCard(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = if (trainingPlan.likes > 0) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            imageVector = if (trainingPlan.likes > 0) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
                             contentDescription = "Polub",
                             tint = getPrimaryColor(),
                             modifier = Modifier.size(20.dp)
@@ -278,17 +288,26 @@ fun TrainingPlanCard(
 
                 IconButton(
                     onClick = {
-                        try {
-                            onFavoriteClick(trainingPlan.id)
-                        } catch (e: Exception) {
-                        }
+                        onFavoriteClick(trainingPlan.id)
                     },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.BookmarkBorder,
-                        contentDescription = "Dodaj do ulubionych",
-                        tint = getOnSurfaceSecondaryColor(),
+                        imageVector = if (isFavoriteGlobal) {
+                            Icons.Default.Favorite
+                        } else {
+                            Icons.Default.FavoriteBorder
+                        },
+                        contentDescription = if (isFavoriteGlobal) {
+                            "Usuń z ulubionych"
+                        } else {
+                            "Dodaj do ulubionych"
+                        },
+                        tint = if (isFavoriteGlobal) {
+                            Color.Red
+                        } else {
+                            getOnSurfaceSecondaryColor()
+                        },
                         modifier = Modifier.size(20.dp)
                     )
                 }

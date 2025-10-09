@@ -5,9 +5,12 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
+import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.ExerciseRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
+import com.example.gymeaze.util.GlobalFavoriteState
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -27,6 +30,7 @@ enum class SnackbarType {
 class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TrainingPlanRepository(application)
+    private val authRepository = AuthRepository(application)
     private val exerciseRepository = ExerciseRepository(application)
     private val _uiState = MutableStateFlow(TrainingPlanDetailUiState())
     val uiState: StateFlow<TrainingPlanDetailUiState> = _uiState.asStateFlow()
@@ -36,6 +40,15 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
     private val _downloadProgress = MutableStateFlow(0f)
     val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
+
+    private suspend fun getCurrentUserLogin(): String? {
+        return try {
+            val userResult = authRepository.getCurrentUser()
+            userResult.getOrNull()?.username
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     fun loadTrainingPlan(planId: String) {
         viewModelScope.launch {
@@ -149,31 +162,45 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
+
+
     fun toggleFavorite() {
-        val currentPlan = _uiState.value.trainingPlan ?: return
+        val plan = _uiState.value.trainingPlan
+        val planId = plan?.id ?: return
 
         viewModelScope.launch {
             try {
-                val result = repository.toggleTrainingPlanFavorite(currentPlan.id)
-                result.onSuccess { response ->
+
+                val currentUser = getCurrentUserLogin()
+
+                if (plan.author?.username == currentUser && currentUser != null) {
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = response.message,
-                        snackbarType = SnackbarType.SUCCESS
-                    )
-                }.onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas dodawania do ulubionych",
+                        snackbarMessage = "Nie możesz dodać swojego planu do ulubionych",
                         snackbarType = SnackbarType.ERROR
                     )
+                    return@launch
                 }
-            } catch (e: Exception) {
+
+                val newState = GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(plan.id)
+
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas dodawania do ulubionych",
-                    snackbarType = SnackbarType.ERROR
+                    snackbarMessage = if (newState) {
+                        "Dodano do ulubionych"
+                    } else {
+                        "Usunięto z ulubionych"
+                    },
+                    snackbarType = SnackbarType.SUCCESS
                 )
+
+                launch {
+                    repository.toggleTrainingPlanFavorite(plan.id)
+                }
+
+            } catch (e: Exception) {
             }
         }
     }
+
 
     fun downloadPdf() {
         val planId = _uiState.value.trainingPlan?.id ?: return

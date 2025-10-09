@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.*
+import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
+import com.example.gymeaze.util.GlobalFavoriteState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -24,7 +26,7 @@ data class TrainingPlansUiState(
 class TrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TrainingPlanRepository(application)
-
+    private val authRepository = AuthRepository(application)
     private val _uiState = MutableStateFlow(TrainingPlansUiState())
     val uiState: StateFlow<TrainingPlansUiState> = _uiState.asStateFlow()
 
@@ -57,6 +59,15 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
     init {
         setupAutoSearch()
         loadTrainingPlans()
+    }
+
+    private suspend fun getCurrentUserLogin(): String? {
+        return try {
+            val userResult = authRepository.getCurrentUser()
+            userResult.getOrNull()?.username
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun setupAutoSearch() {
@@ -265,23 +276,30 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
     fun toggleFavorite(planId: String) {
         viewModelScope.launch {
             try {
-                val result = repository.toggleTrainingPlanFavorite(planId)
-                result.onSuccess { response ->
+
+                val currentUser = getCurrentUserLogin()
+                val plan = _uiState.value.trainingPlans.find { it.id == planId }
+
+                if (plan?.author?.username == currentUser && currentUser != null) {
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = response.message,
-                        snackbarType = SnackbarType.SUCCESS
-                    )
-                }.onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas dodawania do ulubionych",
+                        snackbarMessage = "Nie możesz dodać swojego planu do ulubionych",
                         snackbarType = SnackbarType.ERROR
                     )
+                    return@launch
                 }
-            } catch (e: Exception) {
+
+                val newState = GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(planId)
+
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas dodawania do ulubionych",
-                    snackbarType = SnackbarType.ERROR
+                    snackbarMessage = if (newState) {
+                        "Dodano do ulubionych"
+                    } else {
+                        "Usunięto z ulubionych"
+                    },
+                    snackbarType = SnackbarType.SUCCESS
                 )
+
+            } catch (e: Exception) {
             }
         }
     }

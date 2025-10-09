@@ -22,6 +22,7 @@ import com.example.gymeaze.ui.components.*
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.FavoriteTrainingPlansViewModel
 import com.example.gymeaze.viewmodel.SnackbarType
+import com.example.gymeaze.util.GlobalFavoriteState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +36,12 @@ fun FavoriteTrainingPlansScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val globalFavoriteStates by GlobalFavoriteState.getInstance(context).favoriteStates.collectAsState()
+
+    val actualFavoritePlans = uiState.trainingPlans.filter { plan ->
+        globalFavoriteStates[plan.id] == true
+    }
 
     LaunchedEffect(Unit) {
         viewModel.refreshFavoritePlansFromOtherScreens()
@@ -162,8 +169,8 @@ fun FavoriteTrainingPlansScreen(
                             }
                         }
                     }
+                    actualFavoritePlans.isEmpty() -> {
 
-                    uiState.trainingPlans.isEmpty() -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -211,7 +218,6 @@ fun FavoriteTrainingPlansScreen(
                             }
                         }
                     }
-
                     else -> {
                         LazyColumn(
                             state = listState,
@@ -248,7 +254,7 @@ fun FavoriteTrainingPlansScreen(
                                                 color = getOnSurfaceColor()
                                             )
                                             Text(
-                                                text = "${uiState.trainingPlans.size} planów w kolekcji",
+                                                text = "${actualFavoritePlans.size} planów w kolekcji",
                                                 fontSize = 12.sp,
                                                 color = getOnSurfaceSecondaryColor()
                                             )
@@ -258,13 +264,13 @@ fun FavoriteTrainingPlansScreen(
                             }
 
                             items(
-                                items = uiState.trainingPlans,
+                                items = actualFavoritePlans,
                                 key = { it.id }
                             ) { plan ->
                                 TrainingPlanCard(
                                     trainingPlan = plan,
                                     onCardClick = onPlanClick,
-                                    onLikeClick = {},
+                                    onLikeClick = viewModel::toggleLike,
                                     onFavoriteClick = { planId ->
                                         viewModel.removeFavorite(planId)
                                     }

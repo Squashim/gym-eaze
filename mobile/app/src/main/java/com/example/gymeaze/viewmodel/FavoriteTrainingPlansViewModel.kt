@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.TrainingPlan
+import com.example.gymeaze.data.models.TrainingPlanAuthor
 import com.example.gymeaze.data.repository.TrainingPlanRepository
+import com.example.gymeaze.util.GlobalFavoriteState
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -89,18 +91,18 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
     }
 
     fun removeFavorite(planId: String) {
-
         val planName = _uiState.value.trainingPlans.find { it.id == planId }?.name ?: "Plan"
+
         viewModelScope.launch {
             try {
-                val result = repository.toggleTrainingPlanFavorite(planId)
-                result.onSuccess {
-                    _uiState.value = _uiState.value.copy(
-                        trainingPlans = _uiState.value.trainingPlans.filter { it.id != planId },
-                        snackbarMessage = "Usunięto \"$planName\" z ulubionych",
-                        snackbarType = SnackbarType.SUCCESS
-                    )
-                }
+                val newState = GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(planId)
+
+                _uiState.value = _uiState.value.copy(
+                    trainingPlans = _uiState.value.trainingPlans.filter { it.id != planId },
+                    snackbarMessage = "Usunięto \"$planName\" z ulubionych",
+                    snackbarType = SnackbarType.SUCCESS
+                )
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = e.message ?: "Błąd podczas usuwania z ulubionych",
@@ -116,10 +118,28 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
             try {
                 val result = repository.toggleTrainingPlanLike(planId)
                 result.onSuccess { likeResponse ->
+
                     _uiState.value = _uiState.value.copy(
                         trainingPlans = _uiState.value.trainingPlans.map { plan ->
                             if (plan.id == planId) {
-                                plan.copy(likes = likeResponse.likes)
+                                TrainingPlan(
+                                    id = plan.id,
+                                    name = plan.name ?: "",
+                                    author = plan.author ?: TrainingPlanAuthor("", "", null),
+                                    description = plan.description,
+                                    image = plan.image ?: "",
+                                    goal = plan.goal ?: "",
+                                    visibility = plan.visibility ?: "",
+                                    advancedLevel = plan.advancedLevel ?: "",
+                                    likes = likeResponse.likes,
+                                    days = plan.days ?: emptyList(),
+                                    hashtags = plan.hashtags ?: emptyList(),
+                                    createdAt = plan.createdAt ?: "",
+                                    updatedAt = plan.updatedAt ?: "",
+                                    totalExercises = plan.totalExercises,
+                                    totalDuration = plan.totalDuration,
+                                    daysCount = plan.daysCount
+                                )
                             } else {
                                 plan
                             }
@@ -127,14 +147,12 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas polubienia planu",
-                        snackbarType = SnackbarType.ERROR
+                        error = exception.message ?: "Błąd podczas polubienia planu"
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas polubienia planu",
-                    snackbarType = SnackbarType.ERROR
+                    error = e.message ?: "Błąd podczas polubienia planu"
                 )
             }
         }

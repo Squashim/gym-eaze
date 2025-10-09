@@ -36,6 +36,8 @@ import com.example.gymeaze.util.formatToRelativeTime
 import com.example.gymeaze.viewmodel.SnackbarType
 import com.example.gymeaze.viewmodel.TrainingPlanDetailViewModel
 import com.example.gymeaze.ui.components.user.UserAvatar
+import com.example.gymeaze.util.GlobalFavoriteState
+import com.example.gymeaze.util.formatToRelativeTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -327,7 +329,8 @@ fun TrainingPlanDetailScreen(
                                 onLikeClick = viewModel::toggleLike,
                                 onFavoriteClick = viewModel::toggleFavorite,
                                 onDownloadPdf = viewModel::downloadPdf,
-                                isDownloadingPdf = isDownloadingPdf
+                                isDownloadingPdf = isDownloadingPdf,
+                                trainingPlan = plan
                             )
                         }
 
@@ -532,12 +535,17 @@ private fun HashtagChip(hashtag: String) {
 
 @Composable
 private fun ActionButtonsSection(
+    trainingPlan: TrainingPlan,
     likes: Int,
     onLikeClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onDownloadPdf: () -> Unit,
     isDownloadingPdf: Boolean
 ) {
+    val context = LocalContext.current
+
+    val favoriteStates by GlobalFavoriteState.getInstance(context).favoriteStates.collectAsState()
+    val isFavoriteGlobal = favoriteStates[trainingPlan.id] ?: false
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -554,7 +562,7 @@ private fun ActionButtonsSection(
             border = BorderStroke(1.dp, getInputBorderColor())
         ) {
             Icon(
-                imageVector = Icons.Default.Favorite,
+                imageVector = if (likes > 0) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
                 contentDescription = null,
                 tint = getPrimaryColor(),
                 modifier = Modifier.size(18.dp)
@@ -564,7 +572,10 @@ private fun ActionButtonsSection(
         }
 
         Button(
-            onClick = onFavoriteClick,
+            onClick = {
+                android.util.Log.d("ActionButtons", "Favorite clicked - Plan: ${trainingPlan.id}, Current: $isFavoriteGlobal")
+                onFavoriteClick()
+            },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = getSurfaceColor(),
@@ -573,12 +584,23 @@ private fun ActionButtonsSection(
             border = BorderStroke(1.dp, getInputBorderColor())
         ) {
             Icon(
-                imageVector = Icons.Default.BookmarkBorder,
+                imageVector = if (isFavoriteGlobal) {
+                    Icons.Default.Favorite
+                } else {
+                    Icons.Default.FavoriteBorder
+                },
                 contentDescription = null,
+                tint = if (isFavoriteGlobal) {
+                    Color.Red
+                } else {
+                    getOnSurfaceSecondaryColor()
+                },
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Zapisz")
+            Text(
+                text = if (isFavoriteGlobal) "Usuń" else "Zapisz"
+            )
         }
 
         Button(
@@ -604,11 +626,15 @@ private fun ActionButtonsSection(
             } else {
                 Icon(
                     imageVector = Icons.Default.Download,
+                    tint = getOnPrimaryColor(),
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("PDF")
+                Text(
+                    text = "PDF",
+                    color = getOnPrimaryColor()
+                )
             }
         }
     }
