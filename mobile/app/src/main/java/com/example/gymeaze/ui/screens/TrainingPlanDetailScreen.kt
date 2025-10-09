@@ -35,6 +35,7 @@ import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.util.formatToRelativeTime
 import com.example.gymeaze.viewmodel.SnackbarType
 import com.example.gymeaze.viewmodel.TrainingPlanDetailViewModel
+import com.example.gymeaze.ui.components.user.UserAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +43,8 @@ fun TrainingPlanDetailScreen(
     planId: String,
     onBackClick: () -> Unit,
     onExerciseClick: (String) -> Unit = {},
-    viewModel: TrainingPlanDetailViewModel = viewModel()
+    viewModel: TrainingPlanDetailViewModel = viewModel(),
+    onUserClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -229,11 +231,35 @@ fun TrainingPlanDetailScreen(
 
                                     Spacer(modifier = Modifier.height(8.dp))
 
-                                    Text(
-                                        text = "Autor: ${plan.author?.username}",
-                                        fontSize = 16.sp,
-                                        color = Color.White.copy(alpha = 0.9f)
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { onUserClick(plan.author?.username ?: "?") },
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                    UserAvatar(
+                                        imageUrl = plan.author?.profileDetails?.profilePicture,
+                                        username = plan.author?.username ?: "?",
+                                        modifier = Modifier.size(40.dp)
                                     )
+
+                                        Spacer(modifier = Modifier.width(12.dp))
+
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clickable { onUserClick(plan.author?.username ?: "?") }
+                                        ) {
+                                            Text(
+                                                text = plan.author?.username ?: "?",
+                                                color = getOnSurfaceColor(),
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
 
                                     Text(
                                         text = plan.createdAt.formatToRelativeTime(),
