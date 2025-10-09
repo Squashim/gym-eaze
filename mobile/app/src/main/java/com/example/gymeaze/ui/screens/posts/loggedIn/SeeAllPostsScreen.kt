@@ -76,7 +76,8 @@ fun SeeAllPostsScreen(
                 viewModel = viewModel,
                 postToEdit = editingPost!!,
                 onBackClick = { editingPost = null },
-                onEdited = { editingPost = null }
+                onEdited = { editingPost = null },
+                onRefreshPosts = { viewModel.refreshPosts() }
             )
         } else {
             SeeAllPostsContent(
@@ -93,6 +94,8 @@ fun SeeAllPostsScreen(
                 isRefreshing = isRefreshing,
                 onToggleLike = { postId -> viewModel.toggleLike(postId) },
                 onToggleSeeMore = { true },
+                onRefreshPosts = { viewModel.refreshPosts() },
+                topBarTitle = "Wszystkie posty",
             )
         }
 

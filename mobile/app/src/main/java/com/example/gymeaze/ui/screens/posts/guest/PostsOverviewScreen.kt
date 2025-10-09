@@ -51,10 +51,7 @@ fun PostsOverviewScreen(
     }
 
     LaunchedEffect(Unit) {
-        val result = authViewModel.getCurrentUser()
-        result.onSuccess { user ->
-            viewModel.setCurrentUser(user)
-        }
+        viewModel.fetchPosts(refresh = true)
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -78,7 +75,8 @@ fun PostsOverviewScreen(
                 viewModel = viewModel,
                 postToEdit = editingPost!!,
                 onBackClick = { editingPost = null },
-                onEdited = { editingPost = null }
+                onEdited = { editingPost = null },
+                onRefreshPosts = { viewModel.refreshPosts() }
             )
         } else {
             SeeAllPostsContent(
@@ -100,8 +98,10 @@ fun PostsOverviewScreen(
                     false
                 },
                 searchEnabled = true,
-                showLogoTopBar= true
-                // Jeżeli masz parametr searchEnabled w SeeAllPostsContent, przekaz domyślnie true
+                showLogoTopBar= true,
+                onRefreshPosts = { viewModel.refreshPosts() },
+                topBarTitle = "",
+
             )
         }
 

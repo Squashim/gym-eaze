@@ -45,7 +45,9 @@ fun SeeAllPostsContent(
     onToggleLike: (String) -> Unit,
     onToggleSeeMore: (String) -> Boolean,
     searchEnabled: Boolean = true,
-    showLogoTopBar: Boolean = false
+    showLogoTopBar: Boolean = false,
+    onRefreshPosts: () -> Unit,
+    topBarTitle: String,
 ) {
     var selectedHashtags by remember { mutableStateOf<List<String>>(emptyList()) }
     var hashtagInput by remember { mutableStateOf("") }
@@ -67,7 +69,7 @@ fun SeeAllPostsContent(
                     title = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
-                        ){
+                        ) {
                             Image(
                                 painter = painterResource(
                                     id = if(isDarkTheme){
@@ -107,7 +109,7 @@ fun SeeAllPostsContent(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Wróć",
+                            text = topBarTitle,
                             color = getOnSurfaceColor(),
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -148,7 +150,7 @@ fun SeeAllPostsContent(
             }
         },
         containerColor = getBackgroundColor()
-    ) { paddingValues ->
+    ){ paddingValues ->
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = onRefresh,
@@ -294,7 +296,7 @@ fun SeeAllPostsContent(
                                 initialCommentsCount = selectedPost.commentsCount,
                                 onClose = {
                                     showCommentsSheet = false
-                                    //viewModel.fetchPosts(refresh = true) // <-- to odświeży liczbę komentarzy w postach!
+                                    onRefreshPosts()
                                 },
                                 currentUsername = currentUsername
                             )
