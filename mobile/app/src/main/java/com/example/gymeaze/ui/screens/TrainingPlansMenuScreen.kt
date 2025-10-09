@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
+import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.theme.*
 
 @Composable
@@ -29,10 +31,24 @@ fun TrainingPlansMenuScreen(
     onBrowseTrainingPlansClick: () -> Unit = {},
     onFavoriteTrainingPlansClick: () -> Unit = {}
 ) {
-    Box(
+    var selectedRoute by remember { mutableStateOf("workouts") }
+
+    Scaffold(
+        topBar = {
+            GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+        },
+        bottomBar = {
+            GymEazeBottomNavigationBar(
+                selectedRoute = selectedRoute,
+                onItemSelected = { route -> selectedRoute = route }
+            )
+        },
+        containerColor = getBackgroundColor()
+    ) { paddingValues -> Box(
         modifier = Modifier
             .fillMaxSize()
             .background(getBackgroundColor())
+            .padding(paddingValues)
     ) {
         BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
@@ -43,7 +59,6 @@ fun TrainingPlansMenuScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(100.dp))
 
             Text(
                 text = "Plany treningowe",
@@ -72,7 +87,7 @@ fun TrainingPlansMenuScreen(
                     TrainingPlanSectionButton(
                         title = "Kreator\nplanu",
                         subtitle = "Stwórz własny\nplan treningowy",
-                        imageRes = R.drawable.create_exercise,
+                        imageRes = R.drawable.create_plan,
                         backgroundColor = getSurfaceColor(),
                         innerBackgroundColor = getPrimaryColor().copy(alpha = 0.3f),
                         innerBorderColor = getPrimaryColor(),
@@ -83,7 +98,7 @@ fun TrainingPlansMenuScreen(
                     TrainingPlanSectionButton(
                         title = "Moje\nplany",
                         subtitle = "Zbiór Twoich\nplanów",
-                        imageRes = R.drawable.my_exercises,
+                        imageRes = R.drawable.my_plans,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),
                         onClick = onMyTrainingPlansClick
@@ -97,7 +112,7 @@ fun TrainingPlansMenuScreen(
                     TrainingPlanSectionButton(
                         title = "Przeglądaj\nplany",
                         subtitle = "Odkrywaj\nnowe\npomysły",
-                        imageRes = R.drawable.overview_exercises,
+                        imageRes = R.drawable.overview_plans,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),
                         onClick = onBrowseTrainingPlansClick
@@ -106,7 +121,7 @@ fun TrainingPlansMenuScreen(
                     TrainingPlanSectionButton(
                         title = "Ulubione",
                         subtitle = "Tutaj znajdziesz\nplany które\nchcesz mieć\npod ręką",
-                        imageRes = R.drawable.favorites_exercises,
+                        imageRes = R.drawable.favorite_plans,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),
                         onClick = onFavoriteTrainingPlansClick
@@ -115,6 +130,7 @@ fun TrainingPlansMenuScreen(
             }
         }
     }
+        }
 }
 
 @Composable
