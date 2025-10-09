@@ -827,6 +827,15 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun clearPosts() {
+        likedPosts = emptyList()
+        _likedComments.value = emptySet()
+        allPostsCache.clear()
+        followedPostsCache.clear()
+        userPostsCache.clear()
+        _posts.value = emptyList()
+    }
 }
 
 

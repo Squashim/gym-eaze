@@ -142,6 +142,7 @@ class MainActivity : ComponentActivity() {
                             ).show()
                         }
                     }
+                    createPostViewModel.clearPosts()
                     authViewModel.clearLogoutEvent()
                 }
             }

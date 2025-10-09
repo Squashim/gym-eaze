@@ -44,7 +44,8 @@ fun EditPostScreen(
     viewModel: PostsViewModel,
     postToEdit: PostUi,
     onBackClick: () -> Unit,
-    onEdited: () -> Unit
+    onEdited: () -> Unit,
+    onRefreshPosts: () -> Unit
 ) {
     val context = LocalContext.current
     val ui by viewModel.uiState.collectAsState()
@@ -75,6 +76,7 @@ fun EditPostScreen(
         if (ui.success) {
             Toast.makeText(context, context.getString(R.string.success), Toast.LENGTH_SHORT).show()
             onEdited()
+            onRefreshPosts()
             viewModel.clearSuccess()
             viewModel.clearData()
         }

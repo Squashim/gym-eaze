@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -17,7 +18,10 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     const payload = verifyAccessToken(token) as JwtPayload;
     req.userId = payload.userId;
     next();
-  } catch {
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: 'Token wygasł' });
+    }
     return res.status(403).json({ message: 'Nieprawidłowy token' });
   }
 };
@@ -39,16 +43,13 @@ export const nonAuthenticate = (req: AuthRequest, res: Response, next: NextFunct
 
 export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+    const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
     if (token) {
       const payload = verifyAccessToken(token) as JwtPayload;
       req.userId = payload.userId;
     }
   } catch {
-    req.userId = undefined; 
+    req.userId = undefined;
   }
   next();
 };
-
-
-
