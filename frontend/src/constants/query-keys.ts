@@ -9,6 +9,8 @@ export const QUERY_KEYS = {
   AUTH_USER: ['user', 'authenticated'],
   USER_PERSONAL_DETAILS: ['user', 'personal-details'],
   USER_FITNESS_DETAILS: ['user', 'fitness-details'],
+  USER_PROFILE_DETAILS: ['user', 'profile-details'],
+  USER_BADGES: ['user', 'badges'],
 
   USER_LIKED_ITEMS: (userId: string) => ['user', userId, 'liked-items'],
   USER_FAVORITED_ITEMS: (userId: string) => ['user', userId, 'favorited-items'],

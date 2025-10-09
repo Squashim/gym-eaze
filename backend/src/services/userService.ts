@@ -6,6 +6,7 @@ import { Goal } from '../constants/goals';
 import bcrypt from 'bcryptjs';
 import { Gender } from '../constants/genders';
 import { Country } from '../constants/countries';
+import DeviceToken from '../models/deviceTokenModel';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -78,7 +79,7 @@ export const updateUserProfileDetailsService = async (
       throw new Error('Możesz przypiąć maksymalnie 5 odznak');
     }
 
-    (user.badges ?? []).forEach((b: any) => {
+    (user.badges ?? []).forEach((b) => {
       const isPinned = pinnedBadges.includes(b.badge._id.toString());
       b.isPinned = isPinned;
     });
@@ -162,6 +163,11 @@ export const updateUserService = async (userId: string, data: UpdateUserInput) =
       throw new Error('PASSWORD_SPECIAL');
     }
 
+    const existingUser = await User.findById(userId);
+    if (existingUser && (await bcrypt.compare(password, existingUser.password))) {
+      throw new Error('SAME_PASSWORD');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
     updateData.password = hashedPassword;
   }
@@ -171,6 +177,7 @@ export const updateUserService = async (userId: string, data: UpdateUserInput) =
 };
 
 export const deleteUserService = async (userId: string) => {
+  await DeviceToken.deleteMany({ userId });
   const deletedUser = await User.findByIdAndDelete(userId);
 
   if (!deletedUser) {

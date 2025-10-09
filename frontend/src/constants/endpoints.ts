@@ -47,6 +47,8 @@ export const COMMENT = {
 } as const;
 
 export const USER = {
+  base: 'user',
+  badges: 'user/badges',
   likedItems: 'user/likes',
   favoritedItems: 'user/favorites',
 

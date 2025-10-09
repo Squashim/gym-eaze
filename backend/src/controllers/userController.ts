@@ -15,6 +15,7 @@ import {
 } from '../services/userService';
 import { AuthRequest } from '../types/auth';
 import { Response } from 'express';
+import { parseDescription } from '../utils/parsers';
 
 export const getUserLikes = async (req: AuthRequest, res: Response) => {
   try {
@@ -61,9 +62,12 @@ export const getUserProfileDetails = async (req: AuthRequest, res: Response) => 
 
     const profileDetails = await getUserProfileDetailsService(userId);
     return res.json(profileDetails);
-  } catch (error: any) {
-    console.error('Błąd w getUserProfileDetails:', error);
-    return res.status(500).json({ message: error.message || 'Błąd serwera' });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -74,15 +78,24 @@ export const updateUserProfileDetails = async (req: AuthRequest, res: Response) 
       return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
     }
 
-    const { description, goal, pinnedBadges } = req.body;
+    const { description, goal } = req.body;
+    let { pinnedBadges } = req.body;
 
     if (goal && !goalValues.includes(goal)) {
       return res.status(400).json({ message: 'Niepoprawny cel' });
     }
 
     const trimmedDescription = description?.trim() || '';
-    if (trimmedDescription.length > 150) {
+    if (parseDescription(trimmedDescription).length > 150) {
       return res.status(400).json({ message: 'Opis może mieć maksymalnie 150 znaków' });
+    }
+
+    if (pinnedBadges && typeof pinnedBadges === 'string') {
+      try {
+        pinnedBadges = JSON.parse(pinnedBadges);
+      } catch {
+        return res.status(400).json({ message: 'Nieprawidłowy format odznak' });
+      }
     }
 
     const updated = await updateUserProfileDetailsService(
@@ -94,9 +107,12 @@ export const updateUserProfileDetails = async (req: AuthRequest, res: Response) 
     );
 
     return res.json(updated);
-  } catch (error: any) {
-    console.error('Błąd w updateUserProfileDetails:', error);
-    return res.status(500).json({ message: error.message || 'Błąd serwera' });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -110,9 +126,12 @@ export const getUserBadges = async (req: AuthRequest, res: Response) => {
 
     const badges = await getUserBadgesService(userId);
     return res.json(badges);
-  } catch (error: any) {
-    console.error('Błąd w getUserBadges:', error);
-    return res.status(500).json({ message: error.message || 'Błąd serwera' });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -128,7 +147,11 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     const updatedUser = await updateUserService(userId, { username, password });
 
     res.status(200).json({ message: 'Użytkownik zaktualizowany pomyślnie', user: updatedUser });
-  } catch (error: any) {
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
+
     switch (error.message) {
       case 'USERNAME_EXISTS':
         return res.status(400).json({ message: 'Nazwa użytkownika już istnieje' });
@@ -149,11 +172,11 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       case 'PASSWORD_NUMBER':
         return res.status(400).json({ message: 'Hasło musi zawierać co najmniej jedną cyfrę' });
       case 'PASSWORD_SPECIAL':
-        return res
-          .status(400)
-          .json({
-            message: 'Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&*()_+./)',
-          });
+        return res.status(400).json({
+          message: 'Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&*()_+./)',
+        });
+      case 'SAME_PASSWORD':
+        return res.status(400).json({ message: 'Nowe hasło musi być inne niż stare hasło' });
       default:
         return res.status(500).json({ message: 'Błąd serwera' });
     }
@@ -170,8 +193,10 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
     await deleteUserService(userId);
 
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
     res.status(200).json({ message: 'Konto zostało usunięte pomyślnie' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: 'Błąd serwera podczas usuwania konta' });
   }
 };
@@ -185,8 +210,12 @@ export const getUserPersonalData = async (req: AuthRequest, res: Response) => {
     }
     const personalData = await getUserPersonalDataService(userId);
     res.json(personalData);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -202,8 +231,12 @@ export const updateUserPersonalData = async (req: AuthRequest, res: Response) =>
     await updateUserPersonalDataService(userId, { firstName, lastName, country });
 
     res.json({ message: 'Dane personalne zaktualizowane pomyślnie' });
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -217,8 +250,12 @@ export const getUserFitnessData = async (req: AuthRequest, res: Response) => {
 
     const fitnessData = await getUserFitnessDataService(userId);
     res.json(fitnessData);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 
@@ -234,8 +271,12 @@ export const updateUserFitnessData = async (req: AuthRequest, res: Response) => 
     await updateUserFitnessDataService(userId, { age, height, weight, gender });
 
     res.json({ message: 'Informacje fizyczne zaktualizowane pomyślnie' });
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: 'Błąd serwera' });
+    }
   }
 };
 

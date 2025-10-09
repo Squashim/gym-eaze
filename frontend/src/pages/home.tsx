@@ -2,9 +2,12 @@ import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import { STORAGE_FLAGS } from '@/constants/storage-flags';
 import { useUser } from '@/context/user';
 import { useSessionFlag } from '@/hooks/utils/use-session-flag';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
+
   const { isSet, removeFlag } = useSessionFlag(STORAGE_FLAGS.isFirstLogin);
 
   return (
@@ -16,7 +19,7 @@ const Home = () => {
         onClose={removeFlag}
         onConfirm={() => {
           removeFlag();
-          console.log('Przejdź do edycji profilu');
+          void navigate('/profile/edit', { replace: true });
         }}
         open={isSet}
         title={`Witaj ${user?.username}!`}

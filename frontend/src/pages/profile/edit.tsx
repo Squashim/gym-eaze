@@ -1,6 +1,7 @@
 import FitnessDetailsTab from '@/components/features/profile/edit-tabs/fitness-details';
 import LoginDetailsTab from '@/components/features/profile/edit-tabs/login-details';
 import PersonalDetailsTab from '@/components/features/profile/edit-tabs/personal-details';
+import ProfileDetailsTab from '@/components/features/profile/edit-tabs/profile-details';
 import PageLayout from '@/components/layout/page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
@@ -26,12 +27,8 @@ const PROFILE_EDIT_TABS: { label: string; value: ProfileEditTabs }[] = [
   },
 ];
 
-interface ProfileEditProps {
-  defaultTab?: ProfileEditTabs;
-}
-
-function ProfileEdit({ defaultTab }: ProfileEditProps) {
-  const [selectedTab, setSelectedTab] = useState(defaultTab || 'profile-details');
+function ProfileEdit() {
+  const [selectedTab, setSelectedTab] = useState('profile-details');
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab as ProfileEditTabs);
@@ -59,7 +56,7 @@ function ProfileEdit({ defaultTab }: ProfileEditProps) {
         </div>
 
         <TabsContent value="profile-details">
-          <div>Edytuj informacje o profilu</div>
+          <ProfileDetailsTab />
         </TabsContent>
         <TabsContent value="auth-details">
           <LoginDetailsTab />

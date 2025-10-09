@@ -1,6 +1,8 @@
 import type { Country } from '@/constants/countries';
 import type { Notification } from './notification';
 import type { Gender } from '@/constants/gender';
+import type { BadgeApiResponse } from './badge';
+import type { Goal } from '@/constants/goals';
 
 export type UserRole = 'admin' | 'user';
 
@@ -28,13 +30,13 @@ export type UserLikesApiResponse = {
 
 export type UserFavoritesApiResponse = Omit<UserLikesApiResponse, 'posts' | 'comments'>;
 
-export type UserProfileDetailsPayload = {
+export type UserPersonalDetailsPayload = {
   firstName?: string;
   lastName?: string;
   country?: Country;
 };
 
-export type UserPersonalDetailsApiResponse = UserProfileDetailsPayload & {
+export type UserPersonalDetailsApiResponse = UserPersonalDetailsPayload & {
   isPersonalDetailsPublic: boolean;
 };
 
@@ -47,6 +49,22 @@ export type UserFitnessDetailsPayload = {
 
 export type UserFitnessDetailsApiResponse = UserFitnessDetailsPayload & {
   isFitnessDetailsPublic: boolean;
+};
+
+export type UserProfileDetailsPayload = {
+  profilePicture?: File | null;
+  description?: string;
+  goal?: Goal;
+  pinnedBadges?: string[];
+};
+
+export type UserProfileDetailsApiResponse = {
+  profilePicture?: string;
+  description?: string;
+  goal?: Goal;
+  pinnedBadges?: BadgeApiResponse[];
+  isBadgesDetailsPublic: boolean;
+  isGoalPublic: boolean;
 };
 
 export type UserLoginDetailsPayload = {

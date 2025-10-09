@@ -231,7 +231,7 @@ function PostCreator({ mode, post, onEditCancel }: PostCreatorProps) {
                   >
                     <Image />
                     <input
-                      accept="image/*"
+                      accept="image/jpeg, image/webp, image/png"
                       className="hidden"
                       onChange={(e) => handleFileChange(e, 'image')}
                       ref={imageRef}
@@ -262,7 +262,7 @@ function PostCreator({ mode, post, onEditCancel }: PostCreatorProps) {
                   >
                     <Video />
                     <input
-                      accept="video/*"
+                      accept="video/mp4, video/webm"
                       className="hidden"
                       onChange={(e) => handleFileChange(e, 'video')}
                       ref={videoRef}

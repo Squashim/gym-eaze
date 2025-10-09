@@ -1,9 +1,9 @@
 import { useUserProfile } from '@/hooks/query/user/use-user-profile';
 import { loginDetailsSchema, type LoginDetailsSchema } from '@/schemas/user-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { TabButtons, TabContent } from './tabs-ui';
+import { RemoveAccountCard, TabButtons, TabContent } from './tabs-ui';
 import {
   Form,
   FormControl,
@@ -30,7 +30,7 @@ function LoginDetailsTab() {
   });
 
   const { user, isLoading } = useUser();
-  const { updateLoginDetails } = useUserProfile(form.setError);
+  const { updateLoginDetails, removeAccount } = useUserProfile(form.setError);
 
   useEffect(() => {
     if (user) {
@@ -50,6 +50,10 @@ function LoginDetailsTab() {
 
     updateLoginDetails.mutate(payload);
   };
+
+  const handleAccountRemove = useCallback(() => {
+    removeAccount.mutate();
+  }, [removeAccount]);
 
   return (
     <section className="grid w-full grid-cols-1 gap-4 max-w-md">
@@ -143,6 +147,11 @@ function LoginDetailsTab() {
           </form>
         </Form>
       </TabContent>
+      <RemoveAccountCard
+        isPending={removeAccount.isPending}
+        onDelete={handleAccountRemove}
+        username={user!.username}
+      />
     </section>
   );
 }
