@@ -18,7 +18,8 @@ import WorkoutBrowser from './pages/workouts/browser';
 import WorkoutDetails from './pages/workouts/details';
 import UserWorkouts from './pages/workouts/user';
 import FavoriteWorkouts from './pages/workouts/favorite';
-import ProfileEdit from './pages/profile/edit';
+import ProfileEdit from './pages/user/profile-edit';
+import PrivacySettings from './pages/user/privacy-settings';
 
 const router = createBrowserRouter([
   {
@@ -121,6 +122,10 @@ const router = createBrowserRouter([
               {
                 path: 'edit',
                 element: <ProfileEdit />,
+              },
+              {
+                path: 'privacy',
+                element: <PrivacySettings />,
               },
             ],
           },
