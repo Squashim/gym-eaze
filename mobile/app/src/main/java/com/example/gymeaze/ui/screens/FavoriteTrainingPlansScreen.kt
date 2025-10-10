@@ -37,13 +37,21 @@ fun FavoriteTrainingPlansScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val globalFavoriteStates by GlobalFavoriteState.getInstance(context).favoriteStates.collectAsState()
+    val favoriteIds by GlobalFavoriteState.getInstance(context).favoriteTrainingPlanIds.collectAsState()
 
     val actualFavoritePlans = uiState.trainingPlans.filter { plan ->
-        globalFavoriteStates[plan.id] == true
+        favoriteIds.contains(plan.id)
+    }
+
+    LaunchedEffect(favoriteIds) {
+
+        if (favoriteIds.isNotEmpty() && actualFavoritePlans.isEmpty()) {
+            viewModel.refreshFavoritePlansFromOtherScreens()
+        }
     }
 
     LaunchedEffect(Unit) {
+        GlobalFavoriteState.getInstance(context).forceRefreshFromBackend()
         viewModel.refreshFavoritePlansFromOtherScreens()
     }
 

@@ -29,6 +29,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.lifecycleScope
+import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.ui.components.WorkoutLoginRequiredDialog
 import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
 import com.example.gymeaze.ui.screens.EditTrainingPlanScreen
@@ -45,16 +47,30 @@ import com.example.gymeaze.ui.screens.posts.loggedIn.PostsFollowedUsers
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
+import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.EditTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            try {
+                val userPreferences = UserPreferences(this@MainActivity)
+                val isLoggedIn = userPreferences.isLoggedIn.first()
+
+                if (isLoggedIn) {
+                    GlobalFavoriteState.getInstance(this@MainActivity).refreshFromBackend()
+                }
+            } catch (e: Exception) {
+            }
+        }
         setContent {
             val authViewModel: AuthViewModel = viewModel()
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
@@ -394,8 +410,8 @@ class MainActivity : ComponentActivity() {
                                     onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
                                     onCreatePostClick = authViewModel::showCreatePostScreen,
                                     onBrowsePostClick = authViewModel::showBrowsePostScreen,
-                                    onFollowedUsersPosts = authViewModel :: showFollowedUserPostsScreen,
-                                    onMyPosts = authViewModel :: showMyPostsScreen
+                                    onFollowedUsersPosts = authViewModel::showFollowedUserPostsScreen,
+                                    onMyPosts = authViewModel::showMyPostsScreen
 
                                 )
                             }
@@ -419,8 +435,8 @@ class MainActivity : ComponentActivity() {
                                     onCreateTrainingPlanClick = authViewModel::showCreateTrainingPlanScreen,
                                     onCreatePostClick = authViewModel::showCreatePostScreen,
                                     onBrowsePostClick = authViewModel::showBrowsePostScreen,
-                                    onFollowedUsersPosts = authViewModel :: showFollowedUserPostsScreen,
-                                    onMyPosts = authViewModel :: showMyPostsScreen,
+                                    onFollowedUsersPosts = authViewModel::showFollowedUserPostsScreen,
+                                    onMyPosts = authViewModel::showMyPostsScreen,
                                     onMyTrainingPlansClick = authViewModel::showMyTrainingPlansScreen,
                                     onBrowseTrainingPlansClick = authViewModel::showBrowseTrainingPlansScreen,
                                     onFavoriteTrainingPlansClick = authViewModel::showFavoriteTrainingPlansScreen

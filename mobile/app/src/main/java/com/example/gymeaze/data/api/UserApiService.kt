@@ -11,6 +11,7 @@ import com.example.gymeaze.data.models.UpdatePersonalDataResponse
 import com.example.gymeaze.data.models.UpdatePrivacySettingsRequest
 import com.example.gymeaze.data.models.UpdatePrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
+import com.example.gymeaze.data.models.UserFavorites
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
 import com.example.gymeaze.data.models.UserProfileDetails

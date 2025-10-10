@@ -72,8 +72,8 @@ fun TrainingPlanCard(
 ) {
 
     val context = LocalContext.current
-    val favoriteStates by GlobalFavoriteState.getInstance(context).favoriteStates.collectAsState()
-    val isFavoriteGlobal = favoriteStates[trainingPlan.id] ?: false
+    val favoriteIds by GlobalFavoriteState.getInstance(context).favoriteTrainingPlanIds.collectAsState()
+    val isFavoriteGlobal = favoriteIds.contains(trainingPlan.id)
     Card(
         modifier = modifier
             .fillMaxWidth()

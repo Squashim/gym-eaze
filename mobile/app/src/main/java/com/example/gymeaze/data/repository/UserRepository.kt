@@ -18,6 +18,7 @@ import com.example.gymeaze.data.models.UpdatePersonalDataResponse
 import com.example.gymeaze.data.models.UpdatePrivacySettingsRequest
 import com.example.gymeaze.data.models.UpdatePrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
+import com.example.gymeaze.data.models.UserFavorites
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
 import com.example.gymeaze.data.models.UserProfileDetails
@@ -26,6 +27,7 @@ import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -298,24 +300,16 @@ class UserRepository(private val context: Context) {
             val response = api.getPrivacySettings()
             val body = response.body()
 
-            Log.d("PrivacyRepo", "Response code: ${response.code()}")
-            Log.d("PrivacyRepo", "Response successful: ${response.isSuccessful}")
-            Log.d("PrivacyRepo", "Response body: $body")
-            Log.d("PrivacyRepo", "Body data: ${body?.data}")
-
             return@withContext if (response.isSuccessful && body != null) {
                 Result.success(body.data)
             } else {
                 val rawError = response.errorBody()?.string().orEmpty()
-                Log.e("PrivacyRepo", "Error response: $rawError")
                 val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
                 Result.failure(IllegalStateException(message))
             }
         } catch (e: IOException) {
-            Log.e("PrivacyRepo", "Network error", e)
             Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
-            Log.e("PrivacyRepo", "Unknown error", e)
             Result.failure(e)
         }
     }

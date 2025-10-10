@@ -1,10 +1,15 @@
 package com.example.gymeaze.util
 
 import android.content.Context
-import android.content.SharedPreferences
+import com.example.gymeaze.data.repository.TrainingPlanRepository
+import com.example.gymeaze.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlin.onFailure
 
 class GlobalFavoriteState private constructor(private val context: Context) {
 
@@ -19,52 +24,76 @@ class GlobalFavoriteState private constructor(private val context: Context) {
         }
     }
 
-    private val prefs: SharedPreferences = context.getSharedPreferences("favorite_plans", Context.MODE_PRIVATE)
+    private val userRepository = UserRepository(context)
+    private val scope = CoroutineScope(Dispatchers.IO)
 
-    private val _favoriteStates = MutableStateFlow<Map<String, Boolean>>(loadFavoritesFromPrefs())
-    val favoriteStates: StateFlow<Map<String, Boolean>> = _favoriteStates.asStateFlow()
+    private val _favoriteTrainingPlanIds = MutableStateFlow<Set<String>>(emptySet())
+    val favoriteTrainingPlanIds: StateFlow<Set<String>> = _favoriteTrainingPlanIds.asStateFlow()
 
-    private fun loadFavoritesFromPrefs(): Map<String, Boolean> {
-        val favorites = mutableMapOf<String, Boolean>()
-        val allFavorites = prefs.getStringSet("favorite_plan_ids", emptySet()) ?: emptySet()
+    private val trainingPlanRepository = TrainingPlanRepository(context)
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-        allFavorites.forEach { planId ->
-            favorites[planId] = true
-        }
+    private var lastRefreshTime = 0L
+    private val REFRESH_INTERVAL = 5000L
 
-        return favorites
+    init {
+        loadFavoritesFromBackend()
     }
 
-    private fun saveFavoritesToPrefs() {
-        val favoriteIds = _favoriteStates.value.filter { it.value }.keys
-        prefs.edit()
-            .putStringSet("favorite_plan_ids", favoriteIds)
-            .apply()
+    fun loadFavoritesFromBackend() {
+        scope.launch {
+            try {
+                _isLoading.value = true
 
+                val result = trainingPlanRepository.getUserFavorites()
+
+                result.onSuccess { userFavorites ->
+                    val favoriteIds = userFavorites.trainingPlans.toSet()
+                    _favoriteTrainingPlanIds.value = favoriteIds
+                    lastRefreshTime = System.currentTimeMillis()
+
+                }
+            } catch (e: Exception) {
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
     fun toggleFavorite(planId: String): Boolean {
-        val currentStates = _favoriteStates.value.toMutableMap()
-        val currentState = currentStates[planId] ?: false
-        val newState = !currentState
+        val currentFavorites = _favoriteTrainingPlanIds.value.toMutableSet()
+        val wasInFavorites = currentFavorites.contains(planId)
+        val newState = !wasInFavorites
 
-        currentStates[planId] = newState
-        _favoriteStates.value = currentStates
+        if (wasInFavorites) {
+            currentFavorites.remove(planId)
+        } else {
+            currentFavorites.add(planId)
+        }
 
-        saveFavoritesToPrefs()
+        _favoriteTrainingPlanIds.value = currentFavorites
+
+        scope.launch {
+            kotlinx.coroutines.delay(2000)
+            loadFavoritesFromBackend()
+        }
 
         return newState
     }
 
     fun isFavorite(planId: String): Boolean {
-        return _favoriteStates.value[planId] ?: false
+        return _favoriteTrainingPlanIds.value.contains(planId)
     }
 
-    fun setFavorite(planId: String, isFavorite: Boolean) {
-        val currentStates = _favoriteStates.value.toMutableMap()
-        currentStates[planId] = isFavorite
-        _favoriteStates.value = currentStates
+    fun refreshFromBackend() {
+        val now = System.currentTimeMillis()
+        if (now - lastRefreshTime > REFRESH_INTERVAL) {
+            loadFavoritesFromBackend()
+        }
+    }
 
-        saveFavoritesToPrefs()
+    fun forceRefreshFromBackend() {
+        loadFavoritesFromBackend()
     }
 }

@@ -95,13 +95,30 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
 
         viewModelScope.launch {
             try {
-                val newState = GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(planId)
 
-                _uiState.value = _uiState.value.copy(
-                    trainingPlans = _uiState.value.trainingPlans.filter { it.id != planId },
-                    snackbarMessage = "Usunięto \"$planName\" z ulubionych",
-                    snackbarType = SnackbarType.SUCCESS
-                )
+                val result = repository.toggleTrainingPlanFavorite(planId)
+
+                result.onSuccess { response ->
+
+                    GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(planId)
+
+                    _uiState.value = _uiState.value.copy(
+                        trainingPlans = _uiState.value.trainingPlans.filter { it.id != planId },
+                        snackbarMessage = "Usunięto \"$planName\" z ulubionych",
+                        snackbarType = SnackbarType.SUCCESS
+                    )
+
+                    launch {
+                        kotlinx.coroutines.delay(500)
+                        GlobalFavoriteState.getInstance(getApplication()).forceRefreshFromBackend()
+                    }
+
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        snackbarMessage = "Błąd: ${exception.message}",
+                        snackbarType = SnackbarType.ERROR
+                    )
+                }
 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

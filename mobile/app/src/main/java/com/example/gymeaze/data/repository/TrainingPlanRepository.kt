@@ -13,6 +13,7 @@ import com.example.gymeaze.util.TokenAuthenticator
 import com.example.gymeaze.viewmodel.TrainingDay
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -28,6 +29,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
+import com.example.gymeaze.data.models.UserFavorites
 
 class TrainingPlanRepository(private val context: Context) {
 
@@ -260,18 +262,44 @@ class TrainingPlanRepository(private val context: Context) {
 
     suspend fun toggleTrainingPlanFavorite(planId: String): Result<MessageResponse> = withContext(Dispatchers.IO) {
         try {
+
+            val token = userPreferences.accessToken.first()
+
             val response = api.toggleTrainingPlanFavorite(planId)
+
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val messageResponse = response.body()!!
+                Result.success(messageResponse)
             } else {
-                val raw = response.errorBody()?.string()
-                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                val errorBody = response.errorBody()?.string()
+
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, errorBody, response.code())
                 Result.failure(IllegalStateException(msg))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    suspend fun getUserFavorites(): Result<UserFavorites> = withContext(Dispatchers.IO) {
+        try {
+
+            val response = api.getUserFavorites()
+
+            if (response.isSuccessful && response.body() != null) {
+                val userFavorites = response.body()!!
+                Result.success(userFavorites)
+            } else {
+                val errorBody = response.errorBody()?.string()
+
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, errorBody, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun downloadTrainingPlanPDF(planId: String): Result<ByteArray> = withContext(Dispatchers.IO) {
         try {
             val response = api.downloadTrainingPlanPDF(planId)

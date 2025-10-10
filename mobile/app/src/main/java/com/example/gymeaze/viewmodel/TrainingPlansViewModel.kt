@@ -299,6 +299,24 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                     snackbarType = SnackbarType.SUCCESS
                 )
 
+                val result = repository.toggleTrainingPlanFavorite(planId)
+                result.onSuccess { response ->
+
+                    launch {
+                        kotlinx.coroutines.delay(1000)
+                        GlobalFavoriteState.getInstance(getApplication()).forceRefreshFromBackend()
+                    }
+
+                }.onFailure { exception ->
+
+                    GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(planId)
+
+                    _uiState.value = _uiState.value.copy(
+                        snackbarMessage = "Błąd: ${exception.message}",
+                        snackbarType = SnackbarType.ERROR
+                    )
+                }
+
             } catch (e: Exception) {
             }
         }

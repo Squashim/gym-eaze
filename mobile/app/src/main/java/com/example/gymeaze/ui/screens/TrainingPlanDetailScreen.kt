@@ -544,8 +544,8 @@ private fun ActionButtonsSection(
 ) {
     val context = LocalContext.current
 
-    val favoriteStates by GlobalFavoriteState.getInstance(context).favoriteStates.collectAsState()
-    val isFavoriteGlobal = favoriteStates[trainingPlan.id] ?: false
+    val favoriteIds by GlobalFavoriteState.getInstance(context).favoriteTrainingPlanIds.collectAsState()
+    val isFavoriteGlobal = favoriteIds.contains(trainingPlan.id)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -573,7 +573,6 @@ private fun ActionButtonsSection(
 
         Button(
             onClick = {
-                android.util.Log.d("ActionButtons", "Favorite clicked - Plan: ${trainingPlan.id}, Current: $isFavoriteGlobal")
                 onFavoriteClick()
             },
             modifier = Modifier.weight(1f),
