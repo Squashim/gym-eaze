@@ -8,6 +8,11 @@ import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.ExerciseApiService
 import com.example.gymeaze.data.models.Equipment
+import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.data.models.ExerciseFilters
+import com.example.gymeaze.data.models.ExerciseQuery
+import com.example.gymeaze.data.models.ExercisesResponse
+import com.example.gymeaze.data.models.LikeResponse
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
@@ -53,8 +58,6 @@ class ExerciseRepository(private val context: Context) {
             .create(ExerciseApiService::class.java)
     }
 
-
-
     private val MAX_IMAGE_BYTES = 5L * 1024L * 1024L
     private val MAX_VIDEO_BYTES = 20L * 1024L * 1024L
 
@@ -82,6 +85,84 @@ class ExerciseRepository(private val context: Context) {
                 val raw = response.errorBody()?.string()
                 val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
                 Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getExercises(
+        filters: ExerciseFilters = ExerciseFilters(),
+        sortBy: String = "latest",
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<ExercisesResponse> = withContext(Dispatchers.IO) {
+        try {
+            val query = ExerciseQuery(
+                filters = filters,
+                sortBy = sortBy,
+                page = page,
+                pageSize = pageSize
+            )
+            val response = api.getExercises(query)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getExerciseById(exerciseId: String): Result<Exercise> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getExerciseById(exerciseId)
+
+            if (response.isSuccessful && response.body() != null) {
+                val exercise = response.body()!!
+                Result.success(exercise)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleExerciseLike(exerciseId: String): Result<LikeResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.toggleExerciseLike(exerciseId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getExercisesByIds(exerciseIds: List<String>): Result<List<Exercise>> = withContext(Dispatchers.IO) {
+        try {
+
+            if (exerciseIds.isEmpty()) {
+                return@withContext Result.success(emptyList())
+            }
+            val response = api.getExercisesByIds(exerciseIds)
+
+            if (response.isSuccessful && response.body() != null) {
+                val exercises = response.body()!!
+                Result.success(exercises)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception("Nie można pobrać ćwiczeń"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -159,7 +240,6 @@ class ExerciseRepository(private val context: Context) {
             val eqBodies: RequestBody = Gson().toJson(equipment).toRequestBody(json)
             val tagBodies: RequestBody = Gson().toJson(hashtags).toRequestBody(json)
 
-
             val res = api.createExercise(
                 name = nameBody,
                 description = descriptionBody,
@@ -182,9 +262,6 @@ class ExerciseRepository(private val context: Context) {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-
-                //TODO: przekieruj do widoku ze szczegolami stworzonego cwiczenia
-
                 Result.success(Unit)
             } else {
                 val raw = res.errorBody()?.string()

@@ -2,17 +2,21 @@ package com.example.gymeaze.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.PrivacySettings
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
 import com.example.gymeaze.data.models.UpdateLoginRequest
 import com.example.gymeaze.data.models.UpdateLoginResponse
 import com.example.gymeaze.data.models.UpdatePersonalDataRequest
 import com.example.gymeaze.data.models.UpdatePersonalDataResponse
+import com.example.gymeaze.data.models.UpdatePrivacySettingsRequest
+import com.example.gymeaze.data.models.UpdatePrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
@@ -36,6 +40,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import kotlin.Boolean
 
 class UserRepository(private val context: Context) {
 
@@ -272,6 +277,68 @@ class UserRepository(private val context: Context) {
             )
 
             val response = api.updateUserFitnessData(request)
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPrivacySettings(): Result<PrivacySettings> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getPrivacySettings()
+            val body = response.body()
+
+            Log.d("PrivacyRepo", "Response code: ${response.code()}")
+            Log.d("PrivacyRepo", "Response successful: ${response.isSuccessful}")
+            Log.d("PrivacyRepo", "Response body: $body")
+            Log.d("PrivacyRepo", "Body data: ${body?.data}")
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body.data)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                Log.e("PrivacyRepo", "Error response: $rawError")
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Log.e("PrivacyRepo", "Network error", e)
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
+        } catch (e: Exception) {
+            Log.e("PrivacyRepo", "Unknown error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updatePrivacySettings(
+        personalDataEnabled: Boolean,
+        physicalInfoEnabled: Boolean,
+        trainingGoalsEnabled: Boolean,
+        badgeRemindersEnabled: Boolean,
+        trainingStatsEnabled: Boolean
+    ): Result<UpdatePrivacySettingsResponse> = withContext(Dispatchers.IO) {
+        try {
+            val privacySettings = PrivacySettings(
+                isPersonalDetailsPublic = personalDataEnabled,
+                isFitnessDetailsPublic = physicalInfoEnabled,
+                isGoalPublic = trainingGoalsEnabled,
+                isBadgesDetailsPublic = badgeRemindersEnabled,
+                isTrainingStatisticsPublic = trainingStatsEnabled
+            )
+
+
+            val request = UpdatePrivacySettingsRequest(privacySettings = privacySettings)
+            val response = api.updatePrivacySettings(request)
             val body = response.body()
 
             return@withContext if (response.isSuccessful && body != null) {

@@ -1,4 +1,5 @@
 import Post from '../../models/postModel';
+import { userIds } from './userData';
 
 export const seedPosts = async () => {
   await Post.deleteMany();
@@ -138,16 +139,18 @@ const posts = [
       'Rowerowa misja ukończona! 🚴‍♀️ 35 km po malowniczych szlakach za mną. Czas: 1h 25min, kalorie: 510. Widoki bezcenne! Rowery górskie, szosówki - co wolicie? Jakie macie plany na aktywny weekend?',
     hashtags: ['rower', 'góry', 'outdoor', 'kolarstwo', 'weekend', 'przyroda'],
     likes: 31,
+    commentsCount: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
   {
     _id: '68d0313a0515b24d71e60cc2',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.jessiePinkman, // JessiePinkman
     content:
       'Taneczny szał w rytm latino! 💃🕺 Godzina zumby to zawsze ponad 500 kcal zabawy i uśmiechu. To dowód, że trening nie musi być nudny! Jaka jest wasza ulubiona aktywność, przy której zapominacie, że ćwiczycie?',
     hashtags: ['taniec', 'zumba', 'zabawa', 'radość', 'fitness', 'latinodance'],
     likes: 56,
+    commentsCount: 2,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
