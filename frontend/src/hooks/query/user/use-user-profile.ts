@@ -3,6 +3,7 @@ import {
   updateFitnessDetails,
   updateLoginDetails,
   updatePersonalDetails,
+  updatePrivacySettings,
   updateProfileDetails,
 } from '@/api/user';
 import queryClient from '@/config/query-client';
@@ -12,6 +13,7 @@ import type {
   UserFitnessDetailsPayload,
   UserLoginDetailsPayload,
   UserPersonalDetailsPayload,
+  UserPrivacySettings,
   UserProfileDetailsPayload,
 } from '@/types/user';
 import { useMutation } from '@tanstack/react-query';
@@ -95,6 +97,25 @@ export function useUserProfile<T extends FieldValues>(setError?: UseFormSetError
     },
   });
 
+  const updatePrivacySettingsMutation = useMutation({
+    mutationFn: (payload: UserPrivacySettings) => updatePrivacySettings(payload),
+    onSuccess: async (response) => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_PRIVACY_SETTINGS });
+      toast.success(response.message);
+    },
+    onError: (error) => {
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          'Wystąpił nieoczekiwany błąd podczas zmiany ustawień. Spróbuj ponownie później.',
+        );
+      }
+    },
+  });
+
   const removeUserMutation = useMutation({
     mutationFn: remove,
     onSuccess: (response) => {
@@ -120,6 +141,7 @@ export function useUserProfile<T extends FieldValues>(setError?: UseFormSetError
     updateFitnessDetails: updateFitnessDetailsMutation,
     updateLoginDetails: updateLoginDetailsMutation,
     updateProfileDetails: updateProfileDetailsMutation,
+    updatePrivacySettings: updatePrivacySettingsMutation,
     removeAccount: removeUserMutation,
   };
 }

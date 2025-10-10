@@ -18,15 +18,13 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { TriangleAlert } from 'lucide-react';
 import Typography from '@/components/ui/typography';
+import { Separator } from '@/components/ui/separator';
+import { loginDetailsDefaultValues } from '@/constants/forms';
 
 function LoginDetailsTab() {
   const form = useForm<LoginDetailsSchema>({
     resolver: zodResolver(loginDetailsSchema),
-    defaultValues: {
-      username: '',
-      password: '',
-      confirmPassword: '',
-    },
+    defaultValues: loginDetailsDefaultValues,
   });
 
   const { user, isLoading } = useUser();
@@ -56,7 +54,7 @@ function LoginDetailsTab() {
   }, [removeAccount]);
 
   return (
-    <section className="grid w-full grid-cols-1 gap-4 max-w-md">
+    <section className="grid w-full grid-cols-1 md:grid-cols-2 gap-4 ">
       <TabContent
         description="Wprowadź nowe dane, aby zaktualizować swoje konto."
         error={null}
@@ -82,14 +80,7 @@ function LoginDetailsTab() {
                 <FormItem>
                   <FormLabel className="font-semibold">Nazwa użytkownika</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      autoFocus
-                      maxLength={16}
-                      placeholder="janek2000"
-                      type="text"
-                    />
+                    <Input {...field} autoComplete="off" maxLength={16} type="text" />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
@@ -99,6 +90,8 @@ function LoginDetailsTab() {
                 </FormItem>
               )}
             />
+
+            <Separator />
 
             <FormField
               control={form.control}

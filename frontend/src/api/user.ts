@@ -7,6 +7,7 @@ import {
   type UserLoginDetailsPayload,
   type UserPersonalDetailsApiResponse,
   type UserPersonalDetailsPayload,
+  type UserPrivacySettings,
   type UserProfileDetailsApiResponse,
   type UserProfileDetailsPayload,
 } from '@/types/user';
@@ -71,6 +72,18 @@ const updateProfileDetails = async (payload: UserProfileDetailsPayload): Promise
   return data;
 };
 
+const getPrivacySettings = async (): Promise<UserPrivacySettings> => {
+  const { data } = await API.get<UserPrivacySettings>(endpoints.privacySettings);
+  return data;
+};
+
+const updatePrivacySettings = async (payload: UserPrivacySettings): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.privacySettings, {
+    privacySettings: payload.data,
+  });
+  return data;
+};
+
 export {
   getLikedItems,
   getFavoritedItems,
@@ -82,5 +95,7 @@ export {
   updateLoginDetails,
   getProfileDetails,
   updateProfileDetails,
+  getPrivacySettings,
+  updatePrivacySettings,
   remove,
 };

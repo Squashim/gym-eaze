@@ -71,3 +71,13 @@ export type UserLoginDetailsPayload = {
   username?: string;
   password?: string;
 };
+
+export type UserPrivacySettings = {
+  data: {
+    isPersonalDetailsPublic: boolean;
+    isFitnessDetailsPublic: boolean;
+    isBadgesDetailsPublic: boolean;
+    isGoalPublic: boolean;
+    isTrainingStatisticsPublic: boolean;
+  };
+};

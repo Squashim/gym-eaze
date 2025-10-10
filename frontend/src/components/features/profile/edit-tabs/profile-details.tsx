@@ -43,17 +43,14 @@ import { cn, extractDirtyFieldsData, getApiErrorMsg } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { UserProfileDetailsPayload } from '@/types/user';
+import { profileDetailsDefaultValues } from '@/constants/forms';
+import { USER_PROFILE } from '@/constants/user';
 
 function ProfileDetailsTab() {
   const badgesDialog = useOpen();
   const form = useForm<ProfileDetailsSchema>({
     resolver: zodResolver(profileDetailsSchema),
-    defaultValues: {
-      profilePicture: undefined,
-      description: '',
-      goal: Goal.none,
-      pinnedBadges: [],
-    },
+    defaultValues: profileDetailsDefaultValues,
   });
   const { data: profileDetails, isLoading, isError, error } = useGetProfileDetails();
   const {
@@ -236,14 +233,14 @@ function ProfileDetailsTab() {
                         autoComplete="off"
                         autoFocus
                         className="resize-none dark:bg-card bg-card min-h-24 max-h-48 scrollbar overflow-y-auto break-words"
-                        maxLength={150}
+                        maxLength={USER_PROFILE.BIO_MAX_LENGTH}
                         placeholder="Napisz coś o sobie..."
                       />
                     </FormControl>
                     <div className="flex justify-between items-center min-h-5">
                       <FormMessage />
                       <Typography className="text-xs text-muted-foreground ml-auto" variant="small">
-                        {field.value?.length ?? 0}/150
+                        {field.value?.length ?? 0}/{USER_PROFILE.BIO_MAX_LENGTH}
                       </Typography>
                     </div>
                   </FormItem>
@@ -300,7 +297,8 @@ function ProfileDetailsTab() {
                     className="text-sm leading-none font-semibold select-none text-card-foreground my-0"
                     variant="lead"
                   >
-                    Przypięte odznaki ({displayedPinnedBadges?.length ?? 0}/5)
+                    Przypięte odznaki ({displayedPinnedBadges?.length ?? 0}/
+                    {USER_PROFILE.MAX_PINNED_BADGES})
                   </Typography>
                   <IsPublicBadge
                     isLoading={isLoading}
@@ -315,7 +313,7 @@ function ProfileDetailsTab() {
                     </AlertTitle>
                     <AlertDescription>
                       Przypnij odznaki, które chcesz wyróżnić na swoim profilu. Możesz przypiąć
-                      maksymalnie 5 odznak.
+                      maksymalnie {USER_PROFILE.MAX_PINNED_BADGES} odznak.
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -403,7 +401,7 @@ const BadgesDialog = ({
       if (isAlreadyPinned) {
         updated = current.filter((id) => id !== badgeId);
       } else {
-        if (current.length >= 5) return;
+        if (current.length >= USER_PROFILE.MAX_PINNED_BADGES) return;
         updated = [...current, badgeId];
       }
       setPinnedBadges(updated);
@@ -417,7 +415,8 @@ const BadgesDialog = ({
         <DialogHeader className="text-left">
           <DialogTitle>Wybierz odznaki do przypięcia</DialogTitle>
           <DialogDescription>
-            Możesz przypiąć do 5 odznak, które będą widoczne na Twoim profilu.
+            Możesz przypiąć do {USER_PROFILE.MAX_PINNED_BADGES} odznak, które będą widoczne na Twoim
+            profilu.
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto scrollbar">
@@ -443,7 +442,9 @@ const BadgesDialog = ({
               {allBadges.map((badge) => (
                 <BadgeItem
                   badge={badge}
-                  disabled={!isPinned(badge.id) && pinnedBadgesIds.length >= 5}
+                  disabled={
+                    !isPinned(badge.id) && pinnedBadgesIds.length >= USER_PROFILE.MAX_PINNED_BADGES
+                  }
                   isPinned={isPinned(badge.id)}
                   key={badge.id}
                   onToggle={() => handleToggle(badge.id)}

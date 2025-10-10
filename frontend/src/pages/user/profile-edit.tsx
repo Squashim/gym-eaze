@@ -4,28 +4,14 @@ import PersonalDetailsTab from '@/components/features/profile/edit-tabs/personal
 import ProfileDetailsTab from '@/components/features/profile/edit-tabs/profile-details';
 import PageLayout from '@/components/layout/page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { profileEditTabsMapping } from '@/constants/mappings';
 import { useState } from 'react';
 
-type ProfileEditTabs = 'profile-details' | 'auth-details' | 'personal-details' | 'fitness-details';
-
-const PROFILE_EDIT_TABS: { label: string; value: ProfileEditTabs }[] = [
-  {
-    label: 'Informacje o profilu',
-    value: 'profile-details',
-  },
-  {
-    label: 'Dane logowania',
-    value: 'auth-details',
-  },
-  {
-    label: 'Dane personalne',
-    value: 'personal-details',
-  },
-  {
-    label: 'Informacje fizyczne',
-    value: 'fitness-details',
-  },
-];
+export type ProfileEditTabs =
+  | 'profile-details'
+  | 'auth-details'
+  | 'personal-details'
+  | 'fitness-details';
 
 function ProfileEdit() {
   const [selectedTab, setSelectedTab] = useState('profile-details');
@@ -35,15 +21,19 @@ function ProfileEdit() {
   };
 
   return (
-    <PageLayout description="Edytuj ustawienia swojego konta" title="Zarządzaj kontem">
+    <PageLayout
+      className="mx-auto w-auto"
+      description="Edytuj ustawienia swojego konta"
+      title="Zarządzaj kontem"
+    >
       <Tabs
-        className="flex-1 min-h-0 max-h-full h-full"
+        className="grid w-full grid-cols-1 gap-4 max-w-4xl lg:min-w-4xl"
         defaultValue={selectedTab}
         onValueChange={handleTabChange}
       >
-        <div className="relative overflow-x-auto h-16 pt-2 scrollbar">
+        <div className="relative overflow-x-auto h-13 pt-2 scrollbar">
           <TabsList className="absolute flex flex-row justify-stretch w-full py-2 gap-2 bg-transparent">
-            {PROFILE_EDIT_TABS.map((tab) => (
+            {profileEditTabsMapping.map((tab) => (
               <TabsTrigger
                 className="h-10 px-4 data-[state=active]:bg-card/70 dark:data-[state=active]:bg-card/70 bg-card/70 hover:border-input"
                 key={tab.value}

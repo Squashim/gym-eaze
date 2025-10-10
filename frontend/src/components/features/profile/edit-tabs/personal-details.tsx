@@ -17,15 +17,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import CountryDropdown from '@/components/ui/country-dropdown';
+import { personalDetailsDefaultValues } from '@/constants/forms';
+import { USER_PROFILE } from '@/constants/user';
 
 function PersonalDetailsTab() {
   const form = useForm<PersonalDetailsSchema>({
     resolver: zodResolver(personalDetailsSchema),
-    defaultValues: {
-      firstName: undefined,
-      lastName: undefined,
-      country: Country.NONE,
-    },
+    defaultValues: personalDetailsDefaultValues,
   });
 
   const { data: personalDetails, isLoading, isError, error } = useGetPersonalDetails();
@@ -53,7 +51,7 @@ function PersonalDetailsTab() {
   };
 
   return (
-    <section className="grid w-full grid-cols-1 gap-4 max-w-md">
+    <section className="grid w-full grid-cols-1 gap-4 max-w-2xl mx-auto">
       <TabContent
         description="Wprowadź nowe dane lub aktualizuj już istniejące. Wszystkie dane są opcjonalne, a ich widoczność zależy od Twoich ustawień prywatności. Domyślnie są publiczne."
         error={error}
@@ -63,7 +61,10 @@ function PersonalDetailsTab() {
         title="Edytuj dane personalne"
       >
         <Form {...form}>
-          <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            className="grid gap-4 grid-cols-1 md:grid-cols-2"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <FormField
               control={form.control}
               name="firstName"
@@ -74,8 +75,7 @@ function PersonalDetailsTab() {
                     <Input
                       {...field}
                       autoComplete="given-name"
-                      autoFocus
-                      maxLength={25}
+                      maxLength={USER_PROFILE.FIRST_NAME_MAX_LENGTH}
                       placeholder="Jan"
                       type="text"
                       value={field.value ?? ''}
@@ -96,7 +96,7 @@ function PersonalDetailsTab() {
                     <Input
                       {...field}
                       autoComplete="family-name"
-                      maxLength={25}
+                      maxLength={USER_PROFILE.LAST_NAME_MAX_LENGTH}
                       placeholder="Kowalski"
                       type="text"
                       value={field.value ?? ''}
@@ -107,7 +107,7 @@ function PersonalDetailsTab() {
               )}
             />
 
-            <Separator />
+            <Separator className="col-span-full" />
 
             <FormField
               control={form.control}

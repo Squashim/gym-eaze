@@ -10,16 +10,13 @@ import useGetFitnessDetails from '@/hooks/query/user/use-get-fitness-details';
 import Typography from '@/components/ui/typography';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import NumberInput from '@/components/ui/number-input';
+import { fitnessDetailsDefaultValues } from '@/constants/forms';
+import { USER_PROFILE } from '@/constants/user';
 
 function FitnessDetailsTab() {
   const form = useForm<FitnessDetailsSchema>({
     resolver: zodResolver(fitnessDetailsSchema),
-    defaultValues: {
-      age: undefined,
-      weight: undefined,
-      height: undefined,
-      gender: Gender.none,
-    },
+    defaultValues: fitnessDetailsDefaultValues,
   });
 
   const { data: fitnessDetails, isLoading, isError, error } = useGetFitnessDetails();
@@ -48,7 +45,7 @@ function FitnessDetailsTab() {
   };
 
   return (
-    <section className="grid w-full grid-cols-1 gap-4 max-w-md">
+    <section className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
       <TabContent
         description="Wprowadź nowe dane lub aktualizuj już istniejące. Wszystkie dane są opcjonalne, a ich widoczność zależy od Twoich ustawień prywatności. Domyślnie są publiczne."
         error={error}
@@ -58,12 +55,15 @@ function FitnessDetailsTab() {
         title="Edytuj swoje informacje fizyczne"
       >
         <Form {...form}>
-          <form className="grid gap-4 w-full" onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            className="grid gap-4 grid-cols-1 md:grid-cols-2 justify-items-center w-full"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <FormField
               control={form.control}
               name="gender"
               render={({ field }) => (
-                <FormItem className="grid gap-2 rounded-md border p-3">
+                <FormItem className="grid gap-2 w-full max-w-54">
                   <Typography
                     className="text-sm leading-none font-semibold select-none text-card-foreground my-0"
                     variant="lead"
@@ -101,12 +101,11 @@ function FitnessDetailsTab() {
                   </FormLabel>
                   <FormControl>
                     <NumberInput
-                      autoFocus
                       className="w-32"
                       fillOnBlur={false}
                       id={field.name}
-                      max={120}
-                      min={18}
+                      max={USER_PROFILE.AGE.MAX}
+                      min={USER_PROFILE.AGE.MIN}
                       onChange={field.onChange}
                       placeholder="Nie podano"
                       step={1}
@@ -130,8 +129,8 @@ function FitnessDetailsTab() {
                       className="w-32"
                       fillOnBlur={false}
                       id={field.name}
-                      max={300}
-                      min={50}
+                      max={USER_PROFILE.HEIGHT.MAX}
+                      min={USER_PROFILE.HEIGHT.MIN}
                       onChange={field.onChange}
                       placeholder="Nie podano"
                       step={10}
@@ -156,8 +155,8 @@ function FitnessDetailsTab() {
                       className="w-32"
                       fillOnBlur={false}
                       id={field.name}
-                      max={500}
-                      min={10}
+                      max={USER_PROFILE.WEIGHT.MAX}
+                      min={USER_PROFILE.WEIGHT.MIN}
                       onChange={field.onChange}
                       placeholder="Nie podano"
                       step={10}
@@ -170,6 +169,7 @@ function FitnessDetailsTab() {
             />
 
             <TabButtons
+              className="ml-auto"
               disabled={!form.formState.isDirty}
               isLoading={updateFitnessDetails.isPending}
               onReset={() => form.reset()}

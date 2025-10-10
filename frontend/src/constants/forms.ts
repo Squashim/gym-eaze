@@ -1,4 +1,6 @@
 import { AdvancedLevel } from './advanced-level';
+import { Country } from './countries';
+import { Gender } from './gender';
 import { Goal } from './goals';
 import { Visibility } from './visibility';
 
@@ -72,4 +74,38 @@ export const postCreatorDefaultValues = {
   image: undefined,
   video: undefined,
   hashtags: [],
+};
+
+export const loginDetailsDefaultValues = {
+  username: '',
+  password: '',
+  confirmPassword: '',
+};
+
+export const fitnessDetailsDefaultValues = {
+  age: undefined,
+  weight: undefined,
+  height: undefined,
+  gender: Gender.none,
+};
+
+export const personalDetailsDefaultValues = {
+  firstName: undefined,
+  lastName: undefined,
+  country: Country.NONE,
+};
+
+export const profileDetailsDefaultValues = {
+  profilePicture: undefined,
+  description: '',
+  goal: Goal.none,
+  pinnedBadges: [],
+};
+
+export const privacySettingsDefaultValues = {
+  isPersonalDetailsPublic: false,
+  isFitnessDetailsPublic: false,
+  isBadgesDetailsPublic: false,
+  isGoalPublic: false,
+  isTrainingStatisticsPublic: false,
 };

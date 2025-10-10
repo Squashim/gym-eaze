@@ -52,6 +52,7 @@ export const USER = {
   likedItems: 'user/likes',
   favoritedItems: 'user/favorites',
 
+  privacySettings: 'user/privacy-settings',
   loginDetails: 'user/login-details',
   profileDetails: 'user/profile/profile-details',
   personalDetails: 'user/profile/personal-details',

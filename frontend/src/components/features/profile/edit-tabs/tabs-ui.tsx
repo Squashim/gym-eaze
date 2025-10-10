@@ -14,7 +14,7 @@ import { IsPublicBadge } from '@/components/ui/item-info-badges';
 import { Label } from '@/components/ui/label';
 import Typography from '@/components/ui/typography';
 import useOpen from '@/hooks/utils/use-open';
-import { getApiErrorMsg } from '@/lib/utils';
+import { cn, getApiErrorMsg } from '@/lib/utils';
 import { Info, Loader2 } from 'lucide-react';
 import { useState, type PropsWithChildren } from 'react';
 
@@ -86,7 +86,7 @@ interface TabDisclaimerProps {
 
 function TabDisclaimer({ title, description }: TabDisclaimerProps) {
   return (
-    <Alert>
+    <Alert className="h-fit">
       <Info />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{description}</AlertDescription>
@@ -98,11 +98,17 @@ interface TabButtonsProps {
   onReset?: () => void;
   disabled: boolean;
   isLoading: boolean;
+  className?: string;
 }
 
-function TabButtons({ onReset, disabled, isLoading }: TabButtonsProps) {
+function TabButtons({ onReset, disabled, isLoading, className }: TabButtonsProps) {
   return (
-    <div className="flex items-center gap-2 justify-end mt-4 md:mt-2 col-span-full flex-wrap">
+    <div
+      className={cn(
+        'flex items-center gap-2 justify-end mt-4 md:mt-2 col-span-full flex-wrap',
+        className,
+      )}
+    >
       {onReset && (
         <Button disabled={isLoading || disabled} onClick={onReset} type="reset" variant="outline">
           Cofnij zmiany
@@ -134,7 +140,7 @@ function RemoveAccountCard({ username, onDelete, isPending }: RemoveAccountCardP
 
   return (
     <>
-      <Card className="border-destructive">
+      <Card className="border-destructive h-fit">
         <CardHeader>
           <CardTitle className="text-lg">Usuń konto</CardTitle>
           <CardDescription>
