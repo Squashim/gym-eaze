@@ -1,5 +1,5 @@
 import { getById } from '@/api/exercise';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import type { GetExerciseApiResponse } from '@/types/exercise';
 import { useQuery } from '@tanstack/react-query';
 

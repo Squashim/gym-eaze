@@ -1,17 +1,20 @@
 import { useUserProfile } from '@/hooks/query/user/use-user-profile';
-import { fitnessDetailsSchema, type FitnessDetailsSchema } from '@/schemas/user-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { TabButtons, TabContent, TabDisclaimer } from './tabs-ui';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Gender } from '@/constants/gender';
+import { Gender } from '@/constants/enums/gender';
 import useGetFitnessDetails from '@/hooks/query/user/use-get-fitness-details';
 import Typography from '@/components/ui/typography';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import NumberInput from '@/components/ui/number-input';
-import { fitnessDetailsDefaultValues } from '@/constants/forms';
+import { fitnessDetailsDefaultValues } from '@/constants/defaults/forms';
 import { USER_PROFILE } from '@/constants/user';
+import {
+  fitnessDetailsSchema,
+  type FitnessDetailsSchema,
+} from '@/schemas/user/fitness-details-schema';
+import { TabButtons, TabContent, TabDisclaimer } from '@/components/ui/reusable-tabs';
 
 function FitnessDetailsTab() {
   const form = useForm<FitnessDetailsSchema>({

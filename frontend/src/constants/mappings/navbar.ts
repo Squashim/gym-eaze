@@ -1,4 +1,5 @@
-import type { MenuItem } from '@/types/navbar';
+import type { MenuItem } from '@/components/layout/navbar';
+
 import {
   CircleUser,
   ClipboardList,

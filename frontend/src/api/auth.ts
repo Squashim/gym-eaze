@@ -2,7 +2,7 @@ import type { LinkGoogleAccountPayload, LoginPayload, SignupPayload } from '@/ty
 import API, { REFRESH_API } from './api-client';
 import { type AuthenticatedUser } from '@/types/user';
 import type { ApiResponse, LoginApiResponse } from '@/types/api';
-import { AUTH as endpoints } from '@/constants/endpoints';
+import { AUTH as endpoints } from '@/constants/api/endpoints';
 
 const signup = async (payload: SignupPayload): Promise<ApiResponse> => {
   const { data } = await API.post<ApiResponse>(endpoints.register, payload);

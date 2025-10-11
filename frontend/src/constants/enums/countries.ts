@@ -197,6 +197,6 @@ export const Country = {
   YE: 'Jemen',
   ZM: 'Zambia',
   ZW: 'Zimbabwe',
-};
+} as const;
 
 export type Country = (typeof Country)[keyof typeof Country];

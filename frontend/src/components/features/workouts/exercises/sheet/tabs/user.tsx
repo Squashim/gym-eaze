@@ -1,6 +1,6 @@
 import useGetUserExercises from '@/hooks/query/exercises/use-get-user-exercises';
 import ExerciseList from '../exercise-list';
-import usePaginationQuery from '@/hooks/use-pagination-query';
+import usePaginationQuery from '@/hooks/filters-pagination/use-pagination-query';
 import type { WorkoutSheetTabProps } from '@/types/workout';
 
 const UserExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {

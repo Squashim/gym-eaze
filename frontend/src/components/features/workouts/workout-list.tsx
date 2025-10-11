@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdvancedLevelBadge, ItemDetailsBadge, LikesBadge } from '@/components/ui/item-info-badges';
 import { Separator } from '@/components/ui/separator';
-import { AdvancedLevel } from '@/constants/advanced-level';
-import { Goal } from '@/constants/goals';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
+import { Goal } from '@/constants/enums/goals';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import {
@@ -195,19 +195,20 @@ const WorkoutCard = ({
               </div>
             </div>
 
-            <Separator />
-
             {workout.hashtags && workout.hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {visibleHashtags.map((hashtag) => (
-                  <Badge key={hashtag} variant="outline">
-                    {`#${hashtag}`}
-                  </Badge>
-                ))}
-                {hiddenHashtagsCount > 0 && (
-                  <Badge variant="outline">+{hiddenHashtagsCount} więcej</Badge>
-                )}
-              </div>
+              <>
+                <Separator />
+                <div className="flex flex-wrap gap-1">
+                  {visibleHashtags.map((hashtag) => (
+                    <Badge key={hashtag} variant="outline">
+                      {`#${hashtag}`}
+                    </Badge>
+                  ))}
+                  {hiddenHashtagsCount > 0 && (
+                    <Badge variant="outline">+{hiddenHashtagsCount} więcej</Badge>
+                  )}
+                </div>
+              </>
             )}
           </CardContent>
         </CardHeader>

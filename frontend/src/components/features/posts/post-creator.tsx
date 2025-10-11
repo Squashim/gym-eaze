@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import Typography from '@/components/ui/typography';
 import { useUser } from '@/context/user';
 import { usePost } from '@/hooks/query/posts/use-post';
-import useFormFiles from '@/hooks/use-form-files';
+import useFormFiles from '@/hooks/form/use-form-files';
 import useOpen from '@/hooks/utils/use-open';
 import { cn, extractDirtyFieldsData } from '@/lib/utils';
 import { postSchema, type PostSchema } from '@/schemas/post-schema';
@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { HashtagDialog } from './post-dialogs';
 import PostUploadedFile from './post-uploaded-file';
-import { postCreatorDefaultValues } from '@/constants/forms';
+import { postCreatorDefaultValues } from '@/constants/defaults/forms';
 
 interface PostCreatorProps {
   mode: 'edit' | 'create';

@@ -4,7 +4,8 @@ import PersonalDetailsTab from '@/components/features/profile/edit-tabs/personal
 import ProfileDetailsTab from '@/components/features/profile/edit-tabs/profile-details';
 import PageLayout from '@/components/layout/page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { profileEditTabsMapping } from '@/constants/mappings';
+import { profileEditTabsMapping } from '@/constants/mappings/user-settings';
+import usePageTitle from '@/hooks/utils/use-page-title';
 import { useState } from 'react';
 
 export type ProfileEditTabs =
@@ -15,6 +16,7 @@ export type ProfileEditTabs =
 
 function ProfileEdit() {
   const [selectedTab, setSelectedTab] = useState('profile-details');
+  usePageTitle('Zarządzaj kontem');
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab as ProfileEditTabs);

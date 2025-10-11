@@ -1,6 +1,6 @@
-import type { AdvancedLevel } from '@/constants/advanced-level';
-import type { Goal } from '@/constants/goals';
-import type { Visibility } from '@/constants/visibility';
+import type { AdvancedLevel } from '@/constants/enums/advanced-level';
+import type { Goal } from '@/constants/enums/goals';
+import type { Visibility } from '@/constants/enums/visibility';
 import type { Author } from './user';
 
 export type RepsSet = { repetitions: number; weight?: number | null };

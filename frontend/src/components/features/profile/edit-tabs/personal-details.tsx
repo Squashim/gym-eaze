@@ -1,11 +1,10 @@
-import { Country } from '@/constants/countries';
+import { Country } from '@/constants/enums/countries';
 import useGetPersonalDetails from '@/hooks/query/user/use-get-personal-details';
 import { useUserProfile } from '@/hooks/query/user/use-user-profile';
-import { personalDetailsSchema, type PersonalDetailsSchema } from '@/schemas/user-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { TabButtons, TabContent, TabDisclaimer } from './tabs-ui';
+import { TabButtons, TabContent, TabDisclaimer } from '@/components/ui/reusable-tabs';
 import {
   Form,
   FormControl,
@@ -17,8 +16,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import CountryDropdown from '@/components/ui/country-dropdown';
-import { personalDetailsDefaultValues } from '@/constants/forms';
+import { personalDetailsDefaultValues } from '@/constants/defaults/forms';
 import { USER_PROFILE } from '@/constants/user';
+import {
+  personalDetailsSchema,
+  type PersonalDetailsSchema,
+} from '@/schemas/user/personal-details-schema';
 
 function PersonalDetailsTab() {
   const form = useForm<PersonalDetailsSchema>({
@@ -75,7 +78,7 @@ function PersonalDetailsTab() {
                     <Input
                       {...field}
                       autoComplete="given-name"
-                      maxLength={USER_PROFILE.FIRST_NAME_MAX_LENGTH}
+                      maxLength={USER_PROFILE.FIRST_NAME.MAX}
                       placeholder="Jan"
                       type="text"
                       value={field.value ?? ''}
@@ -96,7 +99,7 @@ function PersonalDetailsTab() {
                     <Input
                       {...field}
                       autoComplete="family-name"
-                      maxLength={USER_PROFILE.LAST_NAME_MAX_LENGTH}
+                      maxLength={USER_PROFILE.LAST_NAME.MAX}
                       placeholder="Kowalski"
                       type="text"
                       value={field.value ?? ''}

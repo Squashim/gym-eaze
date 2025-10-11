@@ -26,8 +26,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { authorizedLinks, links } from '@/constants/navbar';
-import type { MenuItem } from '@/types/navbar';
+import { authorizedLinks, links } from '@/constants/mappings/navbar';
 import { Loader2, LucideLogIn, LucideLogOut, Menu, X } from 'lucide-react';
 import Typography from '../ui/typography';
 import { useMediaQuery } from '@/hooks/utils/use-media-query';
@@ -42,6 +41,19 @@ import {
 import { Separator } from '../ui/separator';
 import Notification from '../ui/notification';
 import ReusableAvatar from '../ui/reusable-avatar';
+import type { LucideIcon } from 'lucide-react';
+import type { UserRole } from '@/types/user';
+import type { AuthAccess } from '@/types/auth';
+
+export type MenuItem = {
+  title: string;
+  description?: string;
+  url: string;
+  allow?: AuthAccess;
+  role?: UserRole;
+  icon?: LucideIcon;
+  items?: MenuItem[];
+};
 
 type NavbarProps = {
   isLoggedIn: boolean;

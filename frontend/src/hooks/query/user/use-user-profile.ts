@@ -7,7 +7,7 @@ import {
   updateProfileDetails,
 } from '@/api/user';
 import queryClient from '@/config/query-client';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { getApiErrorMsg } from '@/lib/utils';
 import type {
   UserFitnessDetailsPayload,

@@ -1,5 +1,5 @@
-import type { AdvancedLevel } from '@/constants/advanced-level';
-import type { Goal } from '@/constants/goals';
+import type { AdvancedLevel } from '@/constants/enums/advanced-level';
+import type { Goal } from '@/constants/enums/goals';
 
 export type SortBy = 'popular' | 'top-rated' | 'latest';
 

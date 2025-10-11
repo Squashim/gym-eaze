@@ -18,11 +18,11 @@ const AuthGuard = ({ allow, role = 'user' }: AuthAccessControlProps) => {
   }
 
   if (allow === 'not-logged-in' && isLoggedIn) {
-    return <Navigate replace to="/home" />;
+    return <Navigate replace to={`/profile/${user.username}`} />;
   }
 
   if (allow === 'logged-in' && role === 'admin' && !isAdmin) {
-    return <Navigate replace to="/home" />;
+    return <Navigate replace to={`/profile/${user?.username}`} />;
   }
 
   return (

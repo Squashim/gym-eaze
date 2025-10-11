@@ -1,5 +1,5 @@
 import { getPrivacySettings } from '@/api/user';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
 import { useQuery } from '@tanstack/react-query';
 

@@ -1,5 +1,5 @@
 import { getByUser } from '@/api/workout';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
 import type { PaginatedQueryParams, PaginatedResponse } from '@/types/filters';
 import type { GetWorkoutsApiResponse } from '@/types/workout';

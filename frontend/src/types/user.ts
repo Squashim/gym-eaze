@@ -1,8 +1,8 @@
-import type { Country } from '@/constants/countries';
+import type { Country } from '@/constants/enums/countries';
 import type { Notification } from './notification';
-import type { Gender } from '@/constants/gender';
+import type { Gender } from '@/constants/enums/gender';
 import type { BadgeApiResponse } from './badge';
-import type { Goal } from '@/constants/goals';
+import type { Goal } from '@/constants/enums/goals';
 
 export type UserRole = 'admin' | 'user';
 

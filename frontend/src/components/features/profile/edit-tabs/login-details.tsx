@@ -1,9 +1,8 @@
 import { useUserProfile } from '@/hooks/query/user/use-user-profile';
-import { loginDetailsSchema, type LoginDetailsSchema } from '@/schemas/user-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { RemoveAccountCard, TabButtons, TabContent } from './tabs-ui';
+import { TabButtons, TabContent, RemoveAccountCard } from '@/components/ui/reusable-tabs';
 import {
   Form,
   FormControl,
@@ -19,7 +18,8 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { TriangleAlert } from 'lucide-react';
 import Typography from '@/components/ui/typography';
 import { Separator } from '@/components/ui/separator';
-import { loginDetailsDefaultValues } from '@/constants/forms';
+import { loginDetailsDefaultValues } from '@/constants/defaults/forms';
+import { loginDetailsSchema, type LoginDetailsSchema } from '@/schemas/user/login-details-schema';
 
 function LoginDetailsTab() {
   const form = useForm<LoginDetailsSchema>({

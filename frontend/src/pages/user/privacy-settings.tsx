@@ -1,4 +1,4 @@
-import { TabButtons, TabContent } from '@/components/features/profile/edit-tabs/tabs-ui';
+import { TabButtons, TabContent } from '@/components/ui/reusable-tabs';
 import PageLayout from '@/components/layout/page';
 import {
   Form,
@@ -9,12 +9,15 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import { privacySettingsDefaultValues } from '@/constants/forms';
-import { privacySettingsMapping } from '@/constants/mappings';
+import { privacySettingsDefaultValues } from '@/constants/defaults/forms';
+import { privacySettingsMapping } from '@/constants/mappings/user-settings';
 import useGetPrivacySettings from '@/hooks/query/user/use-get-privacy-settings';
 import { useUserProfile } from '@/hooks/query/user/use-user-profile';
 import usePageTitle from '@/hooks/utils/use-page-title';
-import { privacySettingsSchema, type PrivacySettingsSchema } from '@/schemas/user-schema';
+import {
+  privacySettingsSchema,
+  type PrivacySettingsSchema,
+} from '@/schemas/user/privacy-settings-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';

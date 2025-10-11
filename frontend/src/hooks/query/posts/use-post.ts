@@ -1,8 +1,8 @@
 import { create, remove, toggleLike, update } from '@/api/post';
 import queryClient from '@/config/query-client';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
-import usePostParamsQuery from '@/hooks/use-post-params-query';
+import usePostParamsQuery from '@/hooks/filters-pagination/use-post-params-query';
 import { getApiErrorMsg } from '@/lib/utils';
 import type { UpdatePostPayload } from '@/types/post';
 import { useMutation } from '@tanstack/react-query';

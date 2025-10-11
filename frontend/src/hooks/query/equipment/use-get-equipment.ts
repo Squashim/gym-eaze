@@ -1,5 +1,5 @@
 import { getEquipment } from '@/api/utils';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import type { Equipment } from '@/types/equipment';
 import { useQuery } from '@tanstack/react-query';
 

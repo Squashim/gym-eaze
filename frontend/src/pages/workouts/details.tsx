@@ -1,4 +1,4 @@
-import BackHeader from '@/components/features/workouts/back-header';
+import BackHeader from '@/components/ui/back-header';
 import WorkoutComments from '@/components/features/workouts/workout-comments';
 import PageLayout from '@/components/layout/page';
 import { Alert, AlertTitle } from '@/components/ui/alert';
@@ -12,8 +12,8 @@ import { DetailsActionBtn, DetailsAuthorBtn } from '@/components/ui/reusable-but
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Typography from '@/components/ui/typography';
-import { AdvancedLevel } from '@/constants/advanced-level';
-import { Goal } from '@/constants/goals';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
+import { Goal } from '@/constants/enums/goals';
 import { useUser } from '@/context/user';
 import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';

@@ -11,7 +11,7 @@ import {
   type UserProfileDetailsApiResponse,
   type UserProfileDetailsPayload,
 } from '@/types/user';
-import { USER as endpoints } from '@/constants/endpoints';
+import { USER as endpoints } from '@/constants/api/endpoints';
 import type { ApiResponse } from '@/types/api';
 import type { BadgeApiResponse } from '@/types/badge';
 import { objectToFormData } from '@/lib/utils';

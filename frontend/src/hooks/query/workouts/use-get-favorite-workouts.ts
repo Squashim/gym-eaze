@@ -1,5 +1,5 @@
 import { getFavorite } from '@/api/workout';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import type { PaginatedQueryParams, PaginatedResponse } from '@/types/filters';
 import type { GetWorkoutsApiResponse } from '@/types/workout';
 import { useQuery } from '@tanstack/react-query';

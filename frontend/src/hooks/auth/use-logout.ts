@@ -1,6 +1,6 @@
 import { logout } from '@/api/auth';
-import { QUERY_KEYS } from '@/constants/query-keys';
-import { STORAGE_FLAGS } from '@/constants/storage-flags';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
+import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
 import { getApiErrorMsg } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ export function useLogout() {
     mutationFn: logout,
     onSuccess: (response) => {
       queryClient.setQueryData(QUERY_KEYS.AUTH_USER, null);
+      queryClient.clear();
       localStorage.removeItem(STORAGE_FLAGS.wasLoggedIn);
       toast.success(response.message);
       void navigate('/login', { replace: true });
@@ -29,6 +30,7 @@ export function useLogout() {
 
       if (isTokenError) {
         queryClient.setQueryData(QUERY_KEYS.AUTH_USER, null);
+        queryClient.clear();
         localStorage.removeItem(STORAGE_FLAGS.wasLoggedIn);
         void navigate('/login', { replace: true });
       } else {

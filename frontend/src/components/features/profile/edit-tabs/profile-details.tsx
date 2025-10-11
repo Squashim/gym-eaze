@@ -1,9 +1,8 @@
 import { useUserProfile } from '@/hooks/query/user/use-user-profile';
-import { profileDetailsSchema, type ProfileDetailsSchema } from '@/schemas/user-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { TabButtons, TabContent } from './tabs-ui';
+import { TabButtons, TabContent } from '@/components/ui/reusable-tabs';
 import {
   Form,
   FormControl,
@@ -14,7 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import Typography from '@/components/ui/typography';
-import { Goal } from '@/constants/goals';
+import { Goal } from '@/constants/enums/goals';
 import useGetProfileDetails from '@/hooks/query/user/use-get-profile-details';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -43,8 +42,12 @@ import { cn, extractDirtyFieldsData, getApiErrorMsg } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { UserProfileDetailsPayload } from '@/types/user';
-import { profileDetailsDefaultValues } from '@/constants/forms';
+import { profileDetailsDefaultValues } from '@/constants/defaults/forms';
 import { USER_PROFILE } from '@/constants/user';
+import {
+  profileDetailsSchema,
+  type ProfileDetailsSchema,
+} from '@/schemas/user/profile-details-schema';
 
 function ProfileDetailsTab() {
   const badgesDialog = useOpen();

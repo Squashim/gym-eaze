@@ -11,7 +11,7 @@ import { useUser } from '@/context/user';
 import useGetPosts from '@/hooks/query/posts/use-get-posts';
 import { usePost } from '@/hooks/query/posts/use-post';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
-import usePostParamsQuery from '@/hooks/use-post-params-query';
+import usePostParamsQuery from '@/hooks/filters-pagination/use-post-params-query';
 import useOpen from '@/hooks/utils/use-open';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -100,7 +100,7 @@ function Community() {
 
   return (
     <>
-      <PageLayout className="max-w-xl sm:max-w-2xl" title="Posty">
+      <PageLayout className="max-w-xl sm:max-w-2xl" title="Najnowsze posty">
         {user && <PostCreator mode="create" />}
         <PostFilters
           clearParams={clearParams}

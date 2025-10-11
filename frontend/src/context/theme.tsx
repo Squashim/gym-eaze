@@ -47,6 +47,20 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === storageKey && e.newValue) {
+        setTheme(e.newValue as Theme);
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [storageKey]);
+
   const value = {
     theme,
     setTheme: (theme: Theme) => {

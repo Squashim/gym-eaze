@@ -1,5 +1,5 @@
-import type { AdvancedLevel } from '@/constants/advanced-level';
-import type { Visibility } from '@/constants/visibility';
+import type { AdvancedLevel } from '@/constants/enums/advanced-level';
+import type { Visibility } from '@/constants/enums/visibility';
 import type { MuscleGroup } from './muscle-group';
 import type { Equipment } from './equipment';
 import type { Author } from './user';

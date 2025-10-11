@@ -1,6 +1,6 @@
-import type { AdvancedLevel } from '@/constants/advanced-level';
+import type { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { Badge } from './badge';
-import type { Visibility } from '@/constants/visibility';
+import type { Visibility } from '@/constants/enums/visibility';
 import { Globe2, Heart, Loader2, Lock, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
