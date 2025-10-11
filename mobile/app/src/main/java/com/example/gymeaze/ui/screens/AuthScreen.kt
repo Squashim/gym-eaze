@@ -37,6 +37,7 @@ import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.AuthUiState
+import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable
@@ -430,6 +431,7 @@ fun AuthScreen(
 ) {
     var selectedRoute by remember { mutableStateOf("profile") }
     val createPostViewModel: PostsViewModel = viewModel()
+    val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -448,7 +450,7 @@ fun AuthScreen(
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         when (selectedRoute) {
-            "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn)
+            "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn, createExerciseViewModel, setShowBottomBar = { true })
             "workouts" -> TrainingsPlanScreen(
                 onSettingsClick = onSettingsClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick

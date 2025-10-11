@@ -32,12 +32,13 @@ import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.ui.theme.*
-import com.example.gymeaze.viewmodel.ExerciseDetailViewModel
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
 import java.text.SimpleDateFormat
 import com.example.gymeaze.R
+import com.example.gymeaze.ui.components.user.UserAvatar
+import com.example.gymeaze.viewmodel.ExercisesViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,12 +46,21 @@ import java.util.*
 fun ExerciseDetailScreen(
     exerciseId: String,
     onBackClick: () -> Unit,
-    viewModel: ExerciseDetailViewModel = viewModel()
+    exercisesViewModel: ExercisesViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val currentExercise by exercisesViewModel.currentExercise.collectAsState()
+    val isLoadingDetail by exercisesViewModel.isLoadingExerciseDetail.collectAsState()
+    val uiState by exercisesViewModel.uiState.collectAsState()
+    val favoriteExercises by exercisesViewModel.favoriteExercises.collectAsState()
 
     LaunchedEffect(exerciseId) {
-        viewModel.loadExercise(exerciseId)
+        exercisesViewModel.loadExerciseDetail(exerciseId)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exercisesViewModel.clearCurrentExercise()
+        }
     }
 
     Scaffold(
@@ -58,11 +68,10 @@ fun ExerciseDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = uiState.exercise?.name ?: "",
+                        text = "Szczegóły ćwiczenia",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = getOnSurfaceColor(),
-                        maxLines = 1
+                        color = getOnSurfaceColor()
                     )
                 },
                 navigationIcon = {
@@ -75,17 +84,27 @@ fun ExerciseDetailScreen(
                     }
                 },
                 actions = {
-                    uiState.exercise?.let { exercise ->
+                    currentExercise?.let { exercise ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
-                                onClick = { viewModel.toggleLike() }
+                                onClick = {
+                                    exercisesViewModel.toggleLike(exercise.id)
+                                }
                             ) {
                                 Icon(
-                                    imageVector = if (exercise.likes > 0) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    imageVector = if (exercisesViewModel.isExerciseLiked(exercise.id)) {
+                                        Icons.Default.ThumbUpAlt
+                                    } else {
+                                        Icons.Default.ThumbUpOffAlt
+                                    },
                                     contentDescription = "Polub",
-                                    tint = getPrimaryColor()
+                                    tint = if (exercisesViewModel.isExerciseLiked(exercise.id)) {
+                                        getPrimaryColor()
+                                    } else {
+                                        getOnSurfaceSecondaryColor()
+                                    }
                                 )
                             }
 
@@ -96,12 +115,55 @@ fun ExerciseDetailScreen(
                                 modifier = Modifier.padding(end = 8.dp)
                             )
 
-                            IconButton(onClick = { /* TODO: Implementacja reportu */ }) {
-                                Icon(
-                                    imageVector = Icons.Default.Flag,
-                                    contentDescription = "Zgłoś",
-                                    tint = getOnSurfaceSecondaryColor()
-                                )
+                            if (exercisesViewModel.isCurrentUserExercise(exercise.author.username)) {
+                                IconButton(
+                                    onClick = { /* TODO: Implementacja edycji */ }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edytuj",
+                                        tint = getOnSurfaceColor()
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { /* TODO: Implementacja usuwania */ }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Usuń",
+                                        tint = Color(0xFFF44336)
+                                    )
+                                }
+                            } else {
+                                IconButton(
+                                    onClick = {
+                                        exercisesViewModel.toggleFavorite(exercise.id)
+                                    }
+                                ) {
+                                    val isFavorite = favoriteExercises.contains(exercise.id)
+                                    Icon(
+                                        imageVector = if (isFavorite) {
+                                            Icons.Default.Favorite
+                                        } else {
+                                            Icons.Default.FavoriteBorder
+                                        },
+                                        contentDescription = "Dodaj do ulubionych",
+                                        tint = if (isFavorite) {
+                                            Color(0xFFE91E63)
+                                        } else {
+                                            getOnSurfaceSecondaryColor()
+                                        }
+                                    )
+                                }
+
+                                IconButton(onClick = { /* TODO: Implementacja reportu */ }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Flag,
+                                        contentDescription = "Zgłoś",
+                                        tint = getOnSurfaceSecondaryColor()
+                                    )
+                                }
                             }
                         }
                     }
@@ -114,7 +176,7 @@ fun ExerciseDetailScreen(
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         when {
-            uiState.isLoading -> {
+            isLoadingDetail -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -136,21 +198,20 @@ fun ExerciseDetailScreen(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { viewModel.loadExercise(exerciseId) }) {
+                    Button(onClick = { exercisesViewModel.loadExerciseDetail(exerciseId) }) {
                         Text("Spróbuj ponownie")
                     }
                 }
             }
-            uiState.exercise != null -> {
+            currentExercise != null -> {
                 ExerciseDetailContent(
-                    exercise = uiState.exercise!!,
+                    exercise = currentExercise!!,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
         }
     }
 }
-
 @Composable
 private fun ExerciseDetailContent(
     exercise: Exercise,
@@ -161,6 +222,15 @@ private fun ExerciseDetailContent(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            Text(
+                text = exercise.name,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = getOnSurfaceColor()
+            )
+        }
+
         item {
             VideoPlayerSection(
                 videoUrl = exercise.video,
@@ -246,6 +316,14 @@ private fun DifficultySection(difficulty: String) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(
+                text = "Poziom zaawansowania: ",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = getOnSurfaceColor(),
+                modifier = Modifier.padding(end = 8.dp)
+            )
+
             val (text, badgeColor, textColor) = when (difficulty) {
                 AdvancedLevel.NONE -> Triple("Nie wybrano", getOnSurfaceColor().copy(alpha = 0.2f), getOnSurfaceColor())
                 AdvancedLevel.EASY -> Triple("Początkujący", Color(0xFF4CAF50), getOnPrimaryColor())
@@ -300,6 +378,7 @@ private fun DescriptionSection(description: String) {
         }
     }
 }
+
 
 @Composable
 private fun MuscleGroupsSection(muscleGroups: List<MuscleGroup>) {
@@ -520,14 +599,10 @@ private fun AuthorSection(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AsyncImage(
-                    model = author.profileDetails?.profilePicture ?: "",
-                    contentDescription = "Zdjęcie profilowe",
+                UserAvatar(
+                    imageUrl = author.profileDetails?.profilePicture,
+                    username = author.username,
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(getOnSurfaceColor().copy(alpha = 0.1f)),
-                    contentScale = ContentScale.Crop
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))

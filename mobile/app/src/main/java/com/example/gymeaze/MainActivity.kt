@@ -47,6 +47,7 @@ import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.EditTrainingPlanViewModel
+import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
@@ -60,6 +61,7 @@ class MainActivity : ComponentActivity() {
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
             val createTrainingPlanViewModel: CreateTrainingPlanViewModel = viewModel()
             val createPostViewModel: PostsViewModel = viewModel()
+            val exercisesViewModel: ExercisesViewModel = viewModel()
 
 
             val userViewModel: UserViewModel = viewModel {
@@ -222,7 +224,8 @@ class MainActivity : ComponentActivity() {
                             showExerciseDetail && selectedExerciseId != null -> {
                                 ExerciseDetailScreen(
                                     exerciseId = selectedExerciseId!!,
-                                    onBackClick = authViewModel::hideExerciseDetailScreen
+                                    onBackClick = authViewModel::hideExerciseDetailScreen,
+                                    exercisesViewModel = exercisesViewModel
                                 )
                             }
                             showBrowseExercises -> {

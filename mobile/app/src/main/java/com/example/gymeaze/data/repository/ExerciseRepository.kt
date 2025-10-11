@@ -7,12 +7,15 @@ import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.ExerciseApiService
+import com.example.gymeaze.data.api.PostApiService
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
 import com.example.gymeaze.data.models.ExerciseQuery
 import com.example.gymeaze.data.models.ExercisesResponse
+import com.example.gymeaze.data.models.FavoriteResponse
 import com.example.gymeaze.data.models.LikeResponse
+import com.example.gymeaze.data.models.LikesResponse
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
@@ -56,6 +59,15 @@ class ExerciseRepository(private val context: Context) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ExerciseApiService::class.java)
+    }
+
+    private val apiExercise: PostApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PostApiService::class.java)
     }
 
     private val MAX_IMAGE_BYTES = 5L * 1024L * 1024L
@@ -297,6 +309,32 @@ class ExerciseRepository(private val context: Context) {
             type.startsWith("video/mp4") -> ".mp4"
             type.startsWith("video/webm") -> ".webm"
             else -> ".bin"
+        }
+    }
+
+    suspend fun getUserLikes(): Result<LikesResponse> {
+        return try {
+            val response = apiExercise.getUserLikes()
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Błąd podczas pobierania polubionych: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleExerciseFavorite(exerciseId: String): Result<FavoriteResponse> {
+        return try {
+            val response = api.toggleExerciseFavorite(exerciseId)
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Błąd podczas przełączania ulubionego: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

@@ -1,13 +1,17 @@
 package com.example.gymeaze.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +33,11 @@ import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.LoadingScreen
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,143 +54,195 @@ fun ExercisesScreen(
     val selectedHashtags by viewModel.selectedHashtags.collectAsState()
     val selectedDifficulty by viewModel.selectedDifficulty.collectAsState()
     val sortBy by viewModel.sortBy.collectAsState()
+    val followersOnly by viewModel.followersOnly.collectAsState()
     val availableMuscleGroups by viewModel.availableMuscleGroups.collectAsState()
     val availableEquipment by viewModel.availableEquipment.collectAsState()
+    val favoriteExercises by viewModel.favoriteExercises.collectAsState()
+
+    val scrollIndex by viewModel.scrollIndex
+    val scrollOffset by viewModel.scrollOffset
 
     var showFilters by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Przeglądaj ćwiczenia",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = getOnSurfaceColor()
-                    )
-                },
-                navigationIcon = {
-                    onBackClick?.let { backCallback ->
-                        IconButton(onClick = backCallback) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Wstecz",
-                                tint = getOnSurfaceColor()
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    BadgedBox(
-                        badge = {
-                            if (hasActiveFilters(selectedMuscleGroups, selectedEquipment, selectedHashtags, selectedDifficulty, sortBy)) {
-                                Badge(
-                                    containerColor = getPrimaryColor(),
-                                    modifier = Modifier.size(8.dp)
+    val lazyListState = rememberLazyListState(
+        initialFirstVisibleItemIndex = scrollIndex,
+        initialFirstVisibleItemScrollOffset = scrollOffset
+    )
+
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(lazyListState) {
+        snapshotFlow {
+            lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            viewModel.updateScrollPosition(index, offset)
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Przeglądaj ćwiczenia",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = getOnSurfaceColor()
+                        )
+                    },
+                    navigationIcon = {
+                        onBackClick?.let { backCallback ->
+                            IconButton(onClick = backCallback) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Wstecz",
+                                    tint = getOnSurfaceColor()
                                 )
                             }
                         }
-                    ) {
-                        IconButton(onClick = { showFilters = true }) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filtry",
-                                tint = getOnSurfaceColor()
-                            )
+                    },
+                    actions = {
+                        val hasFilters = hasActiveFilters(
+                            selectedMuscleGroups,
+                            selectedEquipment,
+                            selectedHashtags,
+                            selectedDifficulty,
+                            sortBy,
+                            followersOnly
+                        )
+
+                        BadgedBox(
+                            badge = {
+                                if (hasFilters) {
+                                    Badge(
+                                        containerColor = getPrimaryColor(),
+                                        modifier = Modifier.size(8.dp)
+                                    )
+                                }
+                            }
+                        ) {
+                            IconButton(onClick = { showFilters = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.FilterList,
+                                    contentDescription = "Filtry",
+                                    tint = getOnSurfaceColor()
+                                )
+                            }
                         }
-                    }
-
-                    IconButton(onClick = { viewModel.refreshExercises() }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Odśwież",
-                            tint = getOnSurfaceColor()
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = getBackgroundColor()
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = getBackgroundColor()
+                    )
                 )
-            )
-        },
-        containerColor = getBackgroundColor()
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            SearchField(
-                query = searchQuery,
-                onQueryChange = viewModel::updateSearchQuery,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-
-            when {
-                uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = getPrimaryColor()
-                        )
-                    }
+            },
+            containerColor = Color.Transparent
+        ) { paddingValues ->
+            if (uiState.isLoading) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                ) {
+                    LoadingScreen()
                 }
-                uiState.error != null -> {
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { viewModel.refreshExercises() },
+                    modifier = Modifier.fillMaxSize()
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .padding(paddingValues)
                     ) {
-                        Text(
-                            text = uiState.error ?: "Wystąpił nieznany błąd",
-                            color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.refreshExercises() }) {
-                            Text("Spróbuj ponownie")
-                        }
-                    }
-                }
-                uiState.exercises.isEmpty() -> {
-                    EmptyExercisesMessage()
-                }
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(uiState.exercises) { exercise ->
-                            ExerciseCard(
-                                exercise = exercise,
-                                onExerciseClick = { onExerciseClick(exercise.id) },
-                                onLikeClick = { viewModel.toggleLike(exercise.id) }
-                            )
-                        }
-
-                        if (uiState.hasMorePages) {
-                            item{
-                                LaunchedEffect(Unit) {
-                                    viewModel.loadMoreExercises()
+                        SearchField(
+                            query = searchQuery,
+                            onQueryChange = { query ->
+                                viewModel.updateSearchQuery(query)
+                                coroutineScope.launch {
+                                    lazyListState.scrollToItem(0)
+                                    viewModel.resetScrollPosition()
                                 }
-                                Box(
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+
+                        when {
+                            uiState.error != null -> {
+                                Column(
                                     modifier = Modifier
-                                        .fillMaxWidth()
+                                        .fillMaxSize()
                                         .padding(16.dp),
-                                    contentAlignment = Alignment.Center
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
                                 ) {
-                                    if (uiState.isLoadingMore) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(24.dp),
-                                            color = getPrimaryColor(),
-                                            strokeWidth = 2.dp
+                                    Text(
+                                        text = uiState.error ?: "Wystąpił nieznany błąd",
+                                        color = MaterialTheme.colorScheme.error,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Button(onClick = { viewModel.refreshExercises() }) {
+                                        Text("Spróbuj ponownie")
+                                    }
+                                }
+                            }
+
+                            uiState.exercises.isEmpty() -> {
+                                EmptyExercisesMessage()
+                            }
+
+                            else -> {
+                                LazyColumn(
+                                    state = lazyListState,
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(
+                                        items = uiState.exercises,
+                                        key = { exercise -> exercise.id }
+                                    ) { exercise ->
+                                        ExerciseCard(
+                                            exercise = exercise,
+                                            isLiked = viewModel.isExerciseLiked(exercise.id),
+                                            isFavorite = favoriteExercises.contains(exercise.id),
+                                            isCurrentUserExercise = viewModel.isCurrentUserExercise(exercise.author.username),
+                                            onLikeClick = { viewModel.toggleLike(exercise.id) },
+                                            onFavoriteClick = { viewModel.toggleFavorite(exercise.id) },
+                                            onEditClick = { exerciseId ->
+                                                // TODO: Implementacja edycji
+                                            },
+                                            onDeleteClick = { exerciseId ->
+                                                // TODO: Implementacja usuwania
+                                            },
+                                            onExerciseClick = { onExerciseClick(exercise.id) }
                                         )
+                                    }
+
+                                    if (uiState.hasMorePages) {
+                                        item {
+                                            LaunchedEffect(Unit) {
+                                                viewModel.loadMoreExercises()
+                                            }
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(16.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                if (uiState.isLoadingMore) {
+                                                    CircularProgressIndicator(
+                                                        modifier = Modifier.size(24.dp),
+                                                        color = getPrimaryColor(),
+                                                        strokeWidth = 2.dp
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -190,28 +251,87 @@ fun ExercisesScreen(
                 }
             }
         }
-    }
 
-    if (showFilters) {
-        FilterDialog(
-            selectedMuscleGroups = selectedMuscleGroups,
-            availableMuscleGroups = availableMuscleGroups,
-            onMuscleGroupsChange = viewModel::updateSelectedMuscleGroups,
-            selectedEquipment = selectedEquipment,
-            availableEquipment = availableEquipment,
-            onEquipmentChange = viewModel::updateSelectedEquipment,
-            selectedHashtags = selectedHashtags,
-            onHashtagsChange = viewModel::updateSelectedHashtags,
-            selectedDifficulty = selectedDifficulty,
-            onDifficultyChange = viewModel::updateSelectedDifficulty,
-            sortBy = sortBy,
-            onSortByChange = viewModel::updateSortBy,
-            onClearAll = viewModel::clearAllFilters,
-            onDismiss = { showFilters = false }
-        )
+        if (showFilters) {
+            FilterDialog(
+                selectedMuscleGroups = selectedMuscleGroups,
+                availableMuscleGroups = availableMuscleGroups,
+                onMuscleGroupsChange = { groups ->
+                    viewModel.updateSelectedMuscleGroups(groups)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                selectedEquipment = selectedEquipment,
+                availableEquipment = availableEquipment,
+                onEquipmentChange = { equipment ->
+                    viewModel.updateSelectedEquipment(equipment)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                selectedHashtags = selectedHashtags,
+                onHashtagsChange = { hashtags ->
+                    viewModel.updateSelectedHashtags(hashtags)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                selectedDifficulty = selectedDifficulty,
+                onDifficultyChange = { difficulty ->
+                    viewModel.updateSelectedDifficulty(difficulty)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                sortBy = sortBy,
+                onSortByChange = { sort ->
+                    viewModel.updateSortBy(sort)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                followersOnly = followersOnly,
+                onFollowersOnlyChange = { enabled ->
+                    viewModel.updateFollowersOnly(enabled)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                onClearAll = {
+                    viewModel.clearAllFilters()
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                        viewModel.resetScrollPosition()
+                    }
+                },
+                onDismiss = { showFilters = false }
+            )
+        }
     }
 }
 
+private fun hasActiveFilters(
+    muscleGroups: List<MuscleGroup>,
+    equipment: List<Equipment>,
+    hashtags: List<String>,
+    difficulty: String?,
+    sortBy: String,
+    followersOnly: Boolean
+): Boolean {
+    return muscleGroups.isNotEmpty() ||
+            equipment.isNotEmpty() ||
+            hashtags.isNotEmpty() ||
+            difficulty != null ||
+            sortBy != "latest" ||
+            followersOnly
+}
 @Composable
 private fun SearchField(
     query: String,
@@ -272,36 +392,51 @@ private fun FilterDialog(
     onDifficultyChange: (String?) -> Unit,
     sortBy: String,
     onSortByChange: (String) -> Unit,
+    followersOnly: Boolean,
+    onFollowersOnlyChange: (Boolean) -> Unit,
     onClearAll: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 650.dp),
+                .fillMaxSize()
+                .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         text = "Filtry i sortowanie",
-                        fontSize = 18.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
                     )
-                    Row {
-                        TextButton(onClick = onClearAll) {
-                            Text(
-                                text = "Wyczyść",
-                                color = getOnSurfaceSecondaryColor()
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            onClick = onClearAll,
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = getOnSurfaceSecondaryColor().copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Wyczyść filtry",
+                                tint = getOnSurfaceSecondaryColor()
                             )
                         }
                         IconButton(onClick = onDismiss) {
@@ -314,16 +449,26 @@ private fun FilterDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = getOnSurfaceSecondaryColor().copy(alpha = 0.2f))
 
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-
                     item {
                         SortingSection(
                             selectedSort = sortBy,
                             onSortChange = onSortByChange
+                        )
+                    }
+
+                    item {
+                        FollowersOnlyToggle(
+                            enabled = followersOnly,
+                            onToggle = onFollowersOnlyChange
                         )
                     }
 
@@ -349,7 +494,8 @@ private fun FilterDialog(
                                 }
                             },
                             placeholder = "Wybierz partie mięśniowe",
-                            isLoading = availableMuscleGroups.isEmpty()
+                            isLoading = availableMuscleGroups.isEmpty(),
+                            useFullScreen = true
                         )
                     }
 
@@ -375,7 +521,8 @@ private fun FilterDialog(
                                 }
                             },
                             placeholder = "Wybierz sprzęt",
-                            isLoading = availableEquipment.isEmpty()
+                            isLoading = availableEquipment.isEmpty(),
+                            useFullScreen = true
                         )
                     }
 
@@ -395,6 +542,55 @@ private fun FilterDialog(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FollowersOnlyToggle(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = getOnSurfaceSecondaryColor().copy(alpha = 0.05f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Tylko obserwowani",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = getOnSurfaceColor()
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Pokaż ćwiczenia tylko od obserwowanych użytkowników",
+                    fontSize = 14.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    lineHeight = 18.sp
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = getPrimaryColor(),
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = getOnSurfaceSecondaryColor().copy(alpha = 0.3f)
+                )
+            )
         }
     }
 }
@@ -470,18 +666,19 @@ private fun DifficultySelector(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
+        LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             val difficultyOptions = listOf(
                 Triple(AdvancedLevel.NONE, "Nie wybrano", Color(0xFF9E9E9E)),
-                Triple(AdvancedLevel.EASY, "Łatwy", Color(0xFF4CAF50)),
-                Triple(AdvancedLevel.MEDIUM, "Średni", Color(0xFFFF9800)),
-                Triple(AdvancedLevel.HARD, "Trudny", Color(0xFFF44336))
+                Triple(AdvancedLevel.EASY, "Podstawowy", Color(0xFF4CAF50)),
+                Triple(AdvancedLevel.MEDIUM, "Średniozaawansowany", Color(0xFFFF9800)),
+                Triple(AdvancedLevel.HARD, "Zaawansowany", Color(0xFFF44336))
             )
 
-            difficultyOptions.forEach { (backendValue, displayText, chipColor) ->
+            items(difficultyOptions.size) { index ->
+                val (backendValue, displayText, chipColor) = difficultyOptions[index]
                 FilterChip(
                     selected = selectedDifficulty == backendValue,
                     onClick = {
@@ -494,8 +691,7 @@ private fun DifficultySelector(
                             text = displayText,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            textAlign = TextAlign.Center
                         )
                     },
                     colors = FilterChipDefaults.filterChipColors(
@@ -503,26 +699,11 @@ private fun DifficultySelector(
                         selectedLabelColor = Color.White,
                         containerColor = chipColor.copy(alpha = 0.3f),
                         labelColor = chipColor.copy(alpha = 0.9f)
-                    ),
-                    modifier = Modifier.weight(1f)
+                    )
                 )
             }
         }
     }
-}
-
-private fun hasActiveFilters(
-    muscleGroups: List<MuscleGroup>,
-    equipment: List<Equipment>,
-    hashtags: List<String>,
-    difficulty: String?,
-    sortBy: String
-): Boolean {
-    return muscleGroups.isNotEmpty() ||
-            equipment.isNotEmpty() ||
-            hashtags.isNotEmpty() ||
-            difficulty != null ||
-            sortBy != "latest"
 }
 
 @Composable

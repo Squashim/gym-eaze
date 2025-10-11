@@ -9,6 +9,7 @@ data class Exercise(
     val image: String,
     val video: String,
     val likes: Int = 0,
+    val isLiked: Boolean = false,
     val visibility: String,
     val advancedLevel: String,
     val muscleGroup: List<MuscleGroup>,
@@ -52,4 +53,9 @@ data class ExerciseQuery(
 data class LikeResponse(
     val message: String,
     val likes: Int
+)
+
+data class FavoriteResponse(
+    val message: String,
+    val isFavorite: Boolean
 )

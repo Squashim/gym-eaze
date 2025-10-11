@@ -1,13 +1,19 @@
 package com.example.gymeaze.viewmodel
 
 import android.app.Application
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
 import com.example.gymeaze.data.models.MuscleGroup
+import com.example.gymeaze.data.models.User
+import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.ExerciseRepository
+import com.example.gymeaze.data.repository.UserRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,15 +25,22 @@ data class ExercisesUiState(
     val currentPage: Int = 1,
     val totalPages: Int = 1,
     val hasMorePages: Boolean = false,
-    val isLoadingMore: Boolean = false
+    val isLoadingMore: Boolean = false,
+    val isRefreshing: Boolean = false,
 )
 
 class ExercisesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = ExerciseRepository(application)
+    private val userRepository = UserRepository(application)
+
+    private val authRepository = AuthRepository(application)
+
 
     private val _uiState = MutableStateFlow(ExercisesUiState())
     val uiState: StateFlow<ExercisesUiState> = _uiState.asStateFlow()
+
+    private val _likedExercises = MutableStateFlow<Set<String>>(emptySet())
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -60,7 +73,14 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
 
     init {
         loadFilterOptions()
+        loadUserLikes()
+        loadUserFavorites()
+        loadCurrentUser()
         setupAutoSearch()
+    }
+
+    fun isExerciseLiked(exerciseId: String): Boolean {
+        return _likedExercises.value.contains(exerciseId)
     }
 
     private fun setupAutoSearch() {
@@ -230,25 +250,15 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         loadExercises()
     }
 
-    fun toggleLike(exerciseId: String) {
+    private fun loadUserLikes() {
         viewModelScope.launch {
             try {
-                val result = repository.toggleExerciseLike(exerciseId)
-                result.onSuccess { likeResponse ->
-                    _uiState.value = _uiState.value.copy(
-                        exercises = _uiState.value.exercises.map { exercise ->
-                            if (exercise.id == exerciseId) {
-                                exercise.copy(likes = likeResponse.likes)
-                            } else {
-                                exercise
-                            }
-                        }
-                    )
+                val result = repository.getUserLikes()
+                result.onSuccess { likesResponse ->
+                    _likedExercises.value = likesResponse.exercises.toSet()
+                }.onFailure {
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Nieoczekiwany błąd podczas polubienia ćwiczenia"
-                )
             }
         }
     }
@@ -270,5 +280,160 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
     @Deprecated("Use clearAllFilters instead")
     fun clearFilters() {
         clearAllFilters()
+    }
+
+    private val _currentExercise = MutableStateFlow<Exercise?>(null)
+    val currentExercise: StateFlow<Exercise?> = _currentExercise.asStateFlow()
+
+    private val _isLoadingExerciseDetail = MutableStateFlow(false)
+    val isLoadingExerciseDetail: StateFlow<Boolean> = _isLoadingExerciseDetail.asStateFlow()
+
+    fun loadExerciseDetail(exerciseId: String) {
+        viewModelScope.launch {
+            _isLoadingExerciseDetail.value = true
+            _uiState.value = _uiState.value.copy(error = null)
+
+            val result = repository.getExerciseById(exerciseId)
+
+            result.onSuccess { exercise ->
+                _currentExercise.value = exercise
+                _isLoadingExerciseDetail.value = false
+            }.onFailure { exception ->
+                _isLoadingExerciseDetail.value = false
+                _uiState.value = _uiState.value.copy(
+                    error = exception.message ?: "Błąd podczas ładowania ćwiczenia"
+                )
+            }
+        }
+    }
+
+    fun toggleLike(exerciseId: String) {
+        viewModelScope.launch {
+            val currentExercise = _uiState.value.exercises.find { it.id == exerciseId }
+                ?: _currentExercise.value?.takeIf { it.id == exerciseId }
+
+            if (currentExercise == null) return@launch
+
+            val isCurrentlyLiked = _likedExercises.value.contains(exerciseId)
+
+            try {
+                val result = repository.toggleExerciseLike(exerciseId)
+                result.onSuccess { likeResponse ->
+                    _likedExercises.value = if (isCurrentlyLiked) {
+                        _likedExercises.value - exerciseId
+                    } else {
+                        _likedExercises.value + exerciseId
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        exercises = _uiState.value.exercises.map { exercise ->
+                            if (exercise.id == exerciseId) {
+                                exercise.copy(likes = likeResponse.likes)
+                            } else {
+                                exercise
+                            }
+                        }
+                    )
+
+                    if (_currentExercise.value?.id == exerciseId) {
+                        _currentExercise.value = _currentExercise.value?.copy(likes = likeResponse.likes)
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Nieoczekiwany błąd podczas polubienia ćwiczenia"
+                )
+            }
+        }
+    }
+
+    fun clearCurrentExercise() {
+        _currentExercise.value = null
+    }
+
+    private val _favoriteExercises = MutableStateFlow<Set<String>>(emptySet())
+
+    val favoriteExercises: StateFlow<Set<String>> = _favoriteExercises.asStateFlow()
+
+    fun isExerciseFavorite(exerciseId: String): Boolean {
+        return _favoriteExercises.value.contains(exerciseId)
+    }
+
+    fun toggleFavorite(exerciseId: String) {
+        viewModelScope.launch {
+            val currentExercise = _uiState.value.exercises.find { it.id == exerciseId }
+                ?: _currentExercise.value?.takeIf { it.id == exerciseId }
+
+            if (currentExercise == null) return@launch
+
+            try {
+                val result = repository.toggleExerciseFavorite(exerciseId)
+                result.onSuccess { favoriteResponse ->
+
+                    loadUserFavorites()
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        error = exception.message ?: "Błąd podczas przełączania ulubionego"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Nieoczekiwany błąd podczas dodawania do ulubionych"
+                )
+            }
+        }
+    }
+
+    private fun loadUserFavorites() {
+        viewModelScope.launch {
+            try {
+                val result = userRepository.getUserFavorites()
+                result.onSuccess { favoritesResponse ->
+                    _favoriteExercises.value = favoritesResponse.exercises.toSet()
+                }.onFailure { exception ->
+                    println("Błąd podczas ładowania ulubionych: ${exception.message}")
+                }
+            } catch (e: Exception) {
+                println("Nieoczekiwany błąd podczas ładowania ulubionych: ${e.message}")
+            }
+        }
+    }
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            try {
+                val result = authRepository.getCurrentUser()
+                result.onSuccess { user ->
+                    _currentUser.value = user
+                }.onFailure { exception ->
+                    println("Błąd podczas ładowania aktualnego użytkownika: ${exception.message}")
+                }
+            } catch (e: Exception) {
+                println("Nieoczekiwany błąd podczas ładowania użytkownika: ${e.message}")
+            }
+        }
+    }
+
+    fun isCurrentUserExercise(authorLogin: String): Boolean {
+        return _currentUser.value?.username == authorLogin
+    }
+
+    private val _scrollIndex: MutableState<Int> = mutableStateOf(0)
+    val scrollIndex: MutableState<Int> = _scrollIndex
+
+    private val _scrollOffset: MutableState<Int> = mutableStateOf(0)
+    val scrollOffset: MutableState<Int> = _scrollOffset
+
+    fun updateScrollPosition(index: Int, offset: Int) {
+        _scrollIndex.value = index
+        _scrollOffset.value = offset
+    }
+
+    fun resetScrollPosition() {
+        _scrollIndex.value = 0
+        _scrollOffset.value = 0
     }
 }

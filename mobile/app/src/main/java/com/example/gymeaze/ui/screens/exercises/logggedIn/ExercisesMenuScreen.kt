@@ -35,7 +35,7 @@ fun ExercisesMenuScreen(
     onCreateExerciseClick: () -> Unit = {},
     onMyExercisesClick: () -> Unit = {},
     onBrowseExercisesClick: () -> Unit = {},
-    onFavoriteExercisesClick: () -> Unit = {}
+    onFavoriteExercisesClick: () -> Unit = {},
 ) {
     var selectedRoute by remember { mutableStateOf("exercises") }
 

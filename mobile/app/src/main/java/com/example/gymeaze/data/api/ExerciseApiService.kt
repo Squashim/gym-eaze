@@ -4,6 +4,7 @@ import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.ExerciseQuery
 import com.example.gymeaze.data.models.ExercisesResponse
 import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.data.models.FavoriteResponse
 import com.example.gymeaze.data.models.LikeResponse
 import com.example.gymeaze.data.models.MuscleGroup
 import okhttp3.MultipartBody
@@ -59,4 +60,7 @@ interface ExerciseApiService {
         @Part("equipment") equipment: RequestBody,
         @Part("hashtags") hashtags: RequestBody,
     ): Response<ResponseBody>
+
+    @PATCH("/api/exercises/{id}/favorite")
+    suspend fun toggleExerciseFavorite(@Path("id") exerciseId: String): Response<FavoriteResponse>
 }
