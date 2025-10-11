@@ -1,8 +1,9 @@
-import type { AdvancedLevel } from '@/constants/advanced-level';
+import type { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { Badge } from './badge';
-import type { Visibility } from '@/constants/visibility';
+import type { Visibility } from '@/constants/enums/visibility';
 import { Globe2, Heart, Loader2, Lock, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 function AdvancedLevelBadge({ advancedLevel }: { advancedLevel: AdvancedLevel }) {
   const badgeStyles = {
@@ -98,4 +99,34 @@ const ItemDetailsBadge = ({
   );
 };
 
-export { AdvancedLevelBadge, VisibilityBadge, LikesBadge, ItemDetailsBadge };
+interface IsPublicBadgeProps {
+  isPublic?: boolean;
+  isLoading: boolean;
+}
+
+const IsPublicBadge = ({ isPublic, isLoading }: IsPublicBadgeProps) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge className="size-7 rounded-full px-1 font-mono tabular-nums" tabIndex={0}>
+          <div>
+            {isLoading ? (
+              <Loader2 className="animate-spin size-4" />
+            ) : isPublic ? (
+              <Globe2 className="size-4" />
+            ) : (
+              <Lock className="size-4" />
+            )}
+          </div>
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        {isPublic
+          ? 'Te informacje są widoczne dla innych użytkowników'
+          : 'Te informacje są widoczne tylko dla Ciebie'}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+export { AdvancedLevelBadge, VisibilityBadge, LikesBadge, ItemDetailsBadge, IsPublicBadge };

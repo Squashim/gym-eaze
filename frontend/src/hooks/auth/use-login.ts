@@ -1,6 +1,6 @@
 import { getAuthenticatedUser, login } from '@/api/auth';
-import { QUERY_KEYS } from '@/constants/query-keys';
-import { STORAGE_FLAGS } from '@/constants/storage-flags';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
+import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
 import { getApiErrorMsg } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { FieldValues, UseFormSetError } from 'react-hook-form';
@@ -16,7 +16,7 @@ export function useLogin<T extends FieldValues>(setError?: UseFormSetError<T>) {
     onSuccess: async (response) => {
       try {
         const user = await getAuthenticatedUser();
-        const redirectPath = user.role === 'admin' ? '/dashboard' : '/home';
+        const redirectPath = user.role === 'admin' ? '/dashboard' : `/profile/${user.username}`;
         const isFirstLogin = response.isFirstLogin ?? false;
         queryClient.setQueryData(QUERY_KEYS.AUTH_USER, user);
         toast.success(response.message);

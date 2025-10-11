@@ -1,5 +1,5 @@
 import useGetFavoriteExercises from '@/hooks/query/exercises/use-get-favorite-exercises';
-import usePaginationQuery from '@/hooks/use-pagination-query';
+import usePaginationQuery from '@/hooks/filters-pagination/use-pagination-query';
 import type { WorkoutSheetTabProps } from '@/types/workout';
 import ExerciseList from '../exercise-list';
 

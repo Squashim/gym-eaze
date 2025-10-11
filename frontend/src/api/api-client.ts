@@ -2,8 +2,8 @@ import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from '
 import type { AuthAxiosRequestConfig } from '@/types/api';
 import { refreshToken } from './auth';
 import { toast } from 'sonner';
-import { STORAGE_FLAGS } from '@/constants/storage-flags';
-import { AUTH } from '@/constants/endpoints';
+import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
+import { AUTH } from '@/constants/api/endpoints';
 
 if (!import.meta.env.VITE_API_URL) {
   throw new Error('VITE_API_URL is not defined');

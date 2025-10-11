@@ -2,7 +2,7 @@ import ExerciseContent from '@/components/features/exercises/exercise-content';
 import PageLayout from '@/components/layout/page';
 import useGetFavoriteExercises from '@/hooks/query/exercises/use-get-favorite-exercises';
 import usePageTitle from '@/hooks/utils/use-page-title';
-import usePaginationQuery from '@/hooks/use-pagination-query';
+import usePaginationQuery from '@/hooks/filters-pagination/use-pagination-query';
 
 const FavoriteExercises = () => {
   const { params, setPage, setPageSize } = usePaginationQuery();

@@ -2,15 +2,15 @@ import Typography from '@/components/ui/typography';
 import ExerciseList from '../exercise-list';
 import { Switch } from '@/components/ui/switch';
 import type { WorkoutSheetTabProps } from '@/types/workout';
-import useFilterQuery from '@/hooks/use-filter-query';
+import useFilterQuery from '@/hooks/filters-pagination/use-filter-query';
 import type { ExerciseFilters, SortBy } from '@/types/filters';
-import { initialExerciseFilters } from '@/constants/filters';
+import { defaultExerciseFilters } from '@/constants/defaults/filters';
 import useGetExercises from '@/hooks/query/exercises/use-get-exercises';
 import { useEffect, useMemo, useState } from 'react';
 import useDebounce from '@/hooks/utils/use-debounce';
 import useGetMuscleGroups from '@/hooks/query/muscle-groups/use-get-muscle-groups';
 import useGetEquipment from '@/hooks/query/equipment/use-get-equipment';
-import { AdvancedLevel } from '@/constants/advanced-level';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { ArrowUpDown, Eraser, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -29,7 +29,7 @@ import SearchInput from '@/components/ui/search-input';
 
 const SocialExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {
   const { params, setPage, setFilters, setSortBy, clearFilters } =
-    useFilterQuery<ExerciseFilters>(initialExerciseFilters);
+    useFilterQuery<ExerciseFilters>(defaultExerciseFilters);
   const { data: exercises, isLoading, isError } = useGetExercises(params);
   const [searchText, setSearchText] = useState(params.filters?.search ?? '');
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);

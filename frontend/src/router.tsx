@@ -7,7 +7,6 @@ import Error from './pages/error';
 import { GoogleLinkProvider } from './context/google-link';
 import Login from './pages/login/login';
 import Signup from './pages/sign-up';
-import Home from './pages/home';
 import ExerciseCreator from './pages/exercises/creator';
 import UserExercises from './pages/exercises/user';
 import FavoriteExercises from './pages/exercises/favorite';
@@ -18,6 +17,9 @@ import WorkoutBrowser from './pages/workouts/browser';
 import WorkoutDetails from './pages/workouts/details';
 import UserWorkouts from './pages/workouts/user';
 import FavoriteWorkouts from './pages/workouts/favorite';
+import ProfileEdit from './pages/user/profile-edit';
+import PrivacySettings from './pages/user/privacy-settings';
+import Profile from './pages/user/profile';
 
 const router = createBrowserRouter([
   {
@@ -81,8 +83,8 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            path: 'home',
-            element: <Home />,
+            path: 'profile/:username',
+            element: <Profile />,
           },
           {
             path: 'exercises',
@@ -111,6 +113,19 @@ const router = createBrowserRouter([
               {
                 path: ':id/edit',
                 element: <WorkoutCreator mode="edit" />,
+              },
+            ],
+          },
+          {
+            path: 'profile',
+            children: [
+              {
+                path: 'edit',
+                element: <ProfileEdit />,
+              },
+              {
+                path: 'privacy',
+                element: <PrivacySettings />,
               },
             ],
           },

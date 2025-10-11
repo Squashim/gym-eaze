@@ -1,4 +1,4 @@
-export const initialExerciseFilters = {
+export const defaultExerciseFilters = {
   search: '',
   muscleGroups: [],
   equipment: [],
@@ -7,7 +7,7 @@ export const initialExerciseFilters = {
   followers: false,
 };
 
-export const initialWorkoutFilters = {
+export const defaultWorkoutFilters = {
   search: '',
   goal: undefined,
   difficulty: undefined,

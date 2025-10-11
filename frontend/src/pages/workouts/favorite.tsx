@@ -1,6 +1,6 @@
 import PageLayout from '@/components/layout/page';
 import usePageTitle from '@/hooks/utils/use-page-title';
-import usePaginationQuery from '@/hooks/use-pagination-query';
+import usePaginationQuery from '@/hooks/filters-pagination/use-pagination-query';
 import WorkoutContent from '@/components/features/workouts/workout-content';
 import useGetFavoriteWorkouts from '@/hooks/query/workouts/use-get-favorite-workouts';
 

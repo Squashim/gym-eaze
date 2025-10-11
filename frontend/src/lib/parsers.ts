@@ -38,6 +38,10 @@ export function parseWorkoutSetsLabel(count: number) {
   return parsePlurals(count, ['seria', 'serie', 'serii']);
 }
 
+export function parseRepsLabel(count: number) {
+  return parsePlurals(count, ['powtórzenie', 'powtórzenia', 'powtórzeń']);
+}
+
 export function parseExerciseLabel(count: number) {
   return parsePlurals(count, ['ćwiczenie', 'ćwiczenia', 'ćwiczeń']);
 }

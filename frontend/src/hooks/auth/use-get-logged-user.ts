@@ -1,5 +1,5 @@
 import { getAuthenticatedUser } from '@/api/auth';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { type AuthenticatedUser } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';

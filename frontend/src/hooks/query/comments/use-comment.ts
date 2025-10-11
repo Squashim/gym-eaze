@@ -1,9 +1,9 @@
 import { create, remove, toggleLike, update } from '@/api/comment';
 import queryClient from '@/config/query-client';
-import type { ItemType } from '@/constants/item-type';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import type { ItemType } from '@/constants/enums/item-type';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
-import usePostParamsQuery from '@/hooks/use-post-params-query';
+import usePostParamsQuery from '@/hooks/filters-pagination/use-post-params-query';
 import { getApiErrorMsg } from '@/lib/utils';
 import type { UpdateCommentPayload } from '@/types/comment';
 import { useMutation } from '@tanstack/react-query';

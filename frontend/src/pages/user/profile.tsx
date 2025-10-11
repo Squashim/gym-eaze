@@ -1,14 +1,18 @@
+import PageLayout from '@/components/layout/page';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
-import { STORAGE_FLAGS } from '@/constants/storage-flags';
+import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
 import { useUser } from '@/context/user';
 import { useSessionFlag } from '@/hooks/utils/use-session-flag';
+import { useNavigate } from 'react-router-dom';
 
-const Home = () => {
+function Profile() {
   const { user } = useUser();
-  const { isSet, removeFlag } = useSessionFlag(STORAGE_FLAGS.isFirstLogin);
+  const navigate = useNavigate();
 
+  const { isSet, removeFlag } = useSessionFlag(STORAGE_FLAGS.isFirstLogin);
   return (
     <>
+      <PageLayout title="Profil"></PageLayout>
       <ReusableAlertDialog
         cancelLabel="Pomiń"
         confirmLabel="Edytuj profil"
@@ -16,14 +20,13 @@ const Home = () => {
         onClose={removeFlag}
         onConfirm={() => {
           removeFlag();
-          console.log('Przejdź do edycji profilu');
+          void navigate('/profile/edit', { replace: true });
         }}
         open={isSet}
         title={`Witaj ${user?.username}!`}
       />
-      <div>home page</div>
     </>
   );
-};
+}
 
-export default Home;
+export default Profile;

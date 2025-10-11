@@ -1,5 +1,5 @@
 import { getAll } from '@/api/exercise';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import type { GetExercisesApiResponse } from '@/types/exercise';
 import type { ExerciseQueryParams, PaginatedResponse } from '@/types/filters';
 import { useQuery } from '@tanstack/react-query';

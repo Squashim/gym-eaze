@@ -1,4 +1,4 @@
-import { POST as endpoints } from '@/constants/endpoints';
+import { POST as endpoints } from '@/constants/api/endpoints';
 import API from './api-client';
 import { objectToFormData, serializeQuery } from '@/lib/utils';
 import type { ApiResponse } from '@/types/api';

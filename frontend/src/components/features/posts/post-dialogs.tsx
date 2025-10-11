@@ -22,7 +22,7 @@ import { updateCommentSchema, type UpdateCommentSchema } from '@/schemas/comment
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useMemo, useRef } from 'react';
-import type { ItemType } from '@/constants/item-type';
+import type { ItemType } from '@/constants/enums/item-type';
 
 interface HashtagDialogProps {
   open: boolean;

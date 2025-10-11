@@ -26,12 +26,12 @@ import { Switch } from '@/components/ui/switch';
 import { TagsInput } from '@/components/ui/tags-input';
 import { Textarea } from '@/components/ui/textarea';
 import Typography from '@/components/ui/typography';
-import { AdvancedLevel } from '@/constants/advanced-level';
-import { workoutCreatorConstants } from '@/constants/forms';
-import { Goal } from '@/constants/goals';
-import { Visibility } from '@/constants/visibility';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
+import { workoutCreatorConstants } from '@/constants/defaults/forms';
+import { Goal } from '@/constants/enums/goals';
+import { Visibility } from '@/constants/enums/visibility';
 import usePageTitle from '@/hooks/utils/use-page-title';
-import { useStepForm } from '@/hooks/use-step-form';
+import { useStepForm } from '@/hooks/form/use-step-form';
 import {
   workoutSchema,
   type TrainingDaySchema,
@@ -58,7 +58,7 @@ import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warn
 import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
 import useGetWorkout from '@/hooks/query/workouts/use-get-workout';
-import useFormFiles from '@/hooks/use-form-files';
+import useFormFiles from '@/hooks/form/use-form-files';
 import { Button } from '@/components/ui/button';
 
 interface WorkoutCreatorProps {

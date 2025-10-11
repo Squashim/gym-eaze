@@ -1,4 +1,4 @@
-import { COMMENT as endpoints } from '@/constants/endpoints';
+import { COMMENT as endpoints } from '@/constants/api/endpoints';
 import type { ApiResponse } from '@/types/api';
 import type {
   CreateCommentPayload,

@@ -1,4 +1,4 @@
-import { EXERCISE as endpoints } from '@/constants/endpoints';
+import { EXERCISE as endpoints } from '@/constants/api/endpoints';
 import type {
   BaseExerciseApiResponse,
   CreateExercisePayload,
