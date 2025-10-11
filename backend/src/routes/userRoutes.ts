@@ -63,6 +63,6 @@ router.get('/following', authenticate, getFollowing);
 
 router.patch('/:id/follow', authenticate, toggleUserFollow);
 
-router.get('/:id/profile', authenticate, getUserProfile);
+router.get('/:username/profile', authenticate, getUserProfile);
 
 export default router;

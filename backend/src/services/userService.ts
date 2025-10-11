@@ -428,13 +428,9 @@ export const toggleUserFollowService = async (userId: string, targetUserId: stri
 
 export const getUserProfileService = async (
   currentUserId: string,
-  profileUserId: string,
+  username: string,
 ): Promise<UserProfile> => {
-  if (!mongoose.Types.ObjectId.isValid(profileUserId)) {
-    throw new Error('Nieprawidłowe ID użytkownika');
-  }
-
-  const user = await User.findById(profileUserId).populate({
+  const user = await User.findOne({ username }).populate({
     path: 'badges.badge',
     model: Badge,
   });
@@ -443,10 +439,11 @@ export const getUserProfileService = async (
     throw new Error('Nie znaleziono użytkownika');
   }
 
+  const profileUserId = user._id.toString();
   const isOwnProfile = currentUserId === profileUserId;
 
   const profile: UserProfile = {
-    _id: user._id.toString(),
+    _id: profileUserId,
     username: user.username,
     profilePicture: user.profileDetails?.profilePicture || null,
     description: user.profileDetails?.description || null,

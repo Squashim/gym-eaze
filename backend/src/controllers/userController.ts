@@ -403,13 +403,13 @@ export const toggleUserFollow = async (req: AuthRequest, res: Response) => {
 export const getUserProfile = async (req: AuthRequest, res: Response) => {
   try {
     const currentUserId = req.userId;
-    const { id: profileUserId } = req.params;
+    const { username } = req.params;
 
     if (!currentUserId) {
       return res.status(401).json({ message: 'Brak autoryzacji użytkownika' });
     }
 
-    const profile = await getUserProfileService(currentUserId, profileUserId);
+    const profile = await getUserProfileService(currentUserId, username);
     return res.json(profile);
   } catch (error) {
     if (error instanceof Error) {
