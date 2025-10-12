@@ -12,6 +12,10 @@ export const QUERY_KEYS = {
   USER_PROFILE_DETAILS: ['user', 'profile-details'],
   USER_PRIVACY_SETTINGS: ['user', 'privacy-settings'],
   USER_BADGES: ['user', 'badges'],
+  USER_FOLLOWERS: ['user', 'followers'],
+  USER_FOLLOWING: ['user', 'following'],
+
+  USER_PROFILE: (username: string) => ['user', 'profile', username],
 
   USER_LIKED_ITEMS: (userId: string) => ['user', userId, 'liked-items'],
   USER_FAVORITED_ITEMS: (userId: string) => ['user', userId, 'favorited-items'],

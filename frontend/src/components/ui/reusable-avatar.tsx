@@ -1,12 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import Typography from './typography';
+import Typography, { type Variant } from './typography';
 
 interface ReusableAvatarProps {
   username?: string;
   profilePicture?: string;
   className?: string;
   fallbackClassName?: string;
-  variant?: 'small' | 'h4';
+  variant?: Variant;
 }
 
 function ReusableAvatar({

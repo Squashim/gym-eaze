@@ -9,6 +9,7 @@ import { clsx, type ClassValue } from 'clsx';
 import type { FieldValues } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 import { parseTimeBrackets } from './parsers';
+import { Country } from '@/constants/enums/countries';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -265,4 +266,16 @@ export function calculateWorkoutTime(day: TrainingDaySchema): number {
 export function getDayTimeRange(day: TrainingDaySchema): string {
   const totalSeconds = calculateWorkoutTime(day);
   return parseTimeBrackets(totalSeconds);
+}
+
+export function getCountryCodeByName(name: string): keyof typeof Country {
+  return Object.entries(Country).find(
+    ([_, countryName]) => countryName === name,
+  )?.[0] as keyof typeof Country;
+}
+
+export function calculateBMI(weight: number, height: number): number {
+  const heightInMeters = height / 100;
+  const bmi = weight / (heightInMeters * heightInMeters);
+  return Math.round(bmi * 10) / 10;
 }

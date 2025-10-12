@@ -87,7 +87,7 @@ const ActiveExercise = ({
                 <LikesBadge likes={exercise.likes} />
               </div>
               <Button asChild className="p-0 text-xs h-auto text-muted-foreground" variant="link">
-                <a href={`/profile/${exercise.author._id}`} rel="noreferrer" target="_blank">
+                <a href={`/profile/${exercise.author.username}`} rel="noreferrer" target="_blank">
                   Autor: {exercise.author.username}
                 </a>
               </Button>

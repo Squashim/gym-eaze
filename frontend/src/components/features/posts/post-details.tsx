@@ -325,7 +325,7 @@ function PostContent({ post, isAuthor, postRef }: PostContentProps) {
           <Button asChild className="size-10 rounded-3xl p-0" variant="ghost">
             <a
               className="hover:ring-ring/50 hover:ring-[3px] rounded-3xl"
-              href={`/profile/${post.author._id}`}
+              href={`/profile/${post.author.username}`}
               rel="noreferrer"
               target="_blank"
             >
@@ -338,7 +338,7 @@ function PostContent({ post, isAuthor, postRef }: PostContentProps) {
           </Button>
           <div className="flex flex-col">
             <Button asChild className="p-0 justify-start w-fit h-fit" variant="link">
-              <a href={`/profile/${post.author._id}`} rel="noreferrer" target="_blank">
+              <a href={`/profile/${post.author.username}`} rel="noreferrer" target="_blank">
                 <Typography className="font-semibold">
                   {post.author.username} {isAuthor && '(Ty)'}
                 </Typography>
