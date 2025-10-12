@@ -63,6 +63,10 @@ fun TrainingPlanDetailScreen(
         viewModel.loadTrainingPlan(planId)
     }
 
+    LaunchedEffect(Unit) {
+        GlobalFavoriteState.getInstance(context).forceRefreshFromBackend()
+    }
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(

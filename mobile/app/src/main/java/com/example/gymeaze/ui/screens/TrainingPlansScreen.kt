@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.*
 import com.example.gymeaze.ui.theme.*
+import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.viewmodel.SnackbarType
 import com.example.gymeaze.viewmodel.TrainingPlansViewModel
 
@@ -51,6 +52,10 @@ fun TrainingPlansScreen(
 
     LaunchedEffect(Unit) {
         viewModel.refreshPlansFromOtherScreens()
+    }
+
+    LaunchedEffect(Unit) {
+        GlobalFavoriteState.getInstance(context).forceRefreshFromBackend()
     }
 
     LaunchedEffect(uiState.error) {
