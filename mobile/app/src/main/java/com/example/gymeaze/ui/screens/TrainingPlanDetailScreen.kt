@@ -1,5 +1,10 @@
 package com.example.gymeaze.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,6 +43,7 @@ import com.example.gymeaze.viewmodel.TrainingPlanDetailViewModel
 import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.util.formatToRelativeTime
+import okhttp3.internal.concurrent.formatDuration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -713,6 +719,8 @@ private fun ExerciseItem(
     exercise: DayExercise,
     onExerciseClick: (String) -> Unit
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -720,135 +728,219 @@ private fun ExerciseItem(
         color = getOnSurfaceColor().copy(alpha = 0.05f),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            Card(
-                modifier = Modifier.size(64.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = getOnSurfaceColor().copy(alpha = 0.1f)
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                Card(
+                    modifier = Modifier.size(64.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = getOnSurfaceColor().copy(alpha = 0.1f)
+                    )
                 ) {
-                    if (exercise.exercise != null && exercise.exercise.image.isNotEmpty()) {
-                        AsyncImage(
-                            model = exercise.exercise.image,
-                            contentDescription = exercise.exercise.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.FitnessCenter,
-                            contentDescription = null,
-                            tint = getOnSurfaceSecondaryColor(),
-                            modifier = Modifier.size(28.dp)
-                        )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (exercise.exercise != null && exercise.exercise.image.isNotEmpty()) {
+                            AsyncImage(
+                                model = exercise.exercise.image,
+                                contentDescription = exercise.exercise.name,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.FitnessCenter,
+                                contentDescription = null,
+                                tint = getOnSurfaceSecondaryColor(),
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
                 }
-            }
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = exercise.exercise?.name ?: "Ładowanie ćwiczenia...",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = getOnSurfaceColor(),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                val details = if (exercise.isRepsSet) {
-                    "${exercise.sets.size} serie × ${exercise.sets.firstOrNull()?.repetitions ?: 0} powtórzeń"
-                } else {
-                    "${formatDuration(exercise.duration ?: 0)} × ${exercise.sets.size} serie"
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Timer,
-                        contentDescription = null,
-                        tint = getPrimaryColor(),
-                        modifier = Modifier.size(14.dp)
-                    )
                     Text(
-                        text = details,
-                        fontSize = 14.sp,
+                        text = exercise.exercise?.name ?: "Ładowanie ćwiczenia...",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = getOnSurfaceColor(),
-                        fontWeight = FontWeight.Medium
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Pause,
-                        contentDescription = null,
-                        tint = getOnSurfaceSecondaryColor(),
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Text(
-                        text = "Odpoczynek: ${formatDuration(exercise.restAfterSet)}",
-                        fontSize = 12.sp,
-                        color = getOnSurfaceSecondaryColor()
-                    )
-                }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.clickable {
+                            isExpanded = !isExpanded
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = getPrimaryColor(),
+                            modifier = Modifier.size(14.dp)
+                        )
 
-                exercise.exercise?.let { ex ->
-                    if (ex.muscleGroup.isNotEmpty()) {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            items(ex.muscleGroup.take(2)) { muscleGroup ->
-                                Surface(
-                                    color = getPrimaryColor().copy(alpha = 0.1f),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text(
-                                        text = muscleGroup.name,
-                                        fontSize = 10.sp,
-                                        color = getPrimaryColor(),
-                                        fontWeight = FontWeight.Medium,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
+                        val details = if (exercise.isRepsSet) {
+                            "${exercise.sets.size} serie × ${exercise.sets.firstOrNull()?.repetitions ?: 0} powtórzeń"
+                        } else {
+                            "${formatDuration(exercise.duration ?: 0)} × ${exercise.sets.size} serie"
+                        }
+
+                        Text(
+                            text = details,
+                            fontSize = 14.sp,
+                            color = getOnSurfaceColor(),
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isExpanded) "Zwiń" else "Rozwiń",
+                            tint = getOnSurfaceSecondaryColor(),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Pause,
+                            contentDescription = null,
+                            tint = getOnSurfaceSecondaryColor(),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = "Odpoczynek: ${formatDuration(exercise.restAfterSet)}",
+                            fontSize = 12.sp,
+                            color = getOnSurfaceSecondaryColor()
+                        )
+                    }
+
+                    exercise.exercise?.let { ex ->
+                        if (ex.muscleGroup.isNotEmpty()) {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(ex.muscleGroup.take(2)) { muscleGroup ->
+                                    Surface(
+                                        color = getPrimaryColor().copy(alpha = 0.1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = muscleGroup.name,
+                                            fontSize = 10.sp,
+                                            color = getPrimaryColor(),
+                                            fontWeight = FontWeight.Medium,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
+                Surface(
+                    modifier = Modifier.size(32.dp),
+                    color = getPrimaryColor().copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Zobacz ćwiczenie",
+                            tint = getPrimaryColor(),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
 
-            Surface(
-                modifier = Modifier.size(32.dp),
-                color = getPrimaryColor().copy(alpha = 0.1f),
-                shape = RoundedCornerShape(8.dp)
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
-                Box(
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = "Zobacz ćwiczenie",
-                        tint = getPrimaryColor(),
-                        modifier = Modifier.size(20.dp)
-                    )
+                    exercise.sets.forEachIndexed { index, set ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            color = getOnSurfaceColor().copy(alpha = 0.03f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Seria ${index + 1}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = getOnSurfaceColor()
+                                )
+
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (exercise.isRepsSet) {
+                                        set.repetitions?.let { reps ->
+                                            Text(
+                                                text = "$reps powtórzeń",
+                                                fontSize = 12.sp,
+                                                color = getOnSurfaceSecondaryColor()
+                                            )
+                                        }
+
+                                        set.weight?.let { weight ->
+                                            Text(
+                                                text = "${weight}kg",
+                                                fontSize = 12.sp,
+                                                color = getPrimaryColor(),
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    } else {
+                                        set.duration?.let { duration ->
+                                            Text(
+                                                text = formatDuration(duration),
+                                                fontSize = 12.sp,
+                                                color = getOnSurfaceSecondaryColor()
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
