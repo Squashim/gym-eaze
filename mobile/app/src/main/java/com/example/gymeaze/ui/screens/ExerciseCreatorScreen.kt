@@ -44,6 +44,7 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
+import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.MultiSelectDropdown
 import com.example.gymeaze.ui.theme.*
@@ -56,10 +57,18 @@ import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 fun ExerciseCreatorScreen(
     viewModel: ExerciseCreatorViewModel,
     onBackClick: () -> Unit,
-    onCreated: () -> Unit
+    onCreated: () -> Unit,
+    exerciseToEdit: Exercise? = null
 ) {
     val ui by viewModel.uiState.collectAsState()
     var showExitDialog by remember {mutableStateOf(false)}
+
+    LaunchedEffect(exerciseToEdit) {
+        exerciseToEdit?.let {
+            viewModel.loadExerciseForEdit(it)
+        }
+    }
+
 
     LaunchedEffect(ui.success) {
         if (ui.success){
@@ -74,7 +83,11 @@ fun ExerciseCreatorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.exercise_creator),
+                        text = if (ui.isEditMode) {
+                            "Edytuj ćwiczenie"
+                        } else {
+                            stringResource(R.string.exercise_creator)
+                        },
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -89,7 +102,7 @@ fun ExerciseCreatorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {showExitDialog = true}) {
+                    IconButton(onClick = { showExitDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = stringResource(R.string.cancel_creation),
@@ -151,7 +164,8 @@ fun ExerciseCreatorScreen(
                     },
                     onPrev = viewModel::prevStep,
                     onNext = viewModel::nextStep,
-                    onCreate = viewModel::create
+                    onCreate = viewModel::create,
+                    isEditMode = ui.isEditMode
                 )
             }
         }
@@ -343,29 +357,51 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             UploadCard(
-                title = stringResource(R.string.exercise_image_required),
-                subtitle = stringResource(R.string.click_to_upload),
+                title = if (ui.isEditMode && ui.existingImageUrl != null) {
+                    "Zmień obraz"
+                } else {
+                    stringResource(R.string.exercise_image_required)
+                },
+                subtitle = if (ui.isEditMode && ui.existingImageUrl != null) {
+                    "Obecny: ${ui.existingImageUrl?.takeLast(20) ?: ""}"
+                } else {
+                    stringResource(R.string.click_to_upload)
+                },
                 hint = stringResource(R.string.image_upload_requirements),
-                selected = ui.imageUri != null,
+                selected = ui.imageUri != null || ui.existingImageUrl != null,
                 onPick = vm::setImage,
                 mime = "image/*",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onRemove = if (ui.imageUri != null) {
+                    { vm.setImage(null) }
+                } else null
             )
             UploadCard(
-                title = stringResource(R.string.instructional_video_required),
-                subtitle = stringResource(R.string.click_to_upload),
+                title = if (ui.isEditMode && ui.existingVideoUrl != null) {
+                    "Zmień wideo"
+                } else {
+                    stringResource(R.string.instructional_video_required)
+                },
+                subtitle = if (ui.isEditMode && ui.existingVideoUrl != null) {
+                    "Obecne: ${ui.existingVideoUrl?.takeLast(20) ?: ""}"
+                } else {
+                    stringResource(R.string.click_to_upload)
+                },
                 hint = stringResource(R.string.video_upload_requirements),
-                selected = ui.videoUri != null,
+                selected = ui.videoUri != null || ui.existingVideoUrl != null,
                 onPick = vm::setVideo,
                 mime = "video/*",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onRemove = if (ui.videoUri != null) {
+                    { vm.setVideo(null) }
+                } else null
             )
         }
 
         Column {
             Text(stringResource(R.string.difficulty_level_required), color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(8.dp))
-            DifficultyRow(AdvancedLevel.NONE, ui.difficulty == AdvancedLevel.NONE) { vm.setDifficulty(AdvancedLevel.NONE)}
+            DifficultyRow(AdvancedLevel.NONE, ui.difficulty == AdvancedLevel.NONE) { vm.setDifficulty(AdvancedLevel.NONE) }
             DifficultyRow(AdvancedLevel.EASY, ui.difficulty == AdvancedLevel.EASY) { vm.setDifficulty(AdvancedLevel.EASY) }
             DifficultyRow(AdvancedLevel.MEDIUM, ui.difficulty == AdvancedLevel.MEDIUM) { vm.setDifficulty(AdvancedLevel.MEDIUM) }
             DifficultyRow(AdvancedLevel.HARD, ui.difficulty == AdvancedLevel.HARD) { vm.setDifficulty(AdvancedLevel.HARD) }
@@ -921,7 +957,8 @@ private fun BottomBar(
     canProceed: Boolean,
     onPrev: () -> Unit,
     onNext: () -> Unit,
-    onCreate: () -> Unit
+    onCreate: () -> Unit,
+    isEditMode: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -939,7 +976,9 @@ private fun BottomBar(
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
-            ) { Text(stringResource(R.string.go_back), color = getOnSurfaceColor()) }
+            ) {
+                Text(stringResource(R.string.go_back), color = getOnSurfaceColor())
+            }
         }
 
         Button(
@@ -957,7 +996,15 @@ private fun BottomBar(
                 )
             } else {
                 Text(
-                    text = if (step == ExerciseCreatorStep.SUMMARY) stringResource(R.string.create_exercise) else stringResource(R.string.next_step),
+                    text = if (step == ExerciseCreatorStep.SUMMARY) {
+                        if (isEditMode) {
+                            "Zaktualizuj ćwiczenie"
+                        } else {
+                            stringResource(R.string.create_exercise)
+                        }
+                    } else {
+                        stringResource(R.string.next_step)
+                    },
                     color = getOnPrimaryColor()
                 )
             }

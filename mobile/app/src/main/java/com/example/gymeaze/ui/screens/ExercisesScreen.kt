@@ -1,6 +1,7 @@
 package com.example.gymeaze.ui.screens
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,6 +36,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.LoadingScreen
 import kotlinx.coroutines.launch
@@ -45,6 +47,7 @@ fun ExercisesScreen(
     onSettingsClick: () -> Unit,
     onBackClick: (() -> Unit)? = null,
     onExerciseClick: (String) -> Unit = {},
+    onEditExercise: (Exercise) -> Unit = {},
     viewModel: ExercisesViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -58,11 +61,16 @@ fun ExercisesScreen(
     val availableMuscleGroups by viewModel.availableMuscleGroups.collectAsState()
     val availableEquipment by viewModel.availableEquipment.collectAsState()
     val favoriteExercises by viewModel.favoriteExercises.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
 
     val scrollIndex by viewModel.scrollIndex
     val scrollOffset by viewModel.scrollOffset
 
     var showFilters by remember { mutableStateOf(false) }
+    var lastLoadedUserId by remember { mutableStateOf<String?>(null) }
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var exerciseToDelete by remember { mutableStateOf<Exercise?>(null) }
 
     val lazyListState = rememberLazyListState(
         initialFirstVisibleItemIndex = scrollIndex,
@@ -70,6 +78,26 @@ fun ExercisesScreen(
     )
 
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.reloadCurrentUser()
+    }
+
+    LaunchedEffect(currentUser?._id) {
+        val userId = currentUser?._id
+        if (userId != null && userId != lastLoadedUserId) {
+            viewModel.reloadUserDataForExercises()
+            lastLoadedUserId = userId
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.switchToMode(ExercisesViewModel.ExerciseMode.ALL)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshExercises()
+    }
 
     LaunchedEffect(lazyListState) {
         snapshotFlow {
@@ -214,10 +242,15 @@ fun ExercisesScreen(
                                             onLikeClick = { viewModel.toggleLike(exercise.id) },
                                             onFavoriteClick = { viewModel.toggleFavorite(exercise.id) },
                                             onEditClick = { exerciseId ->
-                                                // TODO: Implementacja edycji
+                                                val exerciseToEdit = uiState.exercises.find { it.id == exerciseId }
+                                                exerciseToEdit?.let { onEditExercise(it) }
                                             },
                                             onDeleteClick = { exerciseId ->
-                                                // TODO: Implementacja usuwania
+                                                val exercise = uiState.exercises.find { it.id == exerciseId }
+                                                exercise?.let {
+                                                    exerciseToDelete = it
+                                                    showDeleteDialog = true
+                                                }
                                             },
                                             onExerciseClick = { onExerciseClick(exercise.id) }
                                         )
@@ -312,6 +345,25 @@ fun ExercisesScreen(
                     }
                 },
                 onDismiss = { showFilters = false }
+            )
+        }
+
+        if (showDeleteDialog && exerciseToDelete != null) {
+            DeleteExerciseDialog(
+                exerciseName = exerciseToDelete!!.name,
+                onDismiss = {
+                    showDeleteDialog = false
+                    exerciseToDelete = null
+                },
+                onConfirm = {
+                    val exerciseId = exerciseToDelete!!.id
+                    showDeleteDialog = false
+                    exerciseToDelete = null
+
+                    viewModel.deleteExercise(exerciseId) {
+                        viewModel.refreshExercises()
+                    }
+                }
             )
         }
     }
@@ -652,55 +704,111 @@ private fun SortChip(
 }
 
 @Composable
-private fun DifficultySelector(
+fun DifficultySelector(
     selectedDifficulty: String?,
-    onDifficultyChange: (String?) -> Unit
+    onDifficultyChange: ((String?) -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    isInteractive: Boolean = onDifficultyChange != null
 ) {
-    Column {
-        Text(
-            text = "Poziom trudności",
-            color = getOnSurfaceColor(),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+    Column(modifier = modifier) {
+        if (isInteractive) {
+            Text(
+                text = "Poziom trudności",
+                color = getOnSurfaceColor(),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        val difficultyOptions = listOf(
+            Triple(AdvancedLevel.NONE, if (isInteractive) "Nie wybrano" else "Nie wybrano", Color(0xFF9E9E9E)),
+            Triple(AdvancedLevel.EASY, if (isInteractive) "Podstawowy" else "Początkujący", Color(0xFF4CAF50)),
+            Triple(AdvancedLevel.MEDIUM, if (isInteractive) "Średniozaawansowany" else "Średni", Color(0xFFFF9800)),
+            Triple(AdvancedLevel.HARD, "Zaawansowany", Color(0xFFF44336))
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            val difficultyOptions = listOf(
-                Triple(AdvancedLevel.NONE, "Nie wybrano", Color(0xFF9E9E9E)),
-                Triple(AdvancedLevel.EASY, "Podstawowy", Color(0xFF4CAF50)),
-                Triple(AdvancedLevel.MEDIUM, "Średniozaawansowany", Color(0xFFFF9800)),
-                Triple(AdvancedLevel.HARD, "Zaawansowany", Color(0xFFF44336))
-            )
-
-            items(difficultyOptions.size) { index ->
-                val (backendValue, displayText, chipColor) = difficultyOptions[index]
-                FilterChip(
-                    selected = selectedDifficulty == backendValue,
-                    onClick = {
-                        onDifficultyChange(
-                            if (selectedDifficulty == backendValue) null else backendValue
+        if (isInteractive) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(difficultyOptions.size) { index ->
+                    val (backendValue, displayText, chipColor) = difficultyOptions[index]
+                    FilterChip(
+                        selected = selectedDifficulty == backendValue,
+                        onClick = {
+                            onDifficultyChange?.invoke(
+                                if (selectedDifficulty == backendValue) null else backendValue
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = displayText,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = chipColor,
+                            selectedLabelColor = Color.White,
+                            containerColor = chipColor.copy(alpha = 0.3f),
+                            labelColor = chipColor.copy(alpha = 0.9f)
                         )
-                    },
-                    label = {
-                        Text(
-                            text = displayText,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = chipColor,
-                        selectedLabelColor = Color.White,
-                        containerColor = chipColor.copy(alpha = 0.3f),
-                        labelColor = chipColor.copy(alpha = 0.9f)
                     )
-                )
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Poziom zaawansowania: ",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = getOnSurfaceColor(),
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+
+                    val selectedOption = difficultyOptions.find { it.first == selectedDifficulty }
+                        ?: difficultyOptions[0]
+
+                    val (_, text, badgeColor) = selectedOption
+                    val textColor = if (selectedOption.first == AdvancedLevel.NONE) {
+                        getOnSurfaceColor()
+                    } else {
+                        getOnPrimaryColor()
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = if (selectedOption.first == AdvancedLevel.NONE) {
+                                    getOnSurfaceColor().copy(alpha = 0.2f)
+                                } else {
+                                    badgeColor
+                                },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = text,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = textColor
+                        )
+                    }
+                }
             }
         }
     }

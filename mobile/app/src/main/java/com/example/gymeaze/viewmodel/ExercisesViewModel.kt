@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
@@ -13,6 +14,7 @@ import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.ExerciseRepository
+import com.example.gymeaze.data.repository.PostsRepository
 import com.example.gymeaze.data.repository.UserRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -35,6 +37,8 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
     private val userRepository = UserRepository(application)
 
     private val authRepository = AuthRepository(application)
+
+    private val postRepository = PostsRepository(application)
 
 
     private val _uiState = MutableStateFlow(ExercisesUiState())
@@ -435,5 +439,438 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
     fun resetScrollPosition() {
         _scrollIndex.value = 0
         _scrollOffset.value = 0
+    }
+
+
+    //ULUBIONE CWICZENIA UZYTKOWNIKA
+    fun loadFavoriteExercises(append: Boolean = false) {
+        viewModelScope.launch {
+            if (append) {
+                _uiState.value = _uiState.value.copy(isLoadingMore = true)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            }
+
+            try {
+                val currentState = _uiState.value
+                val page = if (append) currentState.currentPage + 1 else 1
+
+                val result = repository.getFavoriteExercises(
+                    page = page,
+                    pageSize = 20
+                )
+
+                result.onSuccess { response ->
+                    val newExercises = if (append) {
+                        currentState.exercises + response.items
+                    } else {
+                        response.items
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        exercises = newExercises,
+                        currentPage = response.page,
+                        totalPages = (response.total + response.pageSize - 1) / response.pageSize,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = exception.message ?: "Błąd podczas ładowania ulubionych ćwiczeń"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    error = e.message ?: "Nieoczekiwany błąd"
+                )
+            }
+        }
+    }
+
+    fun loadUserExercises(userId: String, append: Boolean = false) {
+        viewModelScope.launch {
+            if (append) {
+                _uiState.value = _uiState.value.copy(isLoadingMore = true)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            }
+
+            try {
+                val currentState = _uiState.value
+                val page = if (append) currentState.currentPage + 1 else 1
+
+                val result = repository.getUserExercises(
+                    userId = userId,
+                    page = page,
+                    pageSize = 20
+                )
+
+                result.onSuccess { response ->
+                    val newExercises = if (append) {
+                        currentState.exercises + response.items
+                    } else {
+                        response.items
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        exercises = newExercises,
+                        currentPage = response.page,
+                        totalPages = (response.total + response.pageSize - 1) / response.pageSize,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = exception.message ?: "Błąd podczas ładowania ćwiczeń użytkownika"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    error = e.message ?: "Nieoczekiwany błąd"
+                )
+            }
+        }
+    }
+
+    fun loadMoreUserExercises(userId: String) {
+        if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore) {
+            loadUserExercises(userId = userId, append = true)
+        }
+    }
+
+    fun refreshUserExercises(userId: String) {
+        loadUserExercises(userId = userId, append = false)
+    }
+
+    fun loadMoreFavoriteExercises() {
+        if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore) {
+            loadFavoriteExercises(append = true)
+        }
+    }
+
+    fun refreshFavoriteExercises() {
+        loadFavoriteExercises(append = false)
+    }
+    fun clearUserExercisesState() {
+        _uiState.value = ExercisesUiState()
+    }
+
+    private val _currentMode = MutableStateFlow<ExerciseMode>(ExerciseMode.ALL)
+
+    enum class ExerciseMode {
+        ALL,
+        FAVORITES,
+        MY_EXERCISES
+    }
+
+    fun switchToMode(mode: ExerciseMode, userId: String? = null) {
+        if (_currentMode.value == mode) return
+
+        _currentMode.value = mode
+        _uiState.value = ExercisesUiState()
+
+        when (mode) {
+            ExerciseMode.ALL -> loadExercises()
+            ExerciseMode.FAVORITES -> loadFavoriteExercises()
+            ExerciseMode.MY_EXERCISES -> userId?.let { loadUserExercises(it) }
+        }
+    }
+
+    fun reloadCurrentUser() {
+        loadCurrentUser()
+    }
+
+    fun clearAllData() {
+        searchJob?.cancel()
+        searchJob = null
+
+        _uiState.value = ExercisesUiState()
+        _likedExercises.value = emptySet()
+        _favoriteExercises.value = emptySet()
+        _searchQuery.value = ""
+        _selectedMuscleGroups.value = emptyList()
+        _selectedEquipment.value = emptyList()
+        _selectedHashtags.value = emptyList()
+        _selectedDifficulty.value = null
+        _sortBy.value = "latest"
+        _followersOnly.value = false
+        _currentExercise.value = null
+        _isLoadingExerciseDetail.value = false
+        _currentUser.value = null
+        _scrollIndex.value = 0
+        _scrollOffset.value = 0
+        _currentMode.value = ExerciseMode.ALL
+    }
+
+    fun reloadUserDataForExercises() {
+        viewModelScope.launch {
+            launch { loadUserLikes() }
+            launch { loadUserFavorites() }
+        }
+    }
+
+    fun deleteExercise(exerciseId: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            val result = repository.deleteExercise(exerciseId)
+
+            result.fold(
+                onSuccess = {
+                    _uiState.value = _uiState.value.copy(
+                        exercises = _uiState.value.exercises.filter { it.id != exerciseId },
+                        isLoading = false
+                    )
+
+                    onSuccess()
+                },
+                onFailure = { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "Błąd podczas usuwania ćwiczenia"
+                    )
+                }
+            )
+        }
+    }
+
+    // ==================== KOMENTARZE DO ĆWICZEŃ ====================
+
+    private val _exerciseComments = MutableStateFlow<List<Comment>>(emptyList())
+    val exerciseComments: StateFlow<List<Comment>> = _exerciseComments.asStateFlow()
+
+    private val _isLoadingComments = MutableStateFlow(false)
+    val isLoadingComments: StateFlow<Boolean> = _isLoadingComments.asStateFlow()
+
+    private val _hasMoreComments = MutableStateFlow(false)
+    val hasMoreComments: StateFlow<Boolean> = _hasMoreComments.asStateFlow()
+
+    private val _nextCursorComment = MutableStateFlow<String?>(null)
+
+    private val _repliesMap = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
+
+    private val _likedComments = MutableStateFlow<Set<String>>(emptySet())
+
+    fun loadExerciseComments(exerciseId: String, cursor: String? = null, limit: Int = 10, refresh: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                val effectiveCursor = if (refresh) null else cursor
+                val response = repository.getCommentsForExercise(exerciseId, effectiveCursor, limit)
+                _exerciseComments.value = response?.items ?: emptyList()
+                _hasMoreComments.value = response?.hasMore ?: false
+                _nextCursorComment.value = response?.nextCursor
+            } catch (e: Exception) {
+                println("Błąd podczas ładowania komentarzy: ${e.message}")
+            }
+        }
+    }
+
+    fun loadMoreExerciseComments(exerciseId: String, limit: Int = 10) {
+        val cursor = _nextCursorComment.value
+        if (_hasMoreComments.value && cursor != null && !_isLoadingComments.value) {
+            viewModelScope.launch {
+                _isLoadingComments.value = true
+                try {
+                    val response = repository.getCommentsForExercise(exerciseId, cursor, limit)
+                    val current = _exerciseComments.value
+                    val newComments = response?.items ?: emptyList()
+                    _exerciseComments.value = current + newComments
+                    _hasMoreComments.value = response?.hasMore ?: false
+                    _nextCursorComment.value = response?.nextCursor
+                } catch (e: Exception) {
+                    println("Błąd podczas ładowania kolejnych komentarzy: ${e.message}")
+                } finally {
+                    _isLoadingComments.value = false
+                }
+            }
+        }
+    }
+
+    fun loadRepliesForExerciseComment(commentId: String, cursor: String? = null, limit: Int = 10) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.getRepliesForComment(commentId, cursor, limit)
+                if (response != null) {
+                    val currentMap = _repliesMap.value.toMutableMap()
+                    currentMap[commentId] = response.items
+                    _repliesMap.value = currentMap
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas ładowania odpowiedzi: ${e.message}")
+            }
+        }
+    }
+
+    fun getRepliesForExerciseComment(commentId: String): StateFlow<List<Comment>> {
+        return _repliesMap.map { it[commentId] ?: emptyList() }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
+    }
+
+    fun addExerciseComment(exerciseId: String, content: String) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.createComment(
+                    content = content,
+                    parentType = "Ćwiczenie",
+                    parentId = exerciseId
+                )
+                if (response != null) {
+                    loadExerciseComments(exerciseId, refresh = true)
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas dodawania komentarza: ${e.message}")
+            }
+        }
+    }
+
+    fun addExerciseReply(commentId: String, content: String) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.createComment(
+                    content = content,
+                    parentType = "Komentarz",
+                    parentId = commentId
+                )
+                if (response != null) {
+                    loadRepliesForExerciseComment(commentId)
+
+                    val updatedComments = _exerciseComments.value.map { comment ->
+                        if (comment._id == commentId) {
+                            comment.copy(repliesCount = (comment.repliesCount ?: 0) + 1)
+                        } else {
+                            comment
+                        }
+                    }
+                    _exerciseComments.value = updatedComments
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas dodawania odpowiedzi: ${e.message}")
+            }
+        }
+    }
+
+    fun toggleExerciseCommentLike(commentId: String) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.toggleCommentLike(commentId)
+                if (response != null) {
+                    val isLiked = response.message.contains("Dodano")
+
+                    _likedComments.value = if (isLiked) {
+                        _likedComments.value + commentId
+                    } else {
+                        _likedComments.value - commentId
+                    }
+
+                    updateExerciseCommentLikes(commentId, response.likes)
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas przełączania polubienia: ${e.message}")
+            }
+        }
+    }
+
+    private fun updateExerciseCommentLikes(commentId: String, likes: Int) {
+        _exerciseComments.value = _exerciseComments.value.map { comment ->
+            if (comment._id == commentId) {
+                comment.copy(likes = likes)
+            } else {
+                comment
+            }
+        }
+
+        _repliesMap.value = _repliesMap.value.mapValues { (_, replies) ->
+            replies.map { reply ->
+                if (reply._id == commentId) {
+                    reply.copy(likes = likes)
+                } else {
+                    reply
+                }
+            }
+        }
+    }
+
+    fun isExerciseCommentLiked(commentId: String): StateFlow<Boolean> {
+        return _likedComments.map { it.contains(commentId) }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                false
+            )
+    }
+
+    fun editExerciseComment(comment: Comment, newContent: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = postRepository.editComment(comment._id, newContent)
+                onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd edycji" })
+                if (result.isSuccess) {
+                    loadExerciseComments(comment.parentId ?: "", refresh = true)
+
+                    _repliesMap.value.keys.forEach { parentId ->
+                        loadRepliesForExerciseComment(parentId)
+                    }
+                }
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Błąd edycji")
+            }
+        }
+    }
+
+
+    fun deleteExerciseComment(comment: Comment, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = postRepository.deleteComment(comment._id)
+                onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd usuwania" })
+                if (result.isSuccess) {
+                    loadExerciseComments(comment.parentId ?: "", refresh = true)
+
+                    _repliesMap.value.keys.forEach { parentId ->
+                        loadRepliesForExerciseComment(parentId)
+                    }
+                }
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Błąd usuwania")
+            }
+        }
+    }
+
+    fun fetchUserCommentLikes() {
+        viewModelScope.launch {
+            try {
+                val response = repository.getUserLikes()
+                response.onSuccess { likesResponse ->
+                    _likedComments.value = likesResponse.comments.map { it.toString() }.toSet()
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas pobierania polubionych komentarzy: ${e.message}")
+            }
+        }
+    }
+
+    fun clearExerciseComments() {
+        _exerciseComments.value = emptyList()
+        _repliesMap.value = emptyMap()
+        _likedComments.value = emptySet()
+        _hasMoreComments.value = false
+        _nextCursorComment.value = null
+        _isLoadingComments.value = false
     }
 }

@@ -14,6 +14,7 @@ import com.example.gymeaze.data.models.ExerciseFilters
 import com.example.gymeaze.data.models.ExerciseQuery
 import com.example.gymeaze.data.models.ExercisesResponse
 import com.example.gymeaze.data.models.FavoriteResponse
+import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.LikeResponse
 import com.example.gymeaze.data.models.LikesResponse
 import com.example.gymeaze.data.models.MuscleGroup
@@ -291,6 +292,132 @@ class ExerciseRepository(private val context: Context) {
         }
     }
 
+    suspend fun updateExercise(
+        exerciseId: String,
+        name: String?,
+        description: String?,
+        imageUri: Uri?,
+        videoUri: Uri?,
+        difficulty: String?,
+        isPublic: String?,
+        muscleGroup: List<String>?,
+        equipment: List<String>?,
+        hashtags: List<String>?
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val text = "text/plain".toMediaType()
+            val json = "application/json".toMediaType()
+
+            val nameBody: RequestBody? = name?.toRequestBody(text)
+            val descriptionBody: RequestBody? = description?.toRequestBody(text)
+            val advancedBody: RequestBody? = difficulty?.toRequestBody(text)
+            val visibilityBody: RequestBody? = isPublic?.toRequestBody(text)
+
+            var imagePart: MultipartBody.Part? = null
+            var videoPart: MultipartBody.Part? = null
+
+            val tempFiles = mutableListOf<File>()
+
+            if (imageUri != null) {
+                val imageSuffix = guessSuffix(imageUri)
+                if (imageSuffix !in listOf(".png", ".webp", ".jpg", ".jpeg")) {
+                    return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_allowed_image_extensions)))
+                }
+
+                val imageFile = uriToTempFile(imageUri, "exercise_image_update", imageSuffix)
+                tempFiles.add(imageFile)
+
+                if (imageFile.length() > MAX_IMAGE_BYTES) {
+                    tempFiles.forEach { it.delete() }
+                    return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_max_image_size)))
+                }
+
+                val imageMime = when (imageSuffix) {
+                    ".png" -> "image/png"
+                    ".jpg" -> "image/jpg"
+                    ".webp" -> "image/webp"
+                    else -> "application/octet-stream"
+                }
+
+                imagePart = MultipartBody.Part.createFormData(
+                    "image",
+                    imageFile.name,
+                    imageFile.asRequestBody(imageMime.toMediaTypeOrNull())
+                )
+            }
+
+            if (videoUri != null) {
+                val videoSuffix = guessSuffix(videoUri)
+                if (videoSuffix !in listOf(".mp4", ".webm")) {
+                    tempFiles.forEach { it.delete() }
+                    return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_allowed_video_extensions)))
+                }
+
+                val videoFile = uriToTempFile(videoUri, "exercise_video_update", videoSuffix)
+                tempFiles.add(videoFile)
+
+                if (videoFile.length() > MAX_VIDEO_BYTES) {
+                    tempFiles.forEach { it.delete() }
+                    return@withContext Result.failure(IllegalArgumentException(context.getString(R.string.error_max_video_size)))
+                }
+
+                val videoMime = when (videoSuffix) {
+                    ".mp4" -> "video/mp4"
+                    ".webm" -> "video/webm"
+                    else -> "application/octet-stream"
+                }
+
+                videoPart = MultipartBody.Part.createFormData(
+                    "video",
+                    videoFile.name,
+                    videoFile.asRequestBody(videoMime.toMediaTypeOrNull())
+                )
+            }
+
+            val mgBodies: RequestBody? = muscleGroup?.let { Gson().toJson(it).toRequestBody(json) }
+            val eqBodies: RequestBody? = equipment?.let { Gson().toJson(it).toRequestBody(json) }
+            val tagBodies: RequestBody? = hashtags?.let { Gson().toJson(it).toRequestBody(json) }
+
+            val res = api.updateExercise(
+                exerciseId = exerciseId,
+                name = nameBody,
+                description = descriptionBody,
+                advancedLevel = advancedBody,
+                visibility = visibilityBody,
+                image = imagePart,
+                video = videoPart,
+                muscleGroup = mgBodies,
+                equipment = eqBodies,
+                hashtags = tagBodies
+            )
+
+            tempFiles.forEach { it.delete() }
+
+            if (res.isSuccessful) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "Ćwiczenie zostało zaktualizowane pomyślnie",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                Result.success(Unit)
+            } else {
+                val raw = res.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, res.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: HttpException) {
+            if (e.code() == 401) {
+                Result.failure(Exception(context.getString(R.string.session_expired_login_again)))
+            } else {
+                val raw = e.response()?.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, e.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        }
+    }
+
     private fun uriToTempFile(uri: Uri, prefix: String, suffix: String): File {
         val input: InputStream? = context.contentResolver.openInputStream(uri)
         val file = File.createTempFile(prefix, suffix, context.cacheDir)
@@ -335,6 +462,95 @@ class ExerciseRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun getFavoriteExercises(
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<ExercisesResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getFavoriteExercises(page, pageSize)
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserExercises(
+        userId: String,
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<ExercisesResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getUserExercises(userId, page, pageSize)
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteExercise(
+        exerciseId: String
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val res = api.deleteExercise(exerciseId)
+
+            if (res.isSuccessful) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "Ćwiczenie zostało pomyślnie usunięte",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                Result.success(Unit)
+            } else {
+                val raw = res.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, res.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: HttpException) {
+            if (e.code() == 401) {
+                Result.failure(Exception(context.getString(R.string.session_expired_login_again)))
+            } else {
+                val raw = e.response()?.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, e.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getCommentsForExercise(
+        exerciseId: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): GetCommentsResponse? {
+        return try {
+            val response = api.getExerciseComments(exerciseId, cursor, limit)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 }

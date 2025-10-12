@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -238,7 +239,7 @@ fun ExerciseCard(
                     }
                 }
 
-                DifficultyBadge(
+                DifficultyBadgeExercise(
                     difficulty = exercise.advancedLevel,
                     modifier = Modifier
                         .padding(8.dp)
@@ -249,7 +250,7 @@ fun ExerciseCard(
 }
 
 @Composable
-private fun DifficultyBadge(
+fun DifficultyBadgeExercise(
     difficulty: String,
     modifier: Modifier = Modifier
 ) {
@@ -257,7 +258,7 @@ private fun DifficultyBadge(
         AdvancedLevel.NONE -> Triple("Nie wybrano", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
         AdvancedLevel.EASY -> Triple("Początkujący", getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
         AdvancedLevel.MEDIUM -> Triple("Średniozaawansowany", getYellowColor(), getOnYellowColor())
-        AdvancedLevel.HARD -> Triple("Zaawansowany", getOnSurfaceColor().copy(alpha = 0.2f), getOnSurfaceColor())
+        AdvancedLevel.HARD -> Triple("Zaawansowany", getErrorColor().copy(alpha = 0.2f), getErrorColor())
         else -> Triple("?", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
     }
 

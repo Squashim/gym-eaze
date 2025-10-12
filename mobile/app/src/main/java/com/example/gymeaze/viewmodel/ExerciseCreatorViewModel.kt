@@ -9,6 +9,7 @@ import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.data.repository.ExerciseRepository
 import com.example.gymeaze.data.models.Equipment
+import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.MuscleGroup
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,9 +34,16 @@ data class ExerciseCreatorState(
     val availableMuscleGroups: List<MuscleGroup> = emptyList(),
     val availableEquipment: List<Equipment> = emptyList(),
     val isLoadingData: Boolean = false,
-    val currentStep: ExerciseCreatorStep = ExerciseCreatorStep.BASIC
+    val currentStep: ExerciseCreatorStep = ExerciseCreatorStep.BASIC,
+    val isEditMode: Boolean = false,
+    val editingExerciseId: String? = null,
+    val existingImageUrl: String? = null,
+    val existingVideoUrl: String? = null
 ) {
-    val basicValid get() = name.isNotBlank() && imageUri != null && videoUri != null
+    val basicValid get() = name.isNotBlank() &&
+            (imageUri != null || existingImageUrl != null) &&
+            (videoUri != null || existingVideoUrl != null)
+
     val extraValid get() = description.isNotBlank() &&
             description.length <= 850 &&
             selectedMuscleGroups.isNotEmpty() &&
@@ -81,15 +89,46 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
+    fun loadExerciseForEdit(exercise: Exercise) {
+        _uiState.value = _uiState.value.copy(
+            isEditMode = true,
+            editingExerciseId = exercise.id,
+            name = exercise.name,
+            description = exercise.description,
+            difficulty = exercise.advancedLevel,
+            isPublic = if (exercise.visibility == PrivacySettings.PUBLIC) {
+                PrivacySettings.PUBLIC
+            } else {
+                PrivacySettings.PRIVATE
+            },
+            selectedMuscleGroups = exercise.muscleGroup,
+            selectedEquipment = exercise.equipment,
+            hashtags = exercise.hashtags,
+            existingImageUrl = exercise.image,
+            existingVideoUrl = exercise.video,
+            imageUri = null,
+            videoUri = null
+        )
+    }
+
     fun setName(v: String) { _uiState.value = _uiState.value.copy(name = v.take(150)) }
-    fun setImage(u: Uri?) { _uiState.value = _uiState.value.copy(imageUri = u) }
-    fun setVideo(u: Uri?) { _uiState.value = _uiState.value.copy(videoUri = u) }
+
+    fun setImage(u: Uri?) {
+        _uiState.value = _uiState.value.copy(imageUri = u)
+    }
+
+    fun setVideo(u: Uri?) {
+        _uiState.value = _uiState.value.copy(videoUri = u)
+    }
+
     fun setDifficulty(v: String) { _uiState.value = _uiState.value.copy(difficulty = v) }
+
     fun setPublic(isChecked: Boolean) {
         _uiState.value = _uiState.value.copy(
             isPublic = if (isChecked) PrivacySettings.PUBLIC else PrivacySettings.PRIVATE
         )
     }
+
     fun setDescription(v: String) { _uiState.value = _uiState.value.copy(description = v.take(850)) }
 
     fun setHashtags(list: List<String>) {
@@ -128,6 +167,14 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun create() {
+        if (_uiState.value.isEditMode) {
+            updateExercise()
+        } else {
+            createNewExercise()
+        }
+    }
+
+    private fun createNewExercise() {
         val s = _uiState.value
         viewModelScope.launch {
             _uiState.value = s.copy(isLoading = true, error = null, success = false)
@@ -148,6 +195,37 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
                 _uiState.value.copy(
                     isLoading = false,
                     error = res.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_exercise_creation_failed)
+                )
+            }
+        }
+    }
+
+    private fun updateExercise() {
+        val s = _uiState.value
+        val exerciseId = s.editingExerciseId ?: return
+
+        viewModelScope.launch {
+            _uiState.value = s.copy(isLoading = true, error = null, success = false)
+
+            val res = repo.updateExercise(
+                exerciseId = exerciseId,
+                name = s.name,
+                description = s.description,
+                imageUri = s.imageUri,
+                videoUri = s.videoUri,
+                difficulty = s.difficulty,
+                isPublic = s.isPublic,
+                muscleGroup = s.selectedMuscleGroups.map { it._id },
+                equipment = s.selectedEquipment.map { it._id },
+                hashtags = s.hashtags
+            )
+
+            _uiState.value = if (res.isSuccess) {
+                _uiState.value.copy(isLoading = false, success = true)
+            } else {
+                _uiState.value.copy(
+                    isLoading = false,
+                    error = res.exceptionOrNull()?.message ?: "Błąd podczas aktualizacji ćwiczenia"
                 )
             }
         }
