@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens
+package com.example.gymeaze.ui.screens.exercises.logggedIn
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -22,14 +22,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.MuscleGroup
@@ -40,12 +39,12 @@ import com.google.android.exoplayer2.ui.PlayerView
 import java.text.SimpleDateFormat
 import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Comment
+import com.example.gymeaze.data.models.ExerciseAuthor
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.models.timeAgo
 import com.example.gymeaze.ui.components.DifficultyBadgeExercise
 import com.example.gymeaze.ui.components.user.UserAvatar
-import com.example.gymeaze.ui.screens.comments.CommentItem
-import com.example.gymeaze.ui.screens.comments.ReplyItem
+import com.example.gymeaze.ui.screens.posts.guest.components.LoginToLikeDialog
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 import kotlinx.coroutines.launch
 import java.util.*
@@ -57,7 +56,8 @@ fun ExerciseDetailScreen(
     onBackClick: () -> Unit,
     onEditClick: ((Exercise) -> Unit)? = null,
     onDeleteSuccess: () -> Unit = {},
-    exercisesViewModel: ExercisesViewModel
+    exercisesViewModel: ExercisesViewModel,
+    isUserLoggedIn: Boolean = true
 ) {
     val currentExercise by exercisesViewModel.currentExercise.collectAsState()
     val isLoadingDetail by exercisesViewModel.isLoadingExerciseDetail.collectAsState()
@@ -65,6 +65,7 @@ fun ExerciseDetailScreen(
     val favoriteExercises by exercisesViewModel.favoriteExercises.collectAsState()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showLoginDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(exerciseId) {
         exercisesViewModel.loadExerciseDetail(exerciseId)
@@ -103,17 +104,21 @@ fun ExerciseDetailScreen(
                         ) {
                             IconButton(
                                 onClick = {
-                                    exercisesViewModel.toggleLike(exercise.id)
+                                    if (isUserLoggedIn) {
+                                        exercisesViewModel.toggleLike(exercise.id)
+                                    } else {
+                                        showLoginDialog = true
+                                    }
                                 }
                             ) {
                                 Icon(
-                                    imageVector = if (exercisesViewModel.isExerciseLiked(exercise.id)) {
+                                    imageVector = if (isUserLoggedIn && exercisesViewModel.isExerciseLiked(exercise.id)) {
                                         Icons.Default.ThumbUpAlt
                                     } else {
                                         Icons.Default.ThumbUpOffAlt
                                     },
                                     contentDescription = "Polub",
-                                    tint = if (exercisesViewModel.isExerciseLiked(exercise.id)) {
+                                    tint = if (isUserLoggedIn && exercisesViewModel.isExerciseLiked(exercise.id)) {
                                         getPrimaryColor()
                                     } else {
                                         getOnSurfaceSecondaryColor()
@@ -128,7 +133,7 @@ fun ExerciseDetailScreen(
                                 modifier = Modifier.padding(end = 8.dp)
                             )
 
-                            if (exercisesViewModel.isCurrentUserExercise(exercise.author.username)) {
+                            if (isUserLoggedIn && exercisesViewModel.isCurrentUserExercise(exercise.author.username)) {
                                 IconButton(
                                     onClick = {
                                         onEditClick?.invoke(exercise)
@@ -153,10 +158,14 @@ fun ExerciseDetailScreen(
                             } else {
                                 IconButton(
                                     onClick = {
-                                        exercisesViewModel.toggleFavorite(exercise.id)
+                                        if (isUserLoggedIn) {
+                                            exercisesViewModel.toggleFavorite(exercise.id)
+                                        } else {
+                                            showLoginDialog = true
+                                        }
                                     }
                                 ) {
-                                    val isFavorite = favoriteExercises.contains(exercise.id)
+                                    val isFavorite = isUserLoggedIn && favoriteExercises.contains(exercise.id)
                                     Icon(
                                         imageVector = if (isFavorite) {
                                             Icons.Default.Favorite
@@ -172,7 +181,13 @@ fun ExerciseDetailScreen(
                                     )
                                 }
 
-                                IconButton(onClick = { /* TODO: Implementacja reportu */ }) {
+                                IconButton(onClick = {
+                                    if (!isUserLoggedIn) {
+                                        showLoginDialog = true
+                                    } else {
+                                        /* TODO: Implementacja reportu */
+                                    }
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.Flag,
                                         contentDescription = "Zgłoś",
@@ -222,6 +237,8 @@ fun ExerciseDetailScreen(
                 ExerciseDetailContent(
                     exercise = currentExercise!!,
                     exercisesViewModel = exercisesViewModel,
+                    isUserLoggedIn = isUserLoggedIn,
+                    onShowLoginDialog = { showLoginDialog = true },
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -238,6 +255,12 @@ fun ExerciseDetailScreen(
                     onDeleteSuccess()
                 }
             }
+        )
+    }
+
+    if (showLoginDialog) {
+        LoginToLikeDialog(
+            onDismiss = { showLoginDialog = false }
         )
     }
 }
@@ -288,7 +311,7 @@ fun DeleteExerciseDialog(
                     text = "Ta operacja jest nieodwracalna.",
                     color = getOnSurfaceSecondaryColor(),
                     fontSize = 12.sp,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    fontStyle = FontStyle.Italic
                 )
             }
         },
@@ -336,13 +359,15 @@ fun DeleteExerciseDialog(
 private fun ExerciseDetailContent(
     exercise: Exercise,
     exercisesViewModel: ExercisesViewModel,
+    isUserLoggedIn: Boolean = true,
+    onShowLoginDialog: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val comments by exercisesViewModel.exerciseComments.collectAsState()
     val hasMore by exercisesViewModel.hasMoreComments.collectAsState()
     val isLoading by exercisesViewModel.isLoadingComments.collectAsState()
     val currentUser by exercisesViewModel.currentUser.collectAsState()
-    val currentUsername = currentUser?.username.orEmpty()
+    val currentUsername = if (isUserLoggedIn) currentUser?.username.orEmpty() else ""
 
     var newCommentText by remember { mutableStateOf("") }
     var replyingTo by remember { mutableStateOf<String?>(null) }
@@ -358,14 +383,22 @@ private fun ExerciseDetailContent(
 
     LaunchedEffect(exercise.id) {
         exercisesViewModel.loadExerciseComments(exercise.id, refresh = true)
-        exercisesViewModel.fetchUserCommentLikes()
+        if (isUserLoggedIn) {
+            exercisesViewModel.fetchUserCommentLikes()
+        }
     }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp,
+            bottom = if (isUserLoggedIn) 20.dp else 80.dp
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
         item {
             Text(
                 text = exercise.name,
@@ -441,7 +474,7 @@ private fun ExerciseDetailContent(
         }
 
         item {
-            if (currentUsername.isNotEmpty()) {
+            if (isUserLoggedIn && currentUsername.isNotEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -598,9 +631,14 @@ private fun ExerciseDetailContent(
             ExerciseCommentItem(
                 comment = comment,
                 viewModel = exercisesViewModel,
+                isUserLoggedIn = isUserLoggedIn,
                 onReply = { commentId, username ->
-                    replyingTo = commentId
-                    replyingToUsername = username
+                    if (isUserLoggedIn) {
+                        replyingTo = commentId
+                        replyingToUsername = username
+                    } else {
+                        onShowLoginDialog()
+                    }
                 },
                 isExpanded = expandedReplies.contains(comment._id),
                 onToggleReplies = {
@@ -622,7 +660,8 @@ private fun ExerciseDetailContent(
                 },
                 onDeleteClick = { commentToDelete ->
                     showDeleteDialog = commentToDelete
-                }
+                },
+                onShowLoginDialog = onShowLoginDialog
             )
 
             if (expandedReplies.contains(comment._id)) {
@@ -631,6 +670,7 @@ private fun ExerciseDetailContent(
                     ExerciseReplyItem(
                         reply = reply,
                         viewModel = exercisesViewModel,
+                        isUserLoggedIn = isUserLoggedIn,
                         currentUsername = currentUsername,
                         onEditClick = { replyToEdit ->
                             editingComment = replyToEdit
@@ -639,7 +679,8 @@ private fun ExerciseDetailContent(
                         },
                         onDeleteClick = { replyToDelete ->
                             showDeleteDialog = replyToDelete
-                        }
+                        },
+                        onShowLoginDialog = onShowLoginDialog
                     )
                 }
             }
@@ -850,234 +891,6 @@ private fun EditCommentDialog(
     )
 }
 
-@Composable
-private fun CommentsSection(
-    exerciseId: String,
-    comments: List<Comment>,
-    currentUser: User?,
-    onShowAllComments: () -> Unit,
-    exercisesViewModel: ExercisesViewModel
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Comment,
-                        contentDescription = "Komentarze",
-                        tint = getPrimaryColor(),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Komentarze (${comments.size})",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = getOnSurfaceColor()
-                    )
-                }
-
-                if (comments.isNotEmpty()) {
-                    TextButton(onClick = onShowAllComments) {
-                        Text(
-                            text = "Zobacz wszystkie",
-                            fontSize = 14.sp,
-                            color = getPrimaryColor()
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = getPrimaryColor(),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            when {
-                comments.isEmpty() -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ChatBubbleOutline,
-                            contentDescription = null,
-                            tint = getOnSurfaceSecondaryColor(),
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = if (currentUser != null)
-                                "Bądź pierwszy, który skomentuje"
-                            else
-                                "Zaloguj się, aby dodać komentarz",
-                            fontSize = 14.sp,
-                            color = getOnSurfaceSecondaryColor(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-                else -> {
-                    comments.take(2).forEach { comment ->
-                        CommentPreviewItem(
-                            comment = comment,
-                            exercisesViewModel = exercisesViewModel
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    if (comments.size > 2) {
-                        Text(
-                            text = "+ ${comments.size - 2} więcej komentarzy",
-                            fontSize = 13.sp,
-                            color = getOnSurfaceSecondaryColor(),
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-                }
-            }
-
-            if (currentUser != null) {
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(
-                    color = getOnSurfaceSecondaryColor().copy(alpha = 0.2f),
-                    thickness = 1.dp
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                var quickCommentText by remember { mutableStateOf("") }
-                val scope = rememberCoroutineScope()
-
-                OutlinedTextField(
-                    value = quickCommentText,
-                    onValueChange = { quickCommentText = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text(
-                            text = "Dodaj komentarz...",
-                            color = getOnSurfaceSecondaryColor()
-                        )
-                    },
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                if (quickCommentText.isNotBlank()) {
-                                    scope.launch {
-                                        exercisesViewModel.addExerciseComment(
-                                            exerciseId,
-                                            quickCommentText.trim()
-                                        )
-                                        quickCommentText = ""
-                                    }
-                                }
-                            },
-                            enabled = quickCommentText.isNotBlank()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Send,
-                                contentDescription = "Wyślij",
-                                tint = if (quickCommentText.isNotBlank())
-                                    getPrimaryColor()
-                                else
-                                    getOnSurfaceSecondaryColor()
-                            )
-                        }
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = getPrimaryColor(),
-                        unfocusedBorderColor = getOnSurfaceSecondaryColor().copy(alpha = 0.3f),
-                        cursorColor = getPrimaryColor()
-                    ),
-                    maxLines = 3
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CommentPreviewItem(
-    comment: Comment,
-    exercisesViewModel: ExercisesViewModel
-) {
-    val isLiked by exercisesViewModel.isExerciseCommentLiked(comment._id).collectAsState(initial = false)
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        UserAvatar(
-            imageUrl = comment.author.profileDetails?.profilePicture,
-            username = comment.author.username,
-            modifier = Modifier.size(32.dp)
-        )
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = comment.author.username,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = getOnSurfaceColor()
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = comment.content.take(100) + if (comment.content.length > 100) "..." else "",
-                fontSize = 13.sp,
-                color = getOnSurfaceColor(),
-                maxLines = 2
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = comment.timeAgo(),
-                    fontSize = 11.sp,
-                    color = getOnSurfaceSecondaryColor()
-                )
-
-                Icon(
-                    imageVector = if (isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                    contentDescription = "Polub",
-                    tint = if (isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
-                    modifier = Modifier.size(14.dp)
-                )
-
-                Text(
-                    text = "${comment.likes ?: 0}",
-                    fontSize = 11.sp,
-                    color = getOnSurfaceSecondaryColor()
-                )
-            }
-        }
-    }
-}
 @Composable
 private fun VideoPlayerSection(
     videoUrl: String,
@@ -1338,7 +1151,7 @@ private fun HashtagChip(hashtag: String) {
 
 @Composable
 private fun AuthorSection(
-    author: com.example.gymeaze.data.models.ExerciseAuthor,
+    author: ExerciseAuthor,
     createdAt: String
 ) {
     Card(
@@ -1405,12 +1218,14 @@ private fun formatDate(dateString: String): String {
 private fun ExerciseCommentItem(
     comment: Comment,
     viewModel: ExercisesViewModel,
+    isUserLoggedIn: Boolean = true,
     onReply: (String, String) -> Unit,
     isExpanded: Boolean,
     onToggleReplies: () -> Unit,
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
-    onDeleteClick: (Comment) -> Unit = {}
+    onDeleteClick: (Comment) -> Unit = {},
+    onShowLoginDialog: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isExerciseCommentLiked(comment._id).collectAsState(initial = false)
@@ -1450,83 +1265,85 @@ private fun ExerciseCommentItem(
                         color = getOnSurfaceColor()
                     )
 
-                    Box {
-                        IconButton(
-                            onClick = { showMenu = true },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "Więcej",
-                                modifier = Modifier.size(18.dp),
-                                tint = getOnSurfaceColor()
-                            )
-                        }
+                    if (isUserLoggedIn) {
+                        Box {
+                            IconButton(
+                                onClick = { showMenu = true },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.MoreVert,
+                                    contentDescription = "Więcej",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = getOnSurfaceColor()
+                                )
+                            }
 
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            if (comment.author.username == currentUsername) {
-                                DropdownMenuItem(
-                                    onClick = {
-                                        showMenu = false
-                                        onEditClick(comment)
-                                    },
-                                    text = {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(
-                                                imageVector = Icons.Default.Edit,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                                tint = getOnSurfaceColor()
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text("Edytuj komentarz", color = getOnSurfaceColor())
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                if (comment.author.username == currentUsername) {
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            showMenu = false
+                                            onEditClick(comment)
+                                        },
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Edit,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                    tint = getOnSurfaceColor()
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Edytuj komentarz", color = getOnSurfaceColor())
+                                            }
                                         }
-                                    }
-                                )
+                                    )
 
-                                HorizontalDivider(
-                                    color = getOnSurfaceColor().copy(alpha = 0.3f),
-                                    thickness = 1.dp,
-                                    modifier = Modifier.padding(horizontal = 12.dp)
-                                )
+                                    HorizontalDivider(
+                                        color = getOnSurfaceColor().copy(alpha = 0.3f),
+                                        thickness = 1.dp,
+                                        modifier = Modifier.padding(horizontal = 12.dp)
+                                    )
 
-                                DropdownMenuItem(
-                                    onClick = {
-                                        showMenu = false
-                                        onDeleteClick(comment)
-                                    },
-                                    text = {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(
-                                                imageVector = Icons.Default.Delete,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                                tint = getErrorColor()
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text("Usuń komentarz", color = getErrorColor())
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            showMenu = false
+                                            onDeleteClick(comment)
+                                        },
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Delete,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                    tint = getErrorColor()
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Usuń komentarz", color = getErrorColor())
+                                            }
                                         }
-                                    }
-                                )
-                            } else {
-                                DropdownMenuItem(
-                                    onClick = { showMenu = false },
-                                    text = {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(
-                                                imageVector = Icons.Default.Flag,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                                tint = getOnSurfaceColor()
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text("Zgłoś komentarz", color = getOnSurfaceColor())
+                                    )
+                                } else {
+                                    DropdownMenuItem(
+                                        onClick = { showMenu = false },
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Flag,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                    tint = getOnSurfaceColor()
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Zgłoś komentarz", color = getOnSurfaceColor())
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -1564,8 +1381,10 @@ private fun ExerciseCommentItem(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
-                            if (currentUsername.isNotEmpty()) {
+                            if (isUserLoggedIn) {
                                 viewModel.toggleExerciseCommentLike(comment._id)
+                            } else {
+                                onShowLoginDialog()
                             }
                         }
                     ) {
@@ -1584,9 +1403,9 @@ private fun ExerciseCommentItem(
                         }
                         Spacer(Modifier.padding(2.dp))
                         Icon(
-                            if (isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
+                            if (isUserLoggedIn && isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
                             contentDescription = "Polub",
-                            tint = if (isLiked) getPrimaryColor() else getOnSurfaceColor(),
+                            tint = if (isUserLoggedIn && isLiked) getPrimaryColor() else getOnSurfaceColor(),
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
@@ -1596,18 +1415,16 @@ private fun ExerciseCommentItem(
                         )
                     }
 
-                    if (currentUsername.isNotEmpty()) {
-                        TextButton(
-                            onClick = { onReply(comment._id, comment.author.username) },
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Text(
-                                "Odpowiedz",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = getOnSurfaceColor()
-                            )
-                        }
+                    TextButton(
+                        onClick = { onReply(comment._id, comment.author.username) },
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(
+                            "Odpowiedz",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = getOnSurfaceColor()
+                        )
                     }
 
                     if (comment.repliesCount != null && comment.repliesCount > 0) {
@@ -1634,9 +1451,11 @@ private fun ExerciseCommentItem(
 private fun ExerciseReplyItem(
     reply: Comment,
     viewModel: ExercisesViewModel,
+    isUserLoggedIn: Boolean = true,
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
-    onDeleteClick: (Comment) -> Unit = {}
+    onDeleteClick: (Comment) -> Unit = {},
+    onShowLoginDialog: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isExerciseCommentLiked(reply._id).collectAsState(initial = false)
@@ -1666,71 +1485,73 @@ private fun ExerciseReplyItem(
                     color = getOnSurfaceColor()
                 )
 
-                Box {
-                    IconButton(
-                        onClick = { showMenu = true },
-                        modifier = Modifier.size(20.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.MoreVert,
-                            contentDescription = "Więcej",
-                            modifier = Modifier.size(16.dp),
-                            tint = getOnSurfaceColor()
-                        )
-                    }
+                if (isUserLoggedIn) {
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier.size(20.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "Więcej",
+                                modifier = Modifier.size(16.dp),
+                                tint = getOnSurfaceColor()
+                            )
+                        }
 
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        if (reply.author.username == currentUsername) {
-                            DropdownMenuItem(
-                                text = { Text("Edytuj odpowiedź", color = getOnSurfaceColor()) },
-                                onClick = {
-                                    showMenu = false
-                                    onEditClick(reply)
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = null,
-                                        tint = getOnSurfaceColor()
-                                    )
-                                }
-                            )
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            if (reply.author.username == currentUsername) {
+                                DropdownMenuItem(
+                                    text = { Text("Edytuj odpowiedź", color = getOnSurfaceColor()) },
+                                    onClick = {
+                                        showMenu = false
+                                        onEditClick(reply)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = null,
+                                            tint = getOnSurfaceColor()
+                                        )
+                                    }
+                                )
 
-                            HorizontalDivider(
-                                color = getOnSurfaceColor().copy(alpha = 0.3f),
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 12.dp)
-                            )
+                                HorizontalDivider(
+                                    color = getOnSurfaceColor().copy(alpha = 0.3f),
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(horizontal = 12.dp)
+                                )
 
-                            DropdownMenuItem(
-                                text = { Text("Usuń odpowiedź", color = getErrorColor()) },
-                                onClick = {
-                                    showMenu = false
-                                    onDeleteClick(reply)
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = null,
-                                        tint = getErrorColor()
-                                    )
-                                }
-                            )
-                        } else {
-                            DropdownMenuItem(
-                                text = { Text("Zgłoś", color = getOnSurfaceColor()) },
-                                onClick = { showMenu = false },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Flag,
-                                        contentDescription = null,
-                                        tint = getOnSurfaceColor()
-                                    )
-                                }
-                            )
+                                DropdownMenuItem(
+                                    text = { Text("Usuń odpowiedź", color = getErrorColor()) },
+                                    onClick = {
+                                        showMenu = false
+                                        onDeleteClick(reply)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = null,
+                                            tint = getErrorColor()
+                                        )
+                                    }
+                                )
+                            } else {
+                                DropdownMenuItem(
+                                    text = { Text("Zgłoś", color = getOnSurfaceColor()) },
+                                    onClick = { showMenu = false },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Flag,
+                                            contentDescription = null,
+                                            tint = getOnSurfaceColor()
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -1750,8 +1571,10 @@ private fun ExerciseReplyItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.clickable {
-                    if (currentUsername.isNotEmpty()) {
+                    if (isUserLoggedIn) {
                         viewModel.toggleExerciseCommentLike(reply._id)
+                    } else {
+                        onShowLoginDialog()
                     }
                 }
             ) {
@@ -1770,9 +1593,9 @@ private fun ExerciseReplyItem(
                 }
                 Spacer(Modifier.padding(3.dp))
                 Icon(
-                    if (isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
+                    if (isUserLoggedIn && isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
                     contentDescription = "Polub",
-                    tint = if (isLiked) getPrimaryColor() else getOnSurfaceColor(),
+                    tint = if (isUserLoggedIn && isLiked) getPrimaryColor() else getOnSurfaceColor(),
                     modifier = Modifier.size(16.dp)
                 )
                 Text(

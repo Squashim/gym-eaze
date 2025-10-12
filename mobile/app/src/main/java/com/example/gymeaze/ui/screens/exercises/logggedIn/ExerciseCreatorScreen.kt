@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens
+package com.example.gymeaze.ui.screens.exercises.logggedIn
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -44,7 +44,9 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
+import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.MultiSelectDropdown
 import com.example.gymeaze.ui.theme.*
@@ -778,7 +780,7 @@ private fun TagGroup(items: List<String>) {
 }
 
 @Composable
-private fun TagGroupWithImage(items: List<com.example.gymeaze.data.models.MuscleGroup>) {
+private fun TagGroupWithImage(items: List<MuscleGroup>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
@@ -817,7 +819,7 @@ private fun TagGroupWithImage(items: List<com.example.gymeaze.data.models.Muscle
 }
 
 @Composable
-private fun EquipmentTagGroup(items: List<com.example.gymeaze.data.models.Equipment>) {
+private fun EquipmentTagGroup(items: List<Equipment>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier

@@ -435,11 +435,9 @@ fun AuthScreen(
 
     Scaffold(
         topBar = {
-            // Pokazuj TopBar tylko jeśli nie jesteś w sekcji "community"
-            if (selectedRoute != "community") {
+            if (selectedRoute !in listOf("community", "exercises")) {
                 GymEazeTopAppBar(onSettingsClick = onSettingsClick)
             }
-            // W sekcji "community" dziecko (PostScreen) wyświetli własny TopBar z lupką!
         },
         bottomBar = {
             GymEazeBottomNavigationBar(

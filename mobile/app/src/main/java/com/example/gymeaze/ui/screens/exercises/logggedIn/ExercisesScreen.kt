@@ -1,6 +1,5 @@
-package com.example.gymeaze.ui.screens
+package com.example.gymeaze.ui.screens.exercises.logggedIn
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,7 +33,6 @@ import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.window.DialogProperties
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
@@ -369,7 +367,7 @@ fun ExercisesScreen(
     }
 }
 
-private fun hasActiveFilters(
+fun hasActiveFilters(
     muscleGroups: List<MuscleGroup>,
     equipment: List<Equipment>,
     hashtags: List<String>,
@@ -385,7 +383,7 @@ private fun hasActiveFilters(
             followersOnly
 }
 @Composable
-private fun SearchField(
+fun SearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -431,7 +429,7 @@ private fun SearchField(
 }
 
 @Composable
-private fun FilterDialog(
+fun FilterDialog(
     selectedMuscleGroups: List<MuscleGroup>,
     availableMuscleGroups: List<MuscleGroup>,
     onMuscleGroupsChange: (List<MuscleGroup>) -> Unit,
@@ -447,7 +445,8 @@ private fun FilterDialog(
     followersOnly: Boolean,
     onFollowersOnlyChange: (Boolean) -> Unit,
     onClearAll: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isUserLoggedIn: Boolean = true
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -517,11 +516,13 @@ private fun FilterDialog(
                         )
                     }
 
-                    item {
-                        FollowersOnlyToggle(
-                            enabled = followersOnly,
-                            onToggle = onFollowersOnlyChange
-                        )
+                    if (isUserLoggedIn) {
+                        item {
+                            FollowersOnlyToggle(
+                                enabled = followersOnly,
+                                onToggle = onFollowersOnlyChange
+                            )
+                        }
                     }
 
                     item {
@@ -599,7 +600,7 @@ private fun FilterDialog(
 }
 
 @Composable
-private fun FollowersOnlyToggle(
+fun FollowersOnlyToggle(
     enabled: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
@@ -648,7 +649,7 @@ private fun FollowersOnlyToggle(
 }
 
 @Composable
-private fun SortingSection(
+fun SortingSection(
     selectedSort: String,
     onSortChange: (String) -> Unit
 ) {
@@ -680,7 +681,7 @@ private fun SortingSection(
 }
 
 @Composable
-private fun SortChip(
+fun SortChip(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit
@@ -815,7 +816,7 @@ fun DifficultySelector(
 }
 
 @Composable
-private fun EmptyExercisesMessage() {
+fun EmptyExercisesMessage() {
     Column(
         modifier = Modifier
             .fillMaxSize()

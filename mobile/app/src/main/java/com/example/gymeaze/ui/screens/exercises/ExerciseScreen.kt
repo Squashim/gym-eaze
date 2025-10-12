@@ -11,10 +11,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.Exercise
-import com.example.gymeaze.ui.screens.ExerciseCreatorScreen
-import com.example.gymeaze.ui.screens.ExerciseDetailScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExerciseCreatorScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExerciseDetailScreen
 import com.example.gymeaze.ui.screens.ExercisesMenuScreen
-import com.example.gymeaze.ui.screens.ExercisesScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExercisesScreen
 import com.example.gymeaze.ui.screens.FavoriteExercisesScreen
 import com.example.gymeaze.ui.screens.exercises.guest.ExercisesOverviewScreen
 import com.example.gymeaze.ui.screens.exercises.loggedIn.MyExercisesScreen
@@ -28,8 +28,36 @@ fun ExerciseScreen(
     createExerciseViewModel: ExerciseCreatorViewModel,
     setShowBottomBar: (Boolean) -> Unit = {}
 ) {
+    val exercisesViewModel: ExercisesViewModel = viewModel()
+
     if (!isUserLoggedIn) {
-        ExercisesOverviewScreen(onSettingsClick = onSettingsClick)
+        var selectedExerciseId by remember { mutableStateOf<String?>(null) }
+
+        when {
+            selectedExerciseId != null -> {
+                ExerciseDetailScreen(
+                    exerciseId = selectedExerciseId!!,
+                    onBackClick = {
+                        selectedExerciseId = null
+                    },
+                    onEditClick = null,
+                    onDeleteSuccess = {
+                        selectedExerciseId = null
+                    },
+                    exercisesViewModel = exercisesViewModel,
+                    isUserLoggedIn = false
+                )
+            }
+            else -> {
+                ExercisesOverviewScreen(
+                    onSettingsClick = onSettingsClick,
+                    onExerciseClick = { exerciseId ->
+                        selectedExerciseId = exerciseId
+                    },
+                    viewModel = exercisesViewModel
+                )
+            }
+        }
         return
     }
 
@@ -38,7 +66,6 @@ fun ExerciseScreen(
     var returnToSection by remember { mutableStateOf("menu") }
     var selectedExerciseForEdit by remember { mutableStateOf<Exercise?>(null) }
 
-    val exercisesViewModel: ExercisesViewModel = viewModel()
 
     LaunchedEffect(exerciseSection) {
         setShowBottomBar(exerciseSection == "menu")

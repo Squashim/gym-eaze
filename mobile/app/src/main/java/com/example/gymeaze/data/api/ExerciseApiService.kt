@@ -40,7 +40,6 @@ interface ExerciseApiService {
         @Path("id") exerciseId: String
     ): Response<Exercise>
 
-
     @GET("/api/exercises/favorite")
     suspend fun getFavoriteExercises(
         @Query("page") page: Int = 1,

@@ -162,26 +162,6 @@ class ExerciseRepository(private val context: Context) {
         }
     }
 
-    suspend fun getExercisesByIds(exerciseIds: List<String>): Result<List<Exercise>> = withContext(Dispatchers.IO) {
-        try {
-
-            if (exerciseIds.isEmpty()) {
-                return@withContext Result.success(emptyList())
-            }
-            val response = api.getExercisesByIds(exerciseIds)
-
-            if (response.isSuccessful && response.body() != null) {
-                val exercises = response.body()!!
-                Result.success(exercises)
-            } else {
-                val errorBody = response.errorBody()?.string()
-                Result.failure(Exception("Nie można pobrać ćwiczeń"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
     suspend fun createExercise(
         name: String,
         description: String,

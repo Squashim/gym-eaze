@@ -1,6 +1,5 @@
 package com.example.gymeaze.ui.screens.posts.loggedIn
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -12,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,10 +20,9 @@ import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.LoadingScreen
-import com.example.gymeaze.ui.screens.UploadCard
+import com.example.gymeaze.ui.screens.exercises.logggedIn.UploadCard
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
-import com.example.gymeaze.ui.theme.getOnPrimaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
