@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Info, X } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface GuestViewAlertProps {
   isVisible: boolean;
