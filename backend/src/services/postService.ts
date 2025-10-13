@@ -67,7 +67,7 @@ export const updatePostService = async (
     throw new Error('Treść posta może mieć maksymalnie 800 znaków');
   }
 
-  if (hashtags && hashtags.length > 0) {
+  if (hashtags) {
     if (hashtags.length > 50) {
       throw new Error(`Możesz dodać maksymalnie 50 hashtagów`);
     }
