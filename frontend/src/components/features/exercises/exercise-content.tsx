@@ -11,6 +11,7 @@ import type {
   PaginatedQueryParams,
 } from '@/types/filters';
 import ItemsSkeleton from '@/components/ui/items-skeleton';
+import { cn } from '@/lib/utils';
 
 type ExerciseContentProps = {
   pagination: {
@@ -24,6 +25,7 @@ type ExerciseContentProps = {
     pageSize: number;
   };
   pageType?: PageType;
+  className?: string;
   isLoading: boolean;
   isError: boolean;
 };
@@ -33,6 +35,7 @@ const ExerciseContent = ({
   isLoading,
   isError,
   pagination,
+  className,
   pageType = 'browser',
 }: ExerciseContentProps) => {
   const scrollRef = useRef<HTMLHeadingElement>(null);
@@ -46,6 +49,8 @@ const ExerciseContent = ({
         return `Stworzone ćwiczenia: ${exercises?.total ?? 0}`;
       case 'favorite':
         return `Dodane do ulubionych: ${exercises?.total ?? 0}`;
+      case 'profile':
+        return `Ćwiczenia użytkownika: ${exercises?.total ?? 0}`;
       default:
         return `Znaleziono ${exercises?.total ?? 0} ćwiczeń`;
     }
@@ -57,7 +62,12 @@ const ExerciseContent = ({
 
   return (
     <>
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-full justify-center">
+      <section
+        className={cn(
+          'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-full justify-center',
+          className,
+        )}
+      >
         <Typography className="col-span-full" ref={scrollRef} variant="h4">
           {renderSubtitle()}
         </Typography>

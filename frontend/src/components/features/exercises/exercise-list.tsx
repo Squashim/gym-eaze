@@ -193,7 +193,7 @@ const ExerciseCard = ({
             )}
           </CardContent>
         </CardHeader>
-        {pageType !== 'user' && (
+        {pageType !== 'user' && pageType !== 'profile' && (
           <CardFooter className="mt-auto ml-auto text-sm text-muted-foreground">
             Dodane przez: {exercise.author.username}
           </CardFooter>

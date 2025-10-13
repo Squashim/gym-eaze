@@ -11,6 +11,7 @@ import type { GetWorkoutsApiResponse } from '@/types/workout';
 import { useMemo, useRef } from 'react';
 import WorkoutList from './workout-list';
 import ItemsSkeleton from '@/components/ui/items-skeleton';
+import { cn } from '@/lib/utils';
 
 interface WorkoutContentProps {
   workouts?: {
@@ -24,6 +25,7 @@ interface WorkoutContentProps {
     setPageSize: (pageSize: PageSize) => void;
   };
   pageType?: PageType;
+  className?: string;
   isLoading: boolean;
   isError: boolean;
 }
@@ -33,6 +35,7 @@ function WorkoutContent({
   pageType = 'browser',
   isLoading,
   isError,
+  className,
   pagination,
 }: WorkoutContentProps) {
   const scrollRef = useRef<HTMLHeadingElement>(null);
@@ -46,6 +49,8 @@ function WorkoutContent({
         return `Stworzone plany: ${workouts?.total ?? 0}`;
       case 'favorite':
         return `Dodane do ulubionych: ${workouts?.total ?? 0}`;
+      case 'profile':
+        return `Plany użytkownika: ${workouts?.total ?? 0}`;
       default:
         return `Znaleziono ${workouts?.total ?? 0} planów`;
     }
@@ -57,7 +62,12 @@ function WorkoutContent({
 
   return (
     <>
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-full justify-center">
+      <section
+        className={cn(
+          'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-full justify-center',
+          className,
+        )}
+      >
         <Typography className="col-span-full" ref={scrollRef} variant="h4">
           {renderSubtitle()}
         </Typography>

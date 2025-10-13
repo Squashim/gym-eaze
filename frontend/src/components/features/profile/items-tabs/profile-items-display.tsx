@@ -6,6 +6,8 @@ import PostsTab from './posts-tab';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
+import ExercisesTab from './exercises-tab';
+import WorkoutsTab from './workouts-tab';
 
 export type ProfileItemsTabs = Exclude<ItemType, 'Komentarz'>;
 
@@ -75,8 +77,12 @@ function ProfileItemsDisplay({
       <TabsContent value={ItemType.Post}>
         <PostsTab isOwnProfile={isOwnProfile} profileId={profileId} />
       </TabsContent>
-      <TabsContent value={ItemType.Exercise}></TabsContent>
-      <TabsContent value={ItemType.Training}></TabsContent>
+      <TabsContent value={ItemType.Exercise}>
+        <ExercisesTab isOwnProfile={isOwnProfile} profileId={profileId} />
+      </TabsContent>
+      <TabsContent value={ItemType.Training}>
+        <WorkoutsTab isOwnProfile={isOwnProfile} profileId={profileId} />
+      </TabsContent>
     </Tabs>
   );
 }
