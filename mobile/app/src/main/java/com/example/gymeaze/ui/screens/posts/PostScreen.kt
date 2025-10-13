@@ -19,6 +19,7 @@ import com.example.gymeaze.ui.screens.posts.loggedIn.MyPosts
 import com.example.gymeaze.ui.screens.posts.loggedIn.PostsFollowedUsers
 import com.example.gymeaze.ui.screens.posts.loggedIn.PostsMenuScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
+import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable

@@ -8,6 +8,7 @@ import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.FavoritesResponse
 import com.example.gymeaze.data.models.PrivacySettings
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
@@ -350,6 +351,19 @@ class UserRepository(private val context: Context) {
             }
         } catch (e: IOException) {
             Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserFavorites(): Result<FavoritesResponse> {
+        return try {
+            val response = api.getUserFavorites()
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Błąd podczas pobierania ulubionych: ${response.message()}"))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -13,9 +13,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.AccountLinkingDialog
 import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.AuthScreen
-import com.example.gymeaze.ui.screens.ExerciseCreatorScreen
-import com.example.gymeaze.ui.screens.ExerciseDetailScreen
-import com.example.gymeaze.ui.screens.ExercisesScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExerciseCreatorScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExerciseDetailScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExercisesScreen
 import com.example.gymeaze.ui.screens.HomeScreen
 import com.example.gymeaze.ui.screens.IntroductionScreen
 import com.example.gymeaze.ui.screens.profile.edit.ProfileEditScreen
@@ -29,7 +29,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import com.example.gymeaze.ui.components.WorkoutLoginRequiredDialog
 import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
 import com.example.gymeaze.ui.screens.EditTrainingPlanScreen
 import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
@@ -47,6 +46,7 @@ import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.EditTrainingPlanViewModel
+import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
             val exerciseCreatorViewModel: ExerciseCreatorViewModel = viewModel()
             val createTrainingPlanViewModel: CreateTrainingPlanViewModel = viewModel()
             val createPostViewModel: PostsViewModel = viewModel()
+            val exercisesViewModel: ExercisesViewModel = viewModel()
 
 
             val userViewModel: UserViewModel = viewModel {
@@ -144,6 +145,7 @@ class MainActivity : ComponentActivity() {
                     }
                     createPostViewModel.clearPosts()
                     authViewModel.clearLogoutEvent()
+                    exercisesViewModel.clearAllData()
                 }
             }
 
@@ -222,7 +224,8 @@ class MainActivity : ComponentActivity() {
                             showExerciseDetail && selectedExerciseId != null -> {
                                 ExerciseDetailScreen(
                                     exerciseId = selectedExerciseId!!,
-                                    onBackClick = authViewModel::hideExerciseDetailScreen
+                                    onBackClick = authViewModel::hideExerciseDetailScreen,
+                                    exercisesViewModel = exercisesViewModel
                                 )
                             }
                             showBrowseExercises -> {

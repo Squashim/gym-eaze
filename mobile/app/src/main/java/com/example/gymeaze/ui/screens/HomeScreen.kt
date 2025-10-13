@@ -52,6 +52,8 @@ import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
+import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -80,15 +82,16 @@ fun HomeScreen(
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
     val createPostViewModel: PostsViewModel = viewModel()
+    val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
     var showBottomBar by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
-            if (selectedRoute != "community"){
+            if (selectedRoute !in listOf("community", "exercises")) {
                 GymEazeTopAppBar(onSettingsClick = onSettingsClick)
             }
-
-        },
+        }
+        ,
         bottomBar = {
             if (showBottomBar) {
                 GymEazeBottomNavigationBar(
@@ -103,7 +106,12 @@ fun HomeScreen(
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         when (selectedRoute) {
-            "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn,onExerciseCreatorClick)
+            "exercises" -> ExerciseScreen(
+                onSettingsClick = onSettingsClick,
+                isUserLoggedIn = isUserLoggedIn,
+                createExerciseViewModel = createExerciseViewModel,
+                setShowBottomBar = { showBottomBar = it }
+            )
             "workouts" -> {
                 if (isUserLoggedIn) {
                     TrainingPlansMenuScreen(
