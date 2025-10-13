@@ -1,4 +1,5 @@
-import DisplayProfile from '@/components/features/profile/user-details/display';
+import ProfileItemsDisplay from '@/components/features/profile/items-tabs/profile-items-display';
+import ProfileDisplay from '@/components/features/profile/user-details/profile-display';
 import PageLayout from '@/components/layout/page';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
@@ -24,7 +25,7 @@ function Profile() {
     <>
       <PageLayout>
         <section className="grid grid-cols-1 md:grid-cols-[0.65fr_1fr] gap-4 md:gap-6 w-full">
-          <DisplayProfile
+          <ProfileDisplay
             error={error}
             isError={isError}
             isLoading={isLoading}
@@ -32,7 +33,12 @@ function Profile() {
             profileData={profileData}
           />
 
-          <div>Sekcja z tabami (Posty, Plany treningowe, Ćwiczenia itp.)</div>
+          <ProfileItemsDisplay
+            isOwnProfile={isOwnProfile}
+            isProfileError={isError}
+            isProfileLoading={isLoading}
+            profileId={profileData?._id}
+          />
         </section>
       </PageLayout>
       <ReusableAlertDialog

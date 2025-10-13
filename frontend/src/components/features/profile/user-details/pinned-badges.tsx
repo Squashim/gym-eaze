@@ -8,13 +8,13 @@ interface PinnedBadgesProps {
 
 function PinnedBadges({ badges }: PinnedBadgesProps) {
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 items-center">
+    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 items-center place-items-center">
       {badges.map((badge) => (
         <Tooltip key={badge._id}>
           <TooltipTrigger asChild>
             <img
               alt={`odznaka ${badge.title}`}
-              className="aspect-square rounded-md object-cover w-full h-auto"
+              className="aspect-square rounded-md object-cover w-full h-auto max-w-18"
               loading="lazy"
               src={badge.image}
               tabIndex={0}

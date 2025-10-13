@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import type { FollowsDialogType } from './display';
+import type { FollowsDialogType } from './profile-display';
 
 interface ProfileFollowsProps {
   followersCount: number;

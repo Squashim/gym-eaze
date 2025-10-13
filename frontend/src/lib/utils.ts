@@ -279,3 +279,21 @@ export function calculateBMI(weight: number, height: number): number {
   const bmi = weight / (heightInMeters * heightInMeters);
   return Math.round(bmi * 10) / 10;
 }
+
+export function isProfilePostQuery(queryKey: unknown): boolean {
+  return (
+    Array.isArray(queryKey) &&
+    queryKey.length === 3 &&
+    queryKey[0] === 'user' &&
+    queryKey[2] === 'posts'
+  );
+}
+
+export function isItemReplyCommentsQuery(queryKey: unknown): boolean {
+  return (
+    Array.isArray(queryKey) &&
+    queryKey.length === 3 &&
+    queryKey[2] === 'comments' &&
+    (queryKey[0] === 'posts' || queryKey[0] === 'exercises' || queryKey[0] === 'workouts')
+  );
+}

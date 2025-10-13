@@ -36,6 +36,7 @@ export const POST = {
   base: 'posts',
   toggleLike: (id: string) => `posts/${id}/like`,
   byId: (id: string) => `posts/${id}`,
+  byUser: (userId: string) => `posts/user/${userId}`,
   comments: (id: string) => `posts/${id}/comments`,
 } as const;
 

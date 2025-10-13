@@ -9,7 +9,7 @@ import type { PostQueryParams } from '@/types/filters';
 
 interface PostListProps {
   posts: GetPostsApiResponse[] | undefined;
-  params: PostQueryParams;
+  params?: PostQueryParams;
   isLoading: boolean;
   isError: boolean;
   likedPosts: {
@@ -79,9 +79,11 @@ function PostList({
         <Alert>
           <Info />
           <AlertTitle>
-            {params.followedOnly !== undefined || params.hashtags?.length
+            {params && (params.followedOnly !== undefined || params.hashtags?.length)
               ? 'Nie znaleziono postów spełniających podane kryteria.'
-              : 'Brak postów. Dodaj pierwszego posta!'}
+              : params
+                ? 'Brak postów. Dodaj pierwszego posta!'
+                : 'Użytkownik nie dodał jeszcze żadnego posta.'}
           </AlertTitle>
         </Alert>
       </div>

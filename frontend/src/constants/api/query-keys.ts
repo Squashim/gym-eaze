@@ -23,6 +23,7 @@ export const QUERY_KEYS = {
   POST: (id: string) => ['posts', id],
   POSTS: (params: PostQueryParams) => ['posts', params],
   POST_COMMENTS: (postId: string) => ['posts', postId, 'comments'],
+  USER_POSTS: (userId: string) => ['user', userId, 'posts'],
 
   COMMENT_REPLIES: (commentId: string) => ['comments', commentId, 'replies'],
 

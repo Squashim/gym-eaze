@@ -26,7 +26,7 @@ import PinnedBadges from './pinned-badges';
 
 export type FollowsDialogType = 'followers' | 'following' | undefined;
 
-interface DisplayProfileProps {
+interface ProfileDisplayProps {
   profileData?: UserProfile;
   isLoading: boolean;
   isOwnProfile: boolean;
@@ -34,13 +34,13 @@ interface DisplayProfileProps {
   error: Error | null;
 }
 
-function DisplayProfile({
+function ProfileDisplay({
   profileData,
   isOwnProfile,
   isLoading,
   isError,
   error,
-}: DisplayProfileProps) {
+}: ProfileDisplayProps) {
   const followsDialog = useOpen();
   const { data: privacySettings } = useGetPrivacySettings({
     enabled: isOwnProfile,
@@ -69,7 +69,7 @@ function DisplayProfile({
 
   if (isLoading) {
     return (
-      <Card className="min-h-[50dvh] gap-4 p-4 lg:max-w-md">
+      <Card className="min-h-[50dvh] gap-4 p-4 ">
         <div className="flex items-center gap-3">
           <Skeleton className="size-20 rounded-full" />
           <Skeleton className="h-12 w-1/3" />
@@ -87,7 +87,7 @@ function DisplayProfile({
 
   if (isError || !profileData) {
     return (
-      <Card className="min-h-[50dvh] gap-4 p-4 lg:max-w-md flex items-center justify-center">
+      <Card className="min-h-[50dvh] gap-4 p-4  flex items-center justify-center">
         <Typography className="text-center" variant="h2">
           Ups! Coś poszło nie tak.
         </Typography>
@@ -103,7 +103,7 @@ function DisplayProfile({
 
   return (
     <>
-      <Card className="min-h-[40dvh] gap-4 py-4 lg:max-w-md">
+      <Card className="min-h-[40dvh] gap-4 py-4 md:max-h-fit md:sticky md:top-20">
         <ProfileHeader
           isOwnProfile={isOwnProfile}
           isViewingAsGuest={isViewingAsGuest}
@@ -153,13 +153,13 @@ function DisplayProfile({
               <PinnedBadges badges={profileData.pinnedBadges} />
             </InfoField>
           )}
+
+          <GuestViewAlert
+            isVisible={isViewingAsGuest && isOwnProfile}
+            onClose={handleViewAsGuestToggle}
+          />
         </CardContent>
       </Card>
-
-      <GuestViewAlert
-        isVisible={isViewingAsGuest && isOwnProfile}
-        onClose={handleViewAsGuestToggle}
-      />
 
       {effectiveIsOwnProfile && (
         <FollowUsersDialog
@@ -332,4 +332,4 @@ function ProfileActions({
   );
 }
 
-export default DisplayProfile;
+export default ProfileDisplay;

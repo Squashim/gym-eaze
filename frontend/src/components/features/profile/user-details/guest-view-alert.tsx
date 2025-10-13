@@ -1,4 +1,4 @@
-import { Alert, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Info, X } from 'lucide-react';
 
@@ -11,24 +11,23 @@ function GuestViewAlert({ isVisible, onClose }: GuestViewAlertProps) {
   if (!isVisible) return null;
 
   return (
-    <Alert className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100vw_-_2rem)] max-w-lg shadow-lg flex items-start gap-3">
-      <div>
-        <Info className="size-4" />
-      </div>
+    <Alert className="bg-secondary text-secondary-foreground">
+      <Info />
       <AlertTitle className="line-clamp-none">
-        Aktualnie przeglądasz swój profil jako gość. Niektóre informacje mogą być ukryte.
+        Aktualnie przeglądasz wizytówkę swojego profilu jako gość. Niektóre informacje mogą być
+        ukryte.
       </AlertTitle>
-      <Button
-        aria-label="Zamknij widok gościa"
-        className="shadow-lg"
-        onClick={onClose}
-        size="icon"
-        title="Zamknij widok gościa"
-        type="button"
-        variant="secondary"
-      >
-        <X />
-      </Button>
+      <AlertDescription>
+        <Button
+          aria-label="Zamknij widok gościa"
+          className="text-secondary-foreground ml-auto mt-1"
+          onClick={onClose}
+          title="Zamknij widok gościa"
+          type="button"
+        >
+          Zamknij podgląd
+        </Button>
+      </AlertDescription>
     </Alert>
   );
 }
