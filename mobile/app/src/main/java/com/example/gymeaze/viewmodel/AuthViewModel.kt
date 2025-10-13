@@ -87,15 +87,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val authRepository = AuthRepository(application.applicationContext)
     private val userPreferences = UserPreferences(application.applicationContext)
-
-    init {
-        checkTokenValidityOnStartup()
-    }
-
     private val _showBrowseExercises = MutableStateFlow(false)
     val showBrowseExercises: StateFlow<Boolean> = _showBrowseExercises.asStateFlow()
     private val _isCheckingToken = MutableStateFlow(true)
     val isCheckingToken: StateFlow<Boolean> = _isCheckingToken.asStateFlow()
+
+    init {
+        checkTokenValidityOnStartup()
+    }
 
     private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
     val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
