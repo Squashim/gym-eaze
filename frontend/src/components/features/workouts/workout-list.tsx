@@ -78,6 +78,12 @@ const EmptyWorkoutCard = ({ isFetchingError, pageType = 'browser' }: EmptyWorkou
           description: 'Dodaj plan do ulubionych, aby mieć go zawsze pod ręką.',
         };
 
+      case 'profile':
+        return {
+          title: 'Brak planów treningowych!',
+          description: 'Ten użytkownik nie dodał jeszcze żadnych planów treningowych.',
+        };
+
       default:
         return {
           title: 'Nic nie znaleziono!',
@@ -100,7 +106,7 @@ const EmptyWorkoutCard = ({ isFetchingError, pageType = 'browser' }: EmptyWorkou
           </CardDescription>
         </div>
       </CardHeader>
-      {pageType !== 'browser' && (
+      {pageType !== 'browser' && pageType !== 'profile' && (
         <CardContent className="flex justify-center">
           <Button asChild size="lg">
             <Link to={pageType === 'user' ? '/workouts/create' : '/workouts/browse'}>

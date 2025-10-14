@@ -19,7 +19,7 @@ function ExercisesTab({ profileId, isOwnProfile, isViewingAsGuest }: ExercisesTa
   } = useGetUserExercises(profileId, params, isOwnProfile && !isViewingAsGuest);
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full py-4">
+    <div className="flex flex-col gap-4 w-full h-full pb-4">
       <ExerciseContent
         className="sm:grid-cols-1 lg:grid-cols-2"
         exercises={exercises}

@@ -70,7 +70,11 @@ const EmptyExerciseCard = ({ isFetchingError, pageType = 'browser' }: EmptyExerc
           title: 'Brak ulubionych ćwiczeń!',
           description: 'Dodaj ćwiczenia do ulubionych, aby mieć je zawsze pod ręką.',
         };
-
+      case 'profile':
+        return {
+          title: 'Brak ćwiczeń!',
+          description: 'Ten użytkownik nie dodał jeszcze żadnych ćwiczeń.',
+        };
       default:
         return {
           title: 'Nic nie znaleziono!',
@@ -93,7 +97,7 @@ const EmptyExerciseCard = ({ isFetchingError, pageType = 'browser' }: EmptyExerc
           </CardDescription>
         </div>
       </CardHeader>
-      {pageType !== 'browser' && (
+      {pageType !== 'browser' && pageType !== 'profile' && (
         <CardContent className="flex justify-center">
           <Button asChild size="lg">
             <Link to={pageType === 'user' ? '/exercises/create' : '/exercises/browse'}>

@@ -11,11 +11,10 @@ function GuestViewAlert({ isVisible, onClose }: GuestViewAlertProps) {
   if (!isVisible) return null;
 
   return (
-    <Alert className="bg-accent text-accent-foreground border-primary/20">
+    <Alert className="bg-accent text-accent-foreground border-primary/20 md:static md:shadow-none bottom-18 left-0 z-[50] shadow-lg fixed max-w-full w-[calc(100%-2rem)] mx-4 md:mx-0 md:w-full">
       <Info />
       <AlertTitle className="line-clamp-none">
-        Przeglądasz swój profil jako gość. Niektóre informacje i funkcjonalności są ukryte, abyś
-        mógł zobaczyć, jak inni użytkownicy widzą Twój profil.
+        Przeglądasz swój profil jako gość. Niektóre informacje i funkcjonalności są ukryte.
       </AlertTitle>
       <AlertDescription>
         <Button

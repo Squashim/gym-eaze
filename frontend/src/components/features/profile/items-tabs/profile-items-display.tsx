@@ -56,11 +56,7 @@ function ProfileItemsDisplay({
   }
 
   return (
-    <Tabs
-      className="grid w-full grid-cols-1 gap-1 h-full mt-6 md:mt-0"
-      defaultValue={selectedTab}
-      onValueChange={handleTabChange}
-    >
+    <Tabs className="mt-6 md:mt-0" defaultValue={selectedTab} onValueChange={handleTabChange}>
       <div className="relative overflow-x-auto h-15 pt-2 scrollbar w-full">
         <TabsList className="absolute flex flex-row justify-stretch w-full py-2 gap-2 bg-transparent">
           {profileItemsTabsMapping.map((tab) => (

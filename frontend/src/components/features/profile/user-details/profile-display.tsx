@@ -69,7 +69,7 @@ function ProfileDisplay({
 
   if (isLoading) {
     return (
-      <Card className="min-h-[50dvh] gap-4 p-4 ">
+      <Card className="min-h-[50dvh] gap-4 p-4">
         <div className="flex items-center gap-3">
           <Skeleton className="size-20 rounded-full" />
           <Skeleton className="h-12 w-1/3" />
@@ -87,7 +87,7 @@ function ProfileDisplay({
 
   if (isError || !profileData) {
     return (
-      <Card className="min-h-[50dvh] gap-4 p-4  flex items-center justify-center">
+      <Card className="min-h-[50dvh] gap-4 p-4 flex items-center justify-center">
         <Typography className="text-center" variant="h2">
           Ups! Coś poszło nie tak.
         </Typography>
@@ -103,7 +103,7 @@ function ProfileDisplay({
 
   return (
     <>
-      <Card className="min-h-[40dvh] gap-4 py-4 md:max-h-fit md:sticky md:top-20">
+      <Card className="min-h-[40dvh] gap-4 py-4 md:max-h-fit md:sticky md:top-18">
         <ProfileHeader
           isOwnProfile={isOwnProfile}
           isViewingAsGuest={isViewingAsGuest}
