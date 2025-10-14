@@ -17,6 +17,7 @@ import useOpen from '@/hooks/utils/use-open';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import { EditCommentDialog } from '../posts/post-dialogs';
 import ScrollLoader from '@/components/ui/scroll-loader';
+import ReportDialog from '../reports/report-dialog';
 
 interface CommentItemProps {
   auth: {
@@ -61,6 +62,7 @@ function CommentItem({
   const [selectedReplyId, setSelectedReplyId] = useState<string | null>(null);
   const editDialog = useOpen();
   const deleteDialog = useOpen();
+  const reportDialog = useOpen();
   const { toggleLikeComment, deleteComment } = useComment({
     parentType: 'Komentarz',
     parentId: comment._id,
@@ -129,9 +131,13 @@ function CommentItem({
     [editDialog],
   );
 
-  const handleReplyReport = useCallback((replyId: string) => {
-    console.log('TODO: Report reply', replyId);
-  }, []);
+  const handleReplyReport = useCallback(
+    (replyId: string) => {
+      setSelectedReplyId(replyId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -316,6 +322,20 @@ function CommentItem({
           open={deleteDialog.isOpen}
           title="Czy na pewno chcesz usunąć tą odpowiedź?"
           variant="destructive"
+        />
+      )}
+
+      {auth.isLogged && selectedReply && (
+        <ReportDialog
+          isReply
+          itemId={selectedReply._id}
+          itemType="Komentarz"
+          onClose={() => {
+            setSelectedReplyId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 

@@ -59,6 +59,10 @@ export const USER = {
   fitnessDetails: 'user/profile/fitness-details',
 };
 
+export const REPORT = {
+  base: 'reports',
+};
+
 export const UTILS = {
   equipment: 'equipment',
   muscleGroups: 'muscleGroup',

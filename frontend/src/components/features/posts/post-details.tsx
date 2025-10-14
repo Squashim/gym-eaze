@@ -27,6 +27,7 @@ import { EditCommentDialog } from './post-dialogs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import ScrollLoader from '@/components/ui/scroll-loader';
+import ReportDialog from '../reports/report-dialog';
 
 interface PostDetailsProps {
   open: boolean;
@@ -39,6 +40,7 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
+  const reportDialog = useOpen();
   const {
     data,
     isLoading,
@@ -147,9 +149,13 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
     toast.success('Komentarze zostały odświeżone');
   }, [refetch]);
 
-  const handleCommentReport = useCallback((commentId: string) => {
-    console.log('TODO: Report comment', commentId);
-  }, []);
+  const handleCommentReport = useCallback(
+    (commentId: string) => {
+      setSelectedCommentId(commentId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -242,6 +248,19 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
           open={deleteDialog.isOpen}
           title="Czy na pewno chcesz usunąć ten komentarz?"
           variant="destructive"
+        />
+      )}
+
+      {!!user && selectedCommentId && (
+        <ReportDialog
+          itemId={selectedCommentId}
+          itemType="Komentarz"
+          onClose={() => {
+            setSelectedCommentId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 

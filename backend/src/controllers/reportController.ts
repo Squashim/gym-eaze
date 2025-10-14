@@ -17,7 +17,7 @@ export const createReport = async (req: AuthRequest, res: Response) => {
 
     const trimmedReason = reason ? reason.trim() : undefined;
 
-    const report = await createReportService(
+    await createReportService(
       {
         reportedItemId,
         reportedItemType,
@@ -27,7 +27,7 @@ export const createReport = async (req: AuthRequest, res: Response) => {
       userId!,
     );
 
-    return res.status(201).json(report);
+    return res.status(201).json({ message: 'Zgłoszenie zostało dodane' });
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message });

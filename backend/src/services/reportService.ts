@@ -72,7 +72,7 @@ export const createReportService = async (data: CreateReportPayload, userId: str
     ...data,
   });
 
-  return await report.save();
+  await report.save();
 };
 
 export const getAllReportsService = async (

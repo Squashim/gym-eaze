@@ -26,53 +26,71 @@ import Typography from '@/components/ui/typography';
 import type { ItemType } from '@/constants/enums/item-type';
 import { ReportType } from '@/constants/enums/report-type';
 import { REPORT } from '@/constants/report';
+import { useReport } from '@/hooks/query/reports/use-report';
 import { reportSchema, type ReportSchema } from '@/schemas/report-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 interface ReportDialogProps {
   open: boolean;
   itemId: string;
   itemType: ItemType;
+  isReply?: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
 }
 
-function ReportDialog({ open, itemId, itemType, onOpenChange, onClose }: ReportDialogProps) {
-  // const { updateComment } = useComment({
-  //   parentType: parentType,
-  //   parentId: parentId,
-  // });
+function ReportDialog({
+  open,
+  itemId,
+  itemType,
+  isReply = false,
+  onOpenChange,
+  onClose,
+}: ReportDialogProps) {
+  const { createReport } = useReport();
 
   const form = useForm<ReportSchema>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
-      reportType: undefined,
-      reason: undefined,
+      reportType: '' as ReportType,
+      reason: '',
     },
   });
 
   const reportType = form.watch('reportType');
 
-  // const isReply = useMemo(() => {
-  //   return parentType === 'Komentarz';
-  // }, [parentType]);
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        reportType: '' as ReportType,
+        reason: '',
+      });
+    }
+  }, [open, form]);
 
   const onSubmit = (data: ReportSchema) => {
-    console.log(data);
-    // updateComment.mutate(
-    //   { id: comment._id, payload: data },
-    //   {
-    //     onSuccess: () => {
-    //       onClose();
-    //     },
-    //   },
-    // );
+    createReport.mutate(
+      {
+        reportedItemId: itemId,
+        reportedItemType: itemType,
+        reportType: data.reportType,
+        reason: data.reason,
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          onClose();
+        },
+      },
+    );
   };
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="[&>button]:hidden">
+      <DialogContent className="[&>button]:hidden" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Zgłoś treść</DialogTitle>
           <DialogDescription>
@@ -130,6 +148,7 @@ function ReportDialog({ open, itemId, itemType, onOpenChange, onClose }: ReportD
                         {...field}
                         autoComplete="off"
                         className="resize-none dark:bg-card bg-card max-h-24 scrollbar overflow-y-auto break-words"
+                        id={field.name}
                         maxLength={REPORT.MAX_REASON_LENGTH}
                         placeholder="Wyjaśnij dokładnie, na czym polega problem..."
                       />
@@ -146,30 +165,25 @@ function ReportDialog({ open, itemId, itemType, onOpenChange, onClose }: ReportD
             )}
 
             <div className="ml-auto flex items-center gap-2">
-              <Button onClick={onClose} type="button" variant="outline">
+              <Button
+                disabled={createReport.isPending}
+                onClick={onClose}
+                type="button"
+                variant="outline"
+              >
                 Anuluj
               </Button>
 
-              <Button type="submit">Zgłoś {itemType.toLowerCase()}</Button>
-
-              {/* <Button
-                disabled={
-                  !form.formState.isValid || updateComment.isPending || !form.formState.isDirty
-                }
-                type="submit"
-              >
-                {updateComment.isPending ? (
+              <Button disabled={createReport.isPending} type="submit">
+                {createReport.isPending ? (
                   <>
                     <Loader2 className="animate-spin" />
-                    Edytowanie...
+                    <span>Wysyłanie...</span>
                   </>
                 ) : (
-                  <>
-                    <Pencil />
-                    {!isReply ? 'Edytuj komentarz' : 'Edytuj odpowiedź'}
-                  </>
+                  <span>Zgłoś {isReply ? 'odpowiedź' : itemType.toLowerCase()}</span>
                 )}
-              </Button> */}
+              </Button>
             </div>
           </form>
         </Form>
