@@ -10,3 +10,11 @@ export const ReportType = {
 } as const;
 
 export type ReportType = (typeof ReportType)[keyof typeof ReportType];
+
+export const ReportStatus = {
+  pending: 'Oczekujący',
+  dismissed: 'Odrzucony',
+  resolved: 'Rozwiązany',
+} as const;
+
+export type StatusReport = (typeof ReportStatus)[keyof typeof ReportStatus];

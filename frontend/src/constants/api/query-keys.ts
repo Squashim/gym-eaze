@@ -2,6 +2,7 @@ import type {
   ExerciseQueryParams,
   PaginatedQueryParams,
   PostQueryParams,
+  ReportQueryParams,
   WorkoutQueryParams,
 } from '@/types/filters';
 
@@ -54,4 +55,6 @@ export const QUERY_KEYS = {
     params,
     includePrivate,
   ],
+
+  REPORTS: (params: ReportQueryParams) => ['reports', params],
 } as const;

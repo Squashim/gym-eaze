@@ -65,6 +65,7 @@ export const USER = {
 
 export const REPORT = {
   base: 'reports',
+  search: 'reports/search',
 };
 
 export const UTILS = {

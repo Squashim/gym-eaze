@@ -20,6 +20,7 @@ import FavoriteWorkouts from './pages/workouts/favorite';
 import ProfileEdit from './pages/user/profile-edit';
 import PrivacySettings from './pages/user/privacy-settings';
 import Profile from './pages/user/profile';
+import Dashboard from './pages/dashboard';
 
 const router = createBrowserRouter([
   {
@@ -137,7 +138,7 @@ const router = createBrowserRouter([
           {
             index: true,
             path: 'dashboard',
-            element: <div>admin dashboard</div>,
+            element: <Dashboard />,
           },
         ],
       },

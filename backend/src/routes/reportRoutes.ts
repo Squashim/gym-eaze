@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post('/', authenticate, createReport);
 
-router.get('/', authenticate, getAllReports);
+router.post('/search', authenticate, getAllReports);
 
 router.get('/item/:reportedItemId/:reportedItemType', authenticate, getReportsForItem);
 

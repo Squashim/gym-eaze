@@ -1,5 +1,7 @@
 import type { AdvancedLevel } from '@/constants/enums/advanced-level';
 import type { Goal } from '@/constants/enums/goals';
+import type { ItemType } from '@/constants/enums/item-type';
+import type { StatusReport } from '@/constants/enums/report-type';
 
 export type SortBy = 'popular' | 'top-rated' | 'latest';
 
@@ -58,4 +60,15 @@ export type PostQueryParams = {
   hashtags?: string[];
   followedOnly?: boolean;
   cursor?: string | null;
+};
+
+export type ReportFilters = {
+  reportedItemType?: ItemType;
+  status?: StatusReport;
+};
+
+export type ReportQueryParams = {
+  filters: ReportFilters;
+  page: number;
+  pageSize: PageSize;
 };

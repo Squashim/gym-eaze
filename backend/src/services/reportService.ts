@@ -111,6 +111,7 @@ export const getAllReportsService = async (
         _id: { reportedItemId: '$reportedItemId', reportedItemType: '$reportedItemType' },
         count: { $sum: 1 },
         status: { $first: '$status' },
+        lastReportedAt: { $max: '$createdAt' },
       },
     },
     {
@@ -127,27 +128,30 @@ export const getAllReportsService = async (
         },
       },
     },
-    { $sort: { statusOrder: 1, count: -1 } },
+    { $sort: { statusOrder: 1, count: -1, lastReportedAt: -1 } },
     { $skip: skip },
     { $limit: pageSize },
     {
       $project: {
-        _id: 1,
+        _id: 0,
         count: 1,
         status: 1,
+        lastReportedAt: 1,
+        reportedItemId: '$_id.reportedItemId',
+        reportedItemType: '$_id.reportedItemType',
       },
     },
   ]);
 
   for (const group of groupedReports) {
-    const { reportedItemId, reportedItemType } = group._id;
+    const { reportedItemId, reportedItemType } = group;
     let reportedItem = null;
 
     switch (reportedItemType) {
       case CommentParentType.exercise:
         reportedItem = await Exercise.findById(reportedItemId)
           .populate('author', 'username profileDetails.profilePicture')
-          .select('title author createdAt');
+          .select('name author createdAt');
         break;
       case CommentParentType.training:
         reportedItem = await TrainingPlan.findById(reportedItemId)

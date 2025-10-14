@@ -16,3 +16,8 @@ export const defaultWorkoutFilters = {
   hashtags: [],
   followers: false,
 };
+
+export const defaultReportFilters = {
+  reportedItemType: undefined,
+  status: undefined,
+};
