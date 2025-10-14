@@ -16,6 +16,7 @@ import useOpen from '@/hooks/utils/use-open';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import ReportDialog from '@/components/features/reports/report-dialog';
 
 function Community() {
   const { params, setHashtags, setParam, clearParams } = usePostParamsQuery();
@@ -23,6 +24,7 @@ function Community() {
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
+  const reportDialog = useOpen();
   const detailsDialog = useOpen();
   const { toggleLikePost, deletePost } = usePost();
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -94,9 +96,13 @@ function Community() {
     }
   };
 
-  const handlePostReport = useCallback((postId: string) => {
-    console.log('TODO: Report post', postId);
-  }, []);
+  const handlePostReport = useCallback(
+    (postId: string) => {
+      setSelectedPostId(postId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -158,6 +164,19 @@ function Community() {
           onOpenChange={editDialog.setIsOpen}
           open={editDialog.isOpen}
           post={selectedPost}
+        />
+      )}
+
+      {!!user && selectedPost && (
+        <ReportDialog
+          itemId={selectedPost._id}
+          itemType="Post"
+          onClose={() => {
+            setSelectedPostId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 
