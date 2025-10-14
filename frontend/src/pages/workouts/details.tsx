@@ -622,7 +622,7 @@ function WorkoutMetaInfo({ workout, isAuthor }: WorkoutMetaInfoProps) {
             authorAvatar={workout.author.profileDetails?.profilePicture}
             authorName={workout.author.username}
             isAuthor={isAuthor}
-            redirectTo={`/profile/${workout.author._id}`}
+            redirectTo={`/profile/${workout.author.username}`}
           />
         </div>
       </div>

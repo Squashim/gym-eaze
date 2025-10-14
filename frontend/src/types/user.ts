@@ -1,7 +1,7 @@
 import type { Country } from '@/constants/enums/countries';
 import type { Notification } from './notification';
 import type { Gender } from '@/constants/enums/gender';
-import type { BadgeApiResponse } from './badge';
+import type { BadgeApiResponse, ProfileBadge } from './badge';
 import type { Goal } from '@/constants/enums/goals';
 
 export type UserRole = 'admin' | 'user';
@@ -80,4 +80,18 @@ export type UserPrivacySettings = {
     isGoalPublic: boolean;
     isTrainingStatisticsPublic: boolean;
   };
+};
+
+export type UserProfile = {
+  _id: string;
+  username: string;
+  profilePicture?: string;
+  description?: string;
+  followersCount: number;
+  followingCount: number;
+  goal?: Goal;
+  personalDetails: UserPersonalDetailsPayload;
+  fitnessDetails: UserFitnessDetailsPayload;
+  pinnedBadges: ProfileBadge[];
+  isFollowing?: boolean;
 };

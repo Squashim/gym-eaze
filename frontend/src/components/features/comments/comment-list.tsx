@@ -18,6 +18,7 @@ interface CommentListProps {
   isLoading: boolean;
   isError: boolean;
   likePendingId: string | null;
+  isViewingAsGuest?: boolean;
   replyCommentId?: string | null;
   replyRef?: React.RefObject<HTMLDivElement | null>;
   onLikeToggle: (commentId: string) => void;
@@ -31,6 +32,7 @@ function CommentList({
   comments,
   isLoading,
   isError,
+  isViewingAsGuest = false,
   onLikeToggle,
   onEdit,
   onDelete,
@@ -86,11 +88,12 @@ function CommentList({
   return comments.map((comment) => (
     <CommentItem
       auth={{
-        isLogged: !!user,
-        isAuthor: isAuthor(comment.author._id),
+        isLogged: isViewingAsGuest ? false : !!user,
+        isAuthor: isViewingAsGuest ? false : isAuthor(comment.author._id),
       }}
       comment={comment}
       isReplying={isReplyComment(comment._id)}
+      isViewingAsGuest={isViewingAsGuest}
       key={comment._id}
       like={{
         likedComments: likedComments.data,

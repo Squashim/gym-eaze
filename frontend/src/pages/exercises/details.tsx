@@ -313,7 +313,7 @@ function ExerciseMetaInfo({ exercise, isAuthor }: ExerciseMetaInfoProps) {
             authorAvatar={exercise.author.profileDetails?.profilePicture}
             authorName={exercise.author.username}
             isAuthor={isAuthor}
-            redirectTo={`/profile/${exercise.author._id}`}
+            redirectTo={`/profile/${exercise.author.username}`}
           />
         </div>
       </div>

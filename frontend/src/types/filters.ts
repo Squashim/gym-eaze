@@ -5,7 +5,7 @@ export type SortBy = 'popular' | 'top-rated' | 'latest';
 
 export type PageSize = 9 | 18 | 36;
 
-export type PageType = 'browser' | 'user' | 'favorite';
+export type PageType = 'browser' | 'user' | 'favorite' | 'profile';
 
 export interface FilteredQueryParams<TFilters> {
   sortBy: SortBy;

@@ -3,7 +3,7 @@ import queryClient from '@/config/query-client';
 import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
 import usePostParamsQuery from '@/hooks/filters-pagination/use-post-params-query';
-import { getApiErrorMsg } from '@/lib/utils';
+import { getApiErrorMsg, isProfilePostQuery } from '@/lib/utils';
 import type { UpdatePostPayload } from '@/types/post';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -16,6 +16,9 @@ export function usePost() {
     mutationFn: create,
     onSuccess: async (response) => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
+      await queryClient.invalidateQueries({
+        predicate: (query) => isProfilePostQuery(query.queryKey),
+      });
       toast.success(response.message);
     },
     onError: (error) => {
@@ -36,6 +39,9 @@ export function usePost() {
       update(id, payload),
     onSuccess: async (response) => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
+      await queryClient.invalidateQueries({
+        predicate: (query) => isProfilePostQuery(query.queryKey),
+      });
       toast.success(response.message);
     },
     onError: (error) => {
@@ -54,6 +60,9 @@ export function usePost() {
     onSuccess: async (response) => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_LIKED_ITEMS(user!._id) });
+      await queryClient.invalidateQueries({
+        predicate: (query) => isProfilePostQuery(query.queryKey),
+      });
       toast.success(response.message);
     },
     onError: (error) => {
@@ -74,6 +83,9 @@ export function usePost() {
     onSuccess: async (response) => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_LIKED_ITEMS(user!._id) });
+      await queryClient.invalidateQueries({
+        predicate: (query) => isProfilePostQuery(query.queryKey),
+      });
       toast.success(response.message);
     },
     onError: (error) => {

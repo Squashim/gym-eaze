@@ -3,10 +3,12 @@ import usePageTitle from '@/hooks/utils/use-page-title';
 import usePaginationQuery from '@/hooks/filters-pagination/use-pagination-query';
 import WorkoutContent from '@/components/features/workouts/workout-content';
 import useGetUserWorkouts from '@/hooks/query/workouts/use-get-user-workouts';
+import { useUser } from '@/context/user';
 
 const UserWorkouts = () => {
   const { params, setPage, setPageSize } = usePaginationQuery();
-  const { data: workouts, isLoading, isError } = useGetUserWorkouts(params, { ownExercises: true });
+  const { user } = useUser();
+  const { data: workouts, isLoading, isError } = useGetUserWorkouts(user!._id, params);
   usePageTitle('Moje plany treningowe');
 
   return (

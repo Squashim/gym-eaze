@@ -352,11 +352,14 @@ export const getTrainingPlansByUserService = async (
   targetUserId: string,
   page: number,
   pageSize: PageSize,
+  includePrivate: boolean,
   currentUserId?: string,
 ) => {
   const query: FilterQuery<ITrainingPlan> = { author: new Types.ObjectId(targetUserId) };
 
   if (!currentUserId || currentUserId !== targetUserId) {
+    query.visibility = PrivacySettings.public;
+  } else if (currentUserId === targetUserId && !includePrivate) {
     query.visibility = PrivacySettings.public;
   }
 

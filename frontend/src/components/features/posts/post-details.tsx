@@ -12,7 +12,7 @@ import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import type { GetPostsApiResponse } from '@/types/post';
 import { useUser } from '@/context/user';
 import { useComment } from '@/hooks/query/comments/use-comment';
-import { Loader2, MessageSquare, RefreshCw, ThumbsUp, X } from 'lucide-react';
+import { Info, Loader2, MessageSquare, RefreshCw, ThumbsUp, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,16 +27,24 @@ import { EditCommentDialog } from './post-dialogs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import ScrollLoader from '@/components/ui/scroll-loader';
+import { Alert, AlertTitle } from '@/components/ui/alert';
 import ReportDialog from '../reports/report-dialog';
 
 interface PostDetailsProps {
   open: boolean;
   post: GetPostsApiResponse;
+  isViewingAsGuest?: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
 }
 
-const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) => {
+const PostDetails = ({
+  open,
+  post,
+  isViewingAsGuest = false,
+  onOpenChange,
+  onClose,
+}: PostDetailsProps) => {
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
@@ -183,16 +191,21 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
           />
           <Separator />
           <div className="flex-1 min-h-0 p-4 overflow-y-auto scrollbar">
-            <PostContent isAuthor={isAuthor} post={post} postRef={postRef} />
+            <PostContent
+              isAuthor={isViewingAsGuest ? false : isAuthor}
+              post={post}
+              postRef={postRef}
+            />
 
             <div className="flex flex-col gap-3">
               <CommentList
                 comments={comments}
                 isError={isError}
                 isLoading={isLoading}
+                isViewingAsGuest={isViewingAsGuest}
                 likePendingId={pendingLikeCommentId}
                 likedComments={{
-                  data: likedComments,
+                  data: !isViewingAsGuest ? likedComments : new Set<string>(),
                   isLoading: isLikedCommentsLoading,
                   isError: isLikedCommentsError,
                 }}
@@ -228,8 +241,17 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
             />
           )}
 
-          {!replyCommentId && (
+          {!replyCommentId && !isViewingAsGuest && (
             <CommentCreator parentId={post._id} parentType="Post" scrollRef={postRef} />
+          )}
+
+          {isViewingAsGuest && (
+            <Alert className="w-[calc(100%_-_2rem)] mx-auto my-4">
+              <Info className="stroke-secondary" />
+              <AlertTitle className="line-clamp-none">
+                Przeglądasz swój profil jako gość. Niektóre informacje i funkcjonalności są ukryte.
+              </AlertTitle>
+            </Alert>
           )}
         </DialogContent>
       </Dialog>
@@ -344,7 +366,7 @@ function PostContent({ post, isAuthor, postRef }: PostContentProps) {
           <Button asChild className="size-10 rounded-3xl p-0" variant="ghost">
             <a
               className="hover:ring-ring/50 hover:ring-[3px] rounded-3xl"
-              href={`/profile/${post.author._id}`}
+              href={`/profile/${post.author.username}`}
               rel="noreferrer"
               target="_blank"
             >
@@ -357,7 +379,7 @@ function PostContent({ post, isAuthor, postRef }: PostContentProps) {
           </Button>
           <div className="flex flex-col">
             <Button asChild className="p-0 justify-start w-fit h-fit" variant="link">
-              <a href={`/profile/${post.author._id}`} rel="noreferrer" target="_blank">
+              <a href={`/profile/${post.author.username}`} rel="noreferrer" target="_blank">
                 <Typography className="font-semibold">
                   {post.author.username} {isAuthor && '(Ty)'}
                 </Typography>

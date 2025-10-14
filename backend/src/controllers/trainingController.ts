@@ -254,10 +254,18 @@ export const getTrainingPlansByUser = async (req: AuthRequest, res: Response) =>
   try {
     const { userId: targetUserId } = req.params;
     const currentUserId = req.userId;
+    const includePrivate =
+      typeof req.query.includePrivate === 'undefined' ? true : req.query.includePrivate === 'true';
     const page = req.query.page ? Number(req.query.page) : 1;
     const pageSize = req.query.pageSize ? (Number(req.query.pageSize) as PageSize) : 9;
 
-    const plans = await getTrainingPlansByUserService(targetUserId, page, pageSize, currentUserId);
+    const plans = await getTrainingPlansByUserService(
+      targetUserId,
+      page,
+      pageSize,
+      includePrivate,
+      currentUserId,
+    );
     return res.json(plans);
   } catch (error) {
     if (error instanceof Error) {
