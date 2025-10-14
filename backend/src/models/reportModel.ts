@@ -61,6 +61,25 @@ const reportSchema = new mongoose.Schema(
   },
 );
 
+reportSchema.index({ reportedItemId: 1, reportedItemType: 1 });
+reportSchema.index({ status: 1 });
+reportSchema.index({ reporterId: 1, reportedItemId: 1, reportedItemType: 1, reportType: 1 });
+
+reportSchema.pre('save', function (next) {
+  if (this.isModified('status') && this.status !== StatusReport.pending) {
+    this.reviewedAt = new Date();
+  }
+  next();
+});
+
+reportSchema.pre(['updateOne', 'updateMany'], function (next) {
+  const update = this.getUpdate() as IReport;
+  if (update.status && update.status !== StatusReport.pending) {
+    update.reviewedAt = new Date();
+  }
+  next();
+});
+
 const Report = mongoose.model<IReport>('Report', reportSchema);
 
 export default Report;
