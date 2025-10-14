@@ -10,6 +10,7 @@ import userRoutes from './routes/userRoutes';
 import trainingsRoutes from './routes/trainingsRoutes';
 import postsRoutes from './routes/postsRoutes';
 import commentRoutes from './routes/commentRoutes';
+import userTrainingRoutes from './routes/userTrainingRoutes';
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/training-plans', trainingsRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/started-training-plans', userTrainingRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API działa 🚀');
