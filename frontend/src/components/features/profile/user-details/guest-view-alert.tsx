@@ -11,19 +11,20 @@ function GuestViewAlert({ isVisible, onClose }: GuestViewAlertProps) {
   if (!isVisible) return null;
 
   return (
-    <Alert className="bg-secondary text-secondary-foreground">
+    <Alert className="bg-accent text-accent-foreground border-primary/20">
       <Info />
       <AlertTitle className="line-clamp-none">
-        Aktualnie przeglądasz wizytówkę swojego profilu jako gość. Niektóre informacje mogą być
-        ukryte.
+        Przeglądasz swój profil jako gość. Niektóre informacje i funkcjonalności są ukryte, abyś
+        mógł zobaczyć, jak inni użytkownicy widzą Twój profil.
       </AlertTitle>
       <AlertDescription>
         <Button
           aria-label="Zamknij widok gościa"
-          className="text-secondary-foreground ml-auto mt-1"
+          className="w-full mt-2"
           onClick={onClose}
           title="Zamknij widok gościa"
           type="button"
+          variant="secondary"
         >
           Zamknij podgląd
         </Button>

@@ -15,9 +15,10 @@ import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 interface PostsTabProps {
   isOwnProfile: boolean;
   profileId: string;
+  isViewingAsGuest: boolean;
 }
 
-function PostsTab({ isOwnProfile, profileId }: PostsTabProps) {
+function PostsTab({ isOwnProfile, profileId, isViewingAsGuest }: PostsTabProps) {
   const deleteDialog = useOpen();
   const editDialog = useOpen();
   const detailsDialog = useOpen();
@@ -98,13 +99,14 @@ function PostsTab({ isOwnProfile, profileId }: PostsTabProps) {
   return (
     <>
       <div className="flex flex-col gap-4 w-full h-full">
-        {isOwnProfile && <PostCreator mode="create" />}
+        {isOwnProfile && !isViewingAsGuest && <PostCreator mode="create" />}
         <PostList
           isError={isError}
           isLoading={isLoading}
+          isViewingAsGuest={isViewingAsGuest}
           likePendingId={pendingLikePostId}
           likedPosts={{
-            data: likedPosts,
+            data: !isViewingAsGuest ? likedPosts : new Set<string>(),
             isLoading: isLikedPostsLoading,
             isError: isLikesPostsError,
           }}
@@ -128,6 +130,7 @@ function PostsTab({ isOwnProfile, profileId }: PostsTabProps) {
 
       {selectedPost && (
         <PostDetails
+          isViewingAsGuest={isViewingAsGuest}
           onClose={() => {
             setSelectedPostId(null);
             detailsDialog.close();

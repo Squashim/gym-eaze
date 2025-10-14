@@ -6,7 +6,7 @@ import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
 import { useUser } from '@/context/user';
 import useGetUserProfile from '@/hooks/query/user/use-get-user-profile';
 import { useSessionFlag } from '@/hooks/utils/use-session-flag';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 function Profile() {
@@ -17,19 +17,32 @@ function Profile() {
   const { isSet, removeFlag } = useSessionFlag(STORAGE_FLAGS.isFirstLogin);
   const { data: profileData, isLoading, isError, error } = useGetUserProfile(username ?? '');
 
+  const [isViewingAsGuest, setIsViewingAsGuest] = useState(false);
+
   const isOwnProfile = useMemo(() => {
     return user?.username === profileData?.username;
   }, [user?.username, profileData?.username]);
+
+  const effectiveIsOwnProfile = useMemo(() => {
+    return isOwnProfile && !isViewingAsGuest;
+  }, [isOwnProfile, isViewingAsGuest]);
+
+  const handleViewAsGuestToggle = useCallback(() => {
+    setIsViewingAsGuest((prev) => !prev);
+  }, []);
 
   return (
     <>
       <PageLayout>
         <section className="grid grid-cols-1 md:grid-cols-[0.65fr_1fr] gap-4 md:gap-6 w-full">
           <ProfileDisplay
+            effectiveIsOwnProfile={effectiveIsOwnProfile}
             error={error}
             isError={isError}
             isLoading={isLoading}
             isOwnProfile={isOwnProfile}
+            isViewingAsGuest={isViewingAsGuest}
+            onViewAsGuestToggle={handleViewAsGuestToggle}
             profileData={profileData}
           />
 
@@ -37,6 +50,7 @@ function Profile() {
             isOwnProfile={isOwnProfile}
             isProfileError={isError}
             isProfileLoading={isLoading}
+            isViewingAsGuest={isViewingAsGuest}
             profileId={profileData?._id}
           />
         </section>

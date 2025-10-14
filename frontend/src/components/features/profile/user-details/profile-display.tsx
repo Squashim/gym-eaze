@@ -28,6 +28,9 @@ export type FollowsDialogType = 'followers' | 'following' | undefined;
 
 interface ProfileDisplayProps {
   profileData?: UserProfile;
+  isViewingAsGuest: boolean;
+  effectiveIsOwnProfile: boolean;
+  onViewAsGuestToggle: () => void;
   isLoading: boolean;
   isOwnProfile: boolean;
   isError: boolean;
@@ -36,6 +39,9 @@ interface ProfileDisplayProps {
 
 function ProfileDisplay({
   profileData,
+  isViewingAsGuest,
+  effectiveIsOwnProfile,
+  onViewAsGuestToggle,
   isOwnProfile,
   isLoading,
   isError,
@@ -46,9 +52,7 @@ function ProfileDisplay({
     enabled: isOwnProfile,
   });
   const [followsDialogType, setFollowsDialogType] = useState<FollowsDialogType>(undefined);
-  const [isViewingAsGuest, setIsViewingAsGuest] = useState(false);
 
-  const effectiveIsOwnProfile = isOwnProfile && !isViewingAsGuest;
   const visibility = usePrivacyVisibility(isOwnProfile, isViewingAsGuest, privacySettings);
 
   usePageTitle(`Profil ${profileData ? profileData.username : ''}`);
@@ -62,10 +66,6 @@ function ProfileDisplay({
     },
     [isOwnProfile, followsDialog],
   );
-
-  const handleViewAsGuestToggle = useCallback(() => {
-    setIsViewingAsGuest((prev) => !prev);
-  }, []);
 
   if (isLoading) {
     return (
@@ -127,7 +127,7 @@ function ProfileDisplay({
             isFollowing={profileData.isFollowing}
             isOwnProfile={effectiveIsOwnProfile}
             isViewingAsGuest={isViewingAsGuest}
-            onViewAsGuestToggle={handleViewAsGuestToggle}
+            onViewAsGuestToggle={onViewAsGuestToggle}
             profileId={profileData._id}
             profileUsername={profileData.username}
           />
@@ -156,7 +156,7 @@ function ProfileDisplay({
 
           <GuestViewAlert
             isVisible={isViewingAsGuest && isOwnProfile}
-            onClose={handleViewAsGuestToggle}
+            onClose={onViewAsGuestToggle}
           />
         </CardContent>
       </Card>

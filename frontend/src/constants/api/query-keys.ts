@@ -35,21 +35,23 @@ export const QUERY_KEYS = {
   EXERCISE: (id: string) => ['exercises', id],
   EXERCISE_COMMENTS: (exerciseId: string) => ['exercises', exerciseId, 'comments'],
   FAVORITE_EXERCISES: (params: PaginatedQueryParams) => ['exercises', 'favorite', params],
-  USER_EXERCISES: (userId: string, params: PaginatedQueryParams) => [
+  USER_EXERCISES: (userId: string, params: PaginatedQueryParams, includePrivate: boolean) => [
     'user',
     userId,
     'exercises',
     params,
+    includePrivate,
   ],
 
   WORKOUT: (id: string) => ['workouts', id],
   WORKOUT_COMMENTS: (workoutId: string) => ['workouts', workoutId, 'comments'],
   WORKOUTS: (params: WorkoutQueryParams) => ['workouts', params],
   FAVORITE_WORKOUTS: (params: PaginatedQueryParams) => ['workouts', 'favorite', params],
-  USER_WORKOUTS: (userId: string, params: PaginatedQueryParams) => [
+  USER_WORKOUTS: (userId: string, params: PaginatedQueryParams, includePrivate: boolean) => [
     'user',
     userId,
     'workouts',
     params,
+    includePrivate,
   ],
 } as const;

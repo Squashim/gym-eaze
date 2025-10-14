@@ -12,7 +12,7 @@ import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import type { GetPostsApiResponse } from '@/types/post';
 import { useUser } from '@/context/user';
 import { useComment } from '@/hooks/query/comments/use-comment';
-import { Loader2, MessageSquare, RefreshCw, ThumbsUp, X } from 'lucide-react';
+import { Info, Loader2, MessageSquare, RefreshCw, ThumbsUp, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,15 +27,23 @@ import { EditCommentDialog } from './post-dialogs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import ScrollLoader from '@/components/ui/scroll-loader';
+import { Alert, AlertTitle } from '@/components/ui/alert';
 
 interface PostDetailsProps {
   open: boolean;
   post: GetPostsApiResponse;
+  isViewingAsGuest?: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
 }
 
-const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) => {
+const PostDetails = ({
+  open,
+  post,
+  isViewingAsGuest = false,
+  onOpenChange,
+  onClose,
+}: PostDetailsProps) => {
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
@@ -177,16 +185,21 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
           />
           <Separator />
           <div className="flex-1 min-h-0 p-4 overflow-y-auto scrollbar">
-            <PostContent isAuthor={isAuthor} post={post} postRef={postRef} />
+            <PostContent
+              isAuthor={isViewingAsGuest ? false : isAuthor}
+              post={post}
+              postRef={postRef}
+            />
 
             <div className="flex flex-col gap-3">
               <CommentList
                 comments={comments}
                 isError={isError}
                 isLoading={isLoading}
+                isViewingAsGuest={isViewingAsGuest}
                 likePendingId={pendingLikeCommentId}
                 likedComments={{
-                  data: likedComments,
+                  data: !isViewingAsGuest ? likedComments : new Set<string>(),
                   isLoading: isLikedCommentsLoading,
                   isError: isLikedCommentsError,
                 }}
@@ -222,8 +235,17 @@ const PostDetails = ({ open, post, onOpenChange, onClose }: PostDetailsProps) =>
             />
           )}
 
-          {!replyCommentId && (
+          {!replyCommentId && !isViewingAsGuest && (
             <CommentCreator parentId={post._id} parentType="Post" scrollRef={postRef} />
+          )}
+
+          {isViewingAsGuest && (
+            <Alert className="w-[calc(100%_-_2rem)] mx-auto my-4">
+              <Info className="stroke-secondary" />
+              <AlertTitle className="line-clamp-none">
+                Przeglądasz swój profil jako gość. Niektóre informacje i funkcjonalności są ukryte.
+              </AlertTitle>
+            </Alert>
           )}
         </DialogContent>
       </Dialog>

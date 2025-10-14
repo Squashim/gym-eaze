@@ -16,6 +16,7 @@ interface ProfileItemsDisplayProps {
   isOwnProfile: boolean;
   isProfileLoading: boolean;
   isProfileError: boolean;
+  isViewingAsGuest: boolean;
 }
 
 function ProfileItemsDisplay({
@@ -23,6 +24,7 @@ function ProfileItemsDisplay({
   profileId,
   isProfileError,
   isProfileLoading,
+  isViewingAsGuest,
 }: ProfileItemsDisplayProps) {
   const [selectedTab, setSelectedTab] = useState<ProfileItemsTabs>(ItemType.Post);
 
@@ -75,13 +77,25 @@ function ProfileItemsDisplay({
       </div>
 
       <TabsContent value={ItemType.Post}>
-        <PostsTab isOwnProfile={isOwnProfile} profileId={profileId} />
+        <PostsTab
+          isOwnProfile={isOwnProfile}
+          isViewingAsGuest={isViewingAsGuest}
+          profileId={profileId}
+        />
       </TabsContent>
       <TabsContent value={ItemType.Exercise}>
-        <ExercisesTab isOwnProfile={isOwnProfile} profileId={profileId} />
+        <ExercisesTab
+          isOwnProfile={isOwnProfile}
+          isViewingAsGuest={isViewingAsGuest}
+          profileId={profileId}
+        />
       </TabsContent>
       <TabsContent value={ItemType.Training}>
-        <WorkoutsTab isOwnProfile={isOwnProfile} profileId={profileId} />
+        <WorkoutsTab
+          isOwnProfile={isOwnProfile}
+          isViewingAsGuest={isViewingAsGuest}
+          profileId={profileId}
+        />
       </TabsContent>
     </Tabs>
   );
