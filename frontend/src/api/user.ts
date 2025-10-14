@@ -1,5 +1,6 @@
 import API from './api-client';
 import {
+  type Author,
   type UserFavoritesApiResponse,
   type UserFitnessDetailsApiResponse,
   type UserFitnessDetailsPayload,
@@ -8,6 +9,7 @@ import {
   type UserPersonalDetailsApiResponse,
   type UserPersonalDetailsPayload,
   type UserPrivacySettings,
+  type UserProfile,
   type UserProfileDetailsApiResponse,
   type UserProfileDetailsPayload,
 } from '@/types/user';
@@ -84,6 +86,26 @@ const updatePrivacySettings = async (payload: UserPrivacySettings): Promise<ApiR
   return data;
 };
 
+const getUserProfile = async (username: string): Promise<UserProfile> => {
+  const { data } = await API.get<UserProfile>(endpoints.profile(username));
+  return data;
+};
+
+const getFollowers = async (): Promise<Author[]> => {
+  const { data } = await API.get<Author[]>(endpoints.followers);
+  return data;
+};
+
+const getFollowing = async (): Promise<Author[]> => {
+  const { data } = await API.get<Author[]>(endpoints.following);
+  return data;
+};
+
+const toggleFollow = async (id: string): Promise<ApiResponse> => {
+  const { data } = await API.patch<ApiResponse>(endpoints.toggleFollow(id));
+  return data;
+};
+
 export {
   getLikedItems,
   getFavoritedItems,
@@ -97,5 +119,9 @@ export {
   updateProfileDetails,
   getPrivacySettings,
   updatePrivacySettings,
+  getUserProfile,
+  toggleFollow,
+  getFollowers,
+  getFollowing,
   remove,
 };

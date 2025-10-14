@@ -33,7 +33,7 @@ function ProfileEdit() {
         defaultValue={selectedTab}
         onValueChange={handleTabChange}
       >
-        <div className="relative overflow-x-auto h-13 pt-2 scrollbar">
+        <div className="relative overflow-x-auto h-15 pt-2 scrollbar">
           <TabsList className="absolute flex flex-row justify-stretch w-full py-2 gap-2 bg-transparent">
             {profileEditTabsMapping.map((tab) => (
               <TabsTrigger

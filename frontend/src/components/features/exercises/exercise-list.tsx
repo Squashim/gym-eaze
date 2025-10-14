@@ -1,6 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { AdvancedLevelBadge, ItemDetailsBadge, LikesBadge } from '@/components/ui/item-info-badges';
 import { Separator } from '@/components/ui/separator';
 import { AdvancedLevel } from '@/constants/enums/advanced-level';
@@ -63,7 +70,11 @@ const EmptyExerciseCard = ({ isFetchingError, pageType = 'browser' }: EmptyExerc
           title: 'Brak ulubionych ćwiczeń!',
           description: 'Dodaj ćwiczenia do ulubionych, aby mieć je zawsze pod ręką.',
         };
-
+      case 'profile':
+        return {
+          title: 'Brak ćwiczeń!',
+          description: 'Ten użytkownik nie dodał jeszcze żadnych ćwiczeń.',
+        };
       default:
         return {
           title: 'Nic nie znaleziono!',
@@ -86,7 +97,7 @@ const EmptyExerciseCard = ({ isFetchingError, pageType = 'browser' }: EmptyExerc
           </CardDescription>
         </div>
       </CardHeader>
-      {pageType !== 'browser' && (
+      {pageType !== 'browser' && pageType !== 'profile' && (
         <CardContent className="flex justify-center">
           <Button asChild size="lg">
             <Link to={pageType === 'user' ? '/exercises/create' : '/exercises/browse'}>
@@ -139,7 +150,7 @@ const ExerciseCard = ({
       rel="noreferrer"
       target="_blank"
     >
-      <Card className="group hover:shadow-xl hover:shadow-primary/40 hover:border-primary hover:bg-gradient-to-br hover:from-card hover:to-primary/5 transition-all duration-300 ease-in-out h-full transform hover:-translate-y-1">
+      <Card className="group hover:shadow-xl hover:shadow-primary/40 hover:border-primary hover:bg-gradient-to-br hover:from-card hover:to-primary/5 transition-all duration-300 ease-in-out h-full transform hover:-translate-y-1 gap-4">
         <CardHeader className="gap-2 ">
           <div className="flex justify-between items-center gap-3">
             <div>
@@ -186,6 +197,11 @@ const ExerciseCard = ({
             )}
           </CardContent>
         </CardHeader>
+        {pageType !== 'user' && pageType !== 'profile' && (
+          <CardFooter className="mt-auto ml-auto text-sm text-muted-foreground">
+            Dodane przez: {exercise.author.username}
+          </CardFooter>
+        )}
       </Card>
     </a>
   );

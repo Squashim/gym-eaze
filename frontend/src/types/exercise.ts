@@ -43,7 +43,11 @@ export type GetExercisesByIdsApiResponse = {
 
 export type GetExerciseApiResponse = BaseExerciseApiResponse<MuscleGroup[], Equipment[], Author>;
 
-export type GetExercisesApiResponse = BaseExerciseApiResponse<{ _id: string; name: string }[]>;
+export type GetExercisesApiResponse = BaseExerciseApiResponse<
+  { _id: string; name: string }[],
+  { _id: string; name: string }[],
+  Author
+>;
 
 export type CreateExercisePayload = BaseExercise<string[], string[], File, File>;
 

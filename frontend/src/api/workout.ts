@@ -77,10 +77,16 @@ const getFavorite = async (
 const getByUser = async (
   userId: string,
   params: PaginatedQueryParams,
+  includePrivate: boolean,
 ): Promise<PaginatedResponse<GetWorkoutsApiResponse>> => {
   const { data } = await API.get<PaginatedResponse<GetWorkoutsApiResponse>>(
     endpoints.byUser(userId),
-    { params: { ...params } },
+    {
+      params: {
+        ...params,
+        includePrivate: includePrivate ? 'true' : 'false',
+      },
+    },
   );
 
   return data;

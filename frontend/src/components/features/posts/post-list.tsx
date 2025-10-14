@@ -9,7 +9,8 @@ import type { PostQueryParams } from '@/types/filters';
 
 interface PostListProps {
   posts: GetPostsApiResponse[] | undefined;
-  params: PostQueryParams;
+  params?: PostQueryParams;
+  isViewingAsGuest?: boolean;
   isLoading: boolean;
   isError: boolean;
   likedPosts: {
@@ -28,6 +29,7 @@ interface PostListProps {
 function PostList({
   posts,
   params,
+  isViewingAsGuest = false,
   isLoading,
   isError,
   likedPosts,
@@ -79,9 +81,11 @@ function PostList({
         <Alert>
           <Info />
           <AlertTitle>
-            {params.followedOnly !== undefined || params.hashtags?.length
+            {params && (params.followedOnly !== undefined || params.hashtags?.length)
               ? 'Nie znaleziono postów spełniających podane kryteria.'
-              : 'Brak postów. Dodaj pierwszego posta!'}
+              : params
+                ? 'Brak postów. Dodaj pierwszego posta!'
+                : 'Użytkownik nie dodał jeszcze żadnego posta.'}
           </AlertTitle>
         </Alert>
       </div>
@@ -94,8 +98,8 @@ function PostList({
         {posts!.map((post) => (
           <PostItem
             auth={{
-              isLogged: !!user,
-              isAuthor: isAuthor(post.author._id),
+              isLogged: isViewingAsGuest ? false : !!user,
+              isAuthor: isViewingAsGuest ? false : isAuthor(post.author._id),
             }}
             key={post._id}
             like={{
