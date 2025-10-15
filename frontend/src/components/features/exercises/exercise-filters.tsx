@@ -24,7 +24,7 @@ import { apiResponseToMultiSelectOptions, cn } from '@/lib/utils';
 import type { ExerciseFilters as Filters, SortBy } from '@/types/filters';
 import { ArrowUpDown, Filter, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AdvancedLevel } from '@/constants/advanced-level';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import type { MuscleGroup } from '@/types/muscle-group';

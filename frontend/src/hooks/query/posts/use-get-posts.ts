@@ -1,5 +1,5 @@
 import { getAll } from '@/api/post';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import type { CursorPaginatedResponse, PostQueryParams } from '@/types/filters';
 import type { GetPostsApiResponse } from '@/types/post';
 import { useInfiniteQuery } from '@tanstack/react-query';

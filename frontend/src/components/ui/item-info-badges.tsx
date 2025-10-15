@@ -1,8 +1,11 @@
-import type { AdvancedLevel } from '@/constants/advanced-level';
+import type { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { Badge } from './badge';
-import type { Visibility } from '@/constants/visibility';
+import type { Visibility } from '@/constants/enums/visibility';
 import { Globe2, Heart, Loader2, Lock, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import Typography from './typography';
+import { useMemo } from 'react';
 
 function AdvancedLevelBadge({ advancedLevel }: { advancedLevel: AdvancedLevel }) {
   const badgeStyles = {
@@ -98,4 +101,70 @@ const ItemDetailsBadge = ({
   );
 };
 
-export { AdvancedLevelBadge, VisibilityBadge, LikesBadge, ItemDetailsBadge };
+interface IsPublicBadgeProps {
+  isPublic?: boolean;
+  isLoading: boolean;
+}
+
+const IsPublicBadge = ({ isPublic, isLoading }: IsPublicBadgeProps) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge className="size-7 rounded-full px-1 font-mono tabular-nums" tabIndex={0}>
+          <div>
+            {isLoading ? (
+              <Loader2 className="animate-spin size-4" />
+            ) : isPublic ? (
+              <Globe2 className="size-4" />
+            ) : (
+              <Lock className="size-4" />
+            )}
+          </div>
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        {isPublic
+          ? 'Te informacje są widoczne dla innych użytkowników'
+          : 'Te informacje są widoczne tylko dla Ciebie'}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+const BmiBadge = ({ bmi }: { bmi: number }) => {
+  const classification = useMemo(() => {
+    if (bmi < 18.5) return 'Niedowaga';
+    if (bmi >= 18.5 && bmi < 24.9) return 'Waga prawidłowa';
+    if (bmi >= 25 && bmi < 29.9) return 'Nadwaga';
+    return 'Otyłość';
+  }, [bmi]);
+
+  const badgeStyles = {
+    Niedowaga: 'dark:bg-blue-800 bg-blue-300 text-accent-foreground shadow-sm',
+    'Waga prawidłowa': 'bg-secondary text-secondary-foreground',
+    Nadwaga: 'text-yellow-800 dark:text-yellow-500 bg-yellow-500/10 dark:bg-yellow-600/10',
+    Otyłość: 'text-destructive bg-destructive/10',
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge className={cn('cursor-default', badgeStyles[classification])}>BMI: {bmi}</Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        <Typography variant="small">
+          {`BMI wynosi ${bmi}, co zalicza się do: ${classification}.`}
+        </Typography>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+export {
+  AdvancedLevelBadge,
+  VisibilityBadge,
+  LikesBadge,
+  ItemDetailsBadge,
+  IsPublicBadge,
+  BmiBadge,
+};

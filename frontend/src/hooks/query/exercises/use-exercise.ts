@@ -1,6 +1,6 @@
 import { create, remove, toggleFavorite, toggleLike, update } from '@/api/exercise';
 import queryClient from '@/config/query-client';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
 import { getApiErrorMsg } from '@/lib/utils';
 import type { UpdateExercisePayload } from '@/types/exercise';

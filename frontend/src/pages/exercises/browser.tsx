@@ -1,15 +1,15 @@
 import useGetExercises from '@/hooks/query/exercises/use-get-exercises';
 import ExerciseFilters from '../../components/features/exercises/exercise-filters';
-import useFilterQuery from '@/hooks/use-filter-query';
+import useFilterQuery from '@/hooks/filters-pagination/use-filter-query';
 import type { ExerciseFilters as ExerciseFiltersType } from '@/types/filters';
-import { initialExerciseFilters } from '@/constants/filters';
+import { defaultExerciseFilters } from '@/constants/defaults/filters';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import PageLayout from '@/components/layout/page';
 import ExerciseContent from '../../components/features/exercises/exercise-content';
 
 const ExerciseBrowser = () => {
   const { params, setPage, setFilters, setPageSize, setSortBy, clearFilters } =
-    useFilterQuery<ExerciseFiltersType>(initialExerciseFilters);
+    useFilterQuery<ExerciseFiltersType>(defaultExerciseFilters);
   const { data: exercises, isLoading, isError } = useGetExercises(params);
 
   usePageTitle('Przeglądaj ćwiczenia');

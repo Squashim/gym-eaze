@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 
@@ -34,7 +36,8 @@ fun <T> MultiSelectDropdown(
     modifier: Modifier = Modifier,
     placeholder: String,
     isLoading: Boolean = false,
-    itemContent: (@Composable (T) -> Unit)? = null
+    itemContent: (@Composable (T) -> Unit)? = null,
+    useFullScreen: Boolean = false
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -110,7 +113,8 @@ fun <T> MultiSelectDropdown(
             onSelectionChange = onSelectionChange,
             onDismiss = { showDialog = false },
             itemDisplayText = itemDisplayText,
-            itemContent = itemContent
+            itemContent = itemContent,
+            useFullScreen = useFullScreen
         )
     }
 }
@@ -122,7 +126,9 @@ private fun SelectedItemChip(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = getSecondaryColor(),
+        color = getPrimaryColor().copy(alpha = 0.1f),
+        modifier = Modifier
+            .border(1.dp, getPrimaryColor().copy(alpha = 0.3f), RoundedCornerShape(16.dp))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -130,14 +136,16 @@ private fun SelectedItemChip(
         ) {
             Text(
                 text = text,
-                color = getOnSecondaryColor(),
-                fontSize = 12.sp
+                color = getPrimaryColor(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = "×",
-                color = getOnSecondaryColor(),
+                color = getPrimaryColor(),
                 fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .clickable { onRemove() }
                     .padding(2.dp)
@@ -155,23 +163,39 @@ private fun <T> MultiSelectDialog(
     onDismiss: () -> Unit,
     itemDisplayText: (T) -> String,
     maxSelected: Int = 8,
-    itemContent: (@Composable (T) -> Unit)? = null
+    itemContent: (@Composable (T) -> Unit)? = null,
+    useFullScreen: Boolean = false
 ) {
     var searchText by remember { mutableStateOf("") }
     val filteredItems = availableItems.filter {
         itemDisplayText(it).contains(searchText, ignoreCase = true)
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = if (useFullScreen) {
+            DialogProperties(usePlatformDefaultWidth = false)
+        } else {
+            DialogProperties()
+        }
+    ) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 500.dp),
+            modifier = if (useFullScreen) {
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            } else {
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 500.dp)
+            },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -180,7 +204,7 @@ private fun <T> MultiSelectDialog(
                 ) {
                     Text(
                         text = title,
-                        fontSize = 18.sp,
+                        fontSize = if (useFullScreen) 20.sp else 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor(),
                         modifier = Modifier.weight(1f)
@@ -221,11 +245,16 @@ private fun <T> MultiSelectDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                if (useFullScreen) {
+                    HorizontalDivider(color = getOnSurfaceSecondaryColor().copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 if(filteredItems.isEmpty()){
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(100.dp),
+                            .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -243,9 +272,13 @@ private fun <T> MultiSelectDialog(
                             )
                         }
                     }
-                }else {
+                } else {
                     LazyColumn(
-                        modifier = Modifier.fillMaxWidth().heightIn(max = 255.dp)
+                        modifier = if (useFullScreen) {
+                            Modifier.fillMaxSize()
+                        } else {
+                            Modifier.fillMaxWidth().heightIn(max = 255.dp)
+                        }
                     ) {
                         items(filteredItems) { item ->
                             val isSelected = selectedItems.contains(item)
@@ -261,7 +294,7 @@ private fun <T> MultiSelectDialog(
                                             onSelectionChange(selectedItems + item)
                                         }
                                     }
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Checkbox(

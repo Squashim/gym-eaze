@@ -1,4 +1,4 @@
-import { POST as endpoints } from '@/constants/endpoints';
+import { POST as endpoints } from '@/constants/api/endpoints';
 import API from './api-client';
 import { objectToFormData, serializeQuery } from '@/lib/utils';
 import type { ApiResponse } from '@/types/api';
@@ -39,6 +39,18 @@ const getAll = async (
   return data;
 };
 
+const getByUser = async (
+  userId: string,
+  cursor?: string | null,
+): Promise<CursorPaginatedResponse<GetPostsApiResponse>> => {
+  const { data } = await API.get<CursorPaginatedResponse<GetPostsApiResponse>>(
+    endpoints.byUser(userId),
+    { params: { cursor } },
+  );
+
+  return data;
+};
+
 const getComments = async (
   id: string,
   cursor?: string | null,
@@ -57,4 +69,4 @@ const toggleLike = async (id: string): Promise<ApiResponse> => {
   return data;
 };
 
-export { create, update, remove, getAll, toggleLike, getComments };
+export { create, update, remove, getAll, toggleLike, getComments, getByUser };

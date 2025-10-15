@@ -1,15 +1,13 @@
 import useGetUserExercises from '@/hooks/query/exercises/use-get-user-exercises';
 import ExerciseList from '../exercise-list';
-import usePaginationQuery from '@/hooks/use-pagination-query';
+import usePaginationQuery from '@/hooks/filters-pagination/use-pagination-query';
 import type { WorkoutSheetTabProps } from '@/types/workout';
+import { useUser } from '@/context/user';
 
 const UserExercisesTab = ({ onExerciseToggle, isExerciseAdded }: WorkoutSheetTabProps) => {
   const { params, setPage } = usePaginationQuery();
-  const {
-    data: exercises,
-    isLoading,
-    isError,
-  } = useGetUserExercises(params, { ownExercises: true });
+  const { user } = useUser();
+  const { data: exercises, isLoading, isError } = useGetUserExercises(user!._id, params);
 
   return (
     <div className="flex flex-col h-full pb-3 max-h-[75dvh] sm:max-h-[calc(100dvh_-_11.5rem)] min-h-[30dvh]">

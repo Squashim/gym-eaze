@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { passwordValidator } from './validators/password-validator';
 
 const loginValidator = z
   .string()
@@ -18,14 +19,6 @@ const loginValidator = z
       });
     }
   });
-
-const passwordValidator = z
-  .string()
-  .min(1, 'Hasło jest wymagane.')
-  .regex(
-    /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^0-9A-Za-z]).{14,32}$/,
-    'Nieprawidłowe hasło.',
-  );
 
 export const loginSchema = z.object({
   login: loginValidator,

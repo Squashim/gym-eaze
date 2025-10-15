@@ -1,7 +1,6 @@
-import { ItemType } from '@/constants/item-type';
+import { COMMENT } from '@/constants/comment';
+import { ItemType } from '@/constants/enums/item-type';
 import z from 'zod/v3';
-
-const MAX_CONTENT_LENGTH = 1000;
 
 export const commentSchema = z.object({
   parentType: z.nativeEnum(ItemType),
@@ -12,10 +11,10 @@ export const commentSchema = z.object({
     .refine(
       (val) => {
         const normalizedLength = val.replace(/\r\n|\r/g, '\n').length;
-        return normalizedLength <= MAX_CONTENT_LENGTH;
+        return normalizedLength <= COMMENT.MAX_CONTENT_LENGTH;
       },
       {
-        message: 'Treść nie może być dłuższa niż 1000 znaków.',
+        message: `Treść nie może być dłuższa niż ${COMMENT.MAX_CONTENT_LENGTH} znaków.`,
       },
     ),
 });
@@ -27,10 +26,10 @@ export const updateCommentSchema = z.object({
     .refine(
       (val) => {
         const normalizedLength = val.replace(/\r\n|\r/g, '\n').length;
-        return normalizedLength <= MAX_CONTENT_LENGTH;
+        return normalizedLength <= COMMENT.MAX_CONTENT_LENGTH;
       },
       {
-        message: 'Treść nie może być dłuższa niż 1000 znaków.',
+        message: `Treść nie może być dłuższa niż ${COMMENT.MAX_CONTENT_LENGTH} znaków.`,
       },
     ),
 });

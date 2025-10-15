@@ -48,7 +48,7 @@ router.patch('/:id/like', authenticate, togglePostLike);
 
 router.get('/', optionalAuth, getPosts);
 
-router.get('/:userId', optionalAuth, getPostsByUser);
+router.get('/user/:userId', optionalAuth, getPostsByUser);
 
 router.get('/:id/comments', optionalAuth, (req, res) => {
   req.params.parentType = CommentParentType.post;

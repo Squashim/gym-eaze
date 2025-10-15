@@ -1,7 +1,7 @@
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
 import { useMemo } from 'react';
-import BackHeader from '../back-header';
+import BackHeader from '@/components/ui/back-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
 import { AdvancedLevelBadge, LikesBadge } from '@/components/ui/item-info-badges';
@@ -87,7 +87,7 @@ const ActiveExercise = ({
                 <LikesBadge likes={exercise.likes} />
               </div>
               <Button asChild className="p-0 text-xs h-auto text-muted-foreground" variant="link">
-                <a href={`/profile/${exercise.author._id}`} rel="noreferrer" target="_blank">
+                <a href={`/profile/${exercise.author.username}`} rel="noreferrer" target="_blank">
                   Autor: {exercise.author.username}
                 </a>
               </Button>

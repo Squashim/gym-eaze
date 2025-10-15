@@ -72,7 +72,7 @@ export const updatePost = async (req: AuthPostRequest, res: Response) => {
     const video = req.body.video === 'null' ? null : undefined;
 
     const trimmedContent = content?.trim();
-    const hashtags = parseField(req.body.hashtags);
+    const hashtags = req.body.hashtags ? parseField(req.body.hashtags) : undefined;
 
     await updatePostService(
       postId!,

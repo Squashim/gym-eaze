@@ -5,6 +5,7 @@ import {
   type SetStateAction,
   type ComponentPropsWithRef,
   useRef,
+  useEffect,
 } from 'react';
 import { Input } from './input';
 import { cn } from '@/lib/utils';
@@ -47,6 +48,12 @@ const PasswordInput = ({
     return strength.filter((req) => req.met).length;
   }, [strength]);
 
+  useEffect(() => {
+    if (!value || value === '') {
+      setIsPopoverOpen(false);
+    }
+  }, [value]);
+
   const getStrengthColor = (score: number) => {
     if (score === 0) return 'bg-border';
     if (score <= 1) return 'bg-red-500';
@@ -79,6 +86,7 @@ const PasswordInput = ({
           className={cn('hide-password-toggle pr-10', className)}
           placeholder="••••••••••••"
           type={showPassword ? 'text' : 'password'}
+          value={value}
           {...props}
         />
         <ShowPasswordToggle
@@ -107,6 +115,7 @@ const PasswordInput = ({
             type={showPassword ? 'text' : 'password'}
             {...props}
             aria-describedby="password-requirements"
+            value={value}
           />
           <ShowPasswordToggle
             disabled={disabled}

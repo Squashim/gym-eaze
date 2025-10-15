@@ -1,6 +1,7 @@
 package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.FavoritesResponse
 import com.example.gymeaze.data.models.GetPrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
@@ -75,4 +76,7 @@ interface UserApiService {
     suspend fun updatePrivacySettings(
         @Body privacySettings: UpdatePrivacySettingsRequest
     ): Response<UpdatePrivacySettingsResponse>
+
+    @GET("/api/user/favorites")
+    suspend fun getUserFavorites(): Response<FavoritesResponse>
 }

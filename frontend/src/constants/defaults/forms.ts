@@ -1,18 +1,20 @@
-import { AdvancedLevel } from './advanced-level';
-import { Goal } from './goals';
-import { Visibility } from './visibility';
+import { AdvancedLevel } from '../enums/advanced-level';
+import { Country } from '../enums/countries';
+import { Gender } from '../enums/gender';
+import { Goal } from '../enums/goals';
+import { Visibility } from '../enums/visibility';
 
-const IMAGE_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
-const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+export const loginDefaultValues = {
+  login: '',
+  password: '',
+  rememberMe: false,
+};
 
-const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm'];
-const VIDEO_MAX_SIZE = 20 * 1024 * 1024; // 20MB
-
-export const MEDIA = {
-  IMAGE_MIME_TYPES,
-  IMAGE_MAX_SIZE,
-  VIDEO_MIME_TYPES,
-  VIDEO_MAX_SIZE,
+export const signupDefaultValues = {
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
 };
 
 const exerciseCreatorSteps = ['Podstawowe dane', 'Dodatkowe informacje', 'Podsumowanie'];
@@ -72,4 +74,38 @@ export const postCreatorDefaultValues = {
   image: undefined,
   video: undefined,
   hashtags: [],
+};
+
+export const loginDetailsDefaultValues = {
+  username: '',
+  password: '',
+  confirmPassword: '',
+};
+
+export const fitnessDetailsDefaultValues = {
+  age: undefined,
+  weight: undefined,
+  height: undefined,
+  gender: Gender.none,
+};
+
+export const personalDetailsDefaultValues = {
+  firstName: undefined,
+  lastName: undefined,
+  country: Country.NONE,
+};
+
+export const profileDetailsDefaultValues = {
+  profilePicture: undefined,
+  description: '',
+  goal: Goal.none,
+  pinnedBadges: [],
+};
+
+export const privacySettingsDefaultValues = {
+  isPersonalDetailsPublic: false,
+  isFitnessDetailsPublic: false,
+  isBadgesDetailsPublic: false,
+  isGoalPublic: false,
+  isTrainingStatisticsPublic: false,
 };

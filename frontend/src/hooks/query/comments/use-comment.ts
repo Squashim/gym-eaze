@@ -1,10 +1,10 @@
 import { create, remove, toggleLike, update } from '@/api/comment';
 import queryClient from '@/config/query-client';
-import type { ItemType } from '@/constants/item-type';
-import { QUERY_KEYS } from '@/constants/query-keys';
+import type { ItemType } from '@/constants/enums/item-type';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
 import { useUser } from '@/context/user';
-import usePostParamsQuery from '@/hooks/use-post-params-query';
-import { getApiErrorMsg } from '@/lib/utils';
+import usePostParamsQuery from '@/hooks/filters-pagination/use-post-params-query';
+import { getApiErrorMsg, isItemReplyCommentsQuery, isProfilePostQuery } from '@/lib/utils';
 import type { UpdateCommentPayload } from '@/types/comment';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -12,15 +12,6 @@ import { toast } from 'sonner';
 interface useCommentProps {
   parentType: ItemType;
   parentId: string;
-}
-
-function isItemReplyCommentsQuery(queryKey: unknown): boolean {
-  return (
-    Array.isArray(queryKey) &&
-    queryKey.length === 3 &&
-    queryKey[2] === 'comments' &&
-    (queryKey[0] === 'posts' || queryKey[0] === 'exercises' || queryKey[0] === 'workouts')
-  );
 }
 
 export function useComment({ parentType, parentId }: useCommentProps) {
@@ -33,6 +24,9 @@ export function useComment({ parentType, parentId }: useCommentProps) {
       if (parentType === 'Post') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POST_COMMENTS(parentId) });
+        await queryClient.invalidateQueries({
+          predicate: (query) => isProfilePostQuery(query.queryKey),
+        });
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
         await queryClient.invalidateQueries({
@@ -94,6 +88,9 @@ export function useComment({ parentType, parentId }: useCommentProps) {
       if (parentType === 'Post') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS(params) });
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POST_COMMENTS(parentId) });
+        await queryClient.invalidateQueries({
+          predicate: (query) => isProfilePostQuery(query.queryKey),
+        });
       } else if (parentType === 'Komentarz') {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMMENT_REPLIES(parentId) });
         await queryClient.invalidateQueries({

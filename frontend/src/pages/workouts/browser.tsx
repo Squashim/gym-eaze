@@ -1,15 +1,15 @@
 import WorkoutContent from '@/components/features/workouts/workout-content';
 import WorkoutFilters from '@/components/features/workouts/workout-filters';
 import PageLayout from '@/components/layout/page';
-import { initialWorkoutFilters } from '@/constants/filters';
+import { defaultWorkoutFilters } from '@/constants/defaults/filters';
 import useGetWorkouts from '@/hooks/query/workouts/use-get-workouts';
-import useFilterQuery from '@/hooks/use-filter-query';
+import useFilterQuery from '@/hooks/filters-pagination/use-filter-query';
 import usePageTitle from '@/hooks/utils/use-page-title';
 import type { WorkoutFilters as WorkoutFiltersType } from '@/types/filters';
 
 function WorkoutBrowser() {
   const { params, setPage, setFilters, setPageSize, setSortBy, clearFilters } =
-    useFilterQuery<WorkoutFiltersType>(initialWorkoutFilters);
+    useFilterQuery<WorkoutFiltersType>(defaultWorkoutFilters);
   const { data: workouts, isLoading, isError } = useGetWorkouts(params);
 
   usePageTitle('Przeglądaj plany');

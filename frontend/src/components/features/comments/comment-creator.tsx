@@ -4,7 +4,7 @@ import ReusableAvatar from '@/components/ui/reusable-avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import Typography from '@/components/ui/typography';
-import type { ItemType } from '@/constants/item-type';
+import type { ItemType } from '@/constants/enums/item-type';
 import { useUser } from '@/context/user';
 import { useComment } from '@/hooks/query/comments/use-comment';
 import { cn } from '@/lib/utils';

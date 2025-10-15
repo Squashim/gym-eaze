@@ -23,18 +23,17 @@ import GoogleLoginButton from '@/components/features/google-auth/google-login';
 import { useLogin } from '@/hooks/auth/use-login';
 import { useGoogleLink } from '@/context/google-link';
 import LinkGoogleAccountDialog from '@/components/features/google-auth/link-google-account-dialog';
+import { loginDefaultValues } from '@/constants/defaults/forms';
+import usePageTitle from '@/hooks/utils/use-page-title';
 
 const Login = () => {
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      login: '',
-      password: '',
-      rememberMe: false,
-    },
+    defaultValues: loginDefaultValues,
   });
   const { login } = useLogin(form.setError);
   const { googleLinkData } = useGoogleLink();
+  usePageTitle('Logowanie');
 
   const onSubmit = (data: LoginSchema) => {
     login.mutate(data);

@@ -97,3 +97,7 @@ data class UpdatePrivacySettingsRequest(
 data class UpdatePrivacySettingsResponse(
     val message: String
 )
+
+data class FavoritesResponse(
+    val exercises: List<String>
+)

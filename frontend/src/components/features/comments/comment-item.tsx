@@ -33,6 +33,7 @@ interface CommentItemProps {
   };
   openDropdownId: string | null;
   replyRef?: React.RefObject<HTMLDivElement | null>;
+  isViewingAsGuest?: boolean;
   isReplying: boolean;
   setOpenDropdownId: (id: string | null) => void;
   onLikeToggle: (commentId: string) => void;
@@ -51,6 +52,7 @@ function CommentItem({
   onReply,
   setOpenDropdownId,
   isReplying,
+  isViewingAsGuest = false,
   replyRef,
   openDropdownId,
   auth,
@@ -143,7 +145,7 @@ function CommentItem({
         <Button asChild className="size-8 rounded-3xl p-0" variant="ghost">
           <a
             className="hover:ring-ring/50 hover:ring-[3px] rounded-3xl"
-            href={`/profile/${comment.author._id}`}
+            href={`/profile/${comment.author.username}`}
             rel="noreferrer"
             target="_blank"
           >
@@ -163,9 +165,9 @@ function CommentItem({
                 className="p-0 justify-start w-fit h-fit focus-within:underline"
                 variant="link"
               >
-                <a href={`/profile/${comment.author._id}`} rel="noreferrer" target="_blank">
+                <a href={`/profile/${comment.author.username}`} rel="noreferrer" target="_blank">
                   <Typography className="font-semibold text-sm leading-2">
-                    {comment.author.username} {auth.isAuthor && '(Ty)'}
+                    {comment.author.username} {auth.isAuthor && !isViewingAsGuest && '(Ty)'}
                   </Typography>
                 </a>
               </Button>
@@ -276,6 +278,7 @@ function CommentItem({
                   comments={comments}
                   isError={isError}
                   isLoading={isLoading}
+                  isViewingAsGuest={isViewingAsGuest}
                   likePendingId={pendingLikeReplyId}
                   likedComments={{
                     data: like.likedComments,

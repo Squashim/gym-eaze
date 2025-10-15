@@ -1,10 +1,17 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { AdvancedLevelBadge, ItemDetailsBadge, LikesBadge } from '@/components/ui/item-info-badges';
 import { Separator } from '@/components/ui/separator';
-import { AdvancedLevel } from '@/constants/advanced-level';
-import { Goal } from '@/constants/goals';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
+import { Goal } from '@/constants/enums/goals';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import {
@@ -71,6 +78,12 @@ const EmptyWorkoutCard = ({ isFetchingError, pageType = 'browser' }: EmptyWorkou
           description: 'Dodaj plan do ulubionych, aby mieć go zawsze pod ręką.',
         };
 
+      case 'profile':
+        return {
+          title: 'Brak planów treningowych!',
+          description: 'Ten użytkownik nie dodał jeszcze żadnych planów treningowych.',
+        };
+
       default:
         return {
           title: 'Nic nie znaleziono!',
@@ -93,7 +106,7 @@ const EmptyWorkoutCard = ({ isFetchingError, pageType = 'browser' }: EmptyWorkou
           </CardDescription>
         </div>
       </CardHeader>
-      {pageType !== 'browser' && (
+      {pageType !== 'browser' && pageType !== 'profile' && (
         <CardContent className="flex justify-center">
           <Button asChild size="lg">
             <Link to={pageType === 'user' ? '/workouts/create' : '/workouts/browse'}>
@@ -148,7 +161,7 @@ const WorkoutCard = ({
       rel="noreferrer"
       target="_blank"
     >
-      <Card className="group hover:shadow-xl hover:shadow-primary/40 hover:border-primary hover:bg-gradient-to-br hover:from-card hover:to-primary/5 transition-all duration-300 ease-in-out h-full transform hover:-translate-y-1">
+      <Card className="group hover:shadow-xl hover:shadow-primary/40 hover:border-primary hover:bg-gradient-to-br hover:from-card hover:to-primary/5 transition-all duration-300 ease-in-out h-full transform hover:-translate-y-1 gap-4">
         <CardHeader className="gap-2 ">
           <div className="flex justify-between items-center gap-3">
             <div>
@@ -195,22 +208,28 @@ const WorkoutCard = ({
               </div>
             </div>
 
-            <Separator />
-
             {workout.hashtags && workout.hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {visibleHashtags.map((hashtag) => (
-                  <Badge key={hashtag} variant="outline">
-                    {`#${hashtag}`}
-                  </Badge>
-                ))}
-                {hiddenHashtagsCount > 0 && (
-                  <Badge variant="outline">+{hiddenHashtagsCount} więcej</Badge>
-                )}
-              </div>
+              <>
+                <Separator />
+                <div className="flex flex-wrap gap-1">
+                  {visibleHashtags.map((hashtag) => (
+                    <Badge key={hashtag} variant="outline">
+                      {`#${hashtag}`}
+                    </Badge>
+                  ))}
+                  {hiddenHashtagsCount > 0 && (
+                    <Badge variant="outline">+{hiddenHashtagsCount} więcej</Badge>
+                  )}
+                </div>
+              </>
             )}
           </CardContent>
         </CardHeader>
+        {pageType !== 'user' && pageType !== 'profile' && (
+          <CardFooter className="mt-auto ml-auto text-sm text-muted-foreground">
+            Dodane przez: {workout.author.username}
+          </CardFooter>
+        )}
       </Card>
     </a>
   );

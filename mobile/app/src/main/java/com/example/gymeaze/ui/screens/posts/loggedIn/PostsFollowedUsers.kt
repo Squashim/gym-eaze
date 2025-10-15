@@ -74,7 +74,8 @@ fun PostsFollowedUsers(
                 viewModel = viewModel,
                 postToEdit = editingPost!!,
                 onBackClick = { editingPost = null },
-                onEdited = { editingPost = null }
+                onEdited = { editingPost = null },
+                onRefreshPosts = { viewModel.refreshFollowedPosts() }
             )
         } else {
             SeeAllPostsContent(
@@ -91,6 +92,8 @@ fun PostsFollowedUsers(
                 isRefreshing = isRefreshing,
                 onToggleLike = { postId -> viewModel.toggleLike(postId) },
                 onToggleSeeMore = { true },
+                onRefreshPosts = { viewModel.refreshFollowedPosts() },
+                topBarTitle = "Posty obserwowanych",
             )
         }
 

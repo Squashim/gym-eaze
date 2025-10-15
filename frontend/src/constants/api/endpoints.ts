@@ -36,6 +36,7 @@ export const POST = {
   base: 'posts',
   toggleLike: (id: string) => `posts/${id}/like`,
   byId: (id: string) => `posts/${id}`,
+  byUser: (userId: string) => `posts/user/${userId}`,
   comments: (id: string) => `posts/${id}/comments`,
 } as const;
 
@@ -47,8 +48,19 @@ export const COMMENT = {
 } as const;
 
 export const USER = {
+  base: 'user',
+  badges: 'user/badges',
   likedItems: 'user/likes',
   favoritedItems: 'user/favorites',
+  privacySettings: 'user/privacy-settings',
+  loginDetails: 'user/login-details',
+  profileDetails: 'user/profile/profile-details',
+  personalDetails: 'user/profile/personal-details',
+  fitnessDetails: 'user/profile/fitness-details',
+  followers: 'user/followers',
+  following: 'user/following',
+  profile: (username: string) => `user/${username}/profile`,
+  toggleFollow: (id: string) => `user/${id}/follow`,
 };
 
 export const UTILS = {

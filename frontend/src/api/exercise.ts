@@ -1,4 +1,4 @@
-import { EXERCISE as endpoints } from '@/constants/endpoints';
+import { EXERCISE as endpoints } from '@/constants/api/endpoints';
 import type {
   BaseExerciseApiResponse,
   CreateExercisePayload,
@@ -84,10 +84,16 @@ const getFavorite = async (
 const getByUser = async (
   userId: string,
   params: PaginatedQueryParams,
+  includePrivate: boolean,
 ): Promise<PaginatedResponse<GetExercisesApiResponse>> => {
   const { data } = await API.get<PaginatedResponse<GetExercisesApiResponse>>(
     endpoints.byUser(userId),
-    { params: { ...params } },
+    {
+      params: {
+        ...params,
+        includePrivate: includePrivate ? 'true' : 'false',
+      },
+    },
   );
 
   return data;

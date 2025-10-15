@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens
+package com.example.gymeaze.ui.screens.exercises.logggedIn
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -44,6 +44,9 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.PrivacySettings
+import com.example.gymeaze.data.models.Equipment
+import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.MultiSelectDropdown
 import com.example.gymeaze.ui.theme.*
@@ -56,16 +59,42 @@ import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 fun ExerciseCreatorScreen(
     viewModel: ExerciseCreatorViewModel,
     onBackClick: () -> Unit,
-    onCreated: () -> Unit
+    onCreated: () -> Unit,
+    exerciseToEdit: Exercise? = null
 ) {
     val ui by viewModel.uiState.collectAsState()
-    var showExitDialog by remember {mutableStateOf(false)}
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(exerciseToEdit) {
+        exerciseToEdit?.let {
+            viewModel.loadExerciseForEdit(it)
+        }
+    }
 
     LaunchedEffect(ui.success) {
-        if (ui.success){
+        if (ui.success) {
             onCreated()
             viewModel.clearSuccess()
             viewModel.clearData()
+        }
+    }
+
+    // DODAJ TO - Funkcja obsługująca powrót
+    val handleBackClick = {
+        if (ui.name.isNotBlank() ||
+            ui.imageUri != null ||
+            ui.videoUri != null ||
+            ui.description.isNotBlank() ||
+            ui.selectedMuscleGroups.isNotEmpty() ||
+            ui.selectedEquipment.isNotEmpty() ||
+            ui.hashtags.isNotEmpty()
+        ) {
+            // Jeśli są jakieś dane, pokaż dialog
+            showExitDialog = true
+        } else {
+            // Jeśli puste, po prostu wyjdź i wyczyść
+            viewModel.clearData()
+            onBackClick()
         }
     }
 
@@ -74,13 +103,17 @@ fun ExerciseCreatorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.exercise_creator),
+                        text = if (ui.isEditMode) {
+                            "Edytuj ćwiczenie"
+                        } else {
+                            stringResource(R.string.exercise_creator)
+                        },
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.ExtraBold
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = handleBackClick) { // ZMIEŃ TO
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -89,7 +122,7 @@ fun ExerciseCreatorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {showExitDialog = true}) {
+                    IconButton(onClick = { showExitDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = stringResource(R.string.cancel_creation),
@@ -151,7 +184,8 @@ fun ExerciseCreatorScreen(
                     },
                     onPrev = viewModel::prevStep,
                     onNext = viewModel::nextStep,
-                    onCreate = viewModel::create
+                    onCreate = viewModel::create,
+                    isEditMode = ui.isEditMode
                 )
             }
         }
@@ -175,9 +209,10 @@ fun ExerciseCreatorScreen(
             onDismiss = { showExitDialog = false },
             onConfirm = {
                 showExitDialog = false
-                viewModel.clearData()
+                viewModel.clearData() // Resetuje wszystkie pola
                 onBackClick()
-            }
+            },
+            isEditMode = ui.isEditMode
         )
     }
 }
@@ -185,7 +220,8 @@ fun ExerciseCreatorScreen(
 @Composable
 fun ExitConfirmationDialog(
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    isEditMode: Boolean = false
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -193,7 +229,11 @@ fun ExitConfirmationDialog(
         shape = RoundedCornerShape(20.dp),
         title = {
             Text(
-                text = stringResource(R.string.exit_creation_confirmation_title),
+                text = if (isEditMode) {
+                    "Czy na pewno chcesz przerwać edycję?"
+                } else {
+                    stringResource(R.string.exit_creation_confirmation_title)
+                },
                 color = getOnSurfaceColor(),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -203,7 +243,11 @@ fun ExitConfirmationDialog(
         },
         text = {
             Text(
-                text = stringResource(R.string.exit_creation_confirmation_message),
+                text = if (isEditMode) {
+                    "Czy na pewno chcesz przerwać edycję tego ćwiczenia? Wszystkie niezapisane zmiany zostaną utracone."
+                } else {
+                    stringResource(R.string.exit_creation_confirmation_message)
+                },
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -225,9 +269,14 @@ fun ExitConfirmationDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = stringResource(R.string.return_button),
+                        text = if (isEditMode) {
+                            "Powrót"
+                        } else {
+                            stringResource(R.string.return_button)
+                        },
                         color = getOnSurfaceColor(),
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -240,7 +289,11 @@ fun ExitConfirmationDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = stringResource(R.string.interrupt),
+                        text = if (isEditMode) {
+                            "Przerwij"
+                        } else {
+                            stringResource(R.string.interrupt)
+                        },
                         color = Color.White,
                         fontWeight = FontWeight.Medium
                     )
@@ -249,7 +302,6 @@ fun ExitConfirmationDialog(
         },
     )
 }
-
 @Composable
 private fun Stepper(step: ExerciseCreatorStep) {
     Row(
@@ -343,29 +395,51 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             UploadCard(
-                title = stringResource(R.string.exercise_image_required),
-                subtitle = stringResource(R.string.click_to_upload),
+                title = if (ui.isEditMode && ui.existingImageUrl != null) {
+                    "Zmień obraz"
+                } else {
+                    stringResource(R.string.exercise_image_required)
+                },
+                subtitle = if (ui.isEditMode && ui.existingImageUrl != null) {
+                    "Obecny: ${ui.existingImageUrl?.takeLast(20) ?: ""}"
+                } else {
+                    stringResource(R.string.click_to_upload)
+                },
                 hint = stringResource(R.string.image_upload_requirements),
-                selected = ui.imageUri != null,
+                selected = ui.imageUri != null || ui.existingImageUrl != null,
                 onPick = vm::setImage,
                 mime = "image/*",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onRemove = if (ui.imageUri != null) {
+                    { vm.setImage(null) }
+                } else null
             )
             UploadCard(
-                title = stringResource(R.string.instructional_video_required),
-                subtitle = stringResource(R.string.click_to_upload),
+                title = if (ui.isEditMode && ui.existingVideoUrl != null) {
+                    "Zmień wideo"
+                } else {
+                    stringResource(R.string.instructional_video_required)
+                },
+                subtitle = if (ui.isEditMode && ui.existingVideoUrl != null) {
+                    "Obecne: ${ui.existingVideoUrl?.takeLast(20) ?: ""}"
+                } else {
+                    stringResource(R.string.click_to_upload)
+                },
                 hint = stringResource(R.string.video_upload_requirements),
-                selected = ui.videoUri != null,
+                selected = ui.videoUri != null || ui.existingVideoUrl != null,
                 onPick = vm::setVideo,
                 mime = "video/*",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onRemove = if (ui.videoUri != null) {
+                    { vm.setVideo(null) }
+                } else null
             )
         }
 
         Column {
             Text(stringResource(R.string.difficulty_level_required), color = getOnSurfaceColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(8.dp))
-            DifficultyRow(AdvancedLevel.NONE, ui.difficulty == AdvancedLevel.NONE) { vm.setDifficulty(AdvancedLevel.NONE)}
+            DifficultyRow(AdvancedLevel.NONE, ui.difficulty == AdvancedLevel.NONE) { vm.setDifficulty(AdvancedLevel.NONE) }
             DifficultyRow(AdvancedLevel.EASY, ui.difficulty == AdvancedLevel.EASY) { vm.setDifficulty(AdvancedLevel.EASY) }
             DifficultyRow(AdvancedLevel.MEDIUM, ui.difficulty == AdvancedLevel.MEDIUM) { vm.setDifficulty(AdvancedLevel.MEDIUM) }
             DifficultyRow(AdvancedLevel.HARD, ui.difficulty == AdvancedLevel.HARD) { vm.setDifficulty(AdvancedLevel.HARD) }
@@ -457,6 +531,7 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             isLoading = ui.isLoadingData,
             placeholder = stringResource(R.string.select_muscle_groups),
             modifier = Modifier.fillMaxWidth(),
+            useFullScreen = true,
             itemContent = { muscleGroup ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
@@ -482,6 +557,7 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             isLoading = ui.isLoadingData,
             placeholder = stringResource(R.string.select_equipment),
             modifier = Modifier.fillMaxWidth(),
+            useFullScreen = true,
             itemContent = { equipment ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
@@ -742,7 +818,7 @@ private fun TagGroup(items: List<String>) {
 }
 
 @Composable
-private fun TagGroupWithImage(items: List<com.example.gymeaze.data.models.MuscleGroup>) {
+private fun TagGroupWithImage(items: List<MuscleGroup>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
@@ -781,7 +857,7 @@ private fun TagGroupWithImage(items: List<com.example.gymeaze.data.models.Muscle
 }
 
 @Composable
-private fun EquipmentTagGroup(items: List<com.example.gymeaze.data.models.Equipment>) {
+private fun EquipmentTagGroup(items: List<Equipment>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
@@ -921,7 +997,8 @@ private fun BottomBar(
     canProceed: Boolean,
     onPrev: () -> Unit,
     onNext: () -> Unit,
-    onCreate: () -> Unit
+    onCreate: () -> Unit,
+    isEditMode: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -939,7 +1016,9 @@ private fun BottomBar(
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
-            ) { Text(stringResource(R.string.go_back), color = getOnSurfaceColor()) }
+            ) {
+                Text(stringResource(R.string.go_back), color = getOnSurfaceColor())
+            }
         }
 
         Button(
@@ -957,94 +1036,21 @@ private fun BottomBar(
                 )
             } else {
                 Text(
-                    text = if (step == ExerciseCreatorStep.SUMMARY) stringResource(R.string.create_exercise) else stringResource(R.string.next_step),
+                    text = if (step == ExerciseCreatorStep.SUMMARY) {
+                        if (isEditMode) {
+                            "Zapisz"
+                        } else {
+                            stringResource(R.string.create_exercise)
+                        }
+                    } else {
+                        stringResource(R.string.next_step)
+                    },
                     color = getOnPrimaryColor()
                 )
             }
         }
     }
 }
-
-/*
-@Composable
-fun UploadCard(
-    title: String,
-    subtitle: String,
-    hint: String,
-    selected: Boolean,
-    onPick: (Uri?) -> Unit,
-    mime: String,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true
-) {
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent(), onPick)
-
-    val alpha = if (enabled) 1f else 0.5f
-    val cardColor = if (enabled) getSurfaceColor() else getSurfaceColor().copy(alpha = 0.6f)
-    val borderColor = if (enabled) {
-        getOnSurfaceColor().copy(alpha = 0.3f)
-    } else {
-        getOnSurfaceColor().copy(alpha = 0.15f)
-    }
-
-    Card(
-        modifier = modifier
-            .height(220.dp)
-            .clickable(enabled = enabled) {
-                if (enabled) launcher.launch(mime)
-            }
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp)
-                .alpha(alpha),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                Icons.Default.CloudUpload,
-                contentDescription = null,
-                tint = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
-                modifier = Modifier.size(28.dp)
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                title,
-                color = if (enabled) getOnSurfaceColor() else getOnSurfaceColor().copy(alpha = 0.5f),
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                subtitle,
-                color = if (enabled) getOnSurfaceSecondaryColor() else getOnSurfaceSecondaryColor().copy(alpha = 0.5f),
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                hint,
-                color = if (enabled) getOnSurfaceSecondaryColor() else getOnSurfaceSecondaryColor().copy(alpha = 0.5f),
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 12.sp
-            )
-            Spacer(Modifier.height(6.dp))
-            if (selected) {
-                Text(
-                    stringResource(R.string.file_selected),
-                    color = if (enabled) getPrimaryColor() else getPrimaryColor().copy(alpha = 0.5f),
-                    fontSize = 12.sp
-                )
-            }
-        }
-    }
-}
-
- */
 
 @Composable
 fun UploadCard(

@@ -6,7 +6,7 @@ import ExercisesSheet from '../exercises/sheet/sheet';
 import { Button } from '@/components/ui/button';
 import { Info, Plus, TriangleAlert } from 'lucide-react';
 import Typography from '@/components/ui/typography';
-import BackHeader from '../back-header';
+import BackHeader from '@/components/ui/back-header';
 import {
   FormControl,
   FormDescription,

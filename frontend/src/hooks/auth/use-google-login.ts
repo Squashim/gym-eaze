@@ -1,6 +1,6 @@
 import { getAuthenticatedUser, googleLogin } from '@/api/auth';
-import { QUERY_KEYS } from '@/constants/query-keys';
-import { STORAGE_FLAGS } from '@/constants/storage-flags';
+import { QUERY_KEYS } from '@/constants/api/query-keys';
+import { STORAGE_FLAGS } from '@/constants/enums/storage-flags';
 import { useGoogleLink } from '@/context/google-link';
 import { getApiErrorMsg, isGoogleLoginConflictError } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,7 +17,7 @@ export function useGoogleLogin() {
     onSuccess: async (response) => {
       try {
         const user = await getAuthenticatedUser();
-        const redirectPath = user.role === 'admin' ? '/dashboard' : '/home';
+        const redirectPath = user.role === 'admin' ? '/dashboard' : `/profile/${user.username}`;
         const isFirstLogin = response.isFirstLogin ?? false;
         queryClient.setQueryData(QUERY_KEYS.AUTH_USER, user);
         toast.success(response.message);

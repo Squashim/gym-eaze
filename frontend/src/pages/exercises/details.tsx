@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { AdvancedLevelBadge, LikesBadge, VisibilityBadge } from '@/components/ui/item-info-badges';
 import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
-import { AdvancedLevel } from '@/constants/advanced-level';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { useUser } from '@/context/user';
 import useGetExercise from '@/hooks/query/exercises/use-get-exercise';
 import usePageTitle from '@/hooks/utils/use-page-title';
@@ -274,7 +274,7 @@ function ExerciseMetaInfo({ exercise, isAuthor }: ExerciseMetaInfoProps) {
             authorAvatar={exercise.author.profileDetails?.profilePicture}
             authorName={exercise.author.username}
             isAuthor={isAuthor}
-            redirectTo={`/profile/${exercise.author._id}`}
+            redirectTo={`/profile/${exercise.author.username}`}
           />
         </div>
       </div>

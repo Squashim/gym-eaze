@@ -20,7 +20,7 @@ import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.components.LoadingScreen
-import com.example.gymeaze.ui.screens.UploadCard
+import com.example.gymeaze.ui.screens.exercises.logggedIn.UploadCard
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnPrimaryColor

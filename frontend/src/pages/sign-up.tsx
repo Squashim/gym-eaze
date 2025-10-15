@@ -23,19 +23,17 @@ import GoogleLoginButton from '@/components/features/google-auth/google-login';
 import { useSignup } from '@/hooks/auth/use-signup';
 import { useGoogleLink } from '@/context/google-link';
 import LinkGoogleAccountDialog from '@/components/features/google-auth/link-google-account-dialog';
+import { signupDefaultValues } from '@/constants/defaults/forms';
+import usePageTitle from '@/hooks/utils/use-page-title';
 
 const Signup = () => {
   const form = useForm<SignupSchema>({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
+    defaultValues: signupDefaultValues,
   });
   const { signup } = useSignup(form.setError);
   const { googleLinkData } = useGoogleLink();
+  usePageTitle('Załóż konto');
 
   const onSubmit = (data: SignupSchema) => {
     signup.mutate(data);
@@ -77,6 +75,7 @@ const Signup = () => {
                             {...field}
                             autoComplete="off"
                             autoFocus
+                            maxLength={16}
                             placeholder="janek2000"
                             type="text"
                           />

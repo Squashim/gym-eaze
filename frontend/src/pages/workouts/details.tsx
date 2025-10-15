@@ -1,4 +1,4 @@
-import BackHeader from '@/components/features/workouts/back-header';
+import BackHeader from '@/components/ui/back-header';
 import WorkoutComments from '@/components/features/workouts/workout-comments';
 import PageLayout from '@/components/layout/page';
 import { Alert, AlertTitle } from '@/components/ui/alert';
@@ -12,8 +12,8 @@ import { DetailsActionBtn, DetailsAuthorBtn } from '@/components/ui/reusable-but
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Typography from '@/components/ui/typography';
-import { AdvancedLevel } from '@/constants/advanced-level';
-import { Goal } from '@/constants/goals';
+import { AdvancedLevel } from '@/constants/enums/advanced-level';
+import { Goal } from '@/constants/enums/goals';
 import { useUser } from '@/context/user';
 import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
@@ -24,6 +24,7 @@ import usePageTitle from '@/hooks/utils/use-page-title';
 import {
   parseDayLabel,
   parseExerciseLabel,
+  parseRepsLabel,
   parseSecondsToTimeString,
   parseTimeBrackets,
   parseWorkoutSetsLabel,
@@ -500,7 +501,7 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
             <Badge className="text-xs" key={index} variant="outline">
               {group.count > 1 && `${group.count} x `}
               {group.isReps
-                ? `${group.repetitions} powtórzeń`
+                ? parseRepsLabel(group.repetitions!)
                 : parseSecondsToTimeString(group.duration!)}
               {group.isReps && group.weight && ` • ${group.weight}kg`}
             </Badge>
@@ -585,7 +586,7 @@ function WorkoutMetaInfo({ workout, isAuthor }: WorkoutMetaInfoProps) {
             authorAvatar={workout.author.profileDetails?.profilePicture}
             authorName={workout.author.username}
             isAuthor={isAuthor}
-            redirectTo={`/profile/${workout.author._id}`}
+            redirectTo={`/profile/${workout.author.username}`}
           />
         </div>
       </div>

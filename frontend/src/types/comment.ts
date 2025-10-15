@@ -1,4 +1,4 @@
-import type { ItemType } from '@/constants/item-type';
+import type { ItemType } from '@/constants/enums/item-type';
 import type { Author } from './user';
 
 type BaseComment = {

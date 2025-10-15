@@ -74,7 +74,8 @@ fun MyPosts(
                 viewModel = viewModel,
                 postToEdit = editingPost!!,
                 onBackClick = { editingPost = null },
-                onEdited = { editingPost = null }
+                onEdited = { editingPost = null },
+                onRefreshPosts = { viewModel.refreshCurrentUserPosts() }
             )
         } else {
             SeeAllPostsContent(
@@ -91,7 +92,9 @@ fun MyPosts(
                 isRefreshing = isRefreshing,
                 onToggleLike = { postId -> viewModel.toggleLike(postId) },
                 onToggleSeeMore = { true},
-                searchEnabled = false
+                searchEnabled = true,
+                onRefreshPosts = { viewModel.refreshCurrentUserPosts() },
+                topBarTitle = "Moje posty",
             )
         }
 
