@@ -28,13 +28,20 @@ import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSecondaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.ReportViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.posts.cleanedCommentLength
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit, currentUsername: String) {
+fun CommentsPanel(
+    postId: String,
+    initialCommentsCount: Int,
+    onClose: () -> Unit,
+    currentUsername: String,
+    reportViewModel: ReportViewModel, // ← DODAJ
+    onReportComment: (String) -> Unit) {
     val viewModel: PostsViewModel = viewModel()
     val comments by viewModel.comments.collectAsState()
     val hasMore by viewModel.hasMoreComment.collectAsState()
@@ -147,7 +154,9 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                         showDeleteDialog = commentToDelete
                         deleteMessage = ""
                     },
-                    onReportClick = { /* Zgłaszanie */ },
+                    onReportClick = { commentToReport -> // ← POPRAWIONE
+                        onReportComment(commentToReport._id) // Przekazuj ID komentarza
+                    },
                     onLoginRequired = { showLoginDialog = true }
                 )
 
@@ -167,6 +176,9 @@ fun CommentsPanel(postId: String, initialCommentsCount: Int, onClose: () -> Unit
                             onDeleteClick = { replyToDelete ->
                                 showDeleteDialog = replyToDelete
                                 deleteMessage = ""
+                            },
+                            onReportClick = { replyToReport -> // ← DODAJ TO
+                                onReportComment(replyToReport._id) // Zgłaszaj odpowiedź
                             },
                             onLoginRequired = { showLoginDialog = true }
                         )
@@ -714,6 +726,7 @@ fun ReplyItem(
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
+    onReportClick: (Comment) -> Unit = {},
     onLoginRequired: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -827,7 +840,7 @@ fun ReplyItem(
                                 },
                                 onClick = {
                                     showMenu = false
-                                    // Możesz dodać obsługę zgłoszenia
+                                    onReportClick(reply)
                                 },
                                 leadingIcon = {
                                     Icon(
