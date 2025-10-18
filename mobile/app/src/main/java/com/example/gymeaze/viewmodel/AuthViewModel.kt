@@ -132,6 +132,22 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedEditPlanId = MutableStateFlow<String?>(null)
     val selectedEditPlanId: StateFlow<String?> = _selectedEditPlanId.asStateFlow()
 
+    private val _showStartedPlanDays = MutableStateFlow(false)
+    val showStartedPlanDays = _showStartedPlanDays.asStateFlow()
+
+    private val _selectedStartedPlan = MutableStateFlow<Pair<String, String>?>(null)
+    val selectedStartedPlan = _selectedStartedPlan.asStateFlow()
+
+    fun showStartedPlanDaysScreen(userTrainingPlanId: String, planName: String) {
+        _selectedStartedPlan.value = Pair(userTrainingPlanId, planName)
+        _showStartedPlanDays.value = true
+    }
+
+    fun hideStartedPlanDaysScreen() {
+        _showStartedPlanDays.value = false
+        _selectedStartedPlan.value = null
+    }
+
     fun showEditTrainingPlanScreen(planId: String) {
         _showMyTrainingPlans.value = false
         _selectedEditPlanId.value = planId

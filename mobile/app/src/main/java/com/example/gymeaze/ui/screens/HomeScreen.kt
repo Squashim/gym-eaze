@@ -2,7 +2,9 @@ package com.example.gymeaze.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,10 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
@@ -26,23 +30,32 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
@@ -54,6 +67,7 @@ import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.example.gymeaze.viewmodel.ExercisesViewModel
+import com.example.gymeaze.viewmodel.ProfileViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -76,7 +90,8 @@ fun HomeScreen(
     onCreatePostClick: () -> Unit = {},
     onBrowsePostClick: () -> Unit = {},
     onFollowedUsersPosts: () -> Unit ={},
-    onMyPosts: () -> Unit = {}
+    onMyPosts: () -> Unit = {},
+    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit
 
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
@@ -141,7 +156,8 @@ fun HomeScreen(
                 onBrowseExercisesClick = onBrowseExercisesClick,
                 onCreateTrainingPlanClick = onCreateTrainingPlanClick,
                 paddingValues = paddingValues,
-                isUserLoggedIn = isUserLoggedIn
+                isUserLoggedIn = isUserLoggedIn,
+                onStartedPlanClick = onStartedPlanClick
             )
         }
     }
@@ -156,8 +172,13 @@ fun ProfileScreen(
     onExerciseCreatorClick: () -> Unit,
     onBrowseExercisesClick: () -> Unit,
     onCreateTrainingPlanClick: () -> Unit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit
 ) {
+
+    val profileViewModel: ProfileViewModel = viewModel()
+    val uiState by profileViewModel.uiState.collectAsState()
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -185,7 +206,12 @@ fun ProfileScreen(
             )
         }
         item {
-            RecentActivitySection()
+            RecentActivitySection(
+                isLoading = uiState.isLoading,
+                startedPlans = uiState.startedPlans,
+                onStartedPlanClick = onStartedPlanClick,
+                onRefresh = { profileViewModel.loadStartedPlans() }
+            )
         }
     }
 }
@@ -478,10 +504,15 @@ fun ActionButton(
 }
 
 @Composable
-private fun RecentActivitySection() {
+private fun RecentActivitySection(
+    isLoading: Boolean,
+    startedPlans: List<StartedTrainingPlan>,
+    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
+    onRefresh: () -> Unit
+) {
     Column {
         Text(
-            text = "Ostatnia aktywność",
+            text = "Aktywne Treningi",
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = getOnSurfaceColor(),
@@ -489,49 +520,158 @@ private fun RecentActivitySection() {
                 .padding(bottom = 8.dp)
         )
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    color = getOnSurfaceColor().copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(12.dp)
-                ),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = null,
-                    tint = getOnSurfaceSecondaryColor(),
+        when {
+            isLoading -> {
+                Card(
                     modifier = Modifier
-                        .size(48.dp)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Brak aktywności",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = getOnSurfaceColor(),
-                    textAlign = TextAlign.Center
-                )
-
-                Text(
-                    text = "Rozpocznij swój pierwszy trening!",
-                    fontSize = 14.sp,
-                    color = getOnSurfaceSecondaryColor(),
-                    textAlign = TextAlign.Center
-                )
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = getPrimaryColor())
+                    }
+                }
+            }
+            startedPlans.isEmpty() -> {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = getOnSurfaceColor().copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = null,
+                            tint = getOnSurfaceSecondaryColor(),
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Brak aktywności",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = getOnSurfaceColor(),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "Rozpocznij swój pierwszy trening!",
+                            fontSize = 14.sp,
+                            color = getOnSurfaceSecondaryColor(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+            else -> {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    startedPlans.forEach { plan ->
+                        StartedPlanCard(
+                            plan = plan,
+                            onClick = { onStartedPlanClick(plan.id, plan.name) }
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+@Composable
+private fun StartedPlanCard(
+    plan: StartedTrainingPlan,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .border(
+                width = 1.dp,
+                color = getOnSurfaceColor().copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = plan.image,
+                contentDescription = plan.name,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = plan.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = getOnSurfaceColor(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Autor: ${plan.author.username}",
+                    fontSize = 12.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                val progress = if (plan.totalDays > 0) {
+                    plan.completedDays.toFloat() / plan.totalDays.toFloat()
+                } else 0f
+
+                Text(
+                    text = "Ukończono ${plan.completedDays} z ${plan.totalDays} dni",
+                    fontSize = 10.sp,
+                    color = getOnSurfaceSecondaryColor()
+                )
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = getPrimaryColor(),
+                    trackColor = getOnSurfaceColor().copy(alpha = 0.1f),
+                    strokeCap = StrokeCap.Round
+                )
+            }
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "Rozpocznij",
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier.size(32.dp).padding(start = 8.dp)
+            )
+        }
+    }
+}

@@ -9,6 +9,7 @@ import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.ExerciseRepository
+import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import com.example.gymeaze.util.GlobalFavoriteState
 import kotlinx.coroutines.flow.*
@@ -20,7 +21,8 @@ data class TrainingPlanDetailUiState(
     val error: String? = null,
     val isDownloadingPdf: Boolean = false,
     val snackbarMessage: String? = null,
-    val snackbarType: SnackbarType = SnackbarType.ERROR
+    val snackbarType: SnackbarType = SnackbarType.ERROR,
+    val isStartingPlan: Boolean = false
 )
 
 enum class SnackbarType {
@@ -32,6 +34,8 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     private val repository = TrainingPlanRepository(application)
     private val authRepository = AuthRepository(application)
     private val exerciseRepository = ExerciseRepository(application)
+
+    private val startedTrainingRepository = StartedTrainingRepository(application)
     private val _uiState = MutableStateFlow(TrainingPlanDetailUiState())
     val uiState: StateFlow<TrainingPlanDetailUiState> = _uiState.asStateFlow()
 
@@ -315,5 +319,34 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun startTrainingPlan() {
+        val planId = _uiState.value.trainingPlan?.id ?: return
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isStartingPlan = true,
+                snackbarMessage = null,
+                error = null
+            )
+
+            val result = startedTrainingRepository.startTrainingPlan(planId)
+
+            result.onSuccess { response ->
+                _uiState.value = _uiState.value.copy(
+                    isStartingPlan = false,
+                    snackbarMessage = response.message,
+                    snackbarType = SnackbarType.SUCCESS
+                )
+                // TODO: Można dodać nawigację do listy rozpoczętych planów
+            }.onFailure { exception ->
+                _uiState.value = _uiState.value.copy(
+                    isStartingPlan = false,
+                    snackbarMessage = exception.message ?: "Wystąpił błąd",
+                    snackbarType = SnackbarType.ERROR
+                )
+            }
+        }
     }
 }
