@@ -181,7 +181,6 @@ fun StartedPlanDaysScreen(
                             )
                         }
                         item {
-                            // TODO: Dodać przycisk "Resetuj Plan" / "Zakończ Plan"
                             Spacer(modifier = Modifier.height(60.dp))
                         }
                     }
@@ -237,11 +236,6 @@ private fun DayCard(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column {
-                    Text(
-                        text = "Dzień ${day.dayNumber}",
-                        fontSize = 12.sp,
-                        color = getOnSurfaceSecondaryColor()
-                    )
                     Text(
                         text = day.name,
                         fontSize = 16.sp,

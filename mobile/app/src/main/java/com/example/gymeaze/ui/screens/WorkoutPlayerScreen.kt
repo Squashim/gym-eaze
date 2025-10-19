@@ -162,7 +162,7 @@ private fun ExerciseState(state: WorkoutPlayerUiState) {
             ) {
                 InfoChip("Powtórzenia", set.repetitions.toString())
                 if (set.weight != null && set.weight > 0) {
-                    InfoChip("Waga", "${set.weight} kg")
+                    InfoChip("Ciężar", "${set.weight} kg")
                 }
             }
         } else if (set.duration != null && set.duration > 0) {
@@ -304,7 +304,7 @@ private fun WorkoutPlayerAppBar(
         title = {
             if (state.playerState == PlayerState.EXERCISE || state.playerState == PlayerState.REST) {
                 Text(
-                    "Dzień ${state.dayDetails?.dayNumber ?: "?"}",
+                    state.dayDetails?.name ?: "?",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
