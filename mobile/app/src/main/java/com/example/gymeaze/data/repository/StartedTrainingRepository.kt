@@ -113,4 +113,34 @@ class StartedTrainingRepository(private val context: Context) {
             Result.failure(e)
         }
     }
+
+    suspend fun deleteStartedTrainingPlan(userTrainingPlanId: String): Result<MessageResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.deleteStartedTrainingPlan(userTrainingPlanId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resetStartedTrainingPlan(userTrainingPlanId: String): Result<MessageResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.resetStartedTrainingPlan(userTrainingPlanId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

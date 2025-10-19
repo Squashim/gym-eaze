@@ -45,6 +45,7 @@ import com.example.gymeaze.ui.screens.MyTrainingPlansScreen
 import com.example.gymeaze.ui.screens.StartedPlanDaysScreen
 import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.TrainingPlansScreen
+import com.example.gymeaze.ui.screens.WorkoutPlayerScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
@@ -133,6 +134,8 @@ class MainActivity : ComponentActivity() {
 
             val showStartedPlanDays by authViewModel.showStartedPlanDays.collectAsState()
             val selectedStartedPlan by authViewModel.selectedStartedPlan.collectAsState()
+            val showWorkoutPlayer by authViewModel.showWorkoutPlayer.collectAsState()
+            val selectedWorkoutParams by authViewModel.selectedWorkoutParams.collectAsState()
 
             val showPrivacySettings by userViewModel.showPrivacySettings.collectAsState()
             val showHelpScreen by userViewModel.showHelpScreen.collectAsState()
@@ -302,12 +305,32 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
+                            showWorkoutPlayer && selectedWorkoutParams != null -> {
+                                WorkoutPlayerScreen(
+                                    userTrainingPlanId = selectedWorkoutParams!!.first,
+                                    dayNumber = selectedWorkoutParams!!.second,
+                                    onBackClick = authViewModel::hideWorkoutPlayerScreen
+                                )
+                            }
+
                             showTrainingPlanDetail && selectedTrainingPlanId != null -> {
                                 TrainingPlanDetailScreen(
                                     planId = selectedTrainingPlanId!!,
                                     onBackClick = authViewModel::hideTrainingPlanDetailScreen,
                                     onExerciseClick = { exerciseId ->
                                         authViewModel.showExerciseDetailScreen(exerciseId)
+                                    },
+                                    navigateToWorkoutPlayer = authViewModel::navigateToWorkoutPlayer
+                                )
+                            }
+
+                            showStartedPlanDays && selectedStartedPlan != null -> {
+                                StartedPlanDaysScreen(
+                                    userTrainingPlanId = selectedStartedPlan!!.first,
+                                    planName = selectedStartedPlan!!.second,
+                                    onBackClick = authViewModel::hideStartedPlanDaysScreen,
+                                    onDayClick = { userTrainingPlanId, dayNumber ->
+                                        authViewModel.showWorkoutPlayerScreen(userTrainingPlanId, dayNumber)
                                     }
                                 )
                             }
@@ -401,17 +424,6 @@ class MainActivity : ComponentActivity() {
                                     createPostViewModel = createPostViewModel,
                                     setShowBottomBar = {  }
 
-                                )
-                            }
-
-                            showStartedPlanDays && selectedStartedPlan != null -> {
-                                StartedPlanDaysScreen(
-                                    userTrainingPlanId = selectedStartedPlan!!.first,
-                                    planName = selectedStartedPlan!!.second,
-                                    onBackClick = authViewModel::hideStartedPlanDaysScreen,
-                                    onDayClick = { userTrainingPlanId, dayNumber ->
-                                        // TODO: nawigacja do WorkoutPlayerScreen
-                                    }
                                 )
                             }
 

@@ -138,6 +138,32 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedStartedPlan = MutableStateFlow<Pair<String, String>?>(null)
     val selectedStartedPlan = _selectedStartedPlan.asStateFlow()
 
+    private val _showWorkoutPlayer = MutableStateFlow(false)
+    val showWorkoutPlayer = _showWorkoutPlayer.asStateFlow()
+
+    private val _selectedWorkoutParams = MutableStateFlow<Pair<String, Int>?>(null) // Para (userTrainingPlanId, dayNumber)
+    val selectedWorkoutParams = _selectedWorkoutParams.asStateFlow()
+
+    fun navigateToWorkoutPlayer(userTrainingPlanId: String, planName: String, dayNumber: Int) {
+        _selectedWorkoutParams.value = Pair(userTrainingPlanId, dayNumber)
+
+        _showTrainingPlanDetail.value = false
+        _showStartedPlanDays.value = false
+
+        _showWorkoutPlayer.value = true
+    }
+
+
+    fun showWorkoutPlayerScreen(userTrainingPlanId: String, dayNumber: Int) {
+        _selectedWorkoutParams.value = Pair(userTrainingPlanId, dayNumber)
+        _showWorkoutPlayer.value = true
+    }
+
+    fun hideWorkoutPlayerScreen() {
+        _showWorkoutPlayer.value = false
+        _selectedWorkoutParams.value = null
+    }
+
     fun showStartedPlanDaysScreen(userTrainingPlanId: String, planName: String) {
         _selectedStartedPlan.value = Pair(userTrainingPlanId, planName)
         _showStartedPlanDays.value = true

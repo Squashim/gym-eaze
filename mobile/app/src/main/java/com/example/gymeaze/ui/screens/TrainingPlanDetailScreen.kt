@@ -52,7 +52,8 @@ fun TrainingPlanDetailScreen(
     onBackClick: () -> Unit,
     onExerciseClick: (String) -> Unit = {},
     viewModel: TrainingPlanDetailViewModel = viewModel(),
-    onUserClick: (String) -> Unit = {}
+    onUserClick: (String) -> Unit = {},
+    navigateToWorkoutPlayer: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -84,6 +85,12 @@ fun TrainingPlanDetailScreen(
                 duration = SnackbarDuration.Short
             )
             viewModel.clearSnackbarMessage()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { event ->
+            navigateToWorkoutPlayer(event.userTrainingPlanId, event.planName, event.firstDayNumber)
         }
     }
 

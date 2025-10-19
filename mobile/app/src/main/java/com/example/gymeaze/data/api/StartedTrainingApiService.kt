@@ -27,6 +27,7 @@ interface StartedTrainingApiService {
         @Path("userTrainingPlanId") userTrainingPlanId: String
     ): Response<MessageResponse>
 
+
     @PATCH("/api/started-training-plans/{userTrainingPlanId}/reset")
     suspend fun resetStartedTrainingPlan(
         @Path("userTrainingPlanId") userTrainingPlanId: String

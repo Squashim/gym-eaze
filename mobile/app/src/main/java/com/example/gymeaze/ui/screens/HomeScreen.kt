@@ -23,25 +23,39 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,10 +79,13 @@ import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.ProfileViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -100,6 +117,9 @@ fun HomeScreen(
     val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
     var showBottomBar by remember { mutableStateOf(true) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             if (selectedRoute !in listOf("community", "exercises")) {
@@ -117,7 +137,7 @@ fun HomeScreen(
                 )
             }
         },
-
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = getBackgroundColor()
     ) { paddingValues ->
         when (selectedRoute) {
@@ -148,17 +168,29 @@ fun HomeScreen(
                 createPostViewModel = createPostViewModel,
                 setShowBottomBar = { showBottomBar = it }
             )
-            "profile" -> ProfileScreen(
-                username = username,
-                currentDate = currentDate,
-                onEditProfileClick = onEditProfileClick,
-                onExerciseCreatorClick = onExerciseCreatorClick,
-                onBrowseExercisesClick = onBrowseExercisesClick,
-                onCreateTrainingPlanClick = onCreateTrainingPlanClick,
-                paddingValues = paddingValues,
-                isUserLoggedIn = isUserLoggedIn,
-                onStartedPlanClick = onStartedPlanClick
-            )
+            "profile" -> {
+                val profileViewModel: ProfileViewModel = viewModel()
+
+                LaunchedEffect(selectedRoute) {
+                    if (selectedRoute == "profile") {
+                        profileViewModel.loadStartedPlans()
+                    }
+                }
+                ProfileScreen(
+                    username = username,
+                    currentDate = currentDate,
+                    onEditProfileClick = onEditProfileClick,
+                    onExerciseCreatorClick = onExerciseCreatorClick,
+                    onBrowseExercisesClick = onBrowseExercisesClick,
+                    onCreateTrainingPlanClick = onCreateTrainingPlanClick,
+                    paddingValues = paddingValues,
+                    isUserLoggedIn = isUserLoggedIn,
+                    snackbarHostState = snackbarHostState,
+                    scope = scope,
+                    profileViewModel = profileViewModel,
+                    onStartedPlanClick = onStartedPlanClick
+                )
+            }
         }
     }
 }
@@ -173,11 +205,32 @@ fun ProfileScreen(
     onBrowseExercisesClick: () -> Unit,
     onCreateTrainingPlanClick: () -> Unit,
     paddingValues: PaddingValues,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
+    profileViewModel: ProfileViewModel,
     onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit
 ) {
 
-    val profileViewModel: ProfileViewModel = viewModel()
     val uiState by profileViewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(uiState.operationError) {
+        uiState.operationError?.let { error ->
+            scope.launch {
+                snackbarHostState.showSnackbar(message = error, duration = SnackbarDuration.Short)
+            }
+            profileViewModel.clearOperationMessages()
+        }
+    }
+    LaunchedEffect(uiState.operationSuccessMessage) {
+        uiState.operationSuccessMessage?.let { message ->
+            scope.launch {
+                snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
+            }
+            profileViewModel.clearOperationMessages()
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -187,30 +240,34 @@ fun ProfileScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            WelcomeSection(
-                username = username,
-                currentDate = currentDate,
-                onEditProfileClick = onEditProfileClick
-            )
-        }
-        item {
-            QuickStatsSection()
-        }
-        item {
-            QuickActionSection(
-                isUserLoggedIn = isUserLoggedIn,
-                onExerciseCreatorClick = onExerciseCreatorClick,
-                onBrowseExercisesClick = onBrowseExercisesClick,
-                onCreateTrainingPlanClick = onCreateTrainingPlanClick
-            )
-        }
-        item {
+            item {
+                WelcomeSection(
+                    username = username,
+                    currentDate = currentDate,
+                    onEditProfileClick = onEditProfileClick
+                )
+            }
+            item {
+                QuickStatsSection()
+            }
+            item {
+                QuickActionSection(
+                    isUserLoggedIn = isUserLoggedIn,
+                    onExerciseCreatorClick = onExerciseCreatorClick,
+                    onBrowseExercisesClick = onBrowseExercisesClick,
+                    onCreateTrainingPlanClick = onCreateTrainingPlanClick
+                )
+            }
+            item {
             RecentActivitySection(
                 isLoading = uiState.isLoading,
                 startedPlans = uiState.startedPlans,
                 onStartedPlanClick = onStartedPlanClick,
-                onRefresh = { profileViewModel.loadStartedPlans() }
+                onRefresh = { profileViewModel.loadStartedPlans() },
+                onDeletePlan = { planId -> profileViewModel.deleteStartedPlan(planId) },
+                onResetPlan = { planId -> profileViewModel.resetStartedPlan(planId) },
+                deletingPlanId = uiState.deletingPlanId,
+                resettingPlanId = uiState.resettingPlanId
             )
         }
     }
@@ -508,7 +565,11 @@ private fun RecentActivitySection(
     isLoading: Boolean,
     startedPlans: List<StartedTrainingPlan>,
     onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onDeletePlan: (String) -> Unit,
+    onResetPlan: (String) -> Unit,
+    deletingPlanId: String?,
+    resettingPlanId: String?
 ) {
     Column {
         Text(
@@ -521,7 +582,7 @@ private fun RecentActivitySection(
         )
 
         when {
-            isLoading -> {
+            isLoading && startedPlans.isEmpty() -> {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -534,7 +595,7 @@ private fun RecentActivitySection(
                     }
                 }
             }
-            startedPlans.isEmpty() -> {
+            !isLoading && startedPlans.isEmpty() -> {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -580,7 +641,11 @@ private fun RecentActivitySection(
                     startedPlans.forEach { plan ->
                         StartedPlanCard(
                             plan = plan,
-                            onClick = { onStartedPlanClick(plan.id, plan.name) }
+                            onClick = { onStartedPlanClick(plan.id, plan.name) },
+                            onDelete = { onDeletePlan(plan.id) },
+                            onReset = { onResetPlan(plan.id) },
+                            isDeleting = deletingPlanId == plan.id,
+                            isResetting = resettingPlanId == plan.id
                         )
                     }
                 }
@@ -592,8 +657,17 @@ private fun RecentActivitySection(
 @Composable
 private fun StartedPlanCard(
     plan: StartedTrainingPlan,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onReset: () -> Unit,
+    isDeleting: Boolean,
+    isResetting: Boolean
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -609,7 +683,12 @@ private fun StartedPlanCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(
+                    start = 12.dp,
+                    top = 12.dp,
+                    bottom = 12.dp,
+                    end = 4.dp
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
@@ -666,12 +745,103 @@ private fun StartedPlanCard(
                 )
             }
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Rozpocznij",
-                tint = getOnSurfaceSecondaryColor(),
-                modifier = Modifier.size(32.dp).padding(start = 8.dp)
-            )
+            Box(contentAlignment = Alignment.Center) {
+                if (isDeleting || isResetting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = getPrimaryColor()
+                    )
+                } else {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Opcje",
+                            tint = getOnSurfaceSecondaryColor()
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                        modifier = Modifier.background(getSurfaceVariantColor())
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Resetuj postęp") },
+                            onClick = {
+                                showMenu = false
+                                showResetDialog = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = "Resetuj"
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Usuń plan", color = MaterialTheme.colorScheme.error) },
+                            onClick = {
+                                showMenu = false
+                                showDeleteDialog = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.DeleteOutline,
+                                    contentDescription = "Usuń",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        )
+                    }
+                }
+            }
         }
+    }
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Potwierdź usunięcie") },
+            text = { Text("Czy na pewno chcesz usunąć ten rozpoczęty plan treningowy? Tej operacji nie można cofnąć.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Usuń")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Anuluj")
+                }
+            }
+        )
+    }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text("Potwierdź reset") },
+            text = { Text("Czy na pewno chcesz zresetować postęp w tym planie? Ukończone dni zostaną oznaczone jako nieukończone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onReset()
+                        showResetDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = getPrimaryColor())
+                ) {
+                    Text("Resetuj")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Anuluj")
+                }
+            }
+        )
     }
 }

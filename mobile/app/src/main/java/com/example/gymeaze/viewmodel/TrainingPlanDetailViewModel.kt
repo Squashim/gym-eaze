@@ -25,6 +25,12 @@ data class TrainingPlanDetailUiState(
     val isStartingPlan: Boolean = false
 )
 
+data class NavigationEvent(
+    val userTrainingPlanId: String,
+    val planName: String,
+    val firstDayNumber: Int
+)
+
 enum class SnackbarType {
     ERROR, SUCCESS
 }
@@ -45,6 +51,8 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     private val _downloadProgress = MutableStateFlow(0f)
     val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
 
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
     private suspend fun getCurrentUserLogin(): String? {
         return try {
             val userResult = authRepository.getCurrentUser()
@@ -322,7 +330,8 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun startTrainingPlan() {
-        val planId = _uiState.value.trainingPlan?.id ?: return
+        val plan = _uiState.value.trainingPlan ?: return
+        val planId = plan.id
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -334,12 +343,20 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
             val result = startedTrainingRepository.startTrainingPlan(planId)
 
             result.onSuccess { response ->
+                val firstTrainingDay = plan.days.firstOrNull { !it.isRestDay }
+                val firstDayNumber = firstTrainingDay?.dayNumber ?: 1
+
                 _uiState.value = _uiState.value.copy(
-                    isStartingPlan = false,
-                    snackbarMessage = response.message,
-                    snackbarType = SnackbarType.SUCCESS
+                    isStartingPlan = false
                 )
-                // TODO: Można dodać nawigację do listy rozpoczętych planów
+                _navigationEvent.emit(
+                    NavigationEvent(
+                        userTrainingPlanId = response.userTrainingPlanId,
+                        planName = plan.name,
+                        firstDayNumber = firstDayNumber
+                    )
+                )
+
             }.onFailure { exception ->
                 _uiState.value = _uiState.value.copy(
                     isStartingPlan = false,
