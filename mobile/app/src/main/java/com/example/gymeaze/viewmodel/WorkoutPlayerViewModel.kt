@@ -21,8 +21,15 @@ enum class PlayerState {
     REST,
     FINISHED,
     COMPLETING,
+    SUMMARY,
     ERROR
 }
+
+data class WorkoutSummaryData(
+    val exerciseCount: Int = 0,
+    val totalSets: Int = 0,
+    val estimatedDurationSeconds: Int = 0
+)
 
 data class WorkoutPlayerUiState(
     val playerState: PlayerState = PlayerState.LOADING,
@@ -32,7 +39,8 @@ data class WorkoutPlayerUiState(
     val restTimeRemaining: Int = 0,
     val exerciseTimeRemaining: Int = 0,
     val error: String? = null,
-    val isWorkoutComplete: Boolean = false
+    val isWorkoutComplete: Boolean = false,
+    val summaryData: WorkoutSummaryData? = null
 ) {
     val currentExercise: StartedExercise?
         get() = dayDetails?.exercises?.getOrNull(currentExerciseIndex)
@@ -46,6 +54,11 @@ data class WorkoutPlayerUiState(
     val totalSetsInCurrentExercise: Int
         get() = currentExercise?.sets?.size ?: 0
 }
+
+sealed class WorkoutNavigationEvent {
+    object NavigateBack : WorkoutNavigationEvent()
+}
+
 class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = StartedTrainingRepository(application)
@@ -58,7 +71,8 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
     private var userTrainingPlanId: String? = null
     private var dayNumber: Int? = null
 
-
+    private val _navigationEvent = MutableSharedFlow<WorkoutNavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
 
     fun loadWorkoutDay(userTrainingPlanId: String, dayNumber: Int) {
         if (this.userTrainingPlanId == userTrainingPlanId && this.dayNumber == dayNumber && _uiState.value.dayDetails != null) {
@@ -241,9 +255,10 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         }.start()
     }
 
-    fun completeDay(onSuccessNavigation: () -> Unit) {
+    fun prepareAndCompleteDay() {
         val currentPlanId = userTrainingPlanId ?: return
         val currentDayNumber = dayNumber ?: return
+        val details = _uiState.value.dayDetails ?: return
 
         if (_uiState.value.playerState == PlayerState.COMPLETING) return
 
@@ -252,13 +267,30 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             val result = repository.completeDayTraining(currentPlanId, currentDayNumber)
             result.onSuccess { response ->
-                onSuccessNavigation()
+                val exerciseCount = details.exercises.size
+                val totalSets = details.exercises.sumOf { it.sets.size }
+                val summary = WorkoutSummaryData(
+                    exerciseCount = exerciseCount,
+                    totalSets = totalSets,
+                    estimatedDurationSeconds = details.totalDuration
+                )
+
+                _uiState.value = _uiState.value.copy(
+                    playerState = PlayerState.SUMMARY,
+                    summaryData = summary
+                )
             }.onFailure { exception ->
                 _uiState.value = _uiState.value.copy(
                     playerState = PlayerState.FINISHED,
                     error = exception.message ?: "Błąd podczas zapisywania ukończenia dnia."
                 )
             }
+        }
+    }
+
+    fun finalizeWorkoutAndNavigateBack() {
+        viewModelScope.launch {
+            _navigationEvent.emit(WorkoutNavigationEvent.NavigateBack)
         }
     }
 

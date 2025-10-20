@@ -27,8 +27,10 @@ import com.example.gymeaze.data.models.StartedExercise
 import com.example.gymeaze.ui.components.VideoPlayer
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.PlayerState
+import com.example.gymeaze.viewmodel.WorkoutNavigationEvent
 import com.example.gymeaze.viewmodel.WorkoutPlayerUiState
 import com.example.gymeaze.viewmodel.WorkoutPlayerViewModel
+import com.example.gymeaze.viewmodel.WorkoutSummaryData
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -51,12 +53,24 @@ fun WorkoutPlayerScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { event ->
+            when (event) {
+                is WorkoutNavigationEvent.NavigateBack -> {
+                    onBackClick()
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
-            WorkoutPlayerAppBar(
-                state = uiState,
-                onBackClick = onBackClick
-            )
+            if (uiState.playerState != PlayerState.SUMMARY) {
+                WorkoutPlayerAppBar(
+                    state = uiState,
+                    onBackClick = onBackClick
+                )
+            }
         },
         containerColor = getBackgroundColor()
     ) { paddingValues ->
@@ -81,9 +95,16 @@ fun WorkoutPlayerScreen(
                     )
                     PlayerState.FINISHED -> FinishedState(
                         state = uiState,
-                        onComplete = { viewModel.completeDay(onSuccessNavigation = onBackClick) }
+
+                        onComplete = viewModel::prepareAndCompleteDay
                     )
                     PlayerState.COMPLETING -> CompletingState()
+                    PlayerState.SUMMARY -> uiState.summaryData?.let { summary ->
+                        WorkoutSummary(
+                            summaryData = summary,
+                            onFinish = viewModel::finalizeWorkoutAndNavigateBack
+                        )
+                    } ?: ErrorState("Brak danych podsumowania.", {})
                     PlayerState.ERROR -> ErrorState(uiState.error, onRetry = { viewModel.loadWorkoutDay(userTrainingPlanId, dayNumber) })
                 }
             }
@@ -379,6 +400,78 @@ private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun WorkoutSummary(
+    summaryData: WorkoutSummaryData,
+    onFinish: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.CheckCircleOutline,
+            contentDescription = "Zakończono",
+            tint = getPrimaryColor(),
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Dzień Ukończony!",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = getOnSurfaceColor()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SummaryInfoRow("Wykonane ćwiczenia:", summaryData.exerciseCount.toString())
+        SummaryInfoRow("Łączna liczba serii:", summaryData.totalSets.toString())
+        SummaryInfoRow("Szacowany czas:", formatDurationForSummary(summaryData.estimatedDurationSeconds))
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = onFinish,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = getPrimaryColor())
+        ) {
+            Text("OK", fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
+private fun SummaryInfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, fontSize = 15.sp, color = getOnSurfaceSecondaryColor())
+        Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = getOnSurfaceColor())
+    }
+}
+
+private fun formatDurationForSummary(totalSeconds: Int): String {
+    if (totalSeconds <= 0) return "-"
+    val hours = TimeUnit.SECONDS.toHours(totalSeconds.toLong())
+    val minutes = TimeUnit.SECONDS.toMinutes(totalSeconds.toLong()) % 60
+    val seconds = totalSeconds % 60
+
+    return buildString {
+        if (hours > 0) append("${hours}h ")
+        if (minutes > 0) append("${minutes}min ")
+        if (seconds > 0 || (hours == 0L && minutes == 0L)) append("${seconds}s")
+    }.trim()
 }
 
 @Composable
