@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -107,14 +108,13 @@ private fun LoadingState() {
         CircularProgressIndicator(color = getPrimaryColor())
     }
 }
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ExerciseState(state: WorkoutPlayerUiState) {
     val exercise = state.currentExercise
     val set = state.currentSet
     if (exercise == null || set == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-
             CircularProgressIndicator(modifier = Modifier.size(32.dp), strokeWidth = 2.dp, color = getPrimaryColor())
         }
         return
@@ -171,8 +171,85 @@ private fun ExerciseState(state: WorkoutPlayerUiState) {
                 label = "Czas ćwiczenia"
             )
         }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (exercise.muscleGroup.isNotEmpty()) {
+            InfoSection(title = "Zaangażowane partie", icon = Icons.Default.SportsGymnastics) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    exercise.muscleGroup.forEach { muscle ->
+                        InfoChipSmall(text = muscle.name)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        if (exercise.equipment.isNotEmpty()) {
+            InfoSection(title = "Wymagany sprzęt", icon = Icons.Default.MonitorWeight) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    exercise.equipment.forEach { eq ->
+                        InfoChipSmall(text = eq.name)
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun InfoSection(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = getOnSurfaceSecondaryColor(),
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = getOnSurfaceSecondaryColor()
+            )
+        }
+        content()
+    }
+}
+
+@Composable
+private fun InfoChipSmall(text: String) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = getSurfaceColor(),
+        border = BorderStroke(1.dp, getInputBorderColor().copy(alpha = 0.5f))
+    ) {
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = getOnSurfaceColor(),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
