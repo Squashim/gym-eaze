@@ -199,10 +199,10 @@ fun StartedPlanDaysScreen(
                             DayCard(
                                 day = day,
                                 isCompleting = uiState.completingDayNumber == day.dayNumber,
-                                onClick = {
-                                    if (!day.isRestDay) {
-                                        onDayClick(userTrainingPlanId, uiState.planName, day.dayNumber)
-                                    }
+                                onClick = if (!day.isCompleted && !day.isRestDay) {
+                                    { onDayClick(userTrainingPlanId, uiState.planName, day.dayNumber) }
+                                } else {
+                                    null
                                 },
                                 onCompleteRestDayClick = { viewModel.completeRestDay(day.dayNumber) }
                             )
@@ -223,7 +223,7 @@ private fun DayCard(
     day: StartedDay,
     isCompleting: Boolean,
     onCompleteRestDayClick: () -> Unit,
-    onClick: () -> Unit
+    onClick: (() -> Unit)?
 ) {
     val cardColor = if (day.isRestDay) getSurfaceColor() else getSurfaceVariantColor()
     val borderColor = getOnSurfaceColor().copy(alpha = 0.1f)
@@ -233,7 +233,7 @@ private fun DayCard(
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .then(if (isClickable) Modifier.clickable(onClick = onClick) else Modifier),
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {

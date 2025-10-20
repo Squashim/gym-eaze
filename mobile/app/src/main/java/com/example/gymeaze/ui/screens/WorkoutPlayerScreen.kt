@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -95,29 +96,28 @@ fun WorkoutPlayerScreen(
                     )
                     PlayerState.FINISHED -> FinishedState(
                         state = uiState,
-
                         onComplete = viewModel::prepareAndCompleteDay
                     )
                     PlayerState.COMPLETING -> CompletingState()
-                    PlayerState.SUMMARY -> uiState.summaryData?.let { summary ->
-                        WorkoutSummary(
-                            summaryData = summary,
-                            onFinish = viewModel::finalizeWorkoutAndNavigateBack
-                        )
-                    } ?: ErrorState("Brak danych podsumowania.", {})
+                    PlayerState.SUMMARY -> WorkoutSummary(
+                        summaryData = uiState.summaryData,
+                        onFinish = viewModel::finalizeWorkoutAndNavigateBack
+                    )
                     PlayerState.ERROR -> ErrorState(uiState.error, onRetry = { viewModel.loadWorkoutDay(userTrainingPlanId, dayNumber) })
                 }
             }
 
             if (uiState.playerState == PlayerState.EXERCISE || uiState.playerState == PlayerState.REST) {
-                WorkoutNavigationButtons(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    onPrevious = viewModel::previousStep,
-                    onNext = viewModel::nextStep,
-                    isPreviousEnabled = !(uiState.currentExerciseIndex == 0 && uiState.currentSetIndex == 0 && uiState.playerState == PlayerState.EXERCISE)
-                )
+                if (uiState.dayDetails != null) {
+                    WorkoutNavigationButtons(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp),
+                        onPrevious = viewModel::previousStep,
+                        onNext = viewModel::nextStep,
+                        isPreviousEnabled = !(uiState.currentExerciseIndex == 0 && uiState.currentSetIndex == 0 && uiState.playerState == PlayerState.EXERCISE)
+                    )
+                }
             }
         }
     }
@@ -134,10 +134,8 @@ private fun LoadingState() {
 private fun ExerciseState(state: WorkoutPlayerUiState) {
     val exercise = state.currentExercise
     val set = state.currentSet
-    if (exercise == null || set == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(modifier = Modifier.size(32.dp), strokeWidth = 2.dp, color = getPrimaryColor())
-        }
+    if (exercise == null || set == null || state.dayDetails == null) {
+        LoadingState()
         return
     }
 
@@ -280,6 +278,12 @@ private fun RestState(
     onDecreaseTime: () -> Unit,
     onIncreaseTime: () -> Unit
 ) {
+
+    if (state.dayDetails == null) {
+        LoadingState()
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -342,6 +346,12 @@ private fun RestState(
 
 @Composable
 private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
+
+    if (state.dayDetails == null) {
+        LoadingState()
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -404,9 +414,14 @@ private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
 
 @Composable
 private fun WorkoutSummary(
-    summaryData: WorkoutSummaryData,
+    summaryData: WorkoutSummaryData?,
     onFinish: () -> Unit
 ) {
+    if (summaryData == null) {
+        LoadingState()
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -532,9 +547,9 @@ private fun WorkoutPlayerAppBar(
 ) {
     TopAppBar(
         title = {
-            if (state.playerState == PlayerState.EXERCISE || state.playerState == PlayerState.REST) {
+            if ((state.playerState == PlayerState.EXERCISE || state.playerState == PlayerState.REST) && state.dayDetails != null) {
                 Text(
-                    state.dayDetails?.name ?: "?",
+                    state.dayDetails.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()

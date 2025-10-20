@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 enum class PlayerState {
@@ -75,35 +76,51 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
     val navigationEvent = _navigationEvent.asSharedFlow()
 
     fun loadWorkoutDay(userTrainingPlanId: String, dayNumber: Int) {
-        if (this.userTrainingPlanId == userTrainingPlanId && this.dayNumber == dayNumber && _uiState.value.dayDetails != null) {
+        if (this.userTrainingPlanId == userTrainingPlanId &&
+            this.dayNumber == dayNumber &&
+            _uiState.value.dayDetails != null &&
+            _uiState.value.playerState !in listOf(PlayerState.ERROR, PlayerState.SUMMARY, PlayerState.COMPLETING, PlayerState.LOADING))
+        {
+            _uiState.update { it.copy(playerState = PlayerState.EXERCISE, error = null) }
+            startExerciseTimerIfNeeded()
             return
         }
 
         this.userTrainingPlanId = userTrainingPlanId
         this.dayNumber = dayNumber
-        _uiState.value = WorkoutPlayerUiState(playerState = PlayerState.LOADING)
+
+        _uiState.value = WorkoutPlayerUiState(
+            playerState = PlayerState.LOADING,
+            error = null,
+            dayDetails = null,
+            summaryData = null
+        )
 
         viewModelScope.launch {
             val result = repository.getStartedTrainingPlanDayDetails(userTrainingPlanId, dayNumber)
             result.onSuccess { details ->
-                if (details.exercises.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        playerState = PlayerState.FINISHED,
-                        dayDetails = details,
-                        isWorkoutComplete = true
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        playerState = PlayerState.EXERCISE,
-                        dayDetails = details
-                    )
-                    startExerciseTimerIfNeeded()
+                if (_uiState.value.playerState == PlayerState.LOADING) {
+                    if (details.exercises.isEmpty()) {
+                        _uiState.value = _uiState.value.copy(
+                            playerState = PlayerState.FINISHED,
+                            dayDetails = details,
+                            isWorkoutComplete = true
+                        )
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            playerState = PlayerState.EXERCISE,
+                            dayDetails = details
+                        )
+                        startExerciseTimerIfNeeded()
+                    }
                 }
             }.onFailure { exception ->
-                _uiState.value = _uiState.value.copy(
-                    playerState = PlayerState.ERROR,
-                    error = exception.message ?: "Błąd ładowania szczegółów dnia."
-                )
+                if (_uiState.value.playerState == PlayerState.LOADING) {
+                    _uiState.value = _uiState.value.copy(
+                        playerState = PlayerState.ERROR,
+                        error = exception.message ?: "Błąd ładowania szczegółów dnia."
+                    )
+                }
             }
         }
     }

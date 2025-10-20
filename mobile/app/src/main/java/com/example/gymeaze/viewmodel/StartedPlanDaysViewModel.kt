@@ -34,7 +34,7 @@ class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(appl
         }
 
         currentUserTrainingPlanId = userTrainingPlanId
-        _uiState.value = StartedPlanDaysUiState(isLoading = true, planName = planName)
+        _uiState.value = StartedPlanDaysUiState(isLoading = true, planName = planName, error = null)
 
         viewModelScope.launch {
             val result = repository.getStartedTrainingPlanDays(userTrainingPlanId)
