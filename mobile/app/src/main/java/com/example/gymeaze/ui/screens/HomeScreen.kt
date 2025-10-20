@@ -61,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -639,13 +640,19 @@ private fun RecentActivitySection(
             else -> {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     startedPlans.forEach { plan ->
+                        val isComplete = plan.completedDays >= plan.totalDays
                         StartedPlanCard(
                             plan = plan,
-                            onClick = { onStartedPlanClick(plan.id, plan.name) },
+                            onClick = if (!isComplete) {
+                                { onStartedPlanClick(plan.id, plan.name) }
+                            } else {
+                                null
+                            },
                             onDelete = { onDeletePlan(plan.id) },
                             onReset = { onResetPlan(plan.id) },
                             isDeleting = deletingPlanId == plan.id,
-                            isResetting = resettingPlanId == plan.id
+                            isResetting = resettingPlanId == plan.id,
+                            isComplete = isComplete
                         )
                     }
                 }
@@ -657,28 +664,37 @@ private fun RecentActivitySection(
 @Composable
 private fun StartedPlanCard(
     plan: StartedTrainingPlan,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     onDelete: () -> Unit,
     onReset: () -> Unit,
     isDeleting: Boolean,
-    isResetting: Boolean
+    isResetting: Boolean,
+    isComplete: Boolean
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
 
     var showMenu by remember { mutableStateOf(false) }
 
+    val contentAlpha = if (isComplete) 0.6f else 1.0f
+    val cardBackgroundColor = if (isComplete) {
+        getOnSurfaceColor().copy(alpha = 0.05f)
+            .compositeOver(getSurfaceColor())
+    } else {
+        getSurfaceColor()
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .border(
                 width = 1.dp,
-                color = getOnSurfaceColor().copy(alpha = 0.1f),
+                color = getOnSurfaceColor().copy(alpha = 0.1f * contentAlpha),
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
     ) {
         Row(
             modifier = Modifier
@@ -697,7 +713,8 @@ private fun StartedPlanCard(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                alpha = contentAlpha
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -710,14 +727,14 @@ private fun StartedPlanCard(
                     text = plan.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = getOnSurfaceColor(),
+                    color = getOnSurfaceColor().copy(alpha = contentAlpha),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "Autor: ${plan.author.username}",
                     fontSize = 12.sp,
-                    color = getOnSurfaceSecondaryColor(),
+                    color = getOnSurfaceSecondaryColor().copy(alpha = contentAlpha),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -729,9 +746,9 @@ private fun StartedPlanCard(
                 } else 0f
 
                 Text(
-                    text = "Ukończono ${plan.completedDays} z ${plan.totalDays} dni",
+                    text = if(isComplete) "Ukończono" else "Ukończono ${plan.completedDays} z ${plan.totalDays} dni",
                     fontSize = 10.sp,
-                    color = getOnSurfaceSecondaryColor()
+                    color = if (isComplete) getPrimaryColor() else getOnSurfaceSecondaryColor().copy(alpha = contentAlpha)
                 )
                 LinearProgressIndicator(
                     progress = { progress },
@@ -739,7 +756,7 @@ private fun StartedPlanCard(
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = getPrimaryColor(),
+                    color = getPrimaryColor().copy(alpha = contentAlpha),
                     trackColor = getOnSurfaceColor().copy(alpha = 0.1f),
                     strokeCap = StrokeCap.Round
                 )
@@ -757,7 +774,7 @@ private fun StartedPlanCard(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "Opcje",
-                            tint = getOnSurfaceSecondaryColor()
+                            tint = getOnSurfaceSecondaryColor().copy(alpha = contentAlpha)
                         )
                     }
                     DropdownMenu(
