@@ -125,23 +125,54 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun startRestTimer(durationSeconds: Int) {
+        val effectiveDuration = maxOf(0, durationSeconds)
         cancelTimers()
+
         _uiState.value = _uiState.value.copy(
             playerState = PlayerState.REST,
-            restTimeRemaining = durationSeconds
+            restTimeRemaining = effectiveDuration
         )
+
+        if (effectiveDuration <= 0) {
+            moveToNextSetOrExercise()
+            return
+        }
 
         restTimer = object : CountDownTimer(durationSeconds * 1000L, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                _uiState.value = _uiState.value.copy(restTimeRemaining = (millisUntilFinished / 1000).toInt())
+                if (_uiState.value.playerState == PlayerState.REST) {
+                    _uiState.value = _uiState.value.copy(restTimeRemaining = (millisUntilFinished / 1000).toInt())
+                } else {
+                    cancel()
+                }
             }
 
             override fun onFinish() {
-                _uiState.value = _uiState.value.copy(restTimeRemaining = 0)
-                moveToNextSetOrExercise()
+                if (_uiState.value.playerState == PlayerState.REST) {
+                    _uiState.value = _uiState.value.copy(restTimeRemaining = 0)
+                    moveToNextSetOrExercise()
+                }
             }
         }.start()
     }
+
+    fun decreaseRestTime(seconds: Int = 15) {
+        if (_uiState.value.playerState == PlayerState.REST) {
+            val currentRemaining = _uiState.value.restTimeRemaining
+            val newTime = maxOf(0, currentRemaining - seconds)
+            startRestTimer(newTime)
+        }
+    }
+
+    fun increaseRestTime(seconds: Int = 15) {
+        if (_uiState.value.playerState == PlayerState.REST) {
+            val currentRemaining = _uiState.value.restTimeRemaining
+            val newTime = currentRemaining + seconds
+            startRestTimer(newTime)
+        }
+    }
+
+
 
     private fun moveToNextSetOrExercise() {
         val currentState = _uiState.value
@@ -236,15 +267,7 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         exerciseTimer?.cancel()
         restTimer = null
         exerciseTimer = null
-
-        if (_uiState.value.playerState != PlayerState.REST) {
-            _uiState.value = _uiState.value.copy(
-                restTimeRemaining = 0,
-                exerciseTimeRemaining = 0
-            )
-        } else {
-            _uiState.value = _uiState.value.copy(exerciseTimeRemaining = 0)
-        }
+        _uiState.value = _uiState.value.copy(exerciseTimeRemaining = 0)
     }
     private fun cancelExerciseTimer() {
         exerciseTimer?.cancel()

@@ -73,7 +73,11 @@ fun WorkoutPlayerScreen(
                 when (targetState) {
                     PlayerState.LOADING -> LoadingState()
                     PlayerState.EXERCISE -> ExerciseState(uiState)
-                    PlayerState.REST -> RestState(uiState)
+                    PlayerState.REST -> RestState(
+                        state = uiState,
+                        onDecreaseTime = viewModel::decreaseRestTime,
+                        onIncreaseTime = viewModel::increaseRestTime
+                    )
                     PlayerState.FINISHED -> FinishedState(
                         state = uiState,
                         onComplete = { viewModel.completeDay(onSuccessNavigation = onBackClick) }
@@ -173,17 +177,68 @@ private fun ExerciseState(state: WorkoutPlayerUiState) {
 }
 
 @Composable
-private fun RestState(state: WorkoutPlayerUiState) {
-    Box(
+private fun RestState(
+    state: WorkoutPlayerUiState,
+    onDecreaseTime: () -> Unit,
+    onIncreaseTime: () -> Unit
+) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         TimerDisplay(
             timeRemaining = state.restTimeRemaining,
             label = "Odpoczynek"
         )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = onDecreaseTime,
+                modifier = Modifier.size(width = 100.dp, height = 48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getSurfaceColor(),
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getInputBorderColor()),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.RemoveCircleOutline, contentDescription = "-15s", modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("15s", fontSize = 14.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.width(24.dp))
+
+            Button(
+                onClick = onIncreaseTime,
+                modifier = Modifier.size(width = 100.dp, height = 48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getSurfaceColor(),
+                    contentColor = getOnSurfaceColor()
+                ),
+                border = BorderStroke(1.dp, getInputBorderColor()),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AddCircleOutline, contentDescription = "+15s", modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("15s", fontSize = 14.sp)
+                }
+            }
+        }
     }
 }
 
