@@ -97,6 +97,12 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
     fun nextStep() {
         cancelTimers()
         val currentState = _uiState.value
+
+        if (currentState.playerState == PlayerState.REST) {
+            moveToNextSetOrExercise()
+            return
+        }
+
         val currentExercise = currentState.currentExercise ?: return
 
         val isLastSetInExercise = currentState.currentSetIndex >= currentExercise.sets.size - 1
@@ -230,6 +236,15 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         exerciseTimer?.cancel()
         restTimer = null
         exerciseTimer = null
+
+        if (_uiState.value.playerState != PlayerState.REST) {
+            _uiState.value = _uiState.value.copy(
+                restTimeRemaining = 0,
+                exerciseTimeRemaining = 0
+            )
+        } else {
+            _uiState.value = _uiState.value.copy(exerciseTimeRemaining = 0)
+        }
     }
     private fun cancelExerciseTimer() {
         exerciseTimer?.cancel()
