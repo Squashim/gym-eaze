@@ -17,4 +17,4 @@ export const ReportStatus = {
   resolved: 'Rozwiązany',
 } as const;
 
-export type StatusReport = (typeof ReportStatus)[keyof typeof ReportStatus];
+export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus];

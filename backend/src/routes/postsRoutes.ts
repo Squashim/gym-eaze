@@ -8,6 +8,7 @@ import {
 import {
   addPost,
   deletePost,
+  getPost,
   getPosts,
   getPostsByUser,
   togglePostLike,
@@ -43,6 +44,8 @@ router.patch(
 );
 
 router.delete('/:id', authenticate, deletePost);
+
+router.get('/:id', optionalAuth, getPost);
 
 router.patch('/:id/like', authenticate, togglePostLike);
 

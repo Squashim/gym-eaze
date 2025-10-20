@@ -166,7 +166,19 @@ export const getAllReportsService = async (
       case CommentParentType.comment:
         reportedItem = await Comment.findById(reportedItemId)
           .populate('author', 'username profileDetails.profilePicture')
-          .select('content author createdAt');
+          .select('content author parentType parentId createdAt');
+
+        if (reportedItem && reportedItem.parentType === CommentParentType.comment) {
+          let parentComment = null;
+          parentComment = await Comment.findById(reportedItem.parentId).select(
+            'parentType parentId',
+          );
+
+          if (parentComment) {
+            reportedItem.parentId = parentComment.parentId;
+            reportedItem.parentType = parentComment.parentType;
+          }
+        }
         break;
     }
 
@@ -212,7 +224,8 @@ export const getReportsForItemService = async (
 
   const reports = await Report.find({ reportedItemId, reportedItemType })
     .sort({ createdAt: -1 })
-    .populate([{ path: 'reporterId', select: 'username profileDetails.profilePicture' }]);
+    .populate([{ path: 'reporterId', select: 'username profileDetails.profilePicture' }])
+    .select('reporterId reportType reason createdAt');
 
   return reports;
 };

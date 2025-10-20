@@ -228,6 +228,24 @@ export const getPostsService = async (
   };
 };
 
+export const getPostByIdService = async (postId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(postId)) {
+    throw new Error('Nieprawidłowe ID posta');
+  }
+
+  const post = await Post.findById(postId).populate({
+    path: 'author',
+    select: 'username profileDetails.profilePicture',
+    model: 'User',
+  });
+
+  if (!post) {
+    throw new Error('Nie znaleziono posta');
+  }
+
+  return post;
+};
+
 export const getUserPostsWithCursor = async (
   userId: string,
   cursor?: string,

@@ -289,6 +289,10 @@ export function isProfilePostQuery(queryKey: unknown): boolean {
   );
 }
 
+export function isReportsQuery(queryKey: unknown): boolean {
+  return Array.isArray(queryKey) && queryKey.length === 2 && queryKey[0] === 'reports';
+}
+
 export function isItemReplyCommentsQuery(queryKey: unknown): boolean {
   return (
     Array.isArray(queryKey) &&

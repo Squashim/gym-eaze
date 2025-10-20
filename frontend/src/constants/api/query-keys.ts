@@ -5,6 +5,7 @@ import type {
   ReportQueryParams,
   WorkoutQueryParams,
 } from '@/types/filters';
+import type { ItemType } from '../enums/item-type';
 
 export const QUERY_KEYS = {
   AUTH_USER: ['user', 'authenticated'],
@@ -57,4 +58,5 @@ export const QUERY_KEYS = {
   ],
 
   REPORTS: (params: ReportQueryParams) => ['reports', params],
+  REPORT_ITEMS: (itemId: string, itemType: ItemType) => ['reports', 'items', itemId, itemType],
 } as const;

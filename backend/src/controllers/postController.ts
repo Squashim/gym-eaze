@@ -2,6 +2,7 @@ import { Response } from 'express';
 import {
   createPost,
   deletePostService,
+  getPostByIdService,
   getUserPostsWithCursor,
   togglePostLikeService,
   updatePostService,
@@ -162,6 +163,28 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     return res.status(500).json({
       message: error instanceof Error ? error.message : 'Błąd serwera',
+    });
+  }
+};
+
+export const getPost = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const post = await getPostByIdService(id);
+
+    return res.json(post);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Nie znaleziono posta') {
+        return res.status(404).json({ message: error.message });
+      } else {
+        return res.status(400).json({ message: error.message });
+      }
+    }
+
+    return res.status(500).json({
+      message: 'Bład serwera podczas pobierania posta',
     });
   }
 };

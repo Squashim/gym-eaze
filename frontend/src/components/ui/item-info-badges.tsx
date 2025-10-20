@@ -1,11 +1,26 @@
 import type { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { Badge } from './badge';
 import type { Visibility } from '@/constants/enums/visibility';
-import { Globe2, Heart, Loader2, Lock, ThumbsUp } from 'lucide-react';
+import {
+  BicepsFlexed,
+  CalendarDaysIcon,
+  Circle,
+  CircleCheck,
+  CircleX,
+  FileText,
+  Globe2,
+  Heart,
+  Loader2,
+  Lock,
+  MessageSquare,
+  ThumbsUp,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 import Typography from './typography';
 import { useMemo } from 'react';
+import type { ReportStatus } from '@/constants/enums/report-type';
+import type { ItemType } from '@/constants/enums/item-type';
 
 function AdvancedLevelBadge({ advancedLevel }: { advancedLevel: AdvancedLevel }) {
   const badgeStyles = {
@@ -160,6 +175,47 @@ const BmiBadge = ({ bmi }: { bmi: number }) => {
   );
 };
 
+const ReportStatusBadge = ({ status }: { status: ReportStatus }) => {
+  const badgeStyles = {
+    Oczekujący: 'bg-accent text-accent-foreground shadow-sm',
+    Odrzucony: 'text-destructive bg-destructive/10',
+    Rozwiązany: 'bg-secondary text-secondary-foreground',
+  };
+
+  return (
+    <Badge className={cn('min-h-7', badgeStyles[status])}>
+      {status === 'Oczekujący' ? (
+        <Circle />
+      ) : status === 'Rozwiązany' ? (
+        <CircleCheck />
+      ) : (
+        <CircleX />
+      )}
+      {status}
+    </Badge>
+  );
+};
+
+const ItemTypeBadge = ({ type }: { type: ItemType }) => {
+  const badgeIcons = {
+    Post: FileText,
+    Komentarz: MessageSquare,
+    Trening: CalendarDaysIcon,
+    Ćwiczenie: BicepsFlexed,
+  };
+
+  const Icon = badgeIcons[type];
+
+  return (
+    <Badge className="min-h-7">
+      <div>
+        <Icon className="size-4" />
+      </div>
+      {type}
+    </Badge>
+  );
+};
+
 export {
   AdvancedLevelBadge,
   VisibilityBadge,
@@ -167,4 +223,6 @@ export {
   ItemDetailsBadge,
   IsPublicBadge,
   BmiBadge,
+  ItemTypeBadge,
+  ReportStatusBadge,
 };

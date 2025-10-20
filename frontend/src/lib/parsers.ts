@@ -50,6 +50,10 @@ export function parseAgeLabel(count: number) {
   return parsePlurals(count, ['rok', 'lata', 'lat']);
 }
 
+export function parsePersonReportedLabel(count: number) {
+  return parsePlurals(count, ['osoba zgłosiła', 'osoby zgłosiły', 'osób zgłosiło']);
+}
+
 export function parseWorkoutDurationLabel(days: number) {
   if (days === 7) return 'Tygodniowy';
   if (days === 14) return 'Dwutygodniowy';

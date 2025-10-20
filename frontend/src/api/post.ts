@@ -39,6 +39,11 @@ const getAll = async (
   return data;
 };
 
+const getById = async (id: string): Promise<GetPostsApiResponse> => {
+  const { data } = await API.get<GetPostsApiResponse>(endpoints.byId(id));
+  return data;
+};
+
 const getByUser = async (
   userId: string,
   cursor?: string | null,
@@ -69,4 +74,4 @@ const toggleLike = async (id: string): Promise<ApiResponse> => {
   return data;
 };
 
-export { create, update, remove, getAll, toggleLike, getComments, getByUser };
+export { create, update, remove, getAll, toggleLike, getComments, getByUser, getById };

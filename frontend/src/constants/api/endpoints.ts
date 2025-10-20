@@ -1,3 +1,5 @@
+import type { ItemType } from '../enums/item-type';
+
 export const AUTH = {
   login: 'auth/login',
   googleLogin: 'auth/google',
@@ -66,6 +68,8 @@ export const USER = {
 export const REPORT = {
   base: 'reports',
   search: 'reports/search',
+  byReport: (itemId: string, itemType: ItemType) => `reports/item/${itemId}/${itemType}`,
+  updateStatus: (itemId: string, itemType: ItemType) => `reports/item/${itemId}/${itemType}/status`,
 };
 
 export const UTILS = {
