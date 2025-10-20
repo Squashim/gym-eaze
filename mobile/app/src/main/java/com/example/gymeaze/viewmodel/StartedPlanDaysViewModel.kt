@@ -14,7 +14,8 @@ data class StartedPlanDaysUiState(
     val days: List<StartedDay> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val planName: String = ""
+    val planName: String = "",
+    val completingDayNumber: Int? = null
 )
 
 class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(application) {
@@ -47,6 +48,29 @@ class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(appl
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = exception.message ?: "Błąd ładowania dni treningowych"
+                )
+            }
+        }
+    }
+
+    fun completeRestDay(dayNumber: Int) {
+        val planId = currentUserTrainingPlanId ?: return
+
+        if (_uiState.value.completingDayNumber != null || _uiState.value.days.find { it.dayNumber == dayNumber }?.isCompleted == true) {
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(completingDayNumber = dayNumber, error = null)
+            val result = repository.completeDayTraining(planId, dayNumber)
+
+            result.onSuccess {
+                refreshDays()
+                _uiState.value = _uiState.value.copy(completingDayNumber = null)
+            }.onFailure { exception ->
+                _uiState.value = _uiState.value.copy(
+                    completingDayNumber = null,
+                    error = exception.message ?: "Błąd podczas oznaczania dnia odpoczynku."
                 )
             }
         }

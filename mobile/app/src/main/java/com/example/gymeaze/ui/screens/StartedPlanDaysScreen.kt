@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,11 +36,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,6 +54,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.StartedDay
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
@@ -66,13 +74,29 @@ fun StartedPlanDaysScreen(
     userTrainingPlanId: String,
     planName: String,
     onBackClick: () -> Unit,
-    onDayClick: (userTrainingPlanId: String, dayNumber: Int) -> Unit = { _, _ -> /* TODO */ },
+    onDayClick: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit,
     viewModel: StartedPlanDaysViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(userTrainingPlanId, planName) {
         viewModel.loadDays(userTrainingPlanId, planName)
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (!userTrainingPlanId.isNullOrEmpty()) {
+                    viewModel.refreshDays()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -170,16 +194,20 @@ fun StartedPlanDaysScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                         }
+
                         items(uiState.days, key = { it.dayNumber }) { day ->
                             DayCard(
                                 day = day,
+                                isCompleting = uiState.completingDayNumber == day.dayNumber,
                                 onClick = {
                                     if (!day.isRestDay) {
-                                        onDayClick(userTrainingPlanId, day.dayNumber)
+                                        onDayClick(userTrainingPlanId, uiState.planName, day.dayNumber)
                                     }
-                                }
+                                },
+                                onCompleteRestDayClick = { viewModel.completeRestDay(day.dayNumber) }
                             )
                         }
+
                         item {
                             Spacer(modifier = Modifier.height(60.dp))
                         }
@@ -193,6 +221,8 @@ fun StartedPlanDaysScreen(
 @Composable
 private fun DayCard(
     day: StartedDay,
+    isCompleting: Boolean,
+    onCompleteRestDayClick: () -> Unit,
     onClick: () -> Unit
 ) {
     val cardColor = if (day.isRestDay) getSurfaceColor() else getSurfaceVariantColor()
@@ -210,7 +240,7 @@ private fun DayCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 20.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -245,22 +275,68 @@ private fun DayCard(
                 }
             }
 
-            if (!day.isRestDay) {
-                val statusColor = if (day.isCompleted) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
-                val statusIcon = if (day.isCompleted) Icons.Default.Check else Icons.Default.Close
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(statusColor.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = statusIcon,
-                        contentDescription = if (day.isCompleted) "Ukończono" else "Nieukończono",
-                        tint = statusColor,
-                        modifier = Modifier.size(18.dp)
-                    )
+            Box(
+                modifier = Modifier.defaultMinSize(minWidth = 80.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                when {
+                    isCompleting -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = getPrimaryColor(),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    day.isCompleted -> {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF4CAF50).copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Ukończono",
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                    day.isRestDay && !day.isCompleted -> {
+                        OutlinedButton(
+                            onClick = onCompleteRestDayClick,
+                            modifier = Modifier.height(36.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp),
+                            border = BorderStroke(1.dp, getPrimaryColor()),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = getPrimaryColor())
+                        ) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("Zalicz dzień", fontSize = 12.sp)
+                        }
+                    }
+                    !day.isRestDay && !day.isCompleted -> {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Nieukończono",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

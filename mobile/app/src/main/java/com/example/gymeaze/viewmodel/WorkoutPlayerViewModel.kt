@@ -8,8 +8,10 @@ import com.example.gymeaze.data.models.ExerciseSet
 import com.example.gymeaze.data.models.StartedDayDetails
 import com.example.gymeaze.data.models.StartedExercise
 import com.example.gymeaze.data.repository.StartedTrainingRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -44,7 +46,6 @@ data class WorkoutPlayerUiState(
     val totalSetsInCurrentExercise: Int
         get() = currentExercise?.sets?.size ?: 0
 }
-
 class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = StartedTrainingRepository(application)
@@ -56,6 +57,8 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
     private var exerciseTimer: CountDownTimer? = null
     private var userTrainingPlanId: String? = null
     private var dayNumber: Int? = null
+
+
 
     fun loadWorkoutDay(userTrainingPlanId: String, dayNumber: Int) {
         if (this.userTrainingPlanId == userTrainingPlanId && this.dayNumber == dayNumber && _uiState.value.dayDetails != null) {
@@ -97,7 +100,6 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         val currentExercise = currentState.currentExercise ?: return
 
         val isLastSetInExercise = currentState.currentSetIndex >= currentExercise.sets.size - 1
-
         val isLastExerciseInWorkout = currentState.currentExerciseIndex >= currentState.totalExercises - 1
 
         when {
@@ -202,19 +204,18 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         }.start()
     }
 
-    fun completeDay() {
+    fun completeDay(onSuccessNavigation: () -> Unit) {
         val currentPlanId = userTrainingPlanId ?: return
         val currentDayNumber = dayNumber ?: return
 
-        _uiState.value = _uiState.value.copy(playerState = PlayerState.COMPLETING)
+        if (_uiState.value.playerState == PlayerState.COMPLETING) return
+
+        _uiState.value = _uiState.value.copy(playerState = PlayerState.COMPLETING, error = null)
 
         viewModelScope.launch {
             val result = repository.completeDayTraining(currentPlanId, currentDayNumber)
             result.onSuccess { response ->
-                _uiState.value = _uiState.value.copy(
-                    playerState = PlayerState.FINISHED
-                )
-                // TODO: Wywołanie nawigacji wstecz
+                onSuccessNavigation()
             }.onFailure { exception ->
                 _uiState.value = _uiState.value.copy(
                     playerState = PlayerState.FINISHED,

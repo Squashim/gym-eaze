@@ -329,7 +329,7 @@ class MainActivity : ComponentActivity() {
                                     userTrainingPlanId = selectedStartedPlan!!.first,
                                     planName = selectedStartedPlan!!.second,
                                     onBackClick = authViewModel::hideStartedPlanDaysScreen,
-                                    onDayClick = { userTrainingPlanId, dayNumber ->
+                                    onDayClick = { userTrainingPlanId, planName, dayNumber ->
                                         authViewModel.showWorkoutPlayerScreen(userTrainingPlanId, dayNumber)
                                     }
                                 )

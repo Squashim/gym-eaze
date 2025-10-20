@@ -74,7 +74,10 @@ fun WorkoutPlayerScreen(
                     PlayerState.LOADING -> LoadingState()
                     PlayerState.EXERCISE -> ExerciseState(uiState)
                     PlayerState.REST -> RestState(uiState)
-                    PlayerState.FINISHED -> FinishedState(uiState, onComplete = viewModel::completeDay)
+                    PlayerState.FINISHED -> FinishedState(
+                        state = uiState,
+                        onComplete = { viewModel.completeDay(onSuccessNavigation = onBackClick) }
+                    )
                     PlayerState.COMPLETING -> CompletingState()
                     PlayerState.ERROR -> ErrorState(uiState.error, onRetry = { viewModel.loadWorkoutDay(userTrainingPlanId, dayNumber) })
                 }
@@ -89,13 +92,6 @@ fun WorkoutPlayerScreen(
                     onNext = viewModel::nextStep,
                     isPreviousEnabled = !(uiState.currentExerciseIndex == 0 && uiState.currentSetIndex == 0 && uiState.playerState == PlayerState.EXERCISE)
                 )
-            }
-        }
-    }
-    LaunchedEffect(uiState.playerState) {
-        if (uiState.playerState == PlayerState.FINISHED && uiState.error == null && uiState.isWorkoutComplete && uiState.dayDetails != null) {
-            if (uiState.playerState != PlayerState.COMPLETING){
-                onBackClick()
             }
         }
     }
@@ -226,10 +222,19 @@ private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
+            enabled = state.playerState != PlayerState.COMPLETING,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = getPrimaryColor())
         ) {
-            Text("Oznacz Dzień jako Ukończony", fontWeight = FontWeight.SemiBold)
+            if (state.playerState == PlayerState.COMPLETING) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = getOnPrimaryColor(),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Oznacz Dzień jako Ukończony", fontWeight = FontWeight.SemiBold)
+            }
         }
 
         state.error?.let {
