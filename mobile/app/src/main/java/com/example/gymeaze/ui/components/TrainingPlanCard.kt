@@ -74,6 +74,8 @@ fun TrainingPlanCard(
     val context = LocalContext.current
     val favoriteIds by GlobalFavoriteState.getInstance(context).favoriteTrainingPlanIds.collectAsState()
     val isFavoriteGlobal = favoriteIds.contains(trainingPlan.id)
+
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -109,13 +111,6 @@ fun TrainingPlanCard(
                     contentDescription = trainingPlan.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
-                )
-
-                DifficultyBadge(
-                    difficulty = trainingPlan.advancedLevel,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
                 )
 
                 trainingPlan.daysCount?.let { daysCount ->
@@ -219,6 +214,13 @@ fun TrainingPlanCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            Text(
+                text = "Dodano: ${trainingPlan.createdAt.formatToRelativeTime()}",
+                fontSize = 10.sp,
+                color = getOnSurfaceSecondaryColor()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
             GoalChip(goal = trainingPlan.goal)
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -231,25 +233,20 @@ fun TrainingPlanCard(
                 Column {
                     trainingPlan.totalExercises?.let { totalExercises ->
                         Text(
-                            text = "$totalExercises ćwiczeń",
+                            text = "Ilość użytych ćwiczeń: $totalExercises",
                             fontSize = 10.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
                     }
                     trainingPlan.totalDuration?.let { totalDuration ->
                         Text(
-                            text = formatDuration(totalDuration),
+                            text = "Czastrwania całego treningu: ${formatDuration(totalDuration)}",
                             fontSize = 10.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
                     }
                 }
 
-                Text(
-                    text = trainingPlan.createdAt.formatToRelativeTime(),
-                    fontSize = 10.sp,
-                    color = getOnSurfaceSecondaryColor()
-                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -260,57 +257,67 @@ fun TrainingPlanCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = {
+                                try {
+                                    onLikeClick(trainingPlan.id)
+                                } catch (e: Exception) {
+                                }
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (trainingPlan.likes > 0) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
+                                contentDescription = "Polub",
+                                tint = getPrimaryColor(),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Text(
+                            text = trainingPlan.likes.toString(),
+                            fontSize = 14.sp,
+                            color = getOnSurfaceColor()
+                        )
+                    }
+
                     IconButton(
                         onClick = {
-                            try {
-                                onLikeClick(trainingPlan.id)
-                            } catch (e: Exception) {
-                            }
+                            onFavoriteClick(trainingPlan.id)
                         },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = if (trainingPlan.likes > 0) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
-                            contentDescription = "Polub",
-                            tint = getPrimaryColor(),
+                            imageVector = if (isFavoriteGlobal) {
+                                Icons.Default.Favorite
+                            } else {
+                                Icons.Default.FavoriteBorder
+                            },
+                            contentDescription = if (isFavoriteGlobal) {
+                                "Usuń z ulubionych"
+                            } else {
+                                "Dodaj do ulubionych"
+                            },
+                            tint = if (isFavoriteGlobal) {
+                                Color(0xFFE91E63)
+                            } else {
+                                getOnSurfaceSecondaryColor()
+                            },
                             modifier = Modifier.size(20.dp)
                         )
                     }
-
-                    Text(
-                        text = trainingPlan.likes.toString(),
-                        fontSize = 14.sp,
-                        color = getOnSurfaceColor()
-                    )
                 }
 
-                IconButton(
-                    onClick = {
-                        onFavoriteClick(trainingPlan.id)
-                    },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isFavoriteGlobal) {
-                            Icons.Default.Favorite
-                        } else {
-                            Icons.Default.FavoriteBorder
-                        },
-                        contentDescription = if (isFavoriteGlobal) {
-                            "Usuń z ulubionych"
-                        } else {
-                            "Dodaj do ulubionych"
-                        },
-                        tint = if (isFavoriteGlobal) {
-                            Color.Red
-                        } else {
-                            getOnSurfaceSecondaryColor()
-                        },
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                DifficultyBadge(
+                    difficulty = trainingPlan.advancedLevel,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
         }
     }
@@ -322,17 +329,17 @@ private fun DifficultyBadge(
     modifier: Modifier = Modifier
 ) {
     val (text, backgroundColor, textColor) = when (difficulty) {
-        AdvancedLevel.NONE -> Triple("?", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
-        AdvancedLevel.EASY -> Triple("P", getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
-        AdvancedLevel.MEDIUM -> Triple("Ś", getYellowColor(), getOnYellowColor())
-        AdvancedLevel.HARD -> Triple("Z", getOnSurfaceColor().copy(alpha = 0.2f), getOnSurfaceColor())
+        AdvancedLevel.NONE -> Triple("Nie wybrano", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
+        AdvancedLevel.EASY -> Triple("Początkujący", getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
+        AdvancedLevel.MEDIUM -> Triple("Średniozaawansowany", getYellowColor(), getOnYellowColor())
+        AdvancedLevel.HARD -> Triple("Zaawansowany", getErrorColor().copy(alpha = 0.2f), getErrorColor())
         else -> Triple("?", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
     }
 
     Box(
         modifier = modifier
-            .size(24.dp)
-            .background(backgroundColor, RoundedCornerShape(6.dp)),
+            .background(backgroundColor, RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -349,16 +356,6 @@ private fun GoalChip(
     goal: String,
     modifier: Modifier = Modifier
 ) {
-    val goalText = when (goal) {
-        Goals.MUSCLE_GAIN -> "Masa mięśniowa"
-        Goals.STRENGTH -> "Siła"
-        Goals.ENDURANCE -> "Wytrzymałość"
-        Goals.FAT_LOSS -> "Redukcja"
-        Goals.CALORIE_BURN -> "Spalanie kalorii"
-        Goals.FLEXIBILITY -> "Gibkość"
-        Goals.MOBILITY -> "Mobilność"
-        else -> "Trening"
-    }
 
     Surface(
         modifier = modifier,
@@ -366,7 +363,7 @@ private fun GoalChip(
         shape = RoundedCornerShape(12.dp)
     ) {
         Text(
-            text = goalText,
+            text = goal,
             fontSize = 10.sp,
             color = getPrimaryColor(),
             fontWeight = FontWeight.Medium,

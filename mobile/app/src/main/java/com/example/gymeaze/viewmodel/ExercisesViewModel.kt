@@ -311,12 +311,15 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun toggleLike(exerciseId: String) {
+    fun toggleLike(exerciseId: String, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             val currentExercise = _uiState.value.exercises.find { it.id == exerciseId }
                 ?: _currentExercise.value?.takeIf { it.id == exerciseId }
 
-            if (currentExercise == null) return@launch
+            if (currentExercise == null) {
+                onResult(false, "Nie znaleziono ćwiczenia")
+                return@launch
+            }
 
             val isCurrentlyLiked = _likedExercises.value.contains(exerciseId)
 
@@ -342,11 +345,24 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     if (_currentExercise.value?.id == exerciseId) {
                         _currentExercise.value = _currentExercise.value?.copy(likes = likeResponse.likes)
                     }
+
+                    val message = if (!isCurrentlyLiked) {
+                        "Polubiono ćwiczenie"
+                    } else {
+                        "Usunięto polubienie ćwiczenia"
+                    }
+                    onResult(true, message)
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        error = exception.message ?: "Błąd podczas polubienia"
+                    )
+                    onResult(false, exception.message ?: "Błąd podczas polubienia")
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = e.message ?: "Nieoczekiwany błąd podczas polubienia ćwiczenia"
                 )
+                onResult(false, e.message ?: "Nieoczekiwany błąd")
             }
         }
     }
@@ -363,27 +379,41 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         return _favoriteExercises.value.contains(exerciseId)
     }
 
-    fun toggleFavorite(exerciseId: String) {
+    fun toggleFavorite(exerciseId: String, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             val currentExercise = _uiState.value.exercises.find { it.id == exerciseId }
                 ?: _currentExercise.value?.takeIf { it.id == exerciseId }
 
-            if (currentExercise == null) return@launch
+            if (currentExercise == null) {
+                onResult(false, "Nie znaleziono ćwiczenia")
+                return@launch
+            }
 
             try {
                 val result = repository.toggleExerciseFavorite(exerciseId)
                 result.onSuccess { favoriteResponse ->
+                    val isFavorited = favoriteResponse.message.contains("Dodano") ||
+                            favoriteResponse.message.contains("dodano", ignoreCase = true)
 
                     loadUserFavorites()
+
+                    val message = if (isFavorited) {
+                        "Dodano do ulubionych"
+                    } else {
+                        "Usunięto z ulubionych"
+                    }
+                    onResult(true, message)
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         error = exception.message ?: "Błąd podczas przełączania ulubionego"
                     )
+                    onResult(false, exception.message ?: "Błąd podczas przełączania ulubionego")
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = e.message ?: "Nieoczekiwany błąd podczas dodawania do ulubionych"
                 )
+                onResult(false, e.message ?: "Nieoczekiwany błąd")
             }
         }
     }
@@ -765,7 +795,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun toggleExerciseCommentLike(commentId: String) {
+    fun toggleExerciseCommentLike(commentId: String, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
                 val response = postRepository.toggleCommentLike(commentId)
@@ -779,9 +809,19 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     }
 
                     updateExerciseCommentLikes(commentId, response.likes)
+
+                    val message = if (isLiked) {
+                        "Polubiono komentarz"
+                    } else {
+                        "Usunięto polubienie komentarza"
+                    }
+                    onResult(true, message)
+                } else {
+                    onResult(false, "Błąd podczas polubienia komentarza")
                 }
             } catch (e: Exception) {
                 println("Błąd podczas przełączania polubienia: ${e.message}")
+                onResult(false, e.message ?: "Błąd podczas polubienia komentarza")
             }
         }
     }

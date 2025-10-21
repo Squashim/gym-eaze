@@ -16,10 +16,10 @@ fun String.formatToRelativeTime(): String {
 
         when {
             minutesAgo < 1 -> "przed chwilą"
-            minutesAgo < 60 -> "${minutesAgo}min"
-            hoursAgo < 24 -> "${hoursAgo}h"
-            daysAgo < 7 -> "${daysAgo}d"
-            daysAgo < 30 -> "${daysAgo / 7}tyg"
+            minutesAgo < 60 -> "${minutesAgo}min temu"
+            hoursAgo < 24 -> "${hoursAgo}h temu"
+            daysAgo < 7 -> "${daysAgo}d temu"
+            daysAgo < 30 -> "${daysAgo / 7}tyg temu"
             else -> DateTimeFormatter.ofPattern("dd.MM.yyyy")
                 .withZone(ZoneId.systemDefault())
                 .format(instant)

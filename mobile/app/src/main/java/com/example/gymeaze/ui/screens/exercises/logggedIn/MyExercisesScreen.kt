@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens.exercises.loggedIn
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,6 +66,12 @@ fun MyExercisesScreen(
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var exerciseToDelete by remember { mutableStateOf<Exercise?>(null) }
+
+    val context = LocalContext.current
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.reloadCurrentUser()
@@ -192,8 +200,20 @@ fun MyExercisesScreen(
                                         isLiked = viewModel.isExerciseLiked(exercise.id),
                                         isFavorite = favoriteExercises.contains(exercise.id),
                                         isCurrentUserExercise = true,
-                                        onLikeClick = { viewModel.toggleLike(exercise.id) },
-                                        onFavoriteClick = { viewModel.toggleFavorite(exercise.id) },
+                                        onLikeClick = {
+                                            viewModel.toggleLike(exercise.id) { success, message ->
+                                                if (success) {
+                                                    showToast(message)
+                                                }
+                                            }
+                                        },
+                                        onFavoriteClick = {
+                                            viewModel.toggleFavorite(exercise.id) { success, message ->
+                                                if (success) {
+                                                    showToast(message)
+                                                }
+                                            }
+                                        },
                                         onEditClick = { exerciseId ->
                                             val exerciseToEdit = uiState.exercises.find { it.id == exerciseId }
                                             exerciseToEdit?.let { onEditExercise(it) }

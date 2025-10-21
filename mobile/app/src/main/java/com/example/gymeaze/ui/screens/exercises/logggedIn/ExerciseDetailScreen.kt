@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens.exercises.logggedIn
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -65,6 +66,7 @@ fun ExerciseDetailScreen(
 ) {
     val reportViewModel: ReportViewModel = viewModel()
 
+    val context = LocalContext.current
     val currentExercise by exercisesViewModel.currentExercise.collectAsState()
     val isLoadingDetail by exercisesViewModel.isLoadingExerciseDetail.collectAsState()
     val uiState by exercisesViewModel.uiState.collectAsState()
@@ -112,7 +114,11 @@ fun ExerciseDetailScreen(
                             IconButton(
                                 onClick = {
                                     if (isUserLoggedIn) {
-                                        exercisesViewModel.toggleLike(exercise.id)
+                                        exercisesViewModel.toggleLike(exercise.id) { success, message ->
+                                            if (success) {
+                                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
                                     } else {
                                         showLoginDialog = true
                                     }
@@ -166,7 +172,11 @@ fun ExerciseDetailScreen(
                                 IconButton(
                                     onClick = {
                                         if (isUserLoggedIn) {
-                                            exercisesViewModel.toggleFavorite(exercise.id)
+                                            exercisesViewModel.toggleFavorite(exercise.id) { success, message ->
+                                                if (success) {
+                                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
                                         } else {
                                             showLoginDialog = true
                                         }
@@ -1278,6 +1288,7 @@ private fun ExerciseCommentItem(
     onShowLoginDialog: () -> Unit = {},
     onReportClick: (String) -> Unit = {} // ← DODAJ TEN PARAMETR
 ) {
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isExerciseCommentLiked(comment._id).collectAsState(initial = false)
 
@@ -1436,7 +1447,11 @@ private fun ExerciseCommentItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
                             if (isUserLoggedIn) {
-                                viewModel.toggleExerciseCommentLike(comment._id)
+                                viewModel.toggleExerciseCommentLike(comment._id) { success, message ->
+                                    if (success) {
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             } else {
                                 onShowLoginDialog()
                             }
@@ -1513,6 +1528,7 @@ private fun ExerciseReplyItem(
     onShowLoginDialog: () -> Unit = {},
     onReportClick: (String) -> Unit = {} // ← DODAJ TEN PARAMETR
 ) {
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isExerciseCommentLiked(reply._id).collectAsState(initial = false)
 
@@ -1631,7 +1647,11 @@ private fun ExerciseReplyItem(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.clickable {
                     if (isUserLoggedIn) {
-                        viewModel.toggleExerciseCommentLike(reply._id)
+                        viewModel.toggleExerciseCommentLike(reply._id) { success, message ->
+                            if (success) {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     } else {
                         onShowLoginDialog()
                     }
