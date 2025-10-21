@@ -404,7 +404,7 @@ private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Błąd zapisu: $it",
-                color = MaterialTheme.colorScheme.error,
+                color = getErrorColor(),
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center
             )
@@ -516,7 +516,7 @@ private fun ErrorState(error: String?, onRetry: () -> Unit) {
         Icon(
             imageVector = Icons.Default.ErrorOutline,
             contentDescription = "Błąd",
-            tint = MaterialTheme.colorScheme.error,
+            tint = getErrorColor(),
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))

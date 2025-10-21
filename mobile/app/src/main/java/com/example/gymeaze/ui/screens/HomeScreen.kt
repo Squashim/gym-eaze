@@ -76,6 +76,7 @@ import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -796,7 +797,7 @@ private fun StartedPlanCard(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Usuń plan", color = MaterialTheme.colorScheme.error) },
+                            text = { Text("Usuń plan", color = getErrorColor()) },
                             onClick = {
                                 showMenu = false
                                 showDeleteDialog = true
@@ -805,7 +806,7 @@ private fun StartedPlanCard(
                                 Icon(
                                     Icons.Default.DeleteOutline,
                                     contentDescription = "Usuń",
-                                    tint = MaterialTheme.colorScheme.error
+                                    tint = getErrorColor()
                                 )
                             }
                         )
@@ -825,13 +826,16 @@ private fun StartedPlanCard(
                         onDelete()
                         showDeleteDialog = false
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.textButtonColors(contentColor = getErrorColor())
                 ) {
                     Text("Usuń")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                TextButton(
+                    onClick = { showDeleteDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = getOnSurfaceColor())
+                ) {
                     Text("Anuluj")
                 }
             }
@@ -855,7 +859,10 @@ private fun StartedPlanCard(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
+                TextButton(
+                    onClick = { showResetDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = getOnSurfaceColor())
+                    ) {
                     Text("Anuluj")
                 }
             }
