@@ -43,6 +43,7 @@ fun WorkoutPlayerScreen(
     viewModel: WorkoutPlayerViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showExitConfirmationDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(userTrainingPlanId, dayNumber) {
         viewModel.loadWorkoutDay(userTrainingPlanId, dayNumber)
@@ -69,7 +70,7 @@ fun WorkoutPlayerScreen(
             if (uiState.playerState != PlayerState.SUMMARY) {
                 WorkoutPlayerAppBar(
                     state = uiState,
-                    onBackClick = onBackClick
+                    onBackClick = { showExitConfirmationDialog = true}
                 )
             }
         },
@@ -118,6 +119,37 @@ fun WorkoutPlayerScreen(
                         isPreviousEnabled = !(uiState.currentExerciseIndex == 0 && uiState.currentSetIndex == 0 && uiState.playerState == PlayerState.EXERCISE)
                     )
                 }
+            }
+
+            if (showExitConfirmationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showExitConfirmationDialog = false },
+                    title = { Text("Zakończyć trening?") },
+                    text = { Text("Czy na pewno chcesz wyjść? Postępy z tego dnia nie zostaną zapisane.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showExitConfirmationDialog = false
+                                viewModel.cleanup()
+                                onBackClick()
+                            },
+                            colors = ButtonDefaults.textButtonColors(contentColor = getErrorColor())
+                        ) {
+                            Text("Zakończ")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showExitConfirmationDialog = false },
+                            colors = ButtonDefaults.textButtonColors(contentColor = getOnSurfaceColor())
+                        ) {
+                            Text("Anuluj")
+                        }
+                    },
+                    containerColor = getSurfaceColor(),
+                    titleContentColor = getOnSurfaceColor(),
+                    textContentColor = getOnSurfaceSecondaryColor()
+                )
             }
         }
     }

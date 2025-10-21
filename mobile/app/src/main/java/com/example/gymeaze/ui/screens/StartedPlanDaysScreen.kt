@@ -160,7 +160,7 @@ fun StartedPlanDaysScreen(
                     ) {
                         Text(
                             text = uiState.error ?: "Wystąpił nieznany błąd",
-                            color = MaterialTheme.colorScheme.error,
+                            color = getErrorColor(),
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
