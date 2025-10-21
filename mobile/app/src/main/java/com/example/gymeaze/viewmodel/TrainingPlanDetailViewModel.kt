@@ -9,6 +9,7 @@ import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.ExerciseRepository
+import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import com.example.gymeaze.util.GlobalFavoriteState
 import kotlinx.coroutines.flow.*
@@ -20,7 +21,14 @@ data class TrainingPlanDetailUiState(
     val error: String? = null,
     val isDownloadingPdf: Boolean = false,
     val snackbarMessage: String? = null,
-    val snackbarType: SnackbarType = SnackbarType.ERROR
+    val snackbarType: SnackbarType = SnackbarType.ERROR,
+    val isStartingPlan: Boolean = false
+)
+
+data class NavigationEvent(
+    val userTrainingPlanId: String,
+    val planName: String,
+    val firstDayNumber: Int
 )
 
 enum class SnackbarType {
@@ -32,6 +40,8 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     private val repository = TrainingPlanRepository(application)
     private val authRepository = AuthRepository(application)
     private val exerciseRepository = ExerciseRepository(application)
+
+    private val startedTrainingRepository = StartedTrainingRepository(application)
     private val _uiState = MutableStateFlow(TrainingPlanDetailUiState())
     val uiState: StateFlow<TrainingPlanDetailUiState> = _uiState.asStateFlow()
 
@@ -41,6 +51,8 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     private val _downloadProgress = MutableStateFlow(0f)
     val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
 
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
     private suspend fun getCurrentUserLogin(): String? {
         return try {
             val userResult = authRepository.getCurrentUser()
@@ -315,5 +327,43 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun startTrainingPlan() {
+        val plan = _uiState.value.trainingPlan ?: return
+        val planId = plan.id
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isStartingPlan = true,
+                snackbarMessage = null,
+                error = null
+            )
+
+            val result = startedTrainingRepository.startTrainingPlan(planId)
+
+            result.onSuccess { response ->
+                val firstTrainingDay = plan.days.firstOrNull { !it.isRestDay }
+                val firstDayNumber = firstTrainingDay?.dayNumber ?: 1
+
+                _uiState.value = _uiState.value.copy(
+                    isStartingPlan = false
+                )
+                _navigationEvent.emit(
+                    NavigationEvent(
+                        userTrainingPlanId = response.userTrainingPlanId,
+                        planName = plan.name,
+                        firstDayNumber = firstDayNumber
+                    )
+                )
+
+            }.onFailure { exception ->
+                _uiState.value = _uiState.value.copy(
+                    isStartingPlan = false,
+                    snackbarMessage = exception.message ?: "Wystąpił błąd",
+                    snackbarType = SnackbarType.ERROR
+                )
+            }
+        }
     }
 }

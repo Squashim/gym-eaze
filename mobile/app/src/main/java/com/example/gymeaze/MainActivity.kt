@@ -27,7 +27,12 @@ import com.example.gymeaze.viewmodel.AuthViewModel
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import com.example.gymeaze.data.UserPreferences
@@ -37,8 +42,10 @@ import com.example.gymeaze.ui.screens.EditTrainingPlanScreen
 import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
 import com.example.gymeaze.ui.screens.FavoriteTrainingPlansScreen
 import com.example.gymeaze.ui.screens.MyTrainingPlansScreen
+import com.example.gymeaze.ui.screens.StartedPlanDaysScreen
 import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.TrainingPlansScreen
+import com.example.gymeaze.ui.screens.WorkoutPlayerScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
@@ -124,6 +131,11 @@ class MainActivity : ComponentActivity() {
             val selectedTrainingPlanId by authViewModel.selectedTrainingPlanId.collectAsState()
             val showEditTrainingPlan by authViewModel.showEditTrainingPlan.collectAsState()
             val selectedEditPlanId by authViewModel.selectedEditPlanId.collectAsState()
+
+            val showStartedPlanDays by authViewModel.showStartedPlanDays.collectAsState()
+            val selectedStartedPlan by authViewModel.selectedStartedPlan.collectAsState()
+            val showWorkoutPlayer by authViewModel.showWorkoutPlayer.collectAsState()
+            val selectedWorkoutParams by authViewModel.selectedWorkoutParams.collectAsState()
 
             val showPrivacySettings by userViewModel.showPrivacySettings.collectAsState()
             val showHelpScreen by userViewModel.showHelpScreen.collectAsState()
@@ -293,12 +305,32 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
+                            showWorkoutPlayer && selectedWorkoutParams != null -> {
+                                WorkoutPlayerScreen(
+                                    userTrainingPlanId = selectedWorkoutParams!!.first,
+                                    dayNumber = selectedWorkoutParams!!.second,
+                                    onBackClick = authViewModel::hideWorkoutPlayerScreen
+                                )
+                            }
+
                             showTrainingPlanDetail && selectedTrainingPlanId != null -> {
                                 TrainingPlanDetailScreen(
                                     planId = selectedTrainingPlanId!!,
                                     onBackClick = authViewModel::hideTrainingPlanDetailScreen,
                                     onExerciseClick = { exerciseId ->
                                         authViewModel.showExerciseDetailScreen(exerciseId)
+                                    },
+                                    navigateToWorkoutPlayer = authViewModel::navigateToWorkoutPlayer
+                                )
+                            }
+
+                            showStartedPlanDays && selectedStartedPlan != null -> {
+                                StartedPlanDaysScreen(
+                                    userTrainingPlanId = selectedStartedPlan!!.first,
+                                    planName = selectedStartedPlan!!.second,
+                                    onBackClick = authViewModel::hideStartedPlanDaysScreen,
+                                    onDayClick = { userTrainingPlanId, planName, dayNumber ->
+                                        authViewModel.showWorkoutPlayerScreen(userTrainingPlanId, dayNumber)
                                     }
                                 )
                             }
@@ -444,7 +476,8 @@ class MainActivity : ComponentActivity() {
                                     onMyPosts = authViewModel::showMyPostsScreen,
                                     onMyTrainingPlansClick = authViewModel::showMyTrainingPlansScreen,
                                     onBrowseTrainingPlansClick = authViewModel::showBrowseTrainingPlansScreen,
-                                    onFavoriteTrainingPlansClick = authViewModel::showFavoriteTrainingPlansScreen
+                                    onFavoriteTrainingPlansClick = authViewModel::showFavoriteTrainingPlansScreen,
+                                    onStartedPlanClick = { id, name -> authViewModel.showStartedPlanDaysScreen(id, name) }
                                 )
                             }
                         }

@@ -83,6 +83,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.foundation)
     implementation(libs.foundation)
+    implementation(libs.androidx.compose.material3.material3)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

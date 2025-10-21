@@ -52,7 +52,8 @@ fun TrainingPlanDetailScreen(
     onBackClick: () -> Unit,
     onExerciseClick: (String) -> Unit = {},
     viewModel: TrainingPlanDetailViewModel = viewModel(),
-    onUserClick: (String) -> Unit = {}
+    onUserClick: (String) -> Unit = {},
+    navigateToWorkoutPlayer: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -84,6 +85,12 @@ fun TrainingPlanDetailScreen(
                 duration = SnackbarDuration.Short
             )
             viewModel.clearSnackbarMessage()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { event ->
+            navigateToWorkoutPlayer(event.userTrainingPlanId, event.planName, event.firstDayNumber)
         }
     }
 
@@ -341,6 +348,17 @@ fun TrainingPlanDetailScreen(
                                 onDownloadPdf = viewModel::downloadPdf,
                                 isDownloadingPdf = isDownloadingPdf,
                                 trainingPlan = plan
+                            )
+                        }
+
+                        item {
+                            StartTrainingButton(
+                                isStarting = uiState.isStartingPlan,
+                                onClick = { viewModel.startTrainingPlan() },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 8.dp)
                             )
                         }
 
@@ -946,6 +964,48 @@ private fun ExerciseItem(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StartTrainingButton(
+    isStarting: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .height(52.dp),
+        enabled = !isStarting,
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = getPrimaryColor(),
+            contentColor = getOnPrimaryColor(),
+            disabledContainerColor = getPrimaryColor().copy(alpha = 0.5f)
+        )
+    ) {
+        if (isStarting) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(24.dp),
+                color = getOnPrimaryColor(),
+                strokeWidth = 2.dp
+            )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Rozpocznij plan treningowy",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }
