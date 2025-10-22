@@ -67,6 +67,7 @@ const PostDetails = ({
     data: likedComments,
     isLoading: isLikedCommentsLoading,
     isError: isLikedCommentsError,
+    refetch: refetchLikedComments,
   } = useGetLikedItems('comments');
   const { ref, inView } = useInView({
     threshold: 1,
@@ -151,11 +152,12 @@ const PostDetails = ({
 
   const handleCommentsRefresh = useCallback(async () => {
     await refetch();
+    await refetchLikedComments();
     if (postRef.current) {
       postRef.current.scrollIntoView({ behavior: 'smooth' });
     }
     toast.success('Komentarze zostały odświeżone');
-  }, [refetch]);
+  }, [refetch, refetchLikedComments]);
 
   const handleCommentReport = useCallback(
     (commentId: string) => {

@@ -38,6 +38,7 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
     data: likedComments,
     isLoading: isLikedCommentsLoading,
     isError: isLikedCommentsError,
+    refetch: refetchLikedComments,
   } = useGetLikedItems('comments');
   const { user } = useUser();
 
@@ -136,8 +137,9 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
 
   const handleCommentsRefresh = useCallback(async () => {
     await refetch();
+    await refetchLikedComments();
     toast.success('Komentarze zostały odświeżone');
-  }, [refetch]);
+  }, [refetch, refetchLikedComments]);
 
   const handleCommentReport = useCallback(
     (commentId: string) => {

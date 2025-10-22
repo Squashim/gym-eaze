@@ -4,6 +4,7 @@ import Post, { IPost } from '../models/postModel';
 import { CreatePostData, PostFilters, UpdatePostData } from '../types/post';
 import User from '../models/userModel';
 import { parseDescription } from '../utils/parsers';
+import { UserRole } from '../constants/roles';
 
 export const createPost = async (
   data: CreatePostData,
@@ -120,13 +121,18 @@ export const updatePostService = async (
 
 export const deletePostService = async (postId: string, userId: string): Promise<void> => {
   const post = await Post.findById(postId);
+  const user = await User.findById(userId);
 
-  if (!post) {
-    throw new Error('Post nie istnieje');
+  if (!user) {
+    throw new Error('USER_NOT_FOUND');
   }
 
-  if (post.author.toString() !== userId) {
-    throw new Error('Nie masz uprawnień do usunięcia tego posta');
+  if (!post) {
+    throw new Error('POST_NOT_FOUND');
+  }
+
+  if (user.role !== UserRole.admin && post.author.toString() !== userId.toString()) {
+    throw new Error('FORBIDDEN');
   }
 
   if (post.image) {

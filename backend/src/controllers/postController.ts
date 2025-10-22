@@ -107,7 +107,16 @@ export const deletePost = async (req: AuthPostRequest, res: Response) => {
     return res.status(200).json({ message: 'Post został usunięty' });
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(400).json({ message: error.message });
+      switch (error.message) {
+        case 'USER_NOT_FOUND':
+          return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
+        case 'POST_NOT_FOUND':
+          return res.status(404).json({ message: 'Nie znaleziono posta' });
+        case 'FORBIDDEN':
+          return res.status(403).json({ message: 'Brak uprawnień do usunięcia posta' });
+        default:
+          return res.status(400).json({ message: error.message });
+      }
     }
     return res.status(500).json({ message: 'Błąd podczas usuwania posta' });
   }

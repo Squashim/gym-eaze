@@ -46,12 +46,20 @@ export function parseExerciseLabel(count: number) {
   return parsePlurals(count, ['ćwiczenie', 'ćwiczenia', 'ćwiczeń']);
 }
 
+export function parseWorkoutLabel(count: number) {
+  return parsePlurals(count, ['plan', 'plany', 'planów']);
+}
+
 export function parseAgeLabel(count: number) {
   return parsePlurals(count, ['rok', 'lata', 'lat']);
 }
 
 export function parsePersonReportedLabel(count: number) {
   return parsePlurals(count, ['osoba zgłosiła', 'osoby zgłosiły', 'osób zgłosiło']);
+}
+
+export function parseNotificationsLabel(count: number) {
+  return parsePlurals(count, ['nowe powiadomienie', 'nowe powiadomienia', 'nowych powiadomień']);
 }
 
 export function parseWorkoutDurationLabel(days: number) {

@@ -21,29 +21,31 @@ import { Ban, ChevronsUpDown, Eraser, ExternalLink, Info, Loader2, Trash2 } from
 import { useCallback, useState } from 'react';
 import Report from './report-item';
 import PostDetails from '../posts/post-details';
+import { useNotification } from '@/hooks/query/notifications/use-notification';
+import { cn, getApiErrorMsg, isReportsQuery } from '@/lib/utils';
+import { toast } from 'sonner';
+import queryClient from '@/config/query-client';
+import { useAdmin } from '@/hooks/query/admin/use-admin';
 
 interface ReportGroupProps {
   report: GetReportsApiResponse;
+  isAuthor: boolean;
 }
 
-function ReportGroup({ report }: ReportGroupProps) {
+function ReportGroup({ report, isAuthor }: ReportGroupProps) {
   const postDialog = useOpen();
-  const { upedateReportStatus, deleteReport } = useReport();
+  const blockUserDialog = useOpen();
+  const deleteContentDialog = useOpen();
+  const { createNotification } = useNotification();
+  const { updateReportStatus, deleteReport } = useReport();
+  const { blockUser, deleteContent } = useAdmin();
+
   const [showReportsDetails, setShowReportsDetails] = useState(false);
 
-  const [dialog, setDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    confirmLabel: string;
-    onConfirm: () => void;
-  }>({
-    open: false,
-    title: '',
-    description: '',
-    confirmLabel: '',
-    onConfirm: () => {},
-  });
+  const [warnLoading, setWarnLoading] = useState(false);
+  const [dismissLoading, setDismissLoading] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [contentDeleteLoading, setContentDeleteLoading] = useState(false);
 
   const {
     data: reportItems,
@@ -77,48 +79,182 @@ function ReportGroup({ report }: ReportGroupProps) {
     setShowReportsDetails((prev) => !prev);
   }, []);
 
-  const openDeleteDialog = () =>
-    setDialog({
-      open: true,
-      title: `Usunięcie treści (${report.reportedItemType})`,
-      description:
-        'Ta operacja jest nieodwracalna. Autor otrzyma powiadomienie o usunięciu treści. Czy na pewno chcesz kontynuować?',
-      confirmLabel: 'Usuń treść',
-      onConfirm: handleDeleteContent,
-    });
-
-  const openBlockDialog = () =>
-    setDialog({
-      open: true,
-      title: `Blokada użytkownika @${report.reportedItem.author.username}`,
-      description: 'Użytkownik zostanie zablokowany i nie będzie mógł korzystać z platformy.',
-      confirmLabel: 'Zablokuj użytkownika',
-      onConfirm: handleBlockUser,
-    });
-
   const handleShowPost = useCallback(() => {
     postDialog.open();
   }, [postDialog]);
 
-  const handleWarn = useCallback(() => {
-    // TODO: implement warn action
-  }, []);
+  const handleWarn = useCallback(async () => {
+    try {
+      setWarnLoading(true);
+      const rawContent = report.reportedItem.content || report.reportedItem.name || '';
+      const displayContent = rawContent.length > 50 ? rawContent.slice(0, 50) + '...' : rawContent;
 
-  const handleDismiss = useCallback(() => {
-    upedateReportStatus.mutate({
-      itemId: report.reportedItemId,
-      itemType: report.reportedItemType,
-      status: ReportStatus.dismissed,
-    });
-  }, [upedateReportStatus, report.reportedItemId, report.reportedItemType]);
+      await createNotification.mutateAsync({
+        to: report.reportedItem.author._id,
+        type: 'Ostrzeżenie',
+        from: 'Administrator',
+        message: `Twoja treść (${report.reportedItemType}) - '${displayContent}' została zgłoszona przez innych użytkowników i narusza nasze wytyczne. Prosimy o zapoznanie się z zasadami i dostosowanie swojej aktywności na platformie, aby uniknąć dalszych konsekwencji.`,
+      });
 
-  const handleDeleteContent = useCallback(() => {
-    // TODO: implement delete content action
-  }, []);
+      await updateReportStatus.mutateAsync({
+        itemId: report.reportedItemId,
+        itemType: report.reportedItemType,
+        status: ReportStatus.resolved,
+      });
 
-  const handleBlockUser = useCallback(() => {
-    // TODO: implement block user action
-  }, []);
+      await queryClient.invalidateQueries({
+        predicate: (query) => isReportsQuery(query.queryKey),
+      });
+
+      toast.success('Ostrzeżenie zostało wysłane do użytkownika');
+    } catch (error) {
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          'Wystąpił nieoczekiwany błąd podczas wysyłania ostrzeżenia. Spróbuj ponownie później.',
+        );
+      }
+    } finally {
+      setWarnLoading(false);
+    }
+  }, [
+    createNotification,
+    updateReportStatus,
+    report.reportedItem.author._id,
+    report.reportedItemType,
+    report.reportedItemId,
+    report.reportedItem.content,
+    report.reportedItem.name,
+  ]);
+
+  const handleDismiss = useCallback(async () => {
+    try {
+      setDismissLoading(true);
+      await updateReportStatus.mutateAsync({
+        itemId: report.reportedItemId,
+        itemType: report.reportedItemType,
+        status: ReportStatus.dismissed,
+      });
+
+      await queryClient.invalidateQueries({
+        predicate: (query) => isReportsQuery(query.queryKey),
+      });
+
+      toast.success('Zgłoszenie zostało ustawione jako odrzucone');
+    } catch (error) {
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          'Wystąpił nieoczekiwany błąd podczas odrzucania zgłoszenia. Spróbuj ponownie później.',
+        );
+      }
+    } finally {
+      setDismissLoading(false);
+    }
+  }, [updateReportStatus, report.reportedItemId, report.reportedItemType]);
+
+  const handleDeleteContent = useCallback(async () => {
+    try {
+      setContentDeleteLoading(true);
+      const rawContent = report.reportedItem.content || report.reportedItem.name || '';
+      const displayContent = rawContent.length > 50 ? rawContent.slice(0, 50) + '...' : rawContent;
+
+      await deleteContent.mutateAsync({
+        itemId: report.reportedItemId,
+        itemType: report.reportedItemType,
+      });
+
+      await createNotification.mutateAsync({
+        to: report.reportedItem.author._id,
+        type: 'Informacja',
+        from: 'Administrator',
+        message: `Twoja treść (${report.reportedItemType}) - '${displayContent}' została usunięta z powodu naruszenia wytycznych. Dziękujemy za zrozumienie i zachęcamy do zapoznania się z zasadami platformy.`,
+      });
+
+      await updateReportStatus.mutateAsync({
+        itemId: report.reportedItemId,
+        itemType: report.reportedItemType,
+        status: ReportStatus.resolved,
+      });
+
+      await queryClient.invalidateQueries({
+        predicate: (query) => isReportsQuery(query.queryKey),
+      });
+
+      toast.success('Treść została pomyślnie usunięta');
+    } catch (error) {
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          'Wystąpił nieoczekiwany błąd podczas usuwania treści. Spróbuj ponownie później.',
+        );
+      }
+    } finally {
+      setContentDeleteLoading(false);
+    }
+  }, [
+    report.reportedItemType,
+    report.reportedItemId,
+    report.reportedItem.content,
+    report.reportedItem.name,
+    report.reportedItem.author._id,
+    createNotification,
+    updateReportStatus,
+    deleteContent,
+  ]);
+
+  const handleBlockUser = useCallback(async () => {
+    try {
+      setBlockLoading(true);
+
+      await deleteContent.mutateAsync({
+        itemId: report.reportedItemId,
+        itemType: report.reportedItemType,
+      });
+
+      await blockUser.mutateAsync(report.reportedItem.author._id);
+
+      await updateReportStatus.mutateAsync({
+        itemId: report.reportedItemId,
+        itemType: report.reportedItemType,
+        status: ReportStatus.resolved,
+      });
+
+      await queryClient.invalidateQueries({
+        predicate: (query) => isReportsQuery(query.queryKey),
+      });
+
+      toast.success('Użytkownik został zablokowany');
+    } catch (error) {
+      const errorMsg = getApiErrorMsg(error);
+
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          'Wystąpił nieoczekiwany błąd podczas blokowania użytkownika. Spróbuj ponownie później.',
+        );
+      }
+    } finally {
+      setBlockLoading(false);
+    }
+  }, [
+    report.reportedItemId,
+    report.reportedItemType,
+    report.reportedItem.author._id,
+    blockUser,
+    updateReportStatus,
+    deleteContent,
+  ]);
 
   const handleRemoveReports = useCallback(() => {
     deleteReport.mutate({
@@ -129,19 +265,31 @@ function ReportGroup({ report }: ReportGroupProps) {
 
   return (
     <>
-      <div className="rounded-md grid grid-cols-1  md:grid-cols-[1fr_0.25fr] gap-4 p-4 shadow-md border bg-card text-card-foreground">
+      <div className="rounded-md grid grid-cols-1 md:grid-cols-[1fr_0.25fr] gap-4 p-4 shadow-md border bg-card text-card-foreground">
         <div className="flex flex-col gap-4 flex-1">
           <div className="flex flex-1 w-full items-center gap-3 flex-wrap">
             <ReportStatusBadge status={report.status} />
             <Badge className="min-h-7" variant="accent">
               {parsePersonReportedLabel(report.count)}
             </Badge>
-            <Typography className="text-xs" variant="muted">
-              Ostatnie zgłoszenie: {parseTimeAgo(report.lastReportedAt)}
-            </Typography>
+            <div className="flex items-center gap-1 flex-wrap">
+              <Typography className="text-xs" variant="muted">
+                Ostatnie zgłoszenie: {parseTimeAgo(report.lastReportedAt)}
+              </Typography>
+              {report.reviewedAt && (
+                <Typography className="text-xs" variant="muted">
+                  •
+                </Typography>
+              )}
+              {report.reviewedAt && (
+                <Typography className="text-xs" variant="muted">
+                  Rozpatrzono: {parseTimeAgo(report.reviewedAt)}
+                </Typography>
+              )}
+            </div>
           </div>
 
-          <div className="flex flex-col gap-4 bg-accent/50 text-accent-foreground p-4 rounded-xl">
+          <div className="flex flex-col gap-4 bg-accent/50 text-accent-foreground p-4 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <InfoField className="flex-row items-center gap-2" label="Zgłoszono">
                 <ItemTypeBadge type={report.reportedItemType} />
@@ -179,6 +327,14 @@ function ReportGroup({ report }: ReportGroupProps) {
                   {report.reportedItem.author.username}
                 </a>
               </Button>
+
+              {report.reportedItem.author.isBlocked && (
+                <Badge className="w-fit" variant="destructive">
+                  <Ban className="mr-1 size-3" />
+                  Użytkownik zablokowany
+                </Badge>
+              )}
+
               <Typography className="text-xs" variant="muted">
                 {`Dodane: ${new Date(report.reportedItem.createdAt).toLocaleString()}`}
               </Typography>
@@ -187,11 +343,16 @@ function ReportGroup({ report }: ReportGroupProps) {
         </div>
 
         <ReportGroupActions
-          isLoading={upedateReportStatus.isPending || deleteReport.isPending}
+          isAuthor={isAuthor}
+          isClearReportLoading={deleteReport.isPending}
+          isDismissLoading={dismissLoading}
+          isLoading={dismissLoading || deleteReport.isPending || warnLoading}
           isPendingStatus={report.status === ReportStatus.pending}
           isReportsShown={showReportsDetails}
-          onBlockUser={openBlockDialog}
-          onDeleteContent={openDeleteDialog}
+          isUserBlocked={report.reportedItem.author.isBlocked}
+          isWarnLoading={warnLoading}
+          onBlockUser={blockUserDialog.open}
+          onDeleteContent={deleteContentDialog.open}
           onDismiss={handleDismiss}
           onRemoveReports={handleRemoveReports}
           onToggleReports={handleToggleReportsDetails}
@@ -251,15 +412,25 @@ function ReportGroup({ report }: ReportGroupProps) {
 
       <ReusableAlertDialog
         cancelLabel="Anuluj"
-        confirmLabel={dialog.confirmLabel}
-        description={dialog.description}
-        onClose={() => setDialog((d) => ({ ...d, open: false }))}
-        onConfirm={() => {
-          dialog.onConfirm();
-          setDialog((d) => ({ ...d, open: false }));
-        }}
-        open={dialog.open}
-        title={dialog.title}
+        confirmLabel="Zablokuj użytkownika"
+        description="Użytkownik zostanie zablokowany i nie będzie mógł korzystać z platformy. Ta operacja jest nieodwracalna."
+        isLoading={blockLoading}
+        onClose={blockUserDialog.close}
+        onConfirm={handleBlockUser}
+        open={blockUserDialog.isOpen}
+        title={`Blokada użytkownika ${report.reportedItem.author.username}`}
+        variant="destructive"
+      />
+
+      <ReusableAlertDialog
+        cancelLabel="Anuluj"
+        confirmLabel="Usuń treść"
+        description="Ta operacja jest nieodwracalna. Autor otrzyma powiadomienie o usunięciu treści. Czy na pewno chcesz kontynuować?"
+        isLoading={contentDeleteLoading}
+        onClose={deleteContentDialog.close}
+        onConfirm={handleDeleteContent}
+        open={deleteContentDialog.isOpen}
+        title={`Usunięcie treści (${report.reportedItemType})`}
         variant="destructive"
       />
     </>
@@ -339,7 +510,12 @@ function ShowReportedItem({
 interface ReportGroupActionsProps {
   isPendingStatus: boolean;
   isLoading: boolean;
+  isClearReportLoading: boolean;
+  isWarnLoading: boolean;
+  isDismissLoading: boolean;
+  isAuthor: boolean;
   isReportsShown: boolean;
+  isUserBlocked?: boolean;
   onWarn: () => void;
   onDismiss: () => void;
   onDeleteContent: () => void;
@@ -352,6 +528,11 @@ function ReportGroupActions({
   isPendingStatus,
   isReportsShown,
   isLoading,
+  isClearReportLoading,
+  isWarnLoading,
+  isDismissLoading,
+  isAuthor,
+  isUserBlocked,
   onWarn,
   onDismiss,
   onDeleteContent,
@@ -363,27 +544,41 @@ function ReportGroupActions({
     <div className="flex flex-col gap-2 h-full ">
       {isPendingStatus ? (
         <>
-          <Button disabled={isLoading} onClick={onWarn}>
-            Wyślij ostrzeżenie do autora
+          {!isAuthor && !isUserBlocked && (
+            <Button disabled={isLoading} onClick={onWarn}>
+              {isWarnLoading && <Loader2 className="animate-spin" />}
+              {isWarnLoading ? 'Wysyłanie...' : 'Wyślij ostrzeżenie do autora'}
+            </Button>
+          )}
+
+          <Button
+            className={cn((isAuthor || isUserBlocked) && 'mt-11')}
+            disabled={isLoading}
+            onClick={onDismiss}
+            variant="outline"
+          >
+            {isDismissLoading && <Loader2 className="animate-spin" />}
+            {isDismissLoading ? 'Odrzucanie...' : 'Odrzuć zgłoszenie'}
           </Button>
-          <Button disabled={isLoading} onClick={onDismiss} variant="outline">
-            {isLoading && <Loader2 className="animate-spin" />}
-            {isLoading ? 'Odrzucanie...' : 'Odrzuć zgłoszenie'}
-          </Button>
-          <Separator className="my-2 rounded-md" />
-          <Button disabled={isLoading} onClick={onDeleteContent} variant="destructive">
-            <Trash2 />
-            Usuń treść
-          </Button>
-          <Button disabled={isLoading} onClick={onBlockUser} variant="destructive">
-            <Ban />
-            Zablokuj autora
-          </Button>
+
+          {!isAuthor && !isUserBlocked && (
+            <>
+              <Separator className="my-2 rounded-md" />
+              <Button disabled={isLoading} onClick={onDeleteContent} variant="destructive">
+                <Trash2 />
+                Usuń treść
+              </Button>
+              <Button disabled={isLoading} onClick={onBlockUser} variant="destructive">
+                <Ban />
+                Zablokuj autora i usuń treść
+              </Button>
+            </>
+          )}
         </>
       ) : (
-        <Button disabled={isLoading} onClick={onRemoveReports}>
-          {isLoading ? <Loader2 className="animate-spin" /> : <Eraser />}
-          {isLoading ? 'Usuwanie...' : 'Usuń zgłoszenie z listy'}
+        <Button className="mt-11" disabled={isLoading} onClick={onRemoveReports}>
+          {isClearReportLoading ? <Loader2 className="animate-spin" /> : <Eraser />}
+          {isClearReportLoading ? 'Usuwanie...' : 'Usuń zgłoszenie z listy'}
         </Button>
       )}
       <Separator className="my-2 rounded-md" />

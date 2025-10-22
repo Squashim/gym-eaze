@@ -18,6 +18,7 @@ import User from '../models/userModel';
 import puppeteer from 'puppeteer';
 import { generateTrainingPlanHTML } from '../utils/trainingPlanPDF';
 import { getExercisesByIdsService } from './exerciseService';
+import { UserRole } from '../constants/roles';
 
 export const createTrainingPlan = async (
   data: CreateTrainingPlanData,
@@ -63,17 +64,22 @@ export const createTrainingPlan = async (
 
 export const deleteTrainingPlan = async (planId: string, userId: string) => {
   const plan = await TrainingPlan.findById(planId);
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error('Użytkownik nie znaleziony');
+  }
 
   if (!plan) {
-    throw new Error('NOT_FOUND');
+    throw new Error('Plan treningowy nie znaleziony');
   }
 
-  if (plan.author.toString() !== userId.toString()) {
-    return false;
+  if (user.role === UserRole.admin || plan.author.toString() === userId.toString()) {
+    await plan.deleteOne();
+    return true;
   }
 
-  await plan.deleteOne();
-  return true;
+  return false;
 };
 
 export const getFavoriteTrainingPlansService = async (

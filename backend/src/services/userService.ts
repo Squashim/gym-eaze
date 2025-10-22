@@ -449,6 +449,7 @@ export const getUserProfileService = async (
     description: user.profileDetails?.description || null,
     followersCount: user.followers.length,
     followingCount: user.followedUsers.length,
+    isBlocked: user?.isBlocked || null,
   };
 
   if (isOwnProfile || user.privacySettings.isGoalPublic) {

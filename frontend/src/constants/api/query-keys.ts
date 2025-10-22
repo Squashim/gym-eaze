@@ -16,6 +16,7 @@ export const QUERY_KEYS = {
   USER_BADGES: ['user', 'badges'],
   USER_FOLLOWERS: ['user', 'followers'],
   USER_FOLLOWING: ['user', 'following'],
+  USER_NOTIFICATIONS: ['user', 'notifications'],
 
   USER_PROFILE: (username: string) => ['user', 'profile', username],
 

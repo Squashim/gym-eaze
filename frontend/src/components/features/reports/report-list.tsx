@@ -3,6 +3,8 @@ import ReportGroup from './report-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { useUser } from '@/context/user';
+import { useCallback } from 'react';
 
 interface ReportListProps {
   isLoading: boolean;
@@ -11,6 +13,19 @@ interface ReportListProps {
 }
 
 function ReportList({ isLoading, isError, reports }: ReportListProps) {
+  const { user } = useUser();
+
+  const isAuthor = useCallback(
+    (reportAuthorId: string) => {
+      if (!user) {
+        return false;
+      }
+
+      return user._id === reportAuthorId;
+    },
+    [user],
+  );
+
   if (isLoading) {
     return Array.from({ length: 5 }).map((_, index) => (
       <Skeleton className="h-[280px]" key={index} />
@@ -37,7 +52,13 @@ function ReportList({ isLoading, isError, reports }: ReportListProps) {
     );
   }
 
-  return reports.map((report) => <ReportGroup key={report.reportedItemId} report={report} />);
+  return reports.map((report) => (
+    <ReportGroup
+      isAuthor={isAuthor(report.reportedItem.author._id)}
+      key={report.reportedItemId}
+      report={report}
+    />
+  ));
 }
 
 export default ReportList;

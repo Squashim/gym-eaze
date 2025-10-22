@@ -20,6 +20,7 @@ export interface IUser extends Document {
   password: string;
   lastLoginAt?: Date;
   role: UserRole;
+  isBlocked?: boolean;
   likes: {
     trainingPlans: (Types.ObjectId | ITrainingPlan)[];
     exercises: (Types.ObjectId | IExercise)[];
@@ -89,6 +90,9 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       required: true,
       unique: true,
+    },
+    isBlocked: {
+      type: Boolean,
     },
     password: {
       type: String,

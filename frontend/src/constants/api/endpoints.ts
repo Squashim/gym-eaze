@@ -65,11 +65,20 @@ export const USER = {
   toggleFollow: (id: string) => `user/${id}/follow`,
 };
 
+export const ADMIN = {
+  deleteContent: (itemId: string, itemType: ItemType) => `admin/content/${itemId}/${itemType}`,
+  blockUser: (userId: string) => `admin/users/${userId}/block`,
+};
+
 export const REPORT = {
   base: 'reports',
   search: 'reports/search',
   byReport: (itemId: string, itemType: ItemType) => `reports/item/${itemId}/${itemType}`,
   updateStatus: (itemId: string, itemType: ItemType) => `reports/item/${itemId}/${itemType}/status`,
+};
+
+export const NOTIFICATION = {
+  base: 'notifications',
 };
 
 export const UTILS = {

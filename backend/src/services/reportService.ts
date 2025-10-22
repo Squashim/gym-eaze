@@ -12,6 +12,8 @@ import { PageSize } from '../types/trainingPlan';
 import User from '../models/userModel';
 import { UserRole } from '../constants/roles';
 import { StatusReport, statusReportValues } from '../constants/statuses';
+import { sendNotificationService } from './notificationService';
+import { Notifications } from '../constants/notifications';
 
 export const createReportService = async (data: CreateReportPayload, userId: string) => {
   const { reportedItemId, reportedItemType, reportType, reason } = data;
@@ -112,6 +114,7 @@ export const getAllReportsService = async (
         count: { $sum: 1 },
         status: { $first: '$status' },
         lastReportedAt: { $max: '$createdAt' },
+        reviewedAt: { $first: '$reviewedAt' },
       },
     },
     {
@@ -137,6 +140,7 @@ export const getAllReportsService = async (
         count: 1,
         status: 1,
         lastReportedAt: 1,
+        reviewedAt: 1,
         reportedItemId: '$_id.reportedItemId',
         reportedItemType: '$_id.reportedItemType',
       },
@@ -150,22 +154,22 @@ export const getAllReportsService = async (
     switch (reportedItemType) {
       case CommentParentType.exercise:
         reportedItem = await Exercise.findById(reportedItemId)
-          .populate('author', 'username profileDetails.profilePicture')
+          .populate('author', 'username profileDetails.profilePicture isBlocked')
           .select('name author createdAt');
         break;
       case CommentParentType.training:
         reportedItem = await TrainingPlan.findById(reportedItemId)
-          .populate('author', 'username profileDetails.profilePicture')
+          .populate('author', 'username profileDetails.profilePicture isBlocked')
           .select('name author createdAt');
         break;
       case CommentParentType.post:
         reportedItem = await Post.findById(reportedItemId)
-          .populate('author', 'username profileDetails.profilePicture')
+          .populate('author', 'username profileDetails.profilePicture isBlocked')
           .select('content author createdAt');
         break;
       case CommentParentType.comment:
         reportedItem = await Comment.findById(reportedItemId)
-          .populate('author', 'username profileDetails.profilePicture')
+          .populate('author', 'username profileDetails.profilePicture isBlocked')
           .select('content author parentType parentId createdAt');
 
         if (reportedItem && reportedItem.parentType === CommentParentType.comment) {
@@ -286,6 +290,54 @@ export const updateReportStatusForItemService = async (
 
   if (result.matchedCount === 0) {
     throw new Error('REPORTS_NOT_FOUND');
+  }
+
+  if (status === StatusReport.resolved) {
+    let itemDetails = '';
+    switch (currentReports.reportedItemType) {
+      case CommentParentType.exercise: {
+        const exercise = await Exercise.findById(reportedItemId).select('name');
+        itemDetails = exercise
+          ? `Ćwiczenie: "${exercise.name.length > 50 ? exercise.name.slice(0, 50) + '...' : exercise.name}"`
+          : 'Ćwiczenie';
+        break;
+      }
+      case CommentParentType.training: {
+        const training = await TrainingPlan.findById(reportedItemId).select('name');
+        itemDetails = training
+          ? `Plan treningowy: "${training.name.length > 50 ? training.name.slice(0, 50) + '...' : training.name}"`
+          : 'Plan treningowy';
+        break;
+      }
+      case CommentParentType.post: {
+        const post = await Post.findById(reportedItemId).select('content ');
+        itemDetails = post
+          ? `Post: "${post.content.length > 50 ? post.content.slice(0, 50) + '...' : post.content}"`
+          : 'Post';
+        break;
+      }
+      case CommentParentType.comment: {
+        const comment = await Comment.findById(reportedItemId).select('content');
+        itemDetails = comment
+          ? `Komentarz: "${comment.content.length > 50 ? comment.content.slice(0, 50) + '...' : comment.content}"`
+          : 'Komentarz';
+        break;
+      }
+    }
+
+    const reporters = await Report.find({
+      reportedItemId,
+      reportedItemType,
+    }).distinct('reporterId');
+
+    for (const reporterId of reporters) {
+      await sendNotificationService(
+        `Twoje zgłoszenie dotyczące (${itemDetails}) zostało rozpatrzone pozytywnie. Dziękujemy za pomoc w dbaniu o społeczność!`,
+        reporterId.toString(),
+        Notifications.info,
+        'System',
+      );
+    }
   }
 
   return {

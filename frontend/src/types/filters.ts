@@ -54,6 +54,7 @@ export interface CursorPaginatedResponse<T> {
   items: T[];
   hasMore: boolean;
   nextCursor: string | null;
+  total?: number;
 }
 
 export type PostQueryParams = {

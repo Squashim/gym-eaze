@@ -83,8 +83,8 @@ export const deleteTrainingPlan = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({ message: 'Plan treningowy został usunięty' });
   } catch (err) {
-    if (err instanceof Error && err.message === 'NOT_FOUND') {
-      return res.status(404).json({ message: 'Plan treningowy nie znaleziony' });
+    if (err instanceof Error) {
+      return res.status(404).json({ message: err.message });
     }
     res.status(500).json({ message: 'Błąd serwera' });
   }

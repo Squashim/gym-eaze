@@ -73,8 +73,8 @@ export const deleteExercise = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({ message: 'Ćwiczenie zostało usunięte' });
   } catch (err) {
-    if (err instanceof Error && err.message === 'NOT_FOUND') {
-      return res.status(404).json({ message: 'Ćwiczenie nie znalezione' });
+    if (err instanceof Error) {
+      return res.status(404).json({ message: err.message });
     }
     res.status(500).json({ message: 'Błąd serwera' });
   }

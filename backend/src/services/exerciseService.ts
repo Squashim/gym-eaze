@@ -12,6 +12,7 @@ import {
   UpdateExerciseData,
 } from '../types/exercise';
 import { PrivacySettings } from '../constants/privacySettings';
+import { UserRole } from '../constants/roles';
 
 export const createExercise = async (
   data: CreateExerciseData,
@@ -33,17 +34,22 @@ export const createExercise = async (
 
 export const deleteExercise = async (exerciseId: string, userId: string) => {
   const exercise = await Exercise.findById(exerciseId);
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error('Użytkownik nie znaleziony');
+  }
 
   if (!exercise) {
-    throw new Error('NOT_FOUND');
+    throw new Error('Ćwiczenie nie znalezione');
   }
 
-  if (exercise.author.toString() !== userId.toString()) {
-    return false;
+  if (user.role === UserRole.admin || exercise.author.toString() === userId.toString()) {
+    await exercise.deleteOne();
+    return true;
   }
 
-  await exercise.deleteOne();
-  return true;
+  return false;
 };
 
 export const updateExercise = async (

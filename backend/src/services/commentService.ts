@@ -9,6 +9,7 @@ import {
   MainCommentParentTypes,
 } from '../constants/commentType';
 import User from '../models/userModel';
+import { UserRole } from '../constants/roles';
 
 export const createCommentService = async (
   content: string,
@@ -122,15 +123,20 @@ export const deleteCommentService = async (commentId: string, userId: string) =>
   }
 
   const comment = await CommentModel.findById(commentId);
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error('USER_NOT_FOUND');
+  }
 
   if (!comment) {
-    throw new Error('Komentarz/odpowiedź nie istnieje');
+    throw new Error('COMMENT_NOT_FOUND');
   }
 
   const isReply = comment.parentType === CommentParentType.comment;
 
-  if (comment.author.toString() !== userId) {
-    throw new Error('Brak uprawnień do usunięcia tego komentarza/odpowiedzi');
+  if (user.role !== UserRole.admin && comment.author.toString() !== userId.toString()) {
+    throw new Error('FORBIDDEN');
   }
 
   if (comment.parentType === CommentParentType.comment) {

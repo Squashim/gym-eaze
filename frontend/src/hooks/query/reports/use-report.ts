@@ -27,23 +27,6 @@ export function useReport() {
 
   const updateStatusMutation = useMutation({
     mutationFn: (payload: UpdateReportStatusPayload) => updateStatus(payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        predicate: (query) => isReportsQuery(query.queryKey),
-      });
-      toast.success('Zgłoszenie zostało ustawione jako odrzucone');
-    },
-    onError: (error) => {
-      const errorMsg = getApiErrorMsg(error);
-
-      if (errorMsg) {
-        toast.error(errorMsg);
-      } else {
-        toast.error(
-          'Wystąpił nieoczekiwany błąd podczas wysyłania zgłoszenia. Spróbuj ponownie później.',
-        );
-      }
-    },
   });
 
   const deleteReportMutation = useMutation({
@@ -70,7 +53,7 @@ export function useReport() {
 
   return {
     createReport: createMutation,
-    upedateReportStatus: updateStatusMutation,
+    updateReportStatus: updateStatusMutation,
     deleteReport: deleteReportMutation,
   };
 }

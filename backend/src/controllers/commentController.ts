@@ -81,7 +81,18 @@ export const deleteComment = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(400).json({ message: error.message });
+      switch (error.message) {
+        case 'USER_NOT_FOUND':
+          return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
+        case 'COMMENT_NOT_FOUND':
+          return res.status(404).json({ message: 'Nie znaleziono komentarza/odpowiedzi' });
+        case 'FORBIDDEN':
+          return res
+            .status(403)
+            .json({ message: 'Brak uprawnień do usunięcia komentarza/odpowiedzi' });
+        default:
+          return res.status(400).json({ message: error.message });
+      }
     }
     return res.status(500).json({
       message: 'Wystąpił niezidetyfikowany błąd podczas usuwania komentarza/odpowiedzi',

@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 interface ReusableAlertDialogProps {
@@ -82,7 +83,7 @@ const ReusableAlertDialog = ({
             }}
             variant={variant}
           >
-            {isLoading ? 'Usuwanie...' : confirmLabel}
+            {isLoading ? <Loader2 className="animate-spin" /> : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

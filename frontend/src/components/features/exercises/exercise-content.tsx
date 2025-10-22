@@ -12,6 +12,7 @@ import type {
 } from '@/types/filters';
 import ItemsSkeleton from '@/components/ui/items-skeleton';
 import { cn } from '@/lib/utils';
+import { parseExerciseLabel } from '@/lib/parsers';
 
 type ExerciseContentProps = {
   pagination: {
@@ -52,7 +53,7 @@ const ExerciseContent = ({
       case 'profile':
         return `Ćwiczenia użytkownika: ${exercises?.total ?? 0}`;
       default:
-        return `Znaleziono ${exercises?.total ?? 0} ćwiczeń`;
+        return `Znaleziono ${parseExerciseLabel(exercises?.total ?? 0)}`;
     }
   };
 

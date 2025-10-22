@@ -12,6 +12,7 @@ import { useMemo, useRef } from 'react';
 import WorkoutList from './workout-list';
 import ItemsSkeleton from '@/components/ui/items-skeleton';
 import { cn } from '@/lib/utils';
+import { parseWorkoutLabel } from '@/lib/parsers';
 
 interface WorkoutContentProps {
   workouts?: {
@@ -52,7 +53,7 @@ function WorkoutContent({
       case 'profile':
         return `Plany użytkownika: ${workouts?.total ?? 0}`;
       default:
-        return `Znaleziono ${workouts?.total ?? 0} planów`;
+        return `Znaleziono ${parseWorkoutLabel(workouts?.total ?? 0)}`;
     }
   };
 
