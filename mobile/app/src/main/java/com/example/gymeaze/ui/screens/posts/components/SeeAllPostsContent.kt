@@ -1,4 +1,5 @@
 package com.example.gymeaze.ui.screens.posts.components
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,12 +21,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.screens.comments.CommentsPanel
 import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
+import com.example.gymeaze.viewmodel.ReportItemType
+import com.example.gymeaze.viewmodel.ReportViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,10 +61,16 @@ fun SeeAllPostsContent(
     var showCommentsSheet by remember { mutableStateOf(false) }
     var selectedPostId by remember { mutableStateOf<String?>(null) }
 
+    // ← DODAJ STANY DLA ZGŁASZANIA
+    var showReportDialog by remember { mutableStateOf(false) }
+    var itemToReport by remember { mutableStateOf<String?>(null) }
+    var reportItemType by remember { mutableStateOf<ReportItemType?>(null) }
+
     val listState = rememberLazyListState()
     val isDarkTheme = LocalDarkTheme.current
 
     val viewModel: PostsViewModel = viewModel()
+    val reportViewModel: ReportViewModel = viewModel() // ← DODAJ REPORT VIEW MODEL
 
     Scaffold(
         topBar = {
@@ -258,7 +268,11 @@ fun SeeAllPostsContent(
                                         selectedPostId = post.id
                                         showCommentsSheet = true
                                     },
-
+                                    onReportClick = { // ← DODAJ TO
+                                        itemToReport = post.id
+                                        reportItemType = ReportItemType.POST
+                                        showReportDialog = true
+                                    }
                                 )
 
                                 if (index == posts.size - 3) {
@@ -298,10 +312,31 @@ fun SeeAllPostsContent(
                                     showCommentsSheet = false
                                     onRefreshPosts()
                                 },
-                                currentUsername = currentUsername
+                                currentUsername = currentUsername,
+                                reportViewModel = reportViewModel, // ← DODAJ TO
+                                onReportComment = { commentId -> // ← DODAJ TO
+                                    itemToReport = commentId
+                                    reportItemType = ReportItemType.COMMENT
+                                    showReportDialog = true
+                                }
                             )
                         }
                     }
+                }
+
+                // ← DODAJ DIALOG ZGŁASZANIA
+                if (showReportDialog && itemToReport != null && reportItemType != null) {
+                    ReportDialog(
+                        itemId = itemToReport!!,
+                        itemType = reportItemType!!,
+                        onDismiss = {
+                            showReportDialog = false
+                            itemToReport = null
+                            reportItemType = null
+                            reportViewModel.resetState()
+                        },
+                        viewModel = reportViewModel
+                    )
                 }
             }
         }

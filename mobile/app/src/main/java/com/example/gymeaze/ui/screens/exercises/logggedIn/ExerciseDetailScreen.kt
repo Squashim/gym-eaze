@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
@@ -43,9 +44,12 @@ import com.example.gymeaze.data.models.ExerciseAuthor
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.models.timeAgo
 import com.example.gymeaze.ui.components.DifficultyBadgeExercise
+import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.screens.posts.guest.components.LoginToLikeDialog
 import com.example.gymeaze.viewmodel.ExercisesViewModel
+import com.example.gymeaze.viewmodel.ReportItemType
+import com.example.gymeaze.viewmodel.ReportViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -59,6 +63,8 @@ fun ExerciseDetailScreen(
     exercisesViewModel: ExercisesViewModel,
     isUserLoggedIn: Boolean = true
 ) {
+    val reportViewModel: ReportViewModel = viewModel()
+
     val currentExercise by exercisesViewModel.currentExercise.collectAsState()
     val isLoadingDetail by exercisesViewModel.isLoadingExerciseDetail.collectAsState()
     val uiState by exercisesViewModel.uiState.collectAsState()
@@ -66,6 +72,7 @@ fun ExerciseDetailScreen(
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showLoginDialog by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(exerciseId) {
         exercisesViewModel.loadExerciseDetail(exerciseId)
@@ -185,7 +192,7 @@ fun ExerciseDetailScreen(
                                     if (!isUserLoggedIn) {
                                         showLoginDialog = true
                                     } else {
-                                        /* TODO: Implementacja reportu */
+                                        showReportDialog = true
                                     }
                                 }) {
                                     Icon(
@@ -237,6 +244,7 @@ fun ExerciseDetailScreen(
                 ExerciseDetailContent(
                     exercise = currentExercise!!,
                     exercisesViewModel = exercisesViewModel,
+                    reportViewModel = reportViewModel, // ← DODAJ TO
                     isUserLoggedIn = isUserLoggedIn,
                     onShowLoginDialog = { showLoginDialog = true },
                     modifier = Modifier.padding(paddingValues)
@@ -261,6 +269,18 @@ fun ExerciseDetailScreen(
     if (showLoginDialog) {
         LoginToLikeDialog(
             onDismiss = { showLoginDialog = false }
+        )
+    }
+
+    if (showReportDialog) {
+        ReportDialog(
+            itemId = exerciseId,
+            itemType = ReportItemType.EXERCISE,
+            onDismiss = {
+                showReportDialog = false
+                reportViewModel.resetState()
+            },
+            viewModel = reportViewModel
         )
     }
 }
@@ -359,6 +379,7 @@ fun DeleteExerciseDialog(
 private fun ExerciseDetailContent(
     exercise: Exercise,
     exercisesViewModel: ExercisesViewModel,
+    reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
     isUserLoggedIn: Boolean = true,
     onShowLoginDialog: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -378,6 +399,10 @@ private fun ExerciseDetailContent(
     var editingContent by remember { mutableStateOf("") }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf<Comment?>(null) }
+
+    // ← DODAJ STANY DLA ZGŁASZANIA
+    var showReportDialog by remember { mutableStateOf(false) }
+    var commentToReport by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -631,6 +656,7 @@ private fun ExerciseDetailContent(
             ExerciseCommentItem(
                 comment = comment,
                 viewModel = exercisesViewModel,
+                reportViewModel = reportViewModel, // ← DODAJ TO
                 isUserLoggedIn = isUserLoggedIn,
                 onReply = { commentId, username ->
                     if (isUserLoggedIn) {
@@ -661,7 +687,11 @@ private fun ExerciseDetailContent(
                 onDeleteClick = { commentToDelete ->
                     showDeleteDialog = commentToDelete
                 },
-                onShowLoginDialog = onShowLoginDialog
+                onShowLoginDialog = onShowLoginDialog,
+                onReportClick = { commentId -> // ← DODAJ TO
+                    commentToReport = commentId
+                    showReportDialog = true
+                }
             )
 
             if (expandedReplies.contains(comment._id)) {
@@ -670,6 +700,7 @@ private fun ExerciseDetailContent(
                     ExerciseReplyItem(
                         reply = reply,
                         viewModel = exercisesViewModel,
+                        reportViewModel = reportViewModel, // ← DODAJ TO
                         isUserLoggedIn = isUserLoggedIn,
                         currentUsername = currentUsername,
                         onEditClick = { replyToEdit ->
@@ -680,7 +711,11 @@ private fun ExerciseDetailContent(
                         onDeleteClick = { replyToDelete ->
                             showDeleteDialog = replyToDelete
                         },
-                        onShowLoginDialog = onShowLoginDialog
+                        onShowLoginDialog = onShowLoginDialog,
+                        onReportClick = { replyId -> // ← DODAJ TO
+                            commentToReport = replyId
+                            showReportDialog = true
+                        }
                     )
                 }
             }
@@ -761,6 +796,20 @@ private fun ExerciseDetailContent(
             },
             canSave = editingContent.trim().isNotBlank() &&
                     editingContent.trim() != editingComment?.content
+        )
+    }
+
+    // ← DODAJ DIALOG ZGŁASZANIA KOMENTARZY
+    if (showReportDialog && commentToReport != null) {
+        ReportDialog(
+            itemId = commentToReport!!,
+            itemType = ReportItemType.COMMENT,
+            onDismiss = {
+                showReportDialog = false
+                commentToReport = null
+                reportViewModel.resetState()
+            },
+            viewModel = reportViewModel
         )
     }
 }
@@ -1218,6 +1267,7 @@ private fun formatDate(dateString: String): String {
 private fun ExerciseCommentItem(
     comment: Comment,
     viewModel: ExercisesViewModel,
+    reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
     isUserLoggedIn: Boolean = true,
     onReply: (String, String) -> Unit,
     isExpanded: Boolean,
@@ -1225,7 +1275,8 @@ private fun ExerciseCommentItem(
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
-    onShowLoginDialog: () -> Unit = {}
+    onShowLoginDialog: () -> Unit = {},
+    onReportClick: (String) -> Unit = {} // ← DODAJ TEN PARAMETR
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isExerciseCommentLiked(comment._id).collectAsState(initial = false)
@@ -1329,7 +1380,10 @@ private fun ExerciseCommentItem(
                                     )
                                 } else {
                                     DropdownMenuItem(
-                                        onClick = { showMenu = false },
+                                        onClick = {
+                                            showMenu = false
+                                            onReportClick(comment._id) // ← ZMIENIONE
+                                        },
                                         text = {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Icon(
@@ -1451,11 +1505,13 @@ private fun ExerciseCommentItem(
 private fun ExerciseReplyItem(
     reply: Comment,
     viewModel: ExercisesViewModel,
+    reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
     isUserLoggedIn: Boolean = true,
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
-    onShowLoginDialog: () -> Unit = {}
+    onShowLoginDialog: () -> Unit = {},
+    onReportClick: (String) -> Unit = {} // ← DODAJ TEN PARAMETR
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isExerciseCommentLiked(reply._id).collectAsState(initial = false)
@@ -1542,7 +1598,10 @@ private fun ExerciseReplyItem(
                             } else {
                                 DropdownMenuItem(
                                     text = { Text("Zgłoś", color = getOnSurfaceColor()) },
-                                    onClick = { showMenu = false },
+                                    onClick = {
+                                        showMenu = false
+                                        onReportClick(reply._id) // ← ZMIENIONE
+                                    },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Default.Flag,
