@@ -61,7 +61,6 @@ fun SeeAllPostsContent(
     var showCommentsSheet by remember { mutableStateOf(false) }
     var selectedPostId by remember { mutableStateOf<String?>(null) }
 
-    // ← DODAJ STANY DLA ZGŁASZANIA
     var showReportDialog by remember { mutableStateOf(false) }
     var itemToReport by remember { mutableStateOf<String?>(null) }
     var reportItemType by remember { mutableStateOf<ReportItemType?>(null) }
@@ -70,7 +69,7 @@ fun SeeAllPostsContent(
     val isDarkTheme = LocalDarkTheme.current
 
     val viewModel: PostsViewModel = viewModel()
-    val reportViewModel: ReportViewModel = viewModel() // ← DODAJ REPORT VIEW MODEL
+    val reportViewModel: ReportViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -87,7 +86,8 @@ fun SeeAllPostsContent(
                                     } else {
                                         com.example.gymeaze.R.drawable.gym_eaze_logo_dark
                                     }),
-                                contentDescription = stringResource(com.example.gymeaze.R.string.logo)
+                                contentDescription = stringResource(com.example.gymeaze.R.string.logo),
+                                modifier = Modifier.size(64.dp)
                             )
                         }
                     },

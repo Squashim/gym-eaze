@@ -39,6 +39,7 @@ import com.example.gymeaze.data.models.TrainingDay
 import com.example.gymeaze.data.models.DayExercise
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.timeAgo
+import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.util.formatToRelativeTime
@@ -140,24 +141,7 @@ fun TrainingPlanDetailScreen(
         ) {
             when {
                 uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(
-                                color = getPrimaryColor()
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Ładowanie planu treningowego...",
-                                color = getOnSurfaceSecondaryColor(),
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
+                    LoadingScreen()
                 }
 
                 uiState.error != null -> {

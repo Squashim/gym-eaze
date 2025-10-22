@@ -20,7 +20,8 @@ data class TrainingPlansUiState(
     val hasMorePages: Boolean = false,
     val isLoadingMore: Boolean = false,
     val snackbarMessage: String? = null,
-    val snackbarType: SnackbarType = SnackbarType.ERROR
+    val snackbarType: SnackbarType = SnackbarType.ERROR,
+    val isRefreshing: Boolean = false
 )
 
 class TrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
@@ -157,6 +158,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
         loadTrainingPlans()
     }
 
+    /*
     private fun loadTrainingPlans(append: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -219,14 +221,189 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
+     */
+
     fun loadMoreTrainingPlans() {
-        if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore) {
-            loadTrainingPlans(append = true)
+        if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore && !_uiState.value.isRefreshing) {
+            viewModelScope.launch {
+                try {
+                    _uiState.value = _uiState.value.copy(isLoadingMore = true)
+
+                    val currentState = _uiState.value
+                    val nextPage = currentState.currentPage + 1
+
+                    val filters = TrainingPlanFilters(
+                        search = _searchQuery.value.takeIf { it.isNotBlank() },
+                        goal = _selectedGoal.value,
+                        difficulty = _selectedDifficulty.value,
+                        minDuration = _minDuration.value,
+                        maxDuration = _maxDuration.value,
+                        hashtags = _selectedHashtags.value.takeIf { it.isNotEmpty() },
+                        followers = _followersOnly.value.takeIf { it }
+                    )
+
+                    val result = repository.getTrainingPlans(
+                        filters = filters,
+                        sortBy = _sortBy.value,
+                        page = nextPage,
+                        pageSize = 9
+                    )
+
+                    result.onSuccess { response ->
+                        val updatedPlans = currentState.trainingPlans + response.items
+
+                        _uiState.value = _uiState.value.copy(
+                            trainingPlans = updatedPlans,
+                            currentPage = response.page,
+                            totalPages = (response.total + response.pageSize - 1) / response.pageSize,
+                            hasMorePages = response.page * response.pageSize < response.total,
+                            isLoadingMore = false,
+                            error = null
+                        )
+                    }.onFailure { exception ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoadingMore = false,
+                            error = exception.message ?: "Błąd podczas ładowania kolejnych planów"
+                        )
+                    }
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoadingMore = false,
+                        error = e.message ?: "Nieoczekiwany błąd podczas ładowania kolejnych planów"
+                    )
+                }
+            }
+        }
+    }
+
+
+    /*
+    fun refreshTrainingPlans() {
+        loadTrainingPlans()
+    }
+
+
+     */
+
+    private fun loadTrainingPlans(append: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                if (append) {
+                    _uiState.value = _uiState.value.copy(isLoadingMore = true)
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = true,
+                        error = null,
+                        isRefreshing = false
+                    )
+                }
+
+                val currentState = _uiState.value
+                val page = if (append) currentState.currentPage + 1 else 1
+
+                val filters = TrainingPlanFilters(
+                    search = _searchQuery.value.takeIf { it.isNotBlank() },
+                    goal = _selectedGoal.value,
+                    difficulty = _selectedDifficulty.value,
+                    minDuration = _minDuration.value,
+                    maxDuration = _maxDuration.value,
+                    hashtags = _selectedHashtags.value.takeIf { it.isNotEmpty() },
+                    followers = _followersOnly.value.takeIf { it }
+                )
+
+                val result = repository.getTrainingPlans(
+                    filters = filters,
+                    sortBy = _sortBy.value,
+                    page = page,
+                    pageSize = 9
+                )
+
+                result.onSuccess { response ->
+                    val newPlans = if (append) {
+                        currentState.trainingPlans + response.items
+                    } else {
+                        response.items
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        trainingPlans = newPlans,
+                        currentPage = response.page,
+                        totalPages = (response.total + response.pageSize - 1) / response.pageSize,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false,
+                        error = exception.message ?: "Błąd podczas ładowania planów treningowych"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    isRefreshing = false,
+                    error = e.message ?: "Nieoczekiwany błąd"
+                )
+            }
         }
     }
 
     fun refreshTrainingPlans() {
-        loadTrainingPlans()
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
+
+                val filters = TrainingPlanFilters(
+                    search = _searchQuery.value.takeIf { it.isNotBlank() },
+                    goal = _selectedGoal.value,
+                    difficulty = _selectedDifficulty.value,
+                    minDuration = _minDuration.value,
+                    maxDuration = _maxDuration.value,
+                    hashtags = _selectedHashtags.value.takeIf { it.isNotEmpty() },
+                    followers = _followersOnly.value.takeIf { it }
+                )
+
+                val result = repository.getTrainingPlans(
+                    filters = filters,
+                    sortBy = _sortBy.value,
+                    page = 1, // Zawsze ładuj pierwszą stronę przy odświeżaniu
+                    pageSize = 9
+                )
+
+                result.onSuccess { response ->
+                    _uiState.value = _uiState.value.copy(
+                        trainingPlans = response.items,
+                        currentPage = response.page,
+                        totalPages = (response.total + response.pageSize - 1) / response.pageSize,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false,
+                        error = exception.message ?: "Błąd podczas odświeżania planów treningowych"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    isRefreshing = false,
+                    error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
+                )
+            }
+        }
     }
 
     fun toggleLike(planId: String) {

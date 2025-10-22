@@ -79,7 +79,8 @@ fun ExercisesOverviewScreen(
                                     } else {
                                         com.example.gymeaze.R.drawable.gym_eaze_logo_dark
                                     }),
-                                contentDescription = stringResource(com.example.gymeaze.R.string.logo)
+                                contentDescription = stringResource(com.example.gymeaze.R.string.logo),
+                                modifier = Modifier.size(64.dp)
                             )
                         }
                     },

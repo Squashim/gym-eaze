@@ -2,15 +2,21 @@ package com.example.gymeaze.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,10 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.*
+import com.example.gymeaze.ui.screens.trainingsPlan.components.TrainingPlanFiltersDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.viewmodel.SnackbarType
 import com.example.gymeaze.viewmodel.TrainingPlansViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,11 +52,20 @@ fun TrainingPlansScreen(
     val followersOnly by viewModel.followersOnly.collectAsState()
 
     var showFilters by remember { mutableStateOf(false) }
-    var showSortMenu by remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val hasFilters = hasActiveFilters(
+        selectedGoal,
+        selectedDifficulty,
+        minDuration,
+        maxDuration,
+        selectedHashtags,
+        sortBy,
+        followersOnly
+    )
 
     LaunchedEffect(Unit) {
         viewModel.refreshPlansFromOtherScreens()
@@ -86,7 +103,7 @@ fun TrainingPlansScreen(
 
             lastVisibleItemIndex > (totalItemsNumber - 3)
         }.collect { shouldLoadMore ->
-            if (shouldLoadMore && uiState.hasMorePages && !uiState.isLoadingMore) {
+            if (shouldLoadMore && uiState.hasMorePages && !uiState.isLoadingMore && !uiState.isRefreshing) {
                 viewModel.loadMoreTrainingPlans()
             }
         }
@@ -132,12 +149,24 @@ fun TrainingPlansScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Ustawienia",
-                            tint = getOnSurfaceColor()
-                        )
+                    Box {
+                        IconButton(onClick = { showFilters = true }) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = "Filtry i sortowanie",
+                                tint = getOnSurfaceColor()
+                            )
+                        }
+
+                        if (hasFilters) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(getPrimaryColor(), CircleShape)
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-4).dp, y = 4.dp)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -155,190 +184,141 @@ fun TrainingPlansScreen(
         ) {
             BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
-            Column(
+            // UPROSZCZONE: Używamy prostszego PullToRefreshBox z Material3
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.refreshTrainingPlans() },
                 modifier = Modifier.fillMaxSize()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = viewModel::updateSearchQuery,
-                        placeholder = { Text("Szukaj planów treningowych...") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Szukaj",
-                                tint = getOnSurfaceSecondaryColor()
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = getPrimaryColor(),
-                            unfocusedBorderColor = getInputBorderColor()
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true
-                    )
-
-                    IconButton(
-                        onClick = { showFilters = true },
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(
-                                color = if (hasActiveFilters(selectedGoal, selectedDifficulty, minDuration, maxDuration, selectedHashtags, followersOnly))
-                                    getPrimaryColor().copy(alpha = 0.1f)
-                                else getSurfaceColor(),
-                                shape = RoundedCornerShape(12.dp)
-                            )
+                // JEŚLI TRWA ODSWIEŻANIE, POKAŻ LOADING SCREEN
+                if (uiState.isRefreshing) {
+                    LoadingScreen()
+                } else {
+                    // W PRZECIWNYM WYPADKU POKAŻ NORMALNĄ ZAWARTOŚĆ
+                    Column(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filtry",
-                            tint = if (hasActiveFilters(selectedGoal, selectedDifficulty, minDuration, maxDuration, selectedHashtags, followersOnly))
-                                getPrimaryColor()
-                            else getOnSurfaceColor()
-                        )
-                    }
-
-                    Box {
-                        IconButton(
-                            onClick = { showSortMenu = true },
+                        Row(
                             modifier = Modifier
-                                .size(48.dp)
-                                .background(getSurfaceColor(), RoundedCornerShape(12.dp))
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Sort,
-                                contentDescription = "Sortuj",
-                                tint = getOnSurfaceColor()
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = viewModel::updateSearchQuery,
+                                placeholder = {
+                                    Text(
+                                        "Szukaj planów treningowych...",
+                                        color = getOnSurfaceSecondaryColor()
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Szukaj",
+                                        tint = getOnSurfaceSecondaryColor()
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Wyczyść",
+                                                tint = getOnSurfaceSecondaryColor()
+                                            )
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = getPrimaryColor(),
+                                    unfocusedBorderColor = getInputBorderColor(),
+                                    focusedTextColor = getOnSurfaceColor(),
+                                    unfocusedTextColor = getOnSurfaceColor(),
+                                    cursorColor = getPrimaryColor()
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true
                             )
                         }
 
-                        SortDropdownMenu(
-                            expanded = showSortMenu,
-                            onDismiss = { showSortMenu = false },
-                            currentSort = sortBy,
-                            onSortSelected = { sort ->
-                                viewModel.updateSortBy(sort)
-                                showSortMenu = false
-                            }
-                        )
-                    }
-                }
-
-                if (hasActiveFilters(selectedGoal, selectedDifficulty, minDuration, maxDuration, selectedHashtags, followersOnly)) {
-                    ActiveFiltersRow(
-                        selectedGoal = selectedGoal,
-                        selectedDifficulty = selectedDifficulty,
-                        minDuration = minDuration,
-                        maxDuration = maxDuration,
-                        selectedHashtags = selectedHashtags,
-                        followersOnly = followersOnly,
-                        onClearFilter = { filterType ->
-                            when (filterType) {
-                                "goal" -> viewModel.updateSelectedGoal(null)
-                                "difficulty" -> viewModel.updateSelectedDifficulty(null)
-                                "duration" -> {
-                                    viewModel.updateMinDuration(null)
-                                    viewModel.updateMaxDuration(null)
+                        when {
+                            uiState.isLoading && uiState.trainingPlans.isEmpty() -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    LoadingScreen()
                                 }
-                                "hashtags" -> viewModel.updateSelectedHashtags(emptyList())
-                                "followers" -> viewModel.updateFollowersOnly(false)
-                            }
-                        },
-                        onClearAll = viewModel::clearAllFilters
-                    )
-                }
-
-                when {
-                    uiState.isLoading && uiState.trainingPlans.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CircularProgressIndicator(
-                                    color = getPrimaryColor()
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Ładowanie planów treningowych...",
-                                    color = getOnSurfaceSecondaryColor(),
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    }
-
-                    uiState.trainingPlans.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.SearchOff,
-                                    contentDescription = null,
-                                    tint = getOnSurfaceSecondaryColor(),
-                                    modifier = Modifier.size(64.dp)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Brak planów treningowych",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = getOnSurfaceColor()
-                                )
-                                Text(
-                                    text = "Spróbuj zmienić filtry wyszukiwania",
-                                    fontSize = 14.sp,
-                                    color = getOnSurfaceSecondaryColor()
-                                )
-                            }
-                        }
-                    }
-
-                    else -> {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(
-                                items = uiState.trainingPlans,
-                                key = { it.id }
-                            ) { plan ->
-                                TrainingPlanCard(
-                                    trainingPlan = plan,
-                                    onCardClick = onPlanClick,
-                                    onLikeClick = viewModel::toggleLike,
-                                    onFavoriteClick = viewModel::toggleFavorite
-                                )
                             }
 
-                            if (uiState.isLoadingMore) {
-                                item {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        contentAlignment = Alignment.Center
+                            uiState.trainingPlans.isEmpty() -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.padding(32.dp)
                                     ) {
-                                        CircularProgressIndicator(
-                                            color = getPrimaryColor(),
-                                            modifier = Modifier.size(24.dp)
+                                        Icon(
+                                            imageVector = Icons.Default.SearchOff,
+                                            contentDescription = null,
+                                            tint = getOnSurfaceSecondaryColor(),
+                                            modifier = Modifier.size(64.dp)
                                         )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Text(
+                                            text = "Brak planów treningowych",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = getOnSurfaceColor()
+                                        )
+                                        Text(
+                                            text = "Spróbuj zmienić filtry wyszukiwania",
+                                            fontSize = 14.sp,
+                                            color = getOnSurfaceSecondaryColor()
+                                        )
+                                    }
+                                }
+                            }
+
+                            else -> {
+                                LazyColumn(
+                                    state = listState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(
+                                        items = uiState.trainingPlans,
+                                        key = { it.id }
+                                    ) { plan ->
+                                        TrainingPlanCard(
+                                            trainingPlan = plan,
+                                            onCardClick = onPlanClick,
+                                            onLikeClick = viewModel::toggleLike,
+                                            onFavoriteClick = viewModel::toggleFavorite
+                                        )
+                                    }
+
+                                    if (uiState.isLoadingMore) {
+                                        item {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(16.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    color = getPrimaryColor(),
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -355,6 +335,7 @@ fun TrainingPlansScreen(
                 minDuration = minDuration,
                 maxDuration = maxDuration,
                 selectedHashtags = selectedHashtags,
+                sortBy = sortBy,
                 followersOnly = followersOnly,
                 onSearchQueryChanged = viewModel::updateSearchQuery,
                 onGoalChanged = viewModel::updateSelectedGoal,
@@ -362,6 +343,7 @@ fun TrainingPlansScreen(
                 onMinDurationChanged = viewModel::updateMinDuration,
                 onMaxDurationChanged = viewModel::updateMaxDuration,
                 onHashtagsChanged = viewModel::updateSelectedHashtags,
+                onSortByChanged = viewModel::updateSortBy,
                 onFollowersOnlyChanged = viewModel::updateFollowersOnly,
                 onApplyFilters = { showFilters = false },
                 onClearFilters = {
@@ -374,178 +356,13 @@ fun TrainingPlansScreen(
     }
 }
 
-@Composable
-private fun SortDropdownMenu(
-    expanded: Boolean,
-    onDismiss: () -> Unit,
-    currentSort: String,
-    onSortSelected: (String) -> Unit
-) {
-    val sortOptions = listOf(
-        "latest" to "Najnowsze",
-        "popular" to "Popularne (24h)",
-        "top-rated" to "Najwyżej ocenione"
-    )
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss,
-        modifier = Modifier.background(getSurfaceColor())
-    ) {
-        sortOptions.forEach { (value, label) ->
-            DropdownMenuItem(
-                text = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (currentSort == value) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = getPrimaryColor(),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                        } else {
-                            Spacer(modifier = Modifier.width(28.dp))
-                        }
-
-                        Text(
-                            text = label,
-                            fontSize = 14.sp,
-                            color = getOnSurfaceColor()
-                        )
-                    }
-                },
-                onClick = { onSortSelected(value) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ActiveFiltersRow(
-    selectedGoal: String?,
-    selectedDifficulty: String?,
-    minDuration: Int?,
-    maxDuration: Int?,
-    selectedHashtags: List<String>,
-    followersOnly: Boolean,
-    onClearFilter: (String) -> Unit,
-    onClearAll: () -> Unit
-) {
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (selectedGoal != null) {
-            item {
-                FilterChip(
-                    text = "Cel: ${getGoalDisplayName(selectedGoal)}",
-                    onRemove = { onClearFilter("goal") }
-                )
-            }
-        }
-
-        if (selectedDifficulty != null) {
-            item {
-                FilterChip(
-                    text = "Poziom: ${getDifficultyDisplayName(selectedDifficulty)}",
-                    onRemove = { onClearFilter("difficulty") }
-                )
-            }
-        }
-
-        if (minDuration != null || maxDuration != null) {
-            item {
-                val text = when {
-                    minDuration != null && maxDuration != null -> "Dni: $minDuration-$maxDuration"
-                    minDuration != null -> "Dni: od $minDuration"
-                    maxDuration != null -> "Dni: do $maxDuration"
-                    else -> ""
-                }
-                FilterChip(
-                    text = text,
-                    onRemove = { onClearFilter("duration") }
-                )
-            }
-        }
-
-        if (selectedHashtags.isNotEmpty()) {
-            item {
-                FilterChip(
-                    text = "Hashtagi: ${selectedHashtags.size}",
-                    onRemove = { onClearFilter("hashtags") }
-                )
-            }
-        }
-
-        if (followersOnly) {
-            item {
-                FilterChip(
-                    text = "Obserwowani",
-                    onRemove = { onClearFilter("followers") }
-                )
-            }
-        }
-
-        item {
-            TextButton(
-                onClick = onClearAll,
-                modifier = Modifier.height(32.dp)
-            ) {
-                Text(
-                    text = "Wyczyść wszystkie",
-                    fontSize = 12.sp,
-                    color = getPrimaryColor()
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FilterChip(
-    text: String,
-    onRemove: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = getPrimaryColor().copy(alpha = 0.1f),
-        modifier = Modifier.height(32.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = text,
-                color = getPrimaryColor(),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = "×",
-                color = getPrimaryColor(),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .clickable { onRemove() }
-                    .padding(2.dp)
-            )
-        }
-    }
-}
-
 private fun hasActiveFilters(
     selectedGoal: String?,
     selectedDifficulty: String?,
     minDuration: Int?,
     maxDuration: Int?,
     selectedHashtags: List<String>,
+    sortBy: String,
     followersOnly: Boolean
 ): Boolean {
     return selectedGoal != null ||
@@ -553,27 +370,6 @@ private fun hasActiveFilters(
             minDuration != null ||
             maxDuration != null ||
             selectedHashtags.isNotEmpty() ||
+            sortBy != "latest" ||
             followersOnly
-}
-
-private fun getGoalDisplayName(goal: String): String {
-    return when (goal) {
-        "Budowanie masy mięśniowej" -> "Masa"
-        "Zwiększanie siły" -> "Siła"
-        "Poprawa wytrzymałości" -> "Wytrzymałość"
-        "Redukcja tkanki tłuszczowej" -> "Redukcja"
-        "Spalanie kalorii" -> "Spalanie"
-        "Poprawa mobilności" -> "Mobilność"
-        "Poprawa gibkości" -> "Gibkość"
-        else -> goal
-    }
-}
-
-private fun getDifficultyDisplayName(difficulty: String): String {
-    return when (difficulty) {
-        "Początkujący" -> "Początkujący"
-        "Średniozaawansowany" -> "Średni"
-        "Zaawansowany" -> "Zaawansowany"
-        else -> difficulty
-    }
 }

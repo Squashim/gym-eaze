@@ -31,24 +31,10 @@ fun TrainingPlansMenuScreen(
     onBrowseTrainingPlansClick: () -> Unit = {},
     onFavoriteTrainingPlansClick: () -> Unit = {}
 ) {
-    var selectedRoute by remember { mutableStateOf("workouts") }
-
-    Scaffold(
-        topBar = {
-            GymEazeTopAppBar(onSettingsClick = onSettingsClick)
-        },
-        bottomBar = {
-            GymEazeBottomNavigationBar(
-                selectedRoute = selectedRoute,
-                onItemSelected = { route -> selectedRoute = route }
-            )
-        },
-        containerColor = getBackgroundColor()
-    ) { paddingValues -> Box(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(getBackgroundColor())
-            .padding(paddingValues)
     ) {
         BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
@@ -58,8 +44,6 @@ fun TrainingPlansMenuScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-
             Text(
                 text = "Plany treningowe",
                 modifier = Modifier.padding(top = 32.dp, bottom = 16.dp),
@@ -130,7 +114,6 @@ fun TrainingPlansMenuScreen(
             }
         }
     }
-        }
 }
 
 @Composable

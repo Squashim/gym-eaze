@@ -474,10 +474,13 @@ class MainActivity : ComponentActivity() {
                                     onBrowsePostClick = authViewModel::showBrowsePostScreen,
                                     onFollowedUsersPosts = authViewModel::showFollowedUserPostsScreen,
                                     onMyPosts = authViewModel::showMyPostsScreen,
-                                    onMyTrainingPlansClick = authViewModel::showMyTrainingPlansScreen,
-                                    onBrowseTrainingPlansClick = authViewModel::showBrowseTrainingPlansScreen,
-                                    onFavoriteTrainingPlansClick = authViewModel::showFavoriteTrainingPlansScreen,
-                                    onStartedPlanClick = { id, name -> authViewModel.showStartedPlanDaysScreen(id, name) }
+                                    onMyTrainingPlansClick = {},
+                                    onBrowseTrainingPlansClick = {},
+                                    onFavoriteTrainingPlansClick = {},
+                                    onStartedPlanClick = { id, name -> authViewModel.showStartedPlanDaysScreen(id, name) },
+                                    onPlanClick = { planId -> authViewModel.showTrainingPlanDetailScreen(planId) },
+                                    onEditPlanClick = { planId -> authViewModel.showEditTrainingPlanScreen(planId) }
+
                                 )
                             }
                         }

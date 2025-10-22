@@ -50,7 +50,6 @@ fun MyTrainingPlansScreen(
         }
     }
 
-
     LaunchedEffect(Unit) {
         viewModel.refreshMyPlansFromOtherScreens()
     }
@@ -74,8 +73,47 @@ fun MyTrainingPlansScreen(
         }
     }
 
-
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Moje plany treningowe",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Wróć",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onCreatePlanClick) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Dodaj plan",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Ustawienia",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = getBackgroundColor()
+                )
+            )
+        },
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -91,162 +129,119 @@ fun MyTrainingPlansScreen(
                     )
                 }
             )
-        }
+        },
+        containerColor = getBackgroundColor()
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(getBackgroundColor())
                 .padding(paddingValues)
         ) {
             BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Moje plany treningowe",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = getOnSurfaceColor()
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Wróć",
-                                tint = getOnSurfaceColor()
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onCreatePlanClick) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Dodaj plan",
-                                tint = getOnSurfaceColor()
-                            )
-                        }
-                        IconButton(onClick = onSettingsClick) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Ustawienia",
-                                tint = getOnSurfaceColor()
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = getBackgroundColor()
-                    )
-                )
-
-                when {
-                    uiState.isLoading && uiState.trainingPlans.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+            when {
+                uiState.isLoading && uiState.trainingPlans.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CircularProgressIndicator(
-                                    color = getPrimaryColor()
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Ładowanie Twoich planów...",
-                                    color = getOnSurfaceSecondaryColor(),
-                                    fontSize = 14.sp
-                                )
-                            }
+                            CircularProgressIndicator(
+                                color = getPrimaryColor()
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Ładowanie Twoich planów...",
+                                color = getOnSurfaceSecondaryColor(),
+                                fontSize = 14.sp
+                            )
                         }
                     }
+                }
 
-                    uiState.trainingPlans.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                uiState.trainingPlans.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(32.dp)
+                            Icon(
+                                imageVector = Icons.Default.Assignment,
+                                contentDescription = null,
+                                tint = getOnSurfaceSecondaryColor(),
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Nie masz jeszcze żadnych planów",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = getOnSurfaceColor()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Stwórz swój pierwszy plan treningowy!",
+                                fontSize = 14.sp,
+                                color = getOnSurfaceSecondaryColor()
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = onCreatePlanClick,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = getPrimaryColor()
+                                )
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Assignment,
+                                    imageVector = Icons.Default.Add,
                                     contentDescription = null,
-                                    tint = getOnSurfaceSecondaryColor(),
-                                    modifier = Modifier.size(64.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Nie masz jeszcze żadnych planów",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = getOnSurfaceColor()
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Stwórz swój pierwszy plan treningowy!",
-                                    fontSize = 14.sp,
-                                    color = getOnSurfaceSecondaryColor()
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Button(
-                                    onClick = onCreatePlanClick,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = getPrimaryColor()
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Utwórz plan")
-                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Utwórz plan")
                             }
                         }
                     }
+                }
 
-                    else -> {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(
-                                items = uiState.trainingPlans,
-                                key = { it.id }
-                            ) { plan ->
-                                TrainingPlanCard(
-                                    trainingPlan = plan,
-                                    onCardClick = onPlanClick,
-                                    onLikeClick = viewModel::toggleLike,
-                                    onFavoriteClick = viewModel::toggleFavorite,
-                                    onEditClick = onEditPlanClick,
-                                    onDeleteClick = viewModel::showDeleteDialog,
-                                    showOwnerActions = true
-                                )
-                            }
+                else -> {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(
+                            items = uiState.trainingPlans,
+                            key = { it.id }
+                        ) { plan ->
+                            TrainingPlanCard(
+                                trainingPlan = plan,
+                                onCardClick = onPlanClick,
+                                onLikeClick = viewModel::toggleLike,
+                                onFavoriteClick = viewModel::toggleFavorite,
+                                onEditClick = onEditPlanClick,
+                                onDeleteClick = viewModel::showDeleteDialog,
+                                showOwnerActions = true
+                            )
+                        }
 
-                            if (uiState.isLoadingMore) {
-                                item {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(
-                                            color = getPrimaryColor(),
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
+                        if (uiState.isLoadingMore) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = getPrimaryColor(),
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
                             }
                         }

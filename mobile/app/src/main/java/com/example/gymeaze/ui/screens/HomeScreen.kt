@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
@@ -31,6 +33,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -49,6 +52,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -70,11 +75,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.StartedTrainingPlan
+import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.TrainingPlansNavigationScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
@@ -108,13 +116,15 @@ fun HomeScreen(
     onFavoriteTrainingPlansClick: () -> Unit = {},
     onCreatePostClick: () -> Unit = {},
     onBrowsePostClick: () -> Unit = {},
-    onFollowedUsersPosts: () -> Unit ={},
+    onFollowedUsersPosts: () -> Unit = {},
     onMyPosts: () -> Unit = {},
-    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit
-
+    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
+    onPlanClick: (planId: String) -> Unit = {},
+    onEditPlanClick: (planId: String) -> Unit = {}
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
+
     val createPostViewModel: PostsViewModel = viewModel()
     val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
     var showBottomBar by remember { mutableStateOf(true) }
@@ -124,11 +134,14 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            if (selectedRoute !in listOf("community", "exercises")) {
-                GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+            when (selectedRoute) {
+                "community", "exercises", "workouts" -> {
+                }
+                else -> {
+                    GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+                }
             }
-        }
-        ,
+        },
         bottomBar = {
             if (showBottomBar) {
                 GymEazeBottomNavigationBar(
@@ -149,14 +162,16 @@ fun HomeScreen(
                 createExerciseViewModel = createExerciseViewModel,
                 setShowBottomBar = { showBottomBar = it }
             )
+
             "workouts" -> {
                 if (isUserLoggedIn) {
-                    TrainingPlansMenuScreen(
+                    TrainingPlansNavigationScreen(
                         onSettingsClick = onSettingsClick,
                         onCreateTrainingPlanClick = onCreateTrainingPlanClick,
-                        onMyTrainingPlansClick = onMyTrainingPlansClick,
-                        onBrowseTrainingPlansClick = onBrowseTrainingPlansClick,
-                        onFavoriteTrainingPlansClick = onFavoriteTrainingPlansClick
+                        onPlanClick = onPlanClick,
+                        onEditPlanClick = onEditPlanClick,
+                        onStartedPlanClick = onStartedPlanClick,
+                        setShowBottomBar = { showBottomBar = it }
                     )
                 } else {
                     WorkoutsNotLoggedInScreen(
@@ -164,12 +179,14 @@ fun HomeScreen(
                     )
                 }
             }
+
             "community" -> PostScreen(
                 onSettingsClick = onSettingsClick,
                 isUserLoggedIn = isUserLoggedIn,
                 createPostViewModel = createPostViewModel,
                 setShowBottomBar = { showBottomBar = it }
             )
+
             "profile" -> {
                 val profileViewModel: ProfileViewModel = viewModel()
 
@@ -196,7 +213,6 @@ fun HomeScreen(
         }
     }
 }
-
 @Composable
 fun ProfileScreen(
     isUserLoggedIn: Boolean,
