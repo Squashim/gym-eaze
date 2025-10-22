@@ -4,11 +4,14 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
+import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.ExerciseRepository
+import com.example.gymeaze.data.repository.PostsRepository
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import com.example.gymeaze.util.GlobalFavoriteState
@@ -40,6 +43,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     private val repository = TrainingPlanRepository(application)
     private val authRepository = AuthRepository(application)
     private val exerciseRepository = ExerciseRepository(application)
+    private val postRepository = PostsRepository(application)
 
     private val startedTrainingRepository = StartedTrainingRepository(application)
     private val _uiState = MutableStateFlow(TrainingPlanDetailUiState())
@@ -59,6 +63,32 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
             userResult.getOrNull()?.username
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+
+    init {
+        loadCurrentUser()
+    }
+
+    fun isCurrentUserTrainingPlan(authorLogin: String): Boolean {
+        return _currentUser.value?.username == authorLogin
+    }
+
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            try {
+                val result = authRepository.getCurrentUser()
+                result.onSuccess { user ->
+                    _currentUser.value = user
+                }.onFailure { exception ->
+                    println("Błąd podczas ładowania aktualnego użytkownika: ${exception.message}")
+                }
+            } catch (e: Exception) {
+                println("Nieoczekiwany błąd podczas ładowania użytkownika: ${e.message}")
+            }
         }
     }
 
@@ -365,5 +395,241 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 )
             }
         }
+    }
+    //=========================COMMENTS SECTION=============================
+
+    private val _trainingPlanComments = MutableStateFlow<List<Comment>>(emptyList())
+    val trainingPlanComments: StateFlow<List<Comment>> = _trainingPlanComments.asStateFlow()
+
+    private val _isLoadingComments = MutableStateFlow(false)
+    val isLoadingComments: StateFlow<Boolean> = _isLoadingComments.asStateFlow()
+
+    private val _hasMoreComments = MutableStateFlow(false)
+    val hasMoreComments: StateFlow<Boolean> = _hasMoreComments.asStateFlow()
+
+    private val _nextCursorComment = MutableStateFlow<String?>(null)
+
+    private val _repliesMap = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
+
+    private val _likedComments = MutableStateFlow<Set<String>>(emptySet())
+
+    fun loadTrainingPlanComments(planId: String, cursor: String? = null, limit: Int = 10, refresh: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                val effectiveCursor = if (refresh) null else cursor
+                val response = repository.getCommentsForTrainingPlan(planId, effectiveCursor, limit)
+                _trainingPlanComments.value = response?.items ?: emptyList()
+                _hasMoreComments.value = response?.hasMore ?: false
+                _nextCursorComment.value = response?.nextCursor
+            } catch (e: Exception) {
+                println("Błąd podczas ładowania komentarzy: ${e.message}")
+            }
+        }
+    }
+
+    fun loadMoreTrainingPlanComments(planId: String, limit: Int = 10) {
+        val cursor = _nextCursorComment.value
+        if (_hasMoreComments.value && cursor != null && !_isLoadingComments.value) {
+            viewModelScope.launch {
+                _isLoadingComments.value = true
+                try {
+                    val response = repository.getCommentsForTrainingPlan(planId, cursor, limit)
+                    val current = _trainingPlanComments.value
+                    val newComments = response?.items ?: emptyList()
+                    _trainingPlanComments.value = current + newComments
+                    _hasMoreComments.value = response?.hasMore ?: false
+                    _nextCursorComment.value = response?.nextCursor
+                } catch (e: Exception) {
+                    println("Błąd podczas ładowania kolejnych komentarzy: ${e.message}")
+                } finally {
+                    _isLoadingComments.value = false
+                }
+            }
+        }
+    }
+
+    fun loadRepliesForTrainingPlanComment(commentId: String, cursor: String? = null, limit: Int = 10) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.getRepliesForComment(commentId, cursor, limit)
+                if (response != null) {
+                    val currentMap = _repliesMap.value.toMutableMap()
+                    currentMap[commentId] = response.items
+                    _repliesMap.value = currentMap
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas ładowania odpowiedzi: ${e.message}")
+            }
+        }
+    }
+
+    fun getRepliesForTrainingPlanComment(commentId: String): StateFlow<List<Comment>> {
+        return _repliesMap.map { it[commentId] ?: emptyList() }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
+    }
+
+    fun addTrainingPlanComment(planId: String, content: String) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.createComment(
+                    content = content,
+                    parentType = "Trening",
+                    parentId = planId
+                )
+                if (response != null) {
+                    loadTrainingPlanComments(planId, refresh = true)
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas dodawania komentarza: ${e.message}")
+            }
+        }
+    }
+
+    fun addTrainingPlanReply(commentId: String, content: String) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.createComment(
+                    content = content,
+                    parentType = "Komentarz",
+                    parentId = commentId
+                )
+                if (response != null) {
+                    loadRepliesForTrainingPlanComment(commentId)
+
+                    val updatedComments = _trainingPlanComments.value.map { comment ->
+                        if (comment._id == commentId) {
+                            comment.copy(repliesCount = (comment.repliesCount ?: 0) + 1)
+                        } else {
+                            comment
+                        }
+                    }
+                    _trainingPlanComments.value = updatedComments
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas dodawania odpowiedzi: ${e.message}")
+            }
+        }
+    }
+
+    fun toggleTrainingPlanCommentLike(commentId: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = postRepository.toggleCommentLike(commentId)
+                if (response != null) {
+                    val isLiked = response.message.contains("Dodano")
+
+                    _likedComments.value = if (isLiked) {
+                        _likedComments.value + commentId
+                    } else {
+                        _likedComments.value - commentId
+                    }
+
+                    updateTrainingPlanCommentLikes(commentId, response.likes)
+
+                    val message = if (isLiked) {
+                        "Polubiono komentarz"
+                    } else {
+                        "Usunięto polubienie komentarza"
+                    }
+                    onResult(true, message)
+                } else {
+                    onResult(false, "Błąd podczas polubienia komentarza")
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas przełączania polubienia: ${e.message}")
+                onResult(false, e.message ?: "Błąd podczas polubienia komentarza")
+            }
+        }
+    }
+
+    private fun updateTrainingPlanCommentLikes(commentId: String, likes: Int) {
+        _trainingPlanComments.value = _trainingPlanComments.value.map { comment ->
+            if (comment._id == commentId) {
+                comment.copy(likes = likes)
+            } else {
+                comment
+            }
+        }
+
+        _repliesMap.value = _repliesMap.value.mapValues { (_, replies) ->
+            replies.map { reply ->
+                if (reply._id == commentId) {
+                    reply.copy(likes = likes)
+                } else {
+                    reply
+                }
+            }
+        }
+    }
+
+    fun isTrainingPlanCommentLiked(commentId: String): StateFlow<Boolean> {
+        return _likedComments.map { it.contains(commentId) }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                false
+            )
+    }
+
+    fun editTrainingPlanComment(comment: Comment, newContent: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = postRepository.editComment(comment._id, newContent)
+                onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd edycji" })
+                if (result.isSuccess) {
+                    loadTrainingPlanComments(comment.parentId ?: "", refresh = true)
+
+                    _repliesMap.value.keys.forEach { parentId ->
+                        loadRepliesForTrainingPlanComment(parentId)
+                    }
+                }
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Błąd edycji")
+            }
+        }
+    }
+
+    fun deleteTrainingPlanComment(comment: Comment, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = postRepository.deleteComment(comment._id)
+                onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd usuwania" })
+                if (result.isSuccess) {
+                    loadTrainingPlanComments(comment.parentId ?: "", refresh = true)
+
+                    _repliesMap.value.keys.forEach { parentId ->
+                        loadRepliesForTrainingPlanComment(parentId)
+                    }
+                }
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Błąd usuwania")
+            }
+        }
+    }
+
+    fun fetchUserCommentLikes() {
+        viewModelScope.launch {
+            try {
+                val response = repository.getUserLikes()
+                response.onSuccess { likesResponse ->
+                    _likedComments.value = likesResponse.comments.map { it.toString() }.toSet()
+                }
+            } catch (e: Exception) {
+                println("Błąd podczas pobierania polubionych komentarzy: ${e.message}")
+            }
+        }
+    }
+
+    fun clearTrainingPlanComments() {
+        _trainingPlanComments.value = emptyList()
+        _repliesMap.value = emptyMap()
+        _likedComments.value = emptySet()
+        _hasMoreComments.value = false
+        _nextCursorComment.value = null
+        _isLoadingComments.value = false
     }
 }

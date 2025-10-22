@@ -744,7 +744,7 @@ fun DifficultySelector(
 
         val difficultyOptions = listOf(
             Triple(AdvancedLevel.NONE, if (isInteractive) "Nie wybrano" else "Nie wybrano", Color(0xFF9E9E9E)),
-            Triple(AdvancedLevel.EASY, if (isInteractive) "Podstawowy" else "Początkujący", Color(0xFF4CAF50)),
+            Triple(AdvancedLevel.EASY, if (isInteractive) "Początkujący" else "Początkujący", Color(0xFF4CAF50)),
             Triple(AdvancedLevel.MEDIUM, if (isInteractive) "Średniozaawansowany" else "Średni", Color(0xFFFF9800)),
             Triple(AdvancedLevel.HARD, "Zaawansowany", Color(0xFFF44336))
         )

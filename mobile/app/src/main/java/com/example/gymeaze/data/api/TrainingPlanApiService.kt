@@ -1,5 +1,6 @@
 package com.example.gymeaze.data.api
 
+import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.LikeResponse
 import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
@@ -99,4 +100,10 @@ interface TrainingPlanApiService {
     @GET("/api/user/favorites")
     suspend fun getUserFavorites(): Response<UserFavorites>
 
+    @GET("/api/training-plans/{id}/comments")
+    suspend fun getTrainingPlanComments(
+        @Path("id") planId: String,
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 10
+    ): Response<GetCommentsResponse>
 }

@@ -5,6 +5,7 @@ import android.net.Uri
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
+import com.example.gymeaze.data.api.PostApiService
 import com.example.gymeaze.data.api.TrainingPlanApiService
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.util.AuthErrorMapper
@@ -59,6 +60,14 @@ class TrainingPlanRepository(private val context: Context) {
             .create(TrainingPlanApiService::class.java)
     }
 
+    private val apiTrainings: PostApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PostApiService::class.java)
+    }
     suspend fun createTrainingPlan(
         name: String,
         description: String,
@@ -430,5 +439,34 @@ class TrainingPlanRepository(private val context: Context) {
             input?.use { inputStream -> inputStream.copyTo(out) }
         }
         return file
+    }
+
+    suspend fun getUserLikes(): Result<LikesResponse> {
+        return try {
+            val response = apiTrainings.getUserLikes()
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Błąd podczas pobierania polubionych: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    suspend fun getCommentsForTrainingPlan(
+        planId: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): GetCommentsResponse? {
+        return try {
+            val response = api.getTrainingPlanComments(planId, cursor, limit)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }

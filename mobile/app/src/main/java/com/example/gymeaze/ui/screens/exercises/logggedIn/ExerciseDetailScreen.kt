@@ -666,7 +666,7 @@ private fun ExerciseDetailContent(
             ExerciseCommentItem(
                 comment = comment,
                 viewModel = exercisesViewModel,
-                reportViewModel = reportViewModel, // ← DODAJ TO
+                reportViewModel = reportViewModel,
                 isUserLoggedIn = isUserLoggedIn,
                 onReply = { commentId, username ->
                     if (isUserLoggedIn) {
@@ -877,7 +877,7 @@ private fun DeleteCommentDialog(
 }
 
 @Composable
-private fun EditCommentDialog(
+fun EditCommentDialog(
     editingContent: String,
     onContentChange: (String) -> Unit,
     editMessage: String,
@@ -1277,7 +1277,7 @@ private fun formatDate(dateString: String): String {
 private fun ExerciseCommentItem(
     comment: Comment,
     viewModel: ExercisesViewModel,
-    reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
+    reportViewModel: ReportViewModel,
     isUserLoggedIn: Boolean = true,
     onReply: (String, String) -> Unit,
     isExpanded: Boolean,
@@ -1286,7 +1286,7 @@ private fun ExerciseCommentItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onShowLoginDialog: () -> Unit = {},
-    onReportClick: (String) -> Unit = {} // ← DODAJ TEN PARAMETR
+    onReportClick: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
