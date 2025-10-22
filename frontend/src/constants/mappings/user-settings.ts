@@ -1,5 +1,7 @@
+import type { ProfileItemsTabs } from '@/components/features/profile/items-tabs/profile-items-display';
 import type { ProfileEditTabs } from '@/pages/user/profile-edit';
 import type { UserPrivacySettings } from '@/types/user';
+import { BicepsFlexed, CalendarDaysIcon, MessageSquare, type LucideIcon } from 'lucide-react';
 
 export const profileEditTabsMapping: { label: string; value: ProfileEditTabs }[] = [
   {
@@ -17,6 +19,28 @@ export const profileEditTabsMapping: { label: string; value: ProfileEditTabs }[]
   {
     label: 'Informacje fizyczne',
     value: 'fitness-details',
+  },
+];
+
+export const profileItemsTabsMapping: {
+  label: string;
+  value: ProfileItemsTabs;
+  icon: LucideIcon;
+}[] = [
+  {
+    label: 'Najnowsze posty',
+    value: 'Post',
+    icon: MessageSquare,
+  },
+  {
+    label: 'Ćwiczenia',
+    value: 'Ćwiczenie',
+    icon: BicepsFlexed,
+  },
+  {
+    label: 'Plany treningowe',
+    value: 'Trening',
+    icon: CalendarDaysIcon,
   },
 ];
 

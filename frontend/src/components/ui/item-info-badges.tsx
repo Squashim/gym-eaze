@@ -4,6 +4,8 @@ import type { Visibility } from '@/constants/enums/visibility';
 import { Globe2, Heart, Loader2, Lock, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import Typography from './typography';
+import { useMemo } from 'react';
 
 function AdvancedLevelBadge({ advancedLevel }: { advancedLevel: AdvancedLevel }) {
   const badgeStyles = {
@@ -129,4 +131,40 @@ const IsPublicBadge = ({ isPublic, isLoading }: IsPublicBadgeProps) => {
   );
 };
 
-export { AdvancedLevelBadge, VisibilityBadge, LikesBadge, ItemDetailsBadge, IsPublicBadge };
+const BmiBadge = ({ bmi }: { bmi: number }) => {
+  const classification = useMemo(() => {
+    if (bmi < 18.5) return 'Niedowaga';
+    if (bmi >= 18.5 && bmi < 24.9) return 'Waga prawidłowa';
+    if (bmi >= 25 && bmi < 29.9) return 'Nadwaga';
+    return 'Otyłość';
+  }, [bmi]);
+
+  const badgeStyles = {
+    Niedowaga: 'dark:bg-blue-800 bg-blue-300 text-accent-foreground shadow-sm',
+    'Waga prawidłowa': 'bg-secondary text-secondary-foreground',
+    Nadwaga: 'text-yellow-800 dark:text-yellow-500 bg-yellow-500/10 dark:bg-yellow-600/10',
+    Otyłość: 'text-destructive bg-destructive/10',
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge className={cn('cursor-default', badgeStyles[classification])}>BMI: {bmi}</Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        <Typography variant="small">
+          {`BMI wynosi ${bmi}, co zalicza się do: ${classification}.`}
+        </Typography>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+export {
+  AdvancedLevelBadge,
+  VisibilityBadge,
+  LikesBadge,
+  ItemDetailsBadge,
+  IsPublicBadge,
+  BmiBadge,
+};

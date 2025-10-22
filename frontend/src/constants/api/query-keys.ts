@@ -12,6 +12,10 @@ export const QUERY_KEYS = {
   USER_PROFILE_DETAILS: ['user', 'profile-details'],
   USER_PRIVACY_SETTINGS: ['user', 'privacy-settings'],
   USER_BADGES: ['user', 'badges'],
+  USER_FOLLOWERS: ['user', 'followers'],
+  USER_FOLLOWING: ['user', 'following'],
+
+  USER_PROFILE: (username: string) => ['user', 'profile', username],
 
   USER_LIKED_ITEMS: (userId: string) => ['user', userId, 'liked-items'],
   USER_FAVORITED_ITEMS: (userId: string) => ['user', userId, 'favorited-items'],
@@ -19,6 +23,7 @@ export const QUERY_KEYS = {
   POST: (id: string) => ['posts', id],
   POSTS: (params: PostQueryParams) => ['posts', params],
   POST_COMMENTS: (postId: string) => ['posts', postId, 'comments'],
+  USER_POSTS: (userId: string) => ['user', userId, 'posts'],
 
   COMMENT_REPLIES: (commentId: string) => ['comments', commentId, 'replies'],
 
@@ -30,21 +35,23 @@ export const QUERY_KEYS = {
   EXERCISE: (id: string) => ['exercises', id],
   EXERCISE_COMMENTS: (exerciseId: string) => ['exercises', exerciseId, 'comments'],
   FAVORITE_EXERCISES: (params: PaginatedQueryParams) => ['exercises', 'favorite', params],
-  USER_EXERCISES: (userId: string, params: PaginatedQueryParams) => [
+  USER_EXERCISES: (userId: string, params: PaginatedQueryParams, includePrivate: boolean) => [
     'user',
     userId,
     'exercises',
     params,
+    includePrivate,
   ],
 
   WORKOUT: (id: string) => ['workouts', id],
   WORKOUT_COMMENTS: (workoutId: string) => ['workouts', workoutId, 'comments'],
   WORKOUTS: (params: WorkoutQueryParams) => ['workouts', params],
   FAVORITE_WORKOUTS: (params: PaginatedQueryParams) => ['workouts', 'favorite', params],
-  USER_WORKOUTS: (userId: string, params: PaginatedQueryParams) => [
+  USER_WORKOUTS: (userId: string, params: PaginatedQueryParams, includePrivate: boolean) => [
     'user',
     userId,
     'workouts',
     params,
+    includePrivate,
   ],
 } as const;

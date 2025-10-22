@@ -46,6 +46,10 @@ export function parseExerciseLabel(count: number) {
   return parsePlurals(count, ['ćwiczenie', 'ćwiczenia', 'ćwiczeń']);
 }
 
+export function parseAgeLabel(count: number) {
+  return parsePlurals(count, ['rok', 'lata', 'lat']);
+}
+
 export function parseWorkoutDurationLabel(days: number) {
   if (days === 7) return 'Tygodniowy';
   if (days === 14) return 'Dwutygodniowy';

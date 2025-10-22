@@ -63,7 +63,7 @@ interface PostApiService {
         @Path("id") postId: String
     ): Response<MessageCommentResponse>
 
-    @GET("/api/posts/{userId}")
+    @GET("/api/posts/user/{userId}")
     suspend fun getUserPosts(
         @Path("userId") userId: String,
         @Query("cursor") cursor: String? = null,
