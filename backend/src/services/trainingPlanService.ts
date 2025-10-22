@@ -214,6 +214,16 @@ export const toggleTrainingPlanLikeService = async (userId: string, planId: stri
     plan.likes = (plan.likes || 0) + 1;
     await user.save();
     await plan.save();
+
+    if (plan.author._id.toString() !== user._id.toString()) {
+      await sendNotificationService(
+        `Użytkownik "${user.username}" polubił Twój plan treningowy "${plan.name}".`,
+        plan.author._id.toString(),
+        Notifications.info,
+        user.username,
+      );
+    }
+
     return { message: 'Dodano polubienie', likes: plan.likes };
   }
 };

@@ -9,6 +9,8 @@ import { Country } from '../constants/countries';
 import mongoose from 'mongoose';
 import { UserProfile } from '../types/user';
 import DeviceToken from '../models/deviceTokenModel';
+import { sendNotificationService } from './notificationService';
+import { Notifications } from '../constants/notifications';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -409,6 +411,13 @@ export const toggleUserFollowService = async (userId: string, targetUserId: stri
     await user.save();
     await targetUser.save();
 
+    await sendNotificationService(
+      `Użytkownik "${user.username}" przestał Cię obserwować.`,
+      targetUser._id.toString(),
+      Notifications.info,
+      user.username,
+    );
+
     return {
       message: 'Przestałeś obserwować użytkownika',
     };
@@ -419,6 +428,13 @@ export const toggleUserFollowService = async (userId: string, targetUserId: stri
 
     await user.save();
     await targetUser.save();
+
+    await sendNotificationService(
+      `Użytkownik "${user.username}" zaobserwował Cię.`,
+      targetUser._id.toString(),
+      Notifications.info,
+      user.username,
+    );
 
     return {
       message: 'Zacząłeś obserwować użytkownika',

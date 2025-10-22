@@ -161,6 +161,16 @@ export const toggleExerciseLikeService = async (userId: string, exerciseId: stri
     exercise.likes = (exercise.likes || 0) + 1;
     await user.save();
     await exercise.save();
+
+    if (exercise.author._id.toString() !== user._id.toString()) {
+      await sendNotificationService(
+        `Użytkownik "${user.username}" polubił Twoje ćwiczenie "${exercise.name}".`,
+        exercise.author._id.toString(),
+        Notifications.info,
+        user.username,
+      );
+    }
+
     return { message: 'Dodano polubienie', likes: exercise.likes };
   }
 };

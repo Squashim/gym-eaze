@@ -7,6 +7,8 @@ import { parseDescription } from '../utils/parsers';
 import { UserRole } from '../constants/roles';
 import { CommentParentType } from '../constants/commentType';
 import { deleteCommentsAndLikes } from '../utils/helpers';
+import { sendNotificationService } from './notificationService';
+import { Notifications } from '../constants/notifications';
 
 export const createPost = async (
   data: CreatePostData,
@@ -176,6 +178,18 @@ export const togglePostLikeService = async (userId: string, postId: string) => {
     post.likes = (post.likes || 0) + 1;
     await user.save();
     await post.save();
+
+    if (post.author._id.toString() !== user._id.toString()) {
+      const trimmedContent =
+        post.content.length > 30 ? post.content.slice(0, 30) + '...' : post.content;
+      await sendNotificationService(
+        `Użytkownik "${user.username}" polubił Twój post "${trimmedContent}".`,
+        post.author._id.toString(),
+        Notifications.info,
+        user.username,
+      );
+    }
+
     return { message: 'Dodano polubienie', likes: post.likes };
   }
 };

@@ -10,6 +10,8 @@ import {
 } from '../constants/commentType';
 import User from '../models/userModel';
 import { UserRole } from '../constants/roles';
+import { Notifications } from '../constants/notifications';
+import { sendNotificationService } from './notificationService';
 
 export const createCommentService = async (
   content: string,
@@ -65,23 +67,90 @@ export const createCommentService = async (
     repliesCount: isReply ? undefined : 0,
   });
 
+  const commentAuthor = await User.findById(authorId).select('username');
+  const authorName = commentAuthor ? commentAuthor.username : 'Użytkownik';
+
+  let parentAuthorId: string | null = null;
+  let notificationMessage = '';
+
   if (isReply) {
+    const parentComment = await CommentModel.findById(parentId)
+      .populate('author', '_id username')
+      .select('author content');
+
+    if (parentComment && parentComment.author) {
+      parentAuthorId = parentComment.author._id.toString();
+
+      if (parentAuthorId !== authorId) {
+        notificationMessage = `Użytkownik "${authorName}" odpowiedział na Twój komentarz.`;
+      }
+    }
+
     await CommentModel.findByIdAndUpdate(parentId, { $inc: { repliesCount: 1 } });
   } else {
+    let parentObject = null;
+
     switch (parentType) {
       case CommentParentType.exercise:
+        parentObject = await Exercise.findById(parentId)
+          .populate('author', '_id username')
+          .select('name author');
         await Exercise.findByIdAndUpdate(parentId, { $inc: { commentsCount: 1 } });
+
+        if (parentObject && parentObject.author) {
+          parentAuthorId = parentObject.author._id.toString();
+
+          if (parentAuthorId !== authorId) {
+            notificationMessage = `Użytkownik "${authorName}" skomentował Twoje ćwiczenie "${parentObject.name}".`;
+          }
+        }
+
         break;
       case CommentParentType.training:
+        parentObject = await TrainingPlan.findById(parentId)
+          .populate('author', '_id username')
+          .select('name author');
         await TrainingPlan.findByIdAndUpdate(parentId, { $inc: { commentsCount: 1 } });
+
+        if (parentObject && parentObject.author) {
+          parentAuthorId = parentObject.author._id.toString();
+
+          if (parentAuthorId !== authorId) {
+            notificationMessage = `Użytkownik "${authorName}" skomentował Twój plan treningowy "${parentObject.name}".`;
+          }
+        }
         break;
       case CommentParentType.post:
+        parentObject = await Post.findById(parentId)
+          .populate('author', '_id username')
+          .select('content author');
         await Post.findByIdAndUpdate(parentId, { $inc: { commentsCount: 1 } });
+
+        if (parentObject && parentObject.author) {
+          parentAuthorId = parentObject.author._id.toString();
+
+          if (parentAuthorId !== authorId) {
+            const postPreview =
+              parentObject.content.length > 30
+                ? parentObject.content.slice(0, 30) + '...'
+                : parentObject.content;
+            notificationMessage = `Użytkownik "${authorName}" skomentował Twój post: "${postPreview}".`;
+          }
+        }
         break;
     }
   }
 
   await comment.save();
+
+  if (parentAuthorId && notificationMessage) {
+    await sendNotificationService(
+      notificationMessage,
+      parentAuthorId,
+      Notifications.info,
+      authorName,
+    );
+  }
 };
 
 export const updateCommentService = async (commentId: string, userId: string, content: string) => {
@@ -296,6 +365,18 @@ export const toggleCommentLikeService = async (userId: string, commentId: string
     comment.likes = (comment.likes || 0) + 1;
     await user.save();
     await comment.save();
+
+    if (comment.author._id.toString() !== user._id.toString()) {
+      const trimmedContent =
+        comment.content.length > 30 ? comment.content.slice(0, 30) + '...' : comment.content;
+      await sendNotificationService(
+        `Użytkownik "${user.username}" polubił Twój komentarz/odpowiedź "${trimmedContent}".`,
+        comment.author._id.toString(),
+        Notifications.info,
+        user.username,
+      );
+    }
+
     return { message: 'Dodano polubienie', likes: comment.likes };
   }
 };
