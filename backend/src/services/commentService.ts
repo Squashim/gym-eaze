@@ -139,9 +139,26 @@ export const deleteCommentService = async (commentId: string, userId: string) =>
     throw new Error('FORBIDDEN');
   }
 
-  if (comment.parentType === CommentParentType.comment) {
-    await CommentModel.findByIdAndUpdate(comment.parentId, { $inc: { repliesCount: -1 } });
-  } else {
+  if (!isReply) {
+    const replies = await CommentModel.find({
+      parentType: CommentParentType.comment,
+      parentId: comment._id,
+    }).select('_id');
+
+    const replyIds = replies.map((reply) => reply._id);
+
+    if (replyIds.length > 0) {
+      await User.updateMany(
+        { 'likes.comments': { $in: replyIds } },
+        { $pull: { 'likes.comments': { $in: replyIds } } },
+      );
+
+      await CommentModel.deleteMany({
+        parentType: CommentParentType.comment,
+        parentId: comment._id,
+      });
+    }
+
     switch (comment.parentType) {
       case CommentParentType.exercise:
         await Exercise.findByIdAndUpdate(comment.parentId, { $inc: { commentsCount: -1 } });
@@ -153,9 +170,14 @@ export const deleteCommentService = async (commentId: string, userId: string) =>
         await Post.findByIdAndUpdate(comment.parentId, { $inc: { commentsCount: -1 } });
         break;
     }
-
-    await CommentModel.deleteMany({ parentType: CommentParentType.comment, parentId: comment._id });
+  } else {
+    await CommentModel.findByIdAndUpdate(comment.parentId, { $inc: { repliesCount: -1 } });
   }
+
+  await User.updateMany(
+    { 'likes.comments': comment._id },
+    { $pull: { 'likes.comments': comment._id } },
+  );
 
   await comment.deleteOne();
 

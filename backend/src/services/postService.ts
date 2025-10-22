@@ -5,6 +5,8 @@ import { CreatePostData, PostFilters, UpdatePostData } from '../types/post';
 import User from '../models/userModel';
 import { parseDescription } from '../utils/parsers';
 import { UserRole } from '../constants/roles';
+import { CommentParentType } from '../constants/commentType';
+import { deleteCommentsAndLikes } from '../utils/helpers';
 
 export const createPost = async (
   data: CreatePostData,
@@ -134,6 +136,10 @@ export const deletePostService = async (postId: string, userId: string): Promise
   if (user.role !== UserRole.admin && post.author.toString() !== userId.toString()) {
     throw new Error('FORBIDDEN');
   }
+
+  await deleteCommentsAndLikes(CommentParentType.post, (post._id as Types.ObjectId).toString());
+
+  await User.updateMany({ 'likes.posts': post._id }, { $pull: { 'likes.posts': post._id } });
 
   if (post.image) {
     await deleteFromCloudinary(post.image);

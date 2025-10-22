@@ -16,8 +16,8 @@ function ReportList({ isLoading, isError, reports }: ReportListProps) {
   const { user } = useUser();
 
   const isAuthor = useCallback(
-    (reportAuthorId: string) => {
-      if (!user) {
+    (reportAuthorId?: string | null) => {
+      if (!user || !reportAuthorId) {
         return false;
       }
 
@@ -54,7 +54,7 @@ function ReportList({ isLoading, isError, reports }: ReportListProps) {
 
   return reports.map((report) => (
     <ReportGroup
-      isAuthor={isAuthor(report.reportedItem.author._id)}
+      isAuthor={isAuthor(report.reportedItem ? report.reportedItem.author._id : null)}
       key={report.reportedItemId}
       report={report}
     />

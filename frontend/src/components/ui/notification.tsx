@@ -207,7 +207,7 @@ function NotificationClear({ disabled, isPending, onClear }: NotificationClearPr
   return (
     <DropdownMenuItem
       className="hover:bg-primary/90!
-                  hover:text-primary-foreground! focus-visible:text-primary-foreground! focus-visible:bg-primary/90! dark:focus-visible:bg-primary/90! dark:focus-visible:text-primary-foreground! font-medium pl-3 h-10 transition-colors cursor-pointer"
+                  hover:text-primary-foreground! focus-visible:text-primary-foreground! focus-visible:bg-primary/90! dark:focus-visible:bg-primary/90! dark:focus-visible:text-primary-foreground! font-medium pl-3 h-10 transition-colors"
       disabled={disabled}
       onClick={(e) => {
         e.preventDefault();
@@ -240,7 +240,7 @@ function NotificationItem({ notification }: NotificationItemProps) {
 
   return (
     <DropdownMenuItem
-      className="p-0 focus:bg-accent/70 border-b rounded-none last:border-0"
+      className="p-0 focus:bg-accent/70 border-b rounded-none last:border-0 cursor-default"
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           if (!isUserNotification) {

@@ -21,7 +21,7 @@ export type GetReportsApiResponse = {
   count: number;
   status: ReportStatus;
   lastReportedAt: string;
-  reportedItem: {
+  reportedItem?: {
     _id: string;
     author: Author & { isBlocked?: boolean };
     content?: string;

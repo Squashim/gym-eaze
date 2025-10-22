@@ -1,5 +1,5 @@
 import mongoose, { FilterQuery, Types } from 'mongoose';
-import { uploadTrainingPlanMedia } from '../config/cloudinary';
+import { deleteFromCloudinary, uploadTrainingPlanMedia } from '../config/cloudinary';
 import TrainingPlan, { ITrainingPlan } from '../models/trainingPlanModel';
 import {
   CreateTrainingPlanData,
@@ -19,6 +19,10 @@ import puppeteer from 'puppeteer';
 import { generateTrainingPlanHTML } from '../utils/trainingPlanPDF';
 import { getExercisesByIdsService } from './exerciseService';
 import { UserRole } from '../constants/roles';
+import { deleteCommentsAndLikes } from '../utils/helpers';
+import { CommentParentType } from '../constants/commentType';
+import { sendNotificationService } from './notificationService';
+import { Notifications } from '../constants/notifications';
 
 export const createTrainingPlan = async (
   data: CreateTrainingPlanData,
@@ -67,19 +71,43 @@ export const deleteTrainingPlan = async (planId: string, userId: string) => {
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new Error('Użytkownik nie znaleziony');
+    throw new Error('USER_NOT_FOUND');
   }
 
   if (!plan) {
-    throw new Error('Plan treningowy nie znaleziony');
+    throw new Error('WORKOUT_NOT_FOUND');
   }
 
-  if (user.role === UserRole.admin || plan.author.toString() === userId.toString()) {
-    await plan.deleteOne();
-    return true;
+  if (user.role !== UserRole.admin && plan.author.toString() !== userId.toString()) {
+    throw new Error('FORBIDDEN');
   }
 
-  return false;
+  await deleteCommentsAndLikes(CommentParentType.training, (plan._id as Types.ObjectId).toString());
+
+  const usersWithFavorite = await User.find({
+    'favorites.trainingPlans': plan._id,
+  }).select('_id');
+
+  await User.updateMany(
+    { 'likes.trainingPlans': plan._id },
+    { $pull: { 'likes.trainingPlans': plan._id } },
+  );
+
+  await User.updateMany(
+    { 'favorites.trainingPlans': plan._id },
+    { $pull: { 'favorites.trainingPlans': plan._id } },
+  );
+
+  for (const favUser of usersWithFavorite) {
+    await sendNotificationService(
+      `Plan treningowy "${plan.name}" został usunięty z platformy, więc zostało również usunięty z Twoich ulubionych. Przepraszamy za niedogodności.`,
+      favUser._id.toString(),
+      Notifications.info,
+      'System',
+    );
+  }
+
+  await plan.deleteOne();
 };
 
 export const getFavoriteTrainingPlansService = async (
@@ -119,6 +147,7 @@ export const updateTrainingPlanService = async (
   if (imageBuffer) {
     validateTrainingPlanFile(imageBuffer);
     const uploaded = await uploadTrainingPlanMedia(imageBuffer);
+    await deleteFromCloudinary(imageUrl);
     if (uploaded.imageUrl) imageUrl = uploaded.imageUrl;
   }
 
