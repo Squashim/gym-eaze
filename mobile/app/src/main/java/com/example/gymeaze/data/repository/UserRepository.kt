@@ -9,6 +9,7 @@ import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.FavoritesResponse
+import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.PrivacySettings
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
@@ -358,6 +359,44 @@ class UserRepository(private val context: Context) {
             } else {
                 Result.failure(Exception("Błąd podczas pobierania ulubionych: ${response.message()}"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getFollowers(): Result<List<FollowerUser>> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getFollowers()
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getFollowing(): Result<List<FollowerUser>> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getFollowing()
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
         } catch (e: Exception) {
             Result.failure(e)
         }

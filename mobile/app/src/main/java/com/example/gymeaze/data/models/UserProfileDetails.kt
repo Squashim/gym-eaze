@@ -101,3 +101,9 @@ data class UpdatePrivacySettingsResponse(
 data class FavoritesResponse(
     val exercises: List<String>
 )
+
+data class FollowerUser(
+    val _id: String,
+    val username: String,
+    val profileDetails: ProfileDetails?
+)

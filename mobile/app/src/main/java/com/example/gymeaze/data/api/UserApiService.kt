@@ -2,6 +2,7 @@ package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.FavoritesResponse
+import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.GetPrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
@@ -79,4 +80,10 @@ interface UserApiService {
 
     @GET("/api/user/favorites")
     suspend fun getUserFavorites(): Response<FavoritesResponse>
+
+    @GET("/api/user/followers")
+    suspend fun getFollowers(): Response<List<FollowerUser>>
+
+    @GET("/api/user/following")
+    suspend fun getFollowing(): Response<List<FollowerUser>>
 }

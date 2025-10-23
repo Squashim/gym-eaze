@@ -41,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -58,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
@@ -73,6 +75,8 @@ import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
+import com.example.gymeaze.ui.screens.profile.FollowListDialog
+import com.example.gymeaze.ui.screens.profile.FollowStatsSection
 import com.example.gymeaze.ui.screens.trainingsPlan.TrainingPlansNavigationScreen
 import com.example.gymeaze.ui.screens.trainingsPlan.guest.WorkoutsNotLoggedInScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
@@ -233,6 +237,10 @@ fun ProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        profileViewModel.loadFollowersAndFollowing()
+    }
+
     LaunchedEffect(uiState.operationError) {
         uiState.operationError?.let { error ->
             scope.launch {
@@ -266,14 +274,11 @@ fun ProfileScreen(
                 )
             }
             item {
-                QuickStatsSection()
-            }
-            item {
-                QuickActionSection(
-                    isUserLoggedIn = isUserLoggedIn,
-                    onExerciseCreatorClick = onExerciseCreatorClick,
-                    onBrowseExercisesClick = onBrowseExercisesClick,
-                    onCreateTrainingPlanClick = onCreateTrainingPlanClick
+                FollowStatsSection(
+                    followersCount = uiState.followersCount,
+                    followingCount = uiState.followingCount,
+                    onFollowersClick = { profileViewModel.showFollowersDialog() },
+                    onFollowingClick = { profileViewModel.showFollowingDialog() }
                 )
             }
             item {
@@ -289,13 +294,42 @@ fun ProfileScreen(
             )
         }
     }
-}
+    if (uiState.showFollowersDialog) {
+        FollowListDialog(
+            title = "Obserwujący",
+            users = uiState.followers,
+            isLoading = uiState.isLoadingFollowers,
+            isFollowers = true,
+            onDismiss = { profileViewModel.hideFollowersDialog() }
+        )
+    }
 
+    if (uiState.showFollowingDialog) {
+        FollowListDialog(
+            title = "Obserwowani",
+            users = uiState.following,
+            isLoading = uiState.isLoadingFollowers,
+            isFollowers = false,
+            onDismiss = { profileViewModel.hideFollowingDialog() }
+        )
+    }
+}
 @Composable
 private fun WelcomeSection(
     username: String,
     currentDate: String,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    // Nowe parametry - na razie z wartościami domyślnymi
+    firstName: String? = null,
+    lastName: String? = null,
+    country: String? = null,
+    gender: String? = null,
+    age: Int? = null,
+    height: Int? = null,
+    weight: Double? = null,
+    bmi: Double? = null,
+    trainingGoal: String? = null,
+    badges: List<String> = emptyList()
 ) {
     Card(
         modifier = Modifier
@@ -311,21 +345,34 @@ private fun WelcomeSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(20.dp)
         ) {
+            // Górny wiersz z nazwą użytkownika i edycją
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Witaj, $username! \uD83D\uDC4B",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = getOnSurfaceColor(),
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = buildString {
+                            append(username)
+                            if (firstName != null && lastName != null) {
+                                append(" ($firstName $lastName)")
+                            }
+                        },
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
+                    )
+
+                    Text(
+                        text = currentDate,
+                        fontSize = 12.sp,
+                        color = getOnSurfaceSecondaryColor(),
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
 
                 IconButton(
                     onClick = onEditProfileClick,
@@ -340,244 +387,218 @@ private fun WelcomeSection(
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            // Podstawowe informacje
+            if (gender != null || age != null || country != null) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = currentDate,
-                fontSize = 14.sp,
-                color = getOnSurfaceSecondaryColor(),
-                textAlign = TextAlign.Center
-            )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    gender?.let {
+                        ProfileInfoChip(
+                            icon = if (it.lowercase() == "mężczyzna" || it.lowercase() == "male")
+                                "♂" else "♀",
+                            text = it
+                        )
+                    }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                    age?.let {
+                        ProfileInfoChip(
+                            icon = "🎂",
+                            text = "$it lat"
+                        )
+                    }
 
-            Text(
-                text = "Gotowy na kolejny trening?",
-                fontSize = 16.sp,
-                color = getOnSurfaceColor(),
-                textAlign = TextAlign.Center
-            )
+                    country?.let {
+                        ProfileInfoChip(
+                            icon = "🌍",
+                            text = it
+                        )
+                    }
+                }
+            }
+
+            // Pomiary ciała
+            if (height != null || weight != null || bmi != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    height?.let {
+                        MeasurementItem(
+                            value = "$it cm",
+                            label = "Wzrost"
+                        )
+                    }
+
+                    weight?.let {
+                        MeasurementItem(
+                            value = String.format("%.1f kg", it),
+                            label = "Waga"
+                        )
+                    }
+
+                    bmi?.let {
+                        MeasurementItem(
+                            value = String.format("%.1f", it),
+                            label = "BMI",
+                            color = getBmiColor(it)
+                        )
+                    }
+                }
+            }
+
+            // Cel treningowy
+            trainingGoal?.let { goal ->
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = getSurfaceVariantColor(),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🎯",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Column {
+                        Text(
+                            text = "Cel treningowy",
+                            fontSize = 12.sp,
+                            color = getOnSurfaceSecondaryColor()
+                        )
+                        Text(
+                            text = goal,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = getOnSurfaceColor()
+                        )
+                    }
+                }
+            }
+
+            // Wyróżnione odznaki
+            if (badges.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Column {
+                    Text(
+                        text = "Wyróżnione odznaki",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = getOnSurfaceColor(),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        badges.take(3).forEach { badge ->
+                            BadgeItem(badgeName = badge)
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun QuickStatsSection() {
-    Column{
+private fun ProfileInfoChip(
+    icon: String,
+    text: String
+) {
+    Row(
+        modifier = Modifier
+            .background(
+                color = getSurfaceVariantColor(),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         Text(
-            text = "Szybkie statystyki",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = getOnSurfaceColor(),
-            modifier = Modifier
-                .padding(bottom = 8.dp)
+            text = icon,
+            fontSize = 14.sp
         )
-        Row (
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatCard(
-                title = "Treningi",
-                value = "0", //TODO: implementacja z backendu
-                icon = Icons.Default.FitnessCenter,
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-            StatCard(
-                title = "Ćwiczenia",
-                value = "0", //TODO: implementacja z backendu
-                icon = Icons.AutoMirrored.Filled.List,
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-            StatCard(
-                title = "Czas",
-                value = "0h", //TODO: implementacja z backendu
-                icon = Icons.Default.Schedule,
-                modifier = Modifier
-                    .weight(1f)
-            )
-        }
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            color = getOnSurfaceColor(),
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
 @Composable
-private fun StatCard(
-    title: String,
+private fun MeasurementItem(
     value: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    modifier: Modifier = Modifier
+    label: String,
+    color: Color = getOnSurfaceColor()
 ) {
-    Card(
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = getOnSurfaceColor().copy(alpha = 0.1f),
-                shape = RoundedCornerShape(12.dp)
-            ),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = getPrimaryColor(),
-                modifier = Modifier
-                    .size(24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = value,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = getOnSurfaceColor()
-            )
-
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = getOnSurfaceSecondaryColor()
-            )
-        }
-    }
-}
-
-@Composable
-private fun QuickActionSection(
-    isUserLoggedIn: Boolean,
-    onExerciseCreatorClick: () -> Unit,
-    onBrowseExercisesClick: () -> Unit,
-    onCreateTrainingPlanClick: () -> Unit,
-    ) {
-    Column {
         Text(
-            text = "Szybkie akcje",
+            text = value,
             fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = getOnSurfaceColor(),
-            modifier = Modifier
-                .padding(bottom = 8.dp)
+            fontWeight = FontWeight.Bold,
+            color = color
         )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ActionButton(
-                title = "Stwórz ćwiczenie",
-                subtitle = "Dodaj nowe",
-                icon = Icons.Default.Add,
-                onClick = onExerciseCreatorClick,
-                isPrimary = true,
-                modifier = Modifier.weight(1f)
-            )
-
-            ActionButton(
-                title = "Przeglądaj ćwiczenia",
-                subtitle = "Zobacz wszystkie",
-                icon = Icons.Default.Search,
-                onClick = onBrowseExercisesClick,
-                modifier = Modifier
-                    .weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ActionButton(
-                title = "Nowy plan",
-                subtitle = "Treningowy",
-                icon = Icons.AutoMirrored.Filled.Assignment,
-                onClick = onCreateTrainingPlanClick,
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-            ActionButton(
-                title = "Postęp",
-                subtitle = "Śledź rozwój",
-                icon = Icons.AutoMirrored.Filled.TrendingUp,
-                onClick = {/*TODO Implementacja nawigacji*/},
-                modifier = Modifier
-                    .weight(1f)
-            )
-        }
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = getOnSurfaceSecondaryColor()
+        )
     }
 }
 
 @Composable
-fun ActionButton(
-    title: String,
-    subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit,
-    isPrimary: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = if (isPrimary) getPrimaryColor().copy(alpha = 0.3f)
-                    else getOnSurfaceColor().copy(alpha = 0.1f),
+private fun BadgeItem(badgeName: String) {
+    Box(
+        modifier = Modifier
+            .size(60.dp)
+            .background(
+                color = getSurfaceVariantColor(),
                 shape = RoundedCornerShape(12.dp)
-            ),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isPrimary) getPrimaryColor().copy(alpha = 0.1f)
-                else getSurfaceColor()
-        ),
-        onClick = onClick
+            )
+            .border(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (isPrimary) getPrimaryColor() else getOnSurfaceColor(),
-                modifier = Modifier.size(28.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = if (isPrimary) getPrimaryColor() else getOnSurfaceColor(),
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = subtitle,
-                fontSize = 11.sp,
-                color = getOnSurfaceSecondaryColor(),
-                textAlign = TextAlign.Center
-            )
-        }
+        // Tutaj możesz dodać ikonę odznaki
+        // Na razie placeholder
+        Text(
+            text = "🏆",
+            fontSize = 24.sp
+        )
     }
 }
 
+// Funkcja pomocnicza do określenia koloru BMI
+private fun getBmiColor(bmi: Double): Color {
+    return when {
+        bmi < 18.5 -> Color(0xFF3B82F6) // Niebieski - niedowaga
+        bmi < 25.0 -> Color(0xFF10B981) // Zielony - prawidłowa
+        bmi < 30.0 -> Color(0xFFF59E0B) // Pomarańczowy - nadwaga
+        else -> Color(0xFFEF4444) // Czerwony - otyłość
+    }
+}
 @Composable
 private fun RecentActivitySection(
     isLoading: Boolean,

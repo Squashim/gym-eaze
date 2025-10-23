@@ -3,8 +3,10 @@ package com.example.gymeaze.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.data.repository.StartedTrainingRepository
+import com.example.gymeaze.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,11 +20,21 @@ data class ProfileUiState(
     val deletingPlanId: String? = null,
     val resettingPlanId: String? = null,
     val operationError: String? = null,
-    val operationSuccessMessage: String? = null
+    val operationSuccessMessage: String? = null,
+    val followersCount: Int = 0,
+    val followingCount: Int = 0,
+    val followers: List<FollowerUser> = emptyList(),
+    val following: List<FollowerUser> = emptyList(),
+    val isLoadingFollowers: Boolean = false,
+    val showFollowersDialog: Boolean = false,
+    val showFollowingDialog: Boolean = false
+
 )
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = StartedTrainingRepository(application)
+
+    private val userRepository = UserRepository(application)
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
@@ -107,5 +119,54 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun clearOperationMessages() {
         _uiState.update { it.copy(operationError = null, operationSuccessMessage = null) }
+    }
+    //FOLLOW
+    fun loadFollowersAndFollowing() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingFollowers = true) }
+
+            val followersResult = userRepository.getFollowers()
+            val followingResult = userRepository.getFollowing()
+
+            followersResult.onSuccess { followers ->
+                _uiState.update {
+                    it.copy(
+                        followers = followers,
+                        followersCount = followers.size
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { it.copy(operationError = error.message) }
+            }
+
+            followingResult.onSuccess { following ->
+                _uiState.update {
+                    it.copy(
+                        following = following,
+                        followingCount = following.size
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update { it.copy(operationError = error.message) }
+            }
+
+            _uiState.update { it.copy(isLoadingFollowers = false) }
+        }
+    }
+
+    fun showFollowersDialog() {
+        _uiState.update { it.copy(showFollowersDialog = true) }
+    }
+
+    fun hideFollowersDialog() {
+        _uiState.update { it.copy(showFollowersDialog = false) }
+    }
+
+    fun showFollowingDialog() {
+        _uiState.update { it.copy(showFollowingDialog = true) }
+    }
+
+    fun hideFollowingDialog() {
+        _uiState.update { it.copy(showFollowingDialog = false) }
     }
 }
