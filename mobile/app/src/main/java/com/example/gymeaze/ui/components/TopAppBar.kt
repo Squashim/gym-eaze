@@ -45,7 +45,10 @@ fun GymEazeTopAppBar(
                         } else {
                             R.drawable.gym_eaze_logo_dark
                         }),
-                    contentDescription = stringResource(R.string.logo)
+                    contentDescription = stringResource(R.string.logo),
+                    modifier = Modifier
+                        .height(64.dp)
+                    ,
                 )
             }
         },

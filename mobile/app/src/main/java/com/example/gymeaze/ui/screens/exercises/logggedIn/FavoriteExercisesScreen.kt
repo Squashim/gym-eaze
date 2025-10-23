@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,6 +48,12 @@ fun FavoriteExercisesScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var lastLoadedUserId by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.reloadCurrentUser()
@@ -172,12 +180,22 @@ fun FavoriteExercisesScreen(
                                         isLiked = viewModel.isExerciseLiked(exercise.id),
                                         isFavorite = favoriteExercises.contains(exercise.id),
                                         isCurrentUserExercise = viewModel.isCurrentUserExercise(exercise.author.username),
-                                        onLikeClick = { viewModel.toggleLike(exercise.id) },
+                                        onLikeClick = {
+                                            viewModel.toggleLike(exercise.id) { success, message ->
+                                                if (success) {
+                                                    showToast(message)
+                                                }
+                                            }
+                                        },
                                         onFavoriteClick = {
-                                            viewModel.toggleFavorite(exercise.id)
-                                            coroutineScope.launch {
-                                                kotlinx.coroutines.delay(500)
-                                                viewModel.refreshFavoriteExercises()
+                                            viewModel.toggleFavorite(exercise.id) { success, message ->
+                                                if (success) {
+                                                    showToast(message)
+                                                }
+                                                coroutineScope.launch {
+                                                    kotlinx.coroutines.delay(500)
+                                                    viewModel.refreshFavoriteExercises()
+                                                }
                                             }
                                         },
                                         onEditClick = { exerciseId ->

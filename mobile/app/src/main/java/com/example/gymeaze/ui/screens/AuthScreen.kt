@@ -35,6 +35,7 @@ import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.guest.WorkoutsNotLoggedInScreen
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.AuthUiState
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
@@ -433,9 +434,12 @@ fun AuthScreen(
     val createPostViewModel: PostsViewModel = viewModel()
     val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
 
+    var selectedPlanId by remember { mutableStateOf<String?>(null) }
+    var showPlanDetails by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
-            if (selectedRoute !in listOf("community", "exercises")) {
+            if (selectedRoute !in listOf("community", "exercises", "workouts")) {
                 GymEazeTopAppBar(onSettingsClick = onSettingsClick)
             }
         },
@@ -449,10 +453,33 @@ fun AuthScreen(
     ) { paddingValues ->
         when (selectedRoute) {
             "exercises" -> ExerciseScreen(onSettingsClick, isUserLoggedIn, createExerciseViewModel, setShowBottomBar = { true })
-            "workouts" -> TrainingsPlanScreen(
-                onSettingsClick = onSettingsClick,
-                onCreateTrainingPlanClick = onCreateTrainingPlanClick
-            )
+            "workouts" -> {
+                if (showPlanDetails && selectedPlanId != null) {
+                    TrainingPlanDetailScreen(
+                        planId = selectedPlanId!!,
+                        onBackClick = {
+                            showPlanDetails = false
+                            selectedPlanId = null
+                        },
+                        onExerciseClick = { exerciseId ->
+                        },
+                        onUserClick = { username ->
+                        },
+                        navigateToWorkoutPlayer = { userPlanId, planName, dayNumber ->
+                        },
+                        isUserLoggedIn = false,
+                        onEditPlanClick = { }
+                    )
+                } else {
+                    WorkoutsNotLoggedInScreen(
+                        onSettingsClick = onSettingsClick,
+                        onPlanClick = { planId ->
+                            selectedPlanId = planId
+                            showPlanDetails = true
+                        }
+                    )
+                }
+            }
             "community" -> PostScreen(onSettingsClick, isUserLoggedIn, createPostViewModel, setShowBottomBar = { true })
 
             "profile" -> {

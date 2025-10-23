@@ -87,15 +87,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val authRepository = AuthRepository(application.applicationContext)
     private val userPreferences = UserPreferences(application.applicationContext)
-
-    init {
-        checkTokenValidityOnStartup()
-    }
-
     private val _showBrowseExercises = MutableStateFlow(false)
     val showBrowseExercises: StateFlow<Boolean> = _showBrowseExercises.asStateFlow()
     private val _isCheckingToken = MutableStateFlow(true)
     val isCheckingToken: StateFlow<Boolean> = _isCheckingToken.asStateFlow()
+
+    init {
+        checkTokenValidityOnStartup()
+    }
 
     private val _logoutEvent = MutableStateFlow<LogoutEvent?>(null)
     val logoutEvent: StateFlow<LogoutEvent?> = _logoutEvent.asStateFlow()
@@ -132,6 +131,48 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _selectedEditPlanId = MutableStateFlow<String?>(null)
     val selectedEditPlanId: StateFlow<String?> = _selectedEditPlanId.asStateFlow()
+
+    private val _showStartedPlanDays = MutableStateFlow(false)
+    val showStartedPlanDays = _showStartedPlanDays.asStateFlow()
+
+    private val _selectedStartedPlan = MutableStateFlow<Pair<String, String>?>(null)
+    val selectedStartedPlan = _selectedStartedPlan.asStateFlow()
+
+    private val _showWorkoutPlayer = MutableStateFlow(false)
+    val showWorkoutPlayer = _showWorkoutPlayer.asStateFlow()
+
+    private val _selectedWorkoutParams = MutableStateFlow<Pair<String, Int>?>(null) // Para (userTrainingPlanId, dayNumber)
+    val selectedWorkoutParams = _selectedWorkoutParams.asStateFlow()
+
+    fun navigateToWorkoutPlayer(userTrainingPlanId: String, planName: String, dayNumber: Int) {
+        _selectedWorkoutParams.value = Pair(userTrainingPlanId, dayNumber)
+
+        _showTrainingPlanDetail.value = false
+        _showStartedPlanDays.value = false
+
+        _showWorkoutPlayer.value = true
+    }
+
+
+    fun showWorkoutPlayerScreen(userTrainingPlanId: String, dayNumber: Int) {
+        _selectedWorkoutParams.value = Pair(userTrainingPlanId, dayNumber)
+        _showWorkoutPlayer.value = true
+    }
+
+    fun hideWorkoutPlayerScreen() {
+        _showWorkoutPlayer.value = false
+        _selectedWorkoutParams.value = null
+    }
+
+    fun showStartedPlanDaysScreen(userTrainingPlanId: String, planName: String) {
+        _selectedStartedPlan.value = Pair(userTrainingPlanId, planName)
+        _showStartedPlanDays.value = true
+    }
+
+    fun hideStartedPlanDaysScreen() {
+        _showStartedPlanDays.value = false
+        _selectedStartedPlan.value = null
+    }
 
     fun showEditTrainingPlanScreen(planId: String) {
         _showMyTrainingPlans.value = false

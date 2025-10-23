@@ -1,11 +1,13 @@
 package com.example.gymeaze.data.api
 
+import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.LikeResponse
 import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.TrainingPlanQuery
 import com.example.gymeaze.data.models.TrainingPlansResponse
 import com.example.gymeaze.data.models.UpdateTrainingDay
+import com.example.gymeaze.data.models.UserFavorites
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -95,4 +97,13 @@ interface TrainingPlanApiService {
         val message: String
     )
 
+    @GET("/api/user/favorites")
+    suspend fun getUserFavorites(): Response<UserFavorites>
+
+    @GET("/api/training-plans/{id}/comments")
+    suspend fun getTrainingPlanComments(
+        @Path("id") planId: String,
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 10
+    ): Response<GetCommentsResponse>
 }

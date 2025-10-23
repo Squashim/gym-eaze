@@ -22,7 +22,8 @@ data class TrainingPlan(
 
     val totalExercises: Int? = null,
     val totalDuration: Int? = null,
-    val daysCount: DaysCount? = null
+    val daysCount: DaysCount? = null,
+    val isFavorite: Boolean? = null
 )
 
 data class TrainingPlanAuthor(
@@ -179,3 +180,5 @@ data class UpdateExerciseSet(
 data class DeleteResponse(
     val message: String
 )
+
+

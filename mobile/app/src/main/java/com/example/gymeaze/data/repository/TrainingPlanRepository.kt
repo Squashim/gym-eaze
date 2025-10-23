@@ -5,20 +5,21 @@ import android.net.Uri
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
+import com.example.gymeaze.data.api.PostApiService
 import com.example.gymeaze.data.api.TrainingPlanApiService
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
-import com.example.gymeaze.viewmodel.TrainingDay
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingDay
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -28,6 +29,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
+import com.example.gymeaze.data.models.UserFavorites
 
 class TrainingPlanRepository(private val context: Context) {
 
@@ -57,6 +59,14 @@ class TrainingPlanRepository(private val context: Context) {
             .create(TrainingPlanApiService::class.java)
     }
 
+    private val apiTrainings: PostApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PostApiService::class.java)
+    }
     suspend fun createTrainingPlan(
         name: String,
         description: String,
@@ -260,18 +270,44 @@ class TrainingPlanRepository(private val context: Context) {
 
     suspend fun toggleTrainingPlanFavorite(planId: String): Result<MessageResponse> = withContext(Dispatchers.IO) {
         try {
+
+            val token = userPreferences.accessToken.first()
+
             val response = api.toggleTrainingPlanFavorite(planId)
+
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val messageResponse = response.body()!!
+                Result.success(messageResponse)
             } else {
-                val raw = response.errorBody()?.string()
-                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                val errorBody = response.errorBody()?.string()
+
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, errorBody, response.code())
                 Result.failure(IllegalStateException(msg))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    suspend fun getUserFavorites(): Result<UserFavorites> = withContext(Dispatchers.IO) {
+        try {
+
+            val response = api.getUserFavorites()
+
+            if (response.isSuccessful && response.body() != null) {
+                val userFavorites = response.body()!!
+                Result.success(userFavorites)
+            } else {
+                val errorBody = response.errorBody()?.string()
+
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, errorBody, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun downloadTrainingPlanPDF(planId: String): Result<ByteArray> = withContext(Dispatchers.IO) {
         try {
             val response = api.downloadTrainingPlanPDF(planId)
@@ -402,5 +438,34 @@ class TrainingPlanRepository(private val context: Context) {
             input?.use { inputStream -> inputStream.copyTo(out) }
         }
         return file
+    }
+
+    suspend fun getUserLikes(): Result<LikesResponse> {
+        return try {
+            val response = apiTrainings.getUserLikes()
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Błąd podczas pobierania polubionych: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    suspend fun getCommentsForTrainingPlan(
+        planId: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): GetCommentsResponse? {
+        return try {
+            val response = api.getTrainingPlanComments(planId, cursor, limit)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }
