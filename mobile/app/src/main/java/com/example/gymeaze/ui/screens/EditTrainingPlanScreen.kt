@@ -12,10 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -26,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -40,17 +37,16 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.ui.theme.*
-import com.example.gymeaze.viewmodel.EditTrainingPlanViewModel
-import com.example.gymeaze.viewmodel.TrainingSet
-import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.viewmodel.trainingsPlan.EditTrainingPlanViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingSet
 import com.example.gymeaze.ui.components.DifficultyOptionItem
 import com.example.gymeaze.ui.components.GoalOptionItem
 import com.example.gymeaze.ui.components.getDifficultyColor
 import com.example.gymeaze.ui.components.getDifficultyDescription
 import com.example.gymeaze.ui.components.getGoalDescription
-import com.example.gymeaze.viewmodel.DayExercise
-import com.example.gymeaze.viewmodel.EditTrainingPlanState
-import com.example.gymeaze.viewmodel.TrainingDay
+import com.example.gymeaze.viewmodel.trainingsPlan.DayExercise
+import com.example.gymeaze.viewmodel.trainingsPlan.EditTrainingPlanState
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingDay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

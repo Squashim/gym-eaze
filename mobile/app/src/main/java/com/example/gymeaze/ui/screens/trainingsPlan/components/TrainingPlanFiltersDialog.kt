@@ -45,7 +45,8 @@ fun TrainingPlanFiltersDialog(
     onFollowersOnlyChanged: (Boolean) -> Unit,
     onApplyFilters: () -> Unit,
     onClearFilters: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isUserLoggedIn: Boolean = true // DODAJ TEN PARAMETR
 ) {
     var minDurationText by remember { mutableStateOf(minDuration?.toString() ?: "") }
     var maxDurationText by remember { mutableStateOf(maxDuration?.toString() ?: "") }
@@ -180,12 +181,14 @@ fun TrainingPlanFiltersDialog(
                             )
                         }
 
-                        // Toggle "Tylko obserwowani"
-                        item {
-                            FollowersOnlyToggle(
-                                enabled = followersOnly,
-                                onToggle = onFollowersOnlyChanged
-                            )
+                        // Toggle "Tylko obserwowani" - TYLKO DLA ZALOGOWANYCH
+                        if (isUserLoggedIn) {
+                            item {
+                                FollowersOnlyToggle(
+                                    enabled = followersOnly,
+                                    onToggle = onFollowersOnlyChanged
+                                )
+                            }
                         }
 
                         // Cel treningowy

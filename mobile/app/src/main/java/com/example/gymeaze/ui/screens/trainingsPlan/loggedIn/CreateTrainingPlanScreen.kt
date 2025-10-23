@@ -1,4 +1,4 @@
-package com.example.gymeaze.ui.screens
+package com.example.gymeaze.ui.screens.trainingsPlan.loggedIn
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,16 +34,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.example.gymeaze.R
-import com.example.gymeaze.constants.AdvancedLevel
-import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.ui.components.GoalSelectionDialog
 import com.example.gymeaze.ui.components.DifficultySelectionDialog
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.theme.*
-import com.example.gymeaze.viewmodel.*
-import kotlinx.coroutines.delay
+import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanState
+import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.DayExercise
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingDay
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingPlanCreatorStep
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingSet
 
 @Composable
 private fun RestDayConversionWarningDialog(

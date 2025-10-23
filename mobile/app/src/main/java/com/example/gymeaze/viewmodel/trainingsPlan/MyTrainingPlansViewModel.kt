@@ -1,11 +1,10 @@
-package com.example.gymeaze.viewmodel
+package com.example.gymeaze.viewmodel.trainingsPlan
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.TrainingPlanAuthor
-import com.example.gymeaze.data.models.TrainingPlansResponse
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import kotlinx.coroutines.flow.*
@@ -21,7 +20,8 @@ data class MyTrainingPlansUiState(
     val showDeleteDialog: Boolean = false,
     val planToDelete: TrainingPlan? = null,
     val snackbarMessage: String? = null,
-    val snackbarType: SnackbarType = SnackbarType.SUCCESS
+    val snackbarType: SnackbarType = SnackbarType.SUCCESS,
+    val isRefreshing: Boolean = false
 )
 
 class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
@@ -44,7 +44,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
             if (append) {
                 _uiState.value = _uiState.value.copy(isLoadingMore = true)
             } else {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null,isRefreshing = false)
             }
 
             try {
@@ -66,12 +66,14 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                         hasMorePages = response.page * response.pageSize < response.total,
                         isLoading = false,
                         isLoadingMore = false,
+                        isRefreshing = false,
                         error = null
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
+                        isRefreshing = false,
                         error = exception.message ?: "Błąd podczas ładowania moich planów"
                     )
                 }
@@ -79,6 +81,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
+                    isRefreshing = false,
                     error = e.message ?: "Nieoczekiwany błąd"
                 )
             }
@@ -147,9 +150,40 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun refreshTrainingPlans() {
-        loadMyTrainingPlans()
-    }
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
 
+                val result = repository.getMyTrainingPlans(page = 1, pageSize = 9)
+
+                result.onSuccess { response ->
+                    _uiState.value = _uiState.value.copy(
+                        trainingPlans = response.items,
+                        currentPage = response.page,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false,
+                        error = exception.message ?: "Błąd podczas odświeżania planów"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    isRefreshing = false,
+                    error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
+                )
+            }
+        }
+    }
     fun showDeleteDialog(plan: TrainingPlan) {
         _uiState.value = _uiState.value.copy(
             showDeleteDialog = true,
@@ -200,4 +234,5 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
     }
+
 }

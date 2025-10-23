@@ -1,12 +1,16 @@
-package com.example.gymeaze.viewmodel
+package com.example.gymeaze.viewmodel.trainingsPlan
 
 import android.app.Application
+import android.content.ContentValues
 import android.content.Context
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Exercise
-import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
@@ -15,8 +19,10 @@ import com.example.gymeaze.data.repository.PostsRepository
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import com.example.gymeaze.util.GlobalFavoriteState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
 
 data class TrainingPlanDetailUiState(
     val trainingPlan: TrainingPlan? = null,
@@ -25,7 +31,8 @@ data class TrainingPlanDetailUiState(
     val isDownloadingPdf: Boolean = false,
     val snackbarMessage: String? = null,
     val snackbarType: SnackbarType = SnackbarType.ERROR,
-    val isStartingPlan: Boolean = false
+    val isStartingPlan: Boolean = false,
+    val isDeleted: Boolean = false
 )
 
 data class NavigationEvent(
@@ -238,7 +245,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 result.onSuccess { response ->
 
                     launch {
-                        kotlinx.coroutines.delay(1000)
+                        delay(1000)
                         GlobalFavoriteState.getInstance(getApplication()).forceRefreshFromBackend()
                     }
 
@@ -304,7 +311,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
             val planName = _uiState.value.trainingPlan?.name?.replace("[^a-zA-Z0-9]".toRegex(), "-") ?: "plan-treningowy"
             val fileName = "plan-treningowy-${planName}-${planId}.pdf"
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 savePDFWithMediaStore(context, pdfBytes, fileName)
             } else {
                 savePDFToExternalStorage(context, pdfBytes, fileName)
@@ -324,16 +331,16 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    @androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun savePDFWithMediaStore(context: Context, pdfBytes: ByteArray, fileName: String) {
         val resolver = context.contentResolver
-        val contentValues = android.content.ContentValues().apply {
-            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
-            put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS)
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
         }
 
-        val uri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
         uri?.let {
             resolver.openOutputStream(it)?.use { outputStream ->
                 outputStream.write(pdfBytes)
@@ -342,12 +349,12 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     }
 
     private fun savePDFToExternalStorage(context: Context, pdfBytes: ByteArray, fileName: String) {
-        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         if (!downloadsDir.exists()) {
             downloadsDir.mkdirs()
         }
 
-        val file = java.io.File(downloadsDir, fileName)
+        val file = File(downloadsDir, fileName)
         file.writeBytes(pdfBytes)
     }
 
@@ -393,6 +400,36 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                     snackbarMessage = exception.message ?: "Wystąpił błąd",
                     snackbarType = SnackbarType.ERROR
                 )
+            }
+        }
+    }
+    fun resetDeletedFlag() {
+        _uiState.update { it.copy(isDeleted = false) }
+    }
+
+    fun deleteTrainingPlan(planId: String) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+
+                repository.deleteTrainingPlan(planId)
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        snackbarMessage = "Plan treningowy został usunięty",
+                        snackbarType = SnackbarType.SUCCESS,
+                        isDeleted = true
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        snackbarMessage = "Nie udało się usunąć planu: ${e.message}",
+                        snackbarType = SnackbarType.ERROR
+                    )
+                }
             }
         }
     }

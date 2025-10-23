@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,7 +20,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -43,18 +41,16 @@ import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.util.formatToRelativeTime
-import com.example.gymeaze.viewmodel.SnackbarType
-import com.example.gymeaze.viewmodel.TrainingPlanDetailViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.SnackbarType
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingPlanDetailViewModel
 import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.screens.comments.DeleteCommentDialog
 import com.example.gymeaze.ui.screens.exercises.logggedIn.EditCommentDialog
 import com.example.gymeaze.ui.screens.posts.guest.components.LoginToLikeDialog
 import com.example.gymeaze.util.GlobalFavoriteState
-import com.example.gymeaze.util.formatToRelativeTime
 import com.example.gymeaze.viewmodel.ReportItemType
 import com.example.gymeaze.viewmodel.ReportViewModel
 import kotlinx.coroutines.launch
-import okhttp3.internal.concurrent.formatDuration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +61,8 @@ fun TrainingPlanDetailScreen(
     viewModel: TrainingPlanDetailViewModel = viewModel(),
     onUserClick: (String) -> Unit = {},
     navigateToWorkoutPlayer: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit,
-    isUserLoggedIn: Boolean = true
+    isUserLoggedIn: Boolean = true,
+    onEditPlanClick: (String) -> Unit = {} // Dodaj parametr dla nawigacji do edycji
 ) {
     val reportViewModel: ReportViewModel = viewModel()
 
@@ -76,8 +73,10 @@ fun TrainingPlanDetailScreen(
 
     var showLoginDialog by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) } // Dodaj state dla dialogu usuwania
 
     LaunchedEffect(planId) {
+        viewModel.resetDeletedFlag()
         viewModel.loadTrainingPlan(planId)
     }
 
@@ -108,6 +107,13 @@ fun TrainingPlanDetailScreen(
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
             navigateToWorkoutPlayer(event.userTrainingPlanId, event.planName, event.firstDayNumber)
+        }
+    }
+
+    // Obsługa sukcesu usunięcia - powrót do poprzedniego ekranu
+    LaunchedEffect(uiState.isDeleted) {
+        if (uiState.isDeleted) {
+            onBackClick()
         }
     }
 
@@ -197,9 +203,25 @@ fun TrainingPlanDetailScreen(
                         onBackClick = onBackClick,
                         navigateToWorkoutPlayer = navigateToWorkoutPlayer,
                         isDownloadingPdf = isDownloadingPdf,
-                        onReportClick = { showReportDialog = true }
+                        onReportClick = { showReportDialog = true },
+                        onEditPlanClick = onEditPlanClick, // Przekaż callback
+                        onDeletePlanClick = { showDeleteDialog = true } // Pokaż dialog zamiast bezpośredniego usuwania
                     )
                 }
+            }
+
+            // Dialog potwierdzenia usunięcia
+            if (showDeleteDialog && uiState.trainingPlan != null) {
+                DeleteConfirmationDialog(
+                    planName = uiState.trainingPlan!!.name,
+                    onConfirm = {
+                        viewModel.deleteTrainingPlan(uiState.trainingPlan!!.id)
+                        showDeleteDialog = false
+                    },
+                    onDismiss = {
+                        showDeleteDialog = false
+                    }
+                )
             }
         }
     }
@@ -223,27 +245,80 @@ fun TrainingPlanDetailScreen(
     }
 }
 
+// Dodaj ten sam dialog jak w MyTrainingPlansScreen
 @Composable
-private fun DifficultyBadge(
+private fun DeleteConfirmationDialog(
+    planName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error
+            )
+        },
+        title = {
+            Text(
+                text = "Usuń plan treningowy",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                text = "Czy na pewno chcesz usunąć plan \"$planName\"?\n\nTa operacja nie może zostać cofnięta.",
+                fontSize = 14.sp
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm
+            ) {
+                Text(
+                    text = "Usuń",
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Anuluj",
+                    color = getOnSurfaceColor()
+                )
+            }
+        },
+        containerColor = getSurfaceColor(),
+        textContentColor = getOnSurfaceColor()
+    )
+}
+
+@Composable
+fun DifficultyBadgeTrainingPlan(
     difficulty: String,
     modifier: Modifier = Modifier
 ) {
     val (text, backgroundColor, textColor) = when (difficulty) {
-        AdvancedLevel.EASY -> Triple("P", getPrimaryColor().copy(alpha = 0.9f), Color.White)
-        AdvancedLevel.MEDIUM -> Triple("Ś", getYellowColor(), getOnYellowColor())
-        AdvancedLevel.HARD -> Triple("Z", Color.Red.copy(alpha = 0.9f), Color.White)
-        else -> Triple("?", Color.Gray.copy(alpha = 0.9f), Color.White)
+        AdvancedLevel.NONE -> Triple("Nie wybrano", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
+        AdvancedLevel.EASY -> Triple("Początkujący", getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
+        AdvancedLevel.MEDIUM -> Triple("Średniozaawansowany", getYellowColor(), getOnYellowColor())
+        AdvancedLevel.HARD -> Triple("Zaawansowany", getErrorColor().copy(alpha = 0.2f), getErrorColor())
+        else -> Triple("?", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
     }
 
     Box(
         modifier = modifier
-            .size(32.dp)
-            .background(backgroundColor, RoundedCornerShape(8.dp)),
+            .background(backgroundColor, RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            fontSize = 14.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = textColor
         )
@@ -854,6 +929,8 @@ private fun TrainingPlanDetailContent(
     navigateToWorkoutPlayer: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit,
     isDownloadingPdf: Boolean,
     onReportClick: () -> Unit,
+    onEditPlanClick: (String) -> Unit,
+    onDeletePlanClick: () -> Unit, // ZMIENIONO: usunięto parametr TrainingPlan
     modifier: Modifier = Modifier
 ) {
     val comments by viewModel.trainingPlanComments.collectAsState()
@@ -934,28 +1011,72 @@ private fun TrainingPlanDetailContent(
                     )
                 }
 
-                if (!viewModel.isCurrentUserTrainingPlan(plan.author?.username ?: "")) {
-                    IconButton(
-                        onClick = {
-                            if (!isUserLoggedIn) {
-                                onShowLoginDialog()
-                            } else {
-                                onReportClick()
-                            }
-                        },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                            .background(
-                                Color.Black.copy(alpha = 0.5f),
-                                RoundedCornerShape(24.dp)
+                // Prawy górny róg - przyciski akcji
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Sprawdź czy to plan aktualnego użytkownika
+                    if (viewModel.isCurrentUserTrainingPlan(plan.author?.username ?: "")) {
+                        // Przycisk edycji
+                        IconButton(
+                            onClick = {
+                                onEditPlanClick(plan.id)
+                            },
+                            modifier = Modifier
+                                .background(
+                                    Color.Black.copy(alpha = 0.5f),
+                                    RoundedCornerShape(24.dp)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edytuj plan",
+                                tint = Color.White
                             )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Flag,
-                            contentDescription = "Zgłoś",
-                            tint = Color.White
-                        )
+                        }
+
+                        // Przycisk usuwania
+                        IconButton(
+                            onClick = {
+                                onDeletePlanClick()
+                            },
+                            modifier = Modifier
+                                .background(
+                                    Color.Black.copy(alpha = 0.5f),
+                                    RoundedCornerShape(24.dp)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Usuń plan",
+                                tint = Color.White
+                            )
+                        }
+                    } else {
+                        // Dla cudzych planów - przycisk zgłoszenia
+                        IconButton(
+                            onClick = {
+                                if (!isUserLoggedIn) {
+                                    onShowLoginDialog()
+                                } else {
+                                    onReportClick()
+                                }
+                            },
+                            modifier = Modifier
+                                .background(
+                                    Color.Black.copy(alpha = 0.5f),
+                                    RoundedCornerShape(24.dp)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Flag,
+                                contentDescription = "Zgłoś",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
 
@@ -974,46 +1095,51 @@ private fun TrainingPlanDetailContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onUserClick(plan.author?.username ?: "?") },
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        UserAvatar(
-                            imageUrl = plan.author?.profileDetails?.profilePicture,
-                            username = plan.author?.username ?: "?",
-                            modifier = Modifier.size(40.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
+                        // Lewa kolumna - avatar i informacje o użytkowniku
                         Column(
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onUserClick(plan.author?.username ?: "?") }
                         ) {
-                            Text(
-                                text = plan.author?.username ?: "?",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                UserAvatar(
+                                    imageUrl = plan.author?.profileDetails?.profilePicture,
+                                    username = plan.author?.username ?: "?",
+                                    modifier = Modifier.size(40.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column {
+                                    Text(
+                                        text = plan.author?.username ?: "?",
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = "Dodano ${plan.createdAt.formatToRelativeTime()}",
+                                        fontSize = 14.sp,
+                                        color = Color.White.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
                         }
+
+                        DifficultyBadgeTrainingPlan(
+                            difficulty = plan.advancedLevel,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = plan.createdAt.formatToRelativeTime(),
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.7f)
-                    )
                 }
-
-                DifficultyBadge(
-                    difficulty = plan.advancedLevel,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 70.dp, end = 16.dp)
-                )
             }
         }
 
@@ -1471,7 +1597,6 @@ private fun TrainingPlanDetailContent(
         )
     }
 }
-
 @Composable
 private fun TrainingPlanCommentItem(
     comment: Comment,

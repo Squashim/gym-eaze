@@ -1,4 +1,4 @@
-package com.example.gymeaze.viewmodel
+package com.example.gymeaze.viewmodel.trainingsPlan
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -8,6 +8,7 @@ import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import com.example.gymeaze.util.GlobalFavoriteState
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -21,7 +22,9 @@ data class TrainingPlansUiState(
     val isLoadingMore: Boolean = false,
     val snackbarMessage: String? = null,
     val snackbarType: SnackbarType = SnackbarType.ERROR,
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    val showDeleteDialog: Boolean = false,
+    val planToDelete: TrainingPlan? = null
 )
 
 class TrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
@@ -480,7 +483,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                 result.onSuccess { response ->
 
                     launch {
-                        kotlinx.coroutines.delay(1000)
+                        delay(1000)
                         GlobalFavoriteState.getInstance(getApplication()).forceRefreshFromBackend()
                     }
 
@@ -505,5 +508,55 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun showDeleteDialog(plan: TrainingPlan) {
+        _uiState.update { it.copy(showDeleteDialog = true, planToDelete = plan) }
+    }
+
+    fun hideDeleteDialog() {
+        _uiState.update { it.copy(showDeleteDialog = false, planToDelete = null) }
+    }
+
+    fun deletePlan() {
+        viewModelScope.launch {
+            try {
+                val planId = _uiState.value.planToDelete?.id
+                if (planId != null) {
+                    // Wywołaj API do usunięcia planu
+                    val result = repository.deleteTrainingPlan(planId)
+
+                    result.onSuccess {
+                        // Ukryj dialog
+                        hideDeleteDialog()
+
+                        // Odśwież listę planów
+                        refreshTrainingPlans()
+
+                        // Pokaż potwierdzenie
+                        _uiState.update {
+                            it.copy(
+                                snackbarMessage = "Plan został usunięty",
+                                snackbarType = SnackbarType.SUCCESS
+                            )
+                        }
+                    }.onFailure { exception ->
+                        _uiState.update {
+                            it.copy(
+                                snackbarMessage = "Błąd podczas usuwania planu: ${exception.message}",
+                                snackbarType = SnackbarType.ERROR
+                            )
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        snackbarMessage = "Błąd podczas usuwania planu: ${e.message}",
+                        snackbarType = SnackbarType.ERROR
+                    )
+                }
+            }
+        }
     }
 }

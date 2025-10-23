@@ -1,128 +1,186 @@
-package com.example.gymeaze.viewmodel
+package com.example.gymeaze.viewmodel.trainingsPlan
 
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymeaze.R
-import com.example.gymeaze.constants.AdvancedLevel
-import com.example.gymeaze.constants.Goals
-import com.example.gymeaze.constants.PrivacySettings
+import com.example.gymeaze.data.models.*
 import com.example.gymeaze.data.repository.TrainingPlanRepository
-import com.example.gymeaze.data.models.Exercise
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.gymeaze.data.repository.ExerciseRepository
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-data class TrainingSet(
-    val repetitions: Int? = null,
-    val weight: Double? = 0.5,
-    val duration: Int? = null
-) {
-    val isRepsSet: Boolean get() = repetitions != null
-    val isDurationSet: Boolean get() = duration != null
-}
-
-data class DayExercise(
-    val exercise: Exercise,
-    val isRepsSet: Boolean = true,
-    val duration: Int = 0,
-    val restAfterSet: Int = 60,
-    val sets: List<TrainingSet> = listOf(TrainingSet(repetitions = 10, weight = 0.5))
-)
-
-data class TrainingDay(
-    val dayNumber: Int,
-    val name: String = "",
-    val isRestDay: Boolean = false,
-    val exercises: List<DayExercise> = emptyList(),
-    val totalDuration: Int = 0
-)
-
-data class ValidationError(
-    val field: String,
-    val message: String
-)
-
-data class SetValidation(
-    val repetitionsError: String? = null,
-    val weightError: String? = null,
-    val durationError: String? = null,
-    val restTimeError: String? = null
-)
-
-enum class TrainingPlanCreatorStep { BASIC, DAYS_AND_EXERCISES, SUMMARY }
-
-data class CreateTrainingPlanState(
+data class EditTrainingPlanState(
     val isLoading: Boolean = false,
+    val originalPlan: TrainingPlan? = null,
+    val isUpdating: Boolean = false,
     val error: String? = null,
-    val success: Boolean = false,
+    val updateSuccess: Boolean = false,
     val validationToast: String? = null,
-
+    val isInitialLoadComplete: Boolean = false,
 
     val name: String = "",
     val description: String = "",
-    val goal: String = Goals.NONE,
-    val visibility: String = PrivacySettings.PUBLIC,
-    val advancedLevel: String = AdvancedLevel.EASY,
+    val goal: String = "",
+    val visibility: String = "",
+    val advancedLevel: String = "",
     val hashtags: List<String> = emptyList(),
     val imageUri: Uri? = null,
-
     val days: List<TrainingDay> = emptyList(),
-    val selectedDayIndex: Int? = null,
 
-    val currentStep: TrainingPlanCreatorStep = TrainingPlanCreatorStep.BASIC
+    val availableExercises: List<Exercise> = emptyList()
 ) {
     val basicValid: Boolean get() = name.isNotBlank() &&
             name.length <= 150 &&
-            imageUri != null &&
             (description.isEmpty() || description.length <= 850) &&
             hashtags.size <= 50
 
     val daysAndExercisesValid: Boolean get() {
         if (days.isEmpty() || days.size > 30) return false
-
         return days.all { day ->
-
             if (day.name.isBlank() || day.name.length > 100) return@all false
-
             val exerciseIds = day.exercises.map { it.exercise.id }
             if (exerciseIds.toSet().size != exerciseIds.size) return@all false
-
             if (day.isRestDay) return@all true
-
             if (day.exercises.isEmpty()) return@all true
-
             day.exercises.all { dayExercise ->
-
                 if (dayExercise.sets.isEmpty() || dayExercise.sets.size > 15) return@all false
-
                 if (dayExercise.restAfterSet !in 30..5400) return@all false
-
                 dayExercise.sets.all { set ->
                     if (set.isRepsSet) {
-
                         val repsValid = set.repetitions != null && set.repetitions!! in 1..100
                         val weightValid = set.weight != null && set.weight!! >= 0.5 && set.weight!! <= 300.0
                         repsValid && weightValid
                     } else {
-
                         set.duration != null && set.duration!! in 30..21600
                     }
                 }
             }
         }
     }
-
 }
 
-class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(application) {
+class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TrainingPlanRepository(application)
+    private val exerciseRepository = ExerciseRepository(application)
 
-    private val _uiState = MutableStateFlow(CreateTrainingPlanState())
-    val uiState: StateFlow<CreateTrainingPlanState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(EditTrainingPlanState())
+    val uiState: StateFlow<EditTrainingPlanState> = _uiState.asStateFlow()
+
+    fun loadTrainingPlan(planId: String) {
+        if (_uiState.value.isInitialLoadComplete) {
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+                val planResult = repository.getTrainingPlanById(planId)
+
+                planResult.onSuccess { plan ->
+                    loadAllAvailableExercises(plan)
+
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "Błąd podczas ładowania planu"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Nieoczekiwany błąd: ${e.message}"
+                )
+            }
+        }
+    }
+
+    private fun loadAllAvailableExercises(plan: TrainingPlan) {
+        viewModelScope.launch {
+            try {
+                val exercisesResult = exerciseRepository.getExercises(
+                    filters = ExerciseFilters(),
+                    sortBy = "latest",
+                    page = 1,
+                    pageSize = 1000
+                )
+
+                exercisesResult.onSuccess { exercisesResponse ->
+                    val allExercises = exercisesResponse.items
+
+                    convertPlanToUIFormat(plan, allExercises)
+
+                }.onFailure { exception ->
+                    convertPlanToUIFormat(plan, emptyList())
+                }
+
+            } catch (e: Exception) {
+                convertPlanToUIFormat(plan, emptyList())
+            }
+        }
+    }
+
+    private fun convertPlanToUIFormat(plan: TrainingPlan, allExercises: List<Exercise>) {
+        try {
+            val exerciseMap = allExercises.associateBy { it.id }
+
+            val convertedDays = plan.days.mapIndexed { index, apiDay ->
+                TrainingDay(
+                    dayNumber = index + 1,
+                    name = apiDay.name,
+                    isRestDay = apiDay.isRestDay,
+                    exercises = if (apiDay.isRestDay) {
+                        emptyList()
+                    } else {
+                        apiDay.exercises.mapNotNull { apiExercise ->
+                            val exercise = exerciseMap[apiExercise.id]
+                            if (exercise == null) {
+                                null
+                            } else {
+                                DayExercise(
+                                    exercise = exercise,
+                                    isRepsSet = apiExercise.isRepsSet,
+                                    duration = apiExercise.duration ?: 0,
+                                    restAfterSet = apiExercise.restAfterSet,
+                                    sets = apiExercise.sets.map { apiSet ->
+                                        TrainingSet(
+                                            repetitions = apiSet.repetitions,
+                                            weight = apiSet.weight,
+                                            duration = apiSet.duration
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    totalDuration = apiDay.totalDuration ?: 0
+                )
+            }
+
+            _uiState.value = _uiState.value.copy(
+                originalPlan = plan,
+                name = plan.name,
+                description = plan.description ?: "",
+                goal = plan.goal,
+                visibility = plan.visibility,
+                advancedLevel = plan.advancedLevel,
+                hashtags = plan.hashtags,
+                days = convertedDays,
+                availableExercises = allExercises,
+                isLoading = false,
+                isInitialLoadComplete = true,
+                error = null
+            )
+
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = "Błąd podczas konwersji planu: ${e.message}"
+            )
+        }
+    }
 
     fun setName(name: String) {
         _uiState.value = _uiState.value.copy(name = name.take(150))
@@ -173,7 +231,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         if (index in currentDays.indices) {
             currentDays.removeAt(index)
             val renumberedDays = currentDays.mapIndexed { idx, day ->
-                day.copy(dayNumber = idx + 1)
+                day.copy(dayNumber = idx + 1, name = "Dzień ${idx + 1}")
             }
             _uiState.value = _uiState.value.copy(days = renumberedDays)
         }
@@ -200,27 +258,40 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun addExerciseToDay(dayIndex: Int, exercise: Exercise) {
+
         val currentDays = _uiState.value.days.toMutableList()
-        if (dayIndex in currentDays.indices && !currentDays[dayIndex].isRestDay) {
-            val day = currentDays[dayIndex]
 
-            val exerciseAlreadyExists = day.exercises.any { it.exercise.id == exercise.id }
-
-            if (!exerciseAlreadyExists && day.exercises.size < 15) {
-                val dayExercise = DayExercise(
-                    exercise = exercise,
-                    isRepsSet = true,
-                    sets = listOf(TrainingSet(repetitions = 10, weight = 0.5))
-                )
-                val updatedExercises = day.exercises + dayExercise
-                currentDays[dayIndex] = day.copy(exercises = updatedExercises)
-                _uiState.value = _uiState.value.copy(days = currentDays)
-            } else if (exerciseAlreadyExists) {
-                _uiState.value = _uiState.value.copy(
-                    error = "To ćwiczenie zostało już dodane do tego dnia treningowego"
-                )
-            }
+        if (dayIndex !in currentDays.indices) {
+            return
         }
+
+        val day = currentDays[dayIndex]
+
+        if (day.isRestDay) {
+            showValidationError("Nie można dodać ćwiczenia do dnia odpoczynku")
+            return
+        }
+
+        val exerciseExists = day.exercises.any { it.exercise.id == exercise.id }
+        if (exerciseExists) {
+            showValidationError("To ćwiczenie zostało już dodane do tego dnia")
+            return
+        }
+
+        if (day.exercises.size >= 15) {
+            showValidationError("Maksymalnie 15 ćwiczeń na dzień")
+            return
+        }
+
+        val dayExercise = DayExercise(
+            exercise = exercise,
+            isRepsSet = true,
+            sets = listOf(TrainingSet(repetitions = 10, weight = 0.5))
+        )
+
+        val updatedExercises = day.exercises + dayExercise
+        currentDays[dayIndex] = day.copy(exercises = updatedExercises)
+        _uiState.value = _uiState.value.copy(days = currentDays)
     }
 
     fun removeExerciseFromDay(dayIndex: Int, exerciseIndex: Int) {
@@ -229,7 +300,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
             val day = currentDays[dayIndex]
             val updatedExercises = day.exercises.toMutableList()
             if (exerciseIndex in updatedExercises.indices) {
-                updatedExercises.removeAt(exerciseIndex)
+                val removedExercise = updatedExercises.removeAt(exerciseIndex)
                 currentDays[dayIndex] = day.copy(exercises = updatedExercises)
                 _uiState.value = _uiState.value.copy(days = currentDays)
             }
@@ -329,83 +400,23 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
+    fun shouldWarnBeforeRestDayConversion(dayIndex: Int): Boolean {
+        val days = _uiState.value.days
+        return dayIndex in days.indices &&
+                !days[dayIndex].isRestDay &&
+                days[dayIndex].exercises.isNotEmpty()
+    }
 
-    fun nextStep() {
-        if (validateCurrentStep()) {
-            val newStep = when (_uiState.value.currentStep) {
-                TrainingPlanCreatorStep.BASIC -> TrainingPlanCreatorStep.DAYS_AND_EXERCISES
-                TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> TrainingPlanCreatorStep.SUMMARY
-                TrainingPlanCreatorStep.SUMMARY -> TrainingPlanCreatorStep.SUMMARY
-            }
-            _uiState.value = _uiState.value.copy(currentStep = newStep)
+    fun forceToggleRestDay(dayIndex: Int) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (dayIndex in currentDays.indices) {
+            val day = currentDays[dayIndex]
+            currentDays[dayIndex] = day.copy(
+                isRestDay = !day.isRestDay,
+                exercises = if (!day.isRestDay) emptyList() else day.exercises
+            )
+            _uiState.value = _uiState.value.copy(days = currentDays)
         }
-    }
-
-    fun prevStep() {
-        val newStep = when (_uiState.value.currentStep) {
-            TrainingPlanCreatorStep.BASIC -> TrainingPlanCreatorStep.BASIC
-            TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> TrainingPlanCreatorStep.BASIC
-            TrainingPlanCreatorStep.SUMMARY -> TrainingPlanCreatorStep.DAYS_AND_EXERCISES
-        }
-        _uiState.value = _uiState.value.copy(currentStep = newStep)
-    }
-
-    fun createTrainingPlan() {
-        val state = _uiState.value
-        viewModelScope.launch {
-            _uiState.value = state.copy(isLoading = true, error = null)
-
-            try {
-                val result = repository.createTrainingPlan(
-                    name = state.name,
-                    description = state.description,
-                    goal = state.goal,
-                    visibility = state.visibility,
-                    advancedLevel = state.advancedLevel,
-                    hashtags = state.hashtags,
-                    imageUri = state.imageUri!!,
-                    days = state.days
-                )
-
-                if (result.isSuccess) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        success = true
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = result.exceptionOrNull()?.message ?:
-                        getApplication<Application>().getString(R.string.error_training_plan_creation_failed)
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
-                )
-            }
-        }
-    }
-
-    fun clearData() {
-        _uiState.value = CreateTrainingPlanState()
-    }
-
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
-    }
-
-    fun clearSuccess() {
-        _uiState.value = _uiState.value.copy(success = false)
-    }
-
-    fun clearValidationToast() {
-        _uiState.value = _uiState.value.copy(validationToast = null)
-    }
-
-    fun showValidationError(message: String) {
-        _uiState.value = _uiState.value.copy(validationToast = message)
     }
 
     private fun validateDaysAndExercises(days: List<TrainingDay>): List<String> {
@@ -422,7 +433,6 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         }
 
         days.forEachIndexed { dayIndex, day ->
-
             if (day.name.isBlank()) {
                 errors.add("Dzień ${dayIndex + 1}: Nazwa dnia jest wymagana")
             }
@@ -452,7 +462,6 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
 
                     dayExercise.sets.forEachIndexed { setIndex, set ->
                         if (set.isRepsSet) {
-
                             if (set.repetitions == null || set.repetitions!! !in 1..100) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Powtórzenia muszą być między 1 a 100")
                             }
@@ -465,7 +474,6 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga jest wymagana")
                             }
                         } else {
-
                             if (set.duration == null || set.duration!! !in 30..21600) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Czas musi być między 30s a 6h")
                             }
@@ -478,63 +486,122 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
         return errors
     }
 
-
     fun validateCurrentStep(): Boolean {
         val state = _uiState.value
 
-        return when (state.currentStep) {
-            TrainingPlanCreatorStep.BASIC -> {
-                if (!state.basicValid) {
-                    when {
-                        state.name.isBlank() -> showValidationError("Nazwa planu jest wymagana")
-                        state.name.length > 150 -> showValidationError("Nazwa planu może mieć maksymalnie 150 znaków")
-                        state.imageUri == null -> showValidationError("Zdjęcie planu jest wymagane")
-                        state.description.length > 850 -> showValidationError("Opis może mieć maksymalnie 850 znaków")
-                        state.hashtags.size > 50 -> showValidationError("Maksymalnie 50 hashtagów")
-                        else -> showValidationError("Uzupełnij wszystkie wymagane pola")
-                    }
-                    false
-                } else {
-                    true
-                }
+        if (!state.basicValid) {
+            when {
+                state.name.isBlank() -> showValidationError("Nazwa planu jest wymagana")
+                state.name.length > 150 -> showValidationError("Nazwa planu może mieć maksymalnie 150 znaków")
+                state.description.length > 850 -> showValidationError("Opis może mieć maksymalnie 850 znaków")
+                state.hashtags.size > 50 -> showValidationError("Maksymalnie 50 hashtagów")
+                else -> showValidationError("Uzupełnij wszystkie wymagane pola")
             }
+            return false
+        }
 
-            TrainingPlanCreatorStep.DAYS_AND_EXERCISES -> {
-                if (!state.daysAndExercisesValid) {
+        if (!state.daysAndExercisesValid) {
+            val validationErrors = validateDaysAndExercises(state.days)
+            if (validationErrors.isNotEmpty()) {
+                showValidationError(validationErrors.first())
+                return false
+            }
+        }
 
-                    val validationErrors = validateDaysAndExercises(state.days)
-                    if (validationErrors.isNotEmpty()) {
-                        showValidationError(validationErrors.first())
-                        false
+        return true
+    }
+
+    fun saveTrainingPlan() {
+        val currentState = _uiState.value
+        val originalPlan = currentState.originalPlan ?: return
+
+        if (!validateCurrentStep()) {
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isUpdating = true, error = null)
+
+                val updateData = UpdateTrainingPlanData(
+                    name = currentState.name.trim(),
+                    description = currentState.description.trim().takeIf { it.isNotEmpty() },
+                    goal = currentState.goal,
+                    visibility = currentState.visibility,
+                    advancedLevel = currentState.advancedLevel,
+                    hashtags = currentState.hashtags,
+                    days = currentState.days.map { day ->
+                        UpdateTrainingDay(
+                            dayNumber = day.dayNumber,
+                            name = day.name,
+                            isRestDay = day.isRestDay,
+                            exercises = day.exercises.map { exercise ->
+                                UpdateDayExercise(
+                                    id = exercise.exercise.id,
+                                    isRepsSet = exercise.isRepsSet,
+                                    duration = exercise.duration,
+                                    restAfterSet = exercise.restAfterSet,
+                                    sets = exercise.sets.map { set ->
+                                        UpdateExerciseSet(
+                                            repetitions = set.repetitions,
+                                            weight = set.weight,
+                                            duration = set.duration
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    },
+                    imageUri = currentState.imageUri?.toString()
+                )
+
+                val result = repository.updateTrainingPlan(originalPlan.id, updateData)
+
+                result.onSuccess { updatedPlan ->
+                    _uiState.value = _uiState.value.copy(
+                        isUpdating = false,
+                        updateSuccess = true,
+                        originalPlan = updatedPlan,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    if (exception.message?.contains("Expected BEGIN_OBJECT but was STRING") == true) {
+                        _uiState.value = _uiState.value.copy(
+                            isUpdating = false,
+                            updateSuccess = true,
+                            error = null
+                        )
                     } else {
-                        true
+                        _uiState.value = _uiState.value.copy(
+                            isUpdating = false,
+                            error = exception.message ?: "Błąd podczas aktualizacji planu"
+                        )
                     }
-                } else {
-                    true
                 }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isUpdating = false,
+                    error = e.message ?: "Nieoczekiwany błąd"
+                )
             }
-
-            TrainingPlanCreatorStep.SUMMARY -> true
         }
     }
 
-    fun shouldWarnBeforeRestDayConversion(dayIndex: Int): Boolean {
-        val days = _uiState.value.days
-        return dayIndex in days.indices &&
-                !days[dayIndex].isRestDay &&
-                days[dayIndex].exercises.isNotEmpty()
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
 
-    fun forceToggleRestDay(dayIndex: Int) {
-        val currentDays = _uiState.value.days.toMutableList()
-        if (dayIndex in currentDays.indices) {
-            val day = currentDays[dayIndex]
-            currentDays[dayIndex] = day.copy(
-                isRestDay = !day.isRestDay,
-                exercises = if (!day.isRestDay) emptyList() else day.exercises
-            )
-            _uiState.value = _uiState.value.copy(days = currentDays)
-        }
+    fun clearSuccess() {
+        _uiState.value = _uiState.value.copy(updateSuccess = false)
     }
+
+    fun clearValidationToast() {
+        _uiState.value = _uiState.value.copy(validationToast = null)
+    }
+
+    fun showValidationError(message: String) {
+        _uiState.value = _uiState.value.copy(validationToast = message)
+    }
+
 
 }

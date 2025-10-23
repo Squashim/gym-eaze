@@ -1,4 +1,4 @@
-package com.example.gymeaze.viewmodel
+package com.example.gymeaze.viewmodel.trainingsPlan
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -7,6 +7,7 @@ import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.TrainingPlanAuthor
 import com.example.gymeaze.data.repository.TrainingPlanRepository
 import com.example.gymeaze.util.GlobalFavoriteState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -18,7 +19,8 @@ data class FavoriteTrainingPlansUiState(
     val hasMorePages: Boolean = false,
     val isLoadingMore: Boolean = false,
     val snackbarMessage: String? = null,
-    val snackbarType: SnackbarType = SnackbarType.SUCCESS
+    val snackbarType: SnackbarType = SnackbarType.SUCCESS,
+    val isRefreshing: Boolean = false
 )
 
 class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
@@ -109,7 +111,7 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                     )
 
                     launch {
-                        kotlinx.coroutines.delay(500)
+                        delay(500)
                         GlobalFavoriteState.getInstance(getApplication()).forceRefreshFromBackend()
                     }
 
@@ -182,5 +184,42 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun refreshTrainingPlans() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
+
+                // Ładuj pierwszą stronę (odświeżanie zawsze zaczyna od początku)
+                val result = repository.getFavoriteTrainingPlans(page = 1, pageSize = 9)
+
+                result.onSuccess { response ->
+                    _uiState.value = _uiState.value.copy(
+                        trainingPlans = response.items,
+                        currentPage = response.page,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false, // Resetuj isRefreshing
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        isRefreshing = false, // Resetuj isRefreshing także przy błędzie
+                        error = exception.message ?: "Błąd podczas odświeżania ulubionych planów"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    isRefreshing = false, // Resetuj isRefreshing także przy wyjątku
+                    error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
+                )
+            }
+        }
     }
 }

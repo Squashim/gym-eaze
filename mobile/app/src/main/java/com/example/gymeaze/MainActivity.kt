@@ -27,21 +27,15 @@ import com.example.gymeaze.viewmodel.AuthViewModel
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import com.example.gymeaze.data.UserPreferences
-import com.example.gymeaze.ui.components.WorkoutLoginRequiredDialog
-import com.example.gymeaze.ui.screens.CreateTrainingPlanScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.loggedIn.CreateTrainingPlanScreen
 import com.example.gymeaze.ui.screens.EditTrainingPlanScreen
 import com.example.gymeaze.ui.screens.ExerciseSelectionScreen
-import com.example.gymeaze.ui.screens.FavoriteTrainingPlansScreen
-import com.example.gymeaze.ui.screens.MyTrainingPlansScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.loggedIn.FavoriteTrainingPlansScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.loggedIn.MyTrainingPlansScreen
 import com.example.gymeaze.ui.screens.StartedPlanDaysScreen
 import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.TrainingPlansScreen
@@ -55,8 +49,8 @@ import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.util.GlobalFavoriteState
-import com.example.gymeaze.viewmodel.CreateTrainingPlanViewModel
-import com.example.gymeaze.viewmodel.EditTrainingPlanViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.EditTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.LogoutEvent
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
@@ -381,6 +375,11 @@ class MainActivity : ComponentActivity() {
                                     onBackClick = authViewModel::hideBrowseTrainingPlansScreen,
                                     onPlanClick = { planId ->
                                         authViewModel.showTrainingPlanDetailScreen(planId)
+                                    },
+                                    onEditPlanClick = { planId ->
+                                        // Tutaj dodaj nawigację do ekranu edycji planu
+                                        // Na przykład:
+                                        authViewModel.showEditTrainingPlanScreen(planId)
                                     },
                                     onSettingsClick = authViewModel::showSettingsScreen
                                 )

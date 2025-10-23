@@ -13,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -26,13 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.R
-import com.example.gymeaze.ui.screens.FavoriteTrainingPlansScreen
-import com.example.gymeaze.ui.screens.MyTrainingPlansScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.loggedIn.FavoriteTrainingPlansScreen
+import com.example.gymeaze.ui.screens.trainingsPlan.loggedIn.MyTrainingPlansScreen
 import com.example.gymeaze.ui.screens.TrainingPlanDetailScreen
 import com.example.gymeaze.ui.screens.TrainingPlansMenuScreen
 import com.example.gymeaze.ui.screens.TrainingPlansScreen
@@ -41,9 +38,9 @@ import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.viewmodel.ExercisesViewModel
-import com.example.gymeaze.viewmodel.FavoriteTrainingPlansViewModel
-import com.example.gymeaze.viewmodel.MyTrainingPlansViewModel
-import com.example.gymeaze.viewmodel.TrainingPlansViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.FavoriteTrainingPlansViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.MyTrainingPlansViewModel
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingPlansViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,8 +147,14 @@ fun TrainingPlansNavigationScreen(
                         returnToSection = "browse"
                         planSection = "details"
                     },
+                    onEditPlanClick = { planId ->
+                        selectedPlanId = planId
+                        returnToSection = "browse"
+                        onEditPlanClick(planId)
+                    },
                     onSettingsClick = onSettingsClick,
-                    viewModel = trainingPlansViewModel
+                    viewModel = trainingPlansViewModel,
+
                 )
 
                 "favorites" -> FavoriteTrainingPlansScreen(
@@ -181,6 +184,9 @@ fun TrainingPlansNavigationScreen(
                             },
                             navigateToWorkoutPlayer = { userTrainingPlanId, planName, dayNumber ->
                                 onStartedPlanClick(userTrainingPlanId, planName)
+                            },
+                            onEditPlanClick = { planId ->
+                                onEditPlanClick(planId)
                             }
                         )
                     }
