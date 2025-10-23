@@ -266,17 +266,23 @@ export const updateReportStatusForItemService = async (
     throw new Error('Nie można ustawić statusu na Oczekujący');
   }
 
-  const currentReports = await Report.findOne({
+  const currentReports = await Report.find({
     reportedItemId,
     reportedItemType,
   });
 
-  if (!currentReports) {
+  if (!currentReports || currentReports.length === 0) {
     throw new Error('REPORTS_NOT_FOUND');
   }
 
-  if (currentReports.status !== StatusReport.pending) {
-    throw new Error('Nie można zmienić statusu. Zgłoszenia mają już status inny niż Oczekujący');
+  const nonPendingReports = currentReports.filter(
+    (report) => report.status !== StatusReport.pending,
+  );
+
+  if (nonPendingReports.length > 0) {
+    throw new Error(
+      'Nie można zmienić statusu. Niektóre zgłoszenia mają już status inny niż Oczekujący',
+    );
   }
 
   const result = await Report.updateMany(
@@ -294,7 +300,7 @@ export const updateReportStatusForItemService = async (
 
   if (status === StatusReport.resolved) {
     let itemDetails = '';
-    switch (currentReports.reportedItemType) {
+    switch (currentReports[0].reportedItemType) {
       case CommentParentType.exercise: {
         const exercise = await Exercise.findById(reportedItemId).select('name');
         itemDetails = exercise
@@ -368,17 +374,21 @@ export const deleteReportsForItemService = async (
     throw new Error('Nieprawidłowy typ podmiotu');
   }
 
-  const currentReports = await Report.findOne({
+  const currentReports = await Report.find({
     reportedItemId,
     reportedItemType,
   });
 
-  if (!currentReports) {
+  if (!currentReports || currentReports.length === 0) {
     throw new Error('REPORTS_NOT_FOUND');
   }
 
-  if (currentReports.status === StatusReport.pending) {
-    throw new Error('Nie można usunąć zgłoszeń ze statusem Oczekujący');
+  const pendingReports = currentReports.filter((report) => report.status === StatusReport.pending);
+
+  if (pendingReports.length > 0) {
+    throw new Error(
+      `Nie można usunąć zgłoszeń. ${pendingReports.length} zgłoszeń ma status Oczekujący`,
+    );
   }
 
   const result = await Report.deleteMany({
