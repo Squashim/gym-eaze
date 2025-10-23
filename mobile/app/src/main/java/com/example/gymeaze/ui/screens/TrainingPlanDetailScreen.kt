@@ -62,7 +62,7 @@ fun TrainingPlanDetailScreen(
     onUserClick: (String) -> Unit = {},
     navigateToWorkoutPlayer: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit,
     isUserLoggedIn: Boolean = true,
-    onEditPlanClick: (String) -> Unit = {} // Dodaj parametr dla nawigacji do edycji
+    onEditPlanClick: (String) -> Unit = {}
 ) {
     val reportViewModel: ReportViewModel = viewModel()
 
@@ -73,7 +73,7 @@ fun TrainingPlanDetailScreen(
 
     var showLoginDialog by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) } // Dodaj state dla dialogu usuwania
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(planId) {
         viewModel.resetDeletedFlag()
@@ -110,7 +110,6 @@ fun TrainingPlanDetailScreen(
         }
     }
 
-    // Obsługa sukcesu usunięcia - powrót do poprzedniego ekranu
     LaunchedEffect(uiState.isDeleted) {
         if (uiState.isDeleted) {
             onBackClick()
@@ -204,13 +203,12 @@ fun TrainingPlanDetailScreen(
                         navigateToWorkoutPlayer = navigateToWorkoutPlayer,
                         isDownloadingPdf = isDownloadingPdf,
                         onReportClick = { showReportDialog = true },
-                        onEditPlanClick = onEditPlanClick, // Przekaż callback
-                        onDeletePlanClick = { showDeleteDialog = true } // Pokaż dialog zamiast bezpośredniego usuwania
+                        onEditPlanClick = onEditPlanClick,
+                        onDeletePlanClick = { showDeleteDialog = true }
                     )
                 }
             }
 
-            // Dialog potwierdzenia usunięcia
             if (showDeleteDialog && uiState.trainingPlan != null) {
                 DeleteConfirmationDialog(
                     planName = uiState.trainingPlan!!.name,
@@ -245,7 +243,6 @@ fun TrainingPlanDetailScreen(
     }
 }
 
-// Dodaj ten sam dialog jak w MyTrainingPlansScreen
 @Composable
 private fun DeleteConfirmationDialog(
     planName: String,
@@ -470,15 +467,18 @@ private fun HashtagChip(hashtag: String) {
 private fun ActionButtonsSection(
     trainingPlan: TrainingPlan,
     likes: Int,
+    isUserLoggedIn: Boolean, // DODAJ TEN PARAMETR
     onLikeClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onDownloadPdf: () -> Unit,
-    isDownloadingPdf: Boolean
+    isDownloadingPdf: Boolean,
+    onShowLoginDialog: () -> Unit // DODAJ TEN PARAMETR
 ) {
     val context = LocalContext.current
 
     val favoriteIds by GlobalFavoriteState.getInstance(context).favoriteTrainingPlanIds.collectAsState()
     val isFavoriteGlobal = favoriteIds.contains(trainingPlan.id)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -486,7 +486,13 @@ private fun ActionButtonsSection(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Button(
-            onClick = onLikeClick,
+            onClick = {
+                if (isUserLoggedIn) {
+                    onLikeClick()
+                } else {
+                    onShowLoginDialog()
+                }
+            },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = getSurfaceColor(),
@@ -506,7 +512,11 @@ private fun ActionButtonsSection(
 
         Button(
             onClick = {
-                onFavoriteClick()
+                if (isUserLoggedIn) {
+                    onFavoriteClick()
+                } else {
+                    onShowLoginDialog()
+                }
             },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
@@ -536,7 +546,13 @@ private fun ActionButtonsSection(
         }
 
         Button(
-            onClick = onDownloadPdf,
+            onClick = {
+                if (isUserLoggedIn) {
+                    onDownloadPdf()
+                } else {
+                    onShowLoginDialog()
+                }
+            },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = getPrimaryColor()
@@ -877,11 +893,19 @@ private fun ExerciseItem(
 @Composable
 private fun StartTrainingButton(
     isStarting: Boolean,
+    isUserLoggedIn: Boolean, // DODAJ TEN PARAMETR
     onClick: () -> Unit,
+    onShowLoginDialog: () -> Unit, // DODAJ TEN PARAMETR
     modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = onClick,
+        onClick = {
+            if (isUserLoggedIn) {
+                onClick()
+            } else {
+                onShowLoginDialog()
+            }
+        },
         modifier = modifier
             .height(52.dp),
         enabled = !isStarting,
@@ -930,7 +954,7 @@ private fun TrainingPlanDetailContent(
     isDownloadingPdf: Boolean,
     onReportClick: () -> Unit,
     onEditPlanClick: (String) -> Unit,
-    onDeletePlanClick: () -> Unit, // ZMIENIONO: usunięto parametr TrainingPlan
+    onDeletePlanClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val comments by viewModel.trainingPlanComments.collectAsState()
@@ -1019,7 +1043,7 @@ private fun TrainingPlanDetailContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Sprawdź czy to plan aktualnego użytkownika
-                    if (viewModel.isCurrentUserTrainingPlan(plan.author?.username ?: "")) {
+                    if (isUserLoggedIn && viewModel.isCurrentUserTrainingPlan(plan.author?.username ?: "")) {
                         // Przycisk edycji
                         IconButton(
                             onClick = {
@@ -1188,23 +1212,27 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Przyciski akcji
+        // Przyciski akcji - DODAJ isUserLoggedIn i onShowLoginDialog
         item {
             ActionButtonsSection(
                 likes = plan.likes,
+                isUserLoggedIn = isUserLoggedIn, // DODAJ
                 onLikeClick = viewModel::toggleLike,
                 onFavoriteClick = viewModel::toggleFavorite,
                 onDownloadPdf = viewModel::downloadPdf,
                 isDownloadingPdf = isDownloadingPdf,
-                trainingPlan = plan
+                trainingPlan = plan,
+                onShowLoginDialog = onShowLoginDialog // DODAJ
             )
         }
 
-        // Przycisk rozpocznij trening
+        // Przycisk rozpocznij trening - DODAJ isUserLoggedIn i onShowLoginDialog
         item {
             StartTrainingButton(
                 isStarting = uiState.isStartingPlan,
+                isUserLoggedIn = isUserLoggedIn, // DODAJ
                 onClick = { viewModel.startTrainingPlan() },
+                onShowLoginDialog = onShowLoginDialog, // DODAJ
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -1233,6 +1261,9 @@ private fun TrainingPlanDetailContent(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
+
+        // Reszta kodu pozostaje bez zmian...
+        // (Separator, komentarze, itd.)
 
         // Separator przed komentarzami
         item {
@@ -1597,6 +1628,7 @@ private fun TrainingPlanDetailContent(
         )
     }
 }
+
 @Composable
 private fun TrainingPlanCommentItem(
     comment: Comment,
