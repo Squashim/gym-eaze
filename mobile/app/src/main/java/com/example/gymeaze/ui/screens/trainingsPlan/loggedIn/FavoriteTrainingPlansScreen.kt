@@ -150,122 +150,81 @@ fun FavoriteTrainingPlansScreen(
                 onRefresh = { viewModel.refreshTrainingPlans() },
                 modifier = Modifier.fillMaxSize()
             ) {
-                if (uiState.isRefreshing) {
-                    LoadingScreen()
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        when {
-                            uiState.isLoading && uiState.trainingPlans.isEmpty() -> {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
+                when {
+                    uiState.isRefreshing || (uiState.isLoading && uiState.trainingPlans.isEmpty()) -> {
+                        LoadingScreen()
+                    }
+                    actualFavoritePlans.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FavoriteBorder,
+                                    contentDescription = null,
+                                    tint = getOnSurfaceSecondaryColor(),
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Brak ulubionych planów",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = getOnSurfaceColor()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Dodaj plany do ulubionych, aby mieć je pod ręką",
+                                    fontSize = 14.sp,
+                                    color = getOnSurfaceSecondaryColor(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(
+                                items = actualFavoritePlans,
+                                key = { it.id }
+                            ) { plan ->
+                                TrainingPlanCard(
+                                    trainingPlan = plan,
+                                    onCardClick = onPlanClick,
+                                    onLikeClick = viewModel::toggleLike,
+                                    onFavoriteClick = { planId ->
+                                        viewModel.removeFavorite(planId)
+                                    }
+                                )
+                            }
+
+                            if (uiState.isLoadingMore) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         CircularProgressIndicator(
-                                            color = getPrimaryColor()
-                                        )
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                        Text(
-                                            text = "Ładowanie ulubionych planów...",
-                                            color = getOnSurfaceSecondaryColor(),
-                                            fontSize = 14.sp
+                                            color = getPrimaryColor(),
+                                            modifier = Modifier.size(24.dp)
                                         )
                                     }
                                 }
                             }
-                            actualFavoritePlans.isEmpty() -> {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.padding(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.BookmarkBorder,
-                                            contentDescription = null,
-                                            tint = getOnSurfaceSecondaryColor(),
-                                            modifier = Modifier.size(64.dp)
-                                        )
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                        Text(
-                                            text = "Brak ulubionych planów",
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = getOnSurfaceColor()
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = "Dodaj plany do ulubionych, aby mieć je pod ręką",
-                                            fontSize = 14.sp,
-                                            color = getOnSurfaceSecondaryColor(),
-                                            textAlign = TextAlign.Center
-                                        )
-                                        Spacer(modifier = Modifier.height(24.dp))
-                                        OutlinedButton(
-                                            onClick = onBackClick,
-                                            colors = ButtonDefaults.outlinedButtonColors(
-                                                contentColor = getPrimaryColor()
-                                            ),
-                                            border = BorderStroke(1.dp, getPrimaryColor())
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Search,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text("Przeglądaj plany")
-                                        }
-                                    }
-                                }
-                            }
-                            else -> {
-                                LazyColumn(
-                                    state = listState,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    items(
-                                        items = actualFavoritePlans,
-                                        key = { it.id }
-                                    ) { plan ->
-                                        TrainingPlanCard(
-                                            trainingPlan = plan,
-                                            onCardClick = onPlanClick,
-                                            onLikeClick = viewModel::toggleLike,
-                                            onFavoriteClick = { planId ->
-                                                viewModel.removeFavorite(planId)
-                                            }
-                                        )
-                                    }
 
-                                    if (uiState.isLoadingMore) {
-                                        item {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(16.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                CircularProgressIndicator(
-                                                    color = getPrimaryColor(),
-                                                    modifier = Modifier.size(24.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    item {
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                    }
-                                }
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
                     }

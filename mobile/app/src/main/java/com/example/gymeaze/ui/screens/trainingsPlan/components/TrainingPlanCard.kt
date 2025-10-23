@@ -232,14 +232,14 @@ fun TrainingPlanCard(
                 Column {
                     trainingPlan.totalExercises?.let { totalExercises ->
                         Text(
-                            text = "Ilość użytych ćwiczeń: $totalExercises",
+                            text = "Liczba użytych ćwiczeń: $totalExercises",
                             fontSize = 10.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
                     }
                     trainingPlan.totalDuration?.let { totalDuration ->
                         Text(
-                            text = "Czastrwania całego treningu: ${formatDuration(totalDuration)}",
+                            text = "Czas trwania całego treningu: ${formatDuration(totalDuration)}",
                             fontSize = 10.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
