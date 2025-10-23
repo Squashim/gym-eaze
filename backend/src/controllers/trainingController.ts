@@ -73,18 +73,23 @@ export const deleteTrainingPlan = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const deleted = await deleteTrainingPlanService(id, userId!);
-
-    if (!deleted) {
-      return res
-        .status(403)
-        .json({ message: 'Nie masz uprawnień do usunięcia tego planu treningowego' });
-    }
+    await deleteTrainingPlanService(id, userId!);
 
     res.status(200).json({ message: 'Plan treningowy został usunięty' });
   } catch (err) {
-    if (err instanceof Error && err.message === 'NOT_FOUND') {
-      return res.status(404).json({ message: 'Plan treningowy nie znaleziony' });
+    if (err instanceof Error) {
+      switch (err.message) {
+        case 'WORKOUT_NOT_FOUND':
+          return res.status(404).json({ message: 'Plan treningowy nie został znaleziony' });
+        case 'USER_NOT_FOUND':
+          return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+        case 'FORBIDDEN':
+          return res
+            .status(403)
+            .json({ message: 'Brak uprawnień do usunięcia tego planu treningowego' });
+        default:
+          return res.status(404).json({ message: err.message });
+      }
     }
     res.status(500).json({ message: 'Błąd serwera' });
   }

@@ -1,5 +1,4 @@
 import type { Country } from '@/constants/enums/countries';
-import type { Notification } from './notification';
 import type { Gender } from '@/constants/enums/gender';
 import type { BadgeApiResponse, ProfileBadge } from './badge';
 import type { Goal } from '@/constants/enums/goals';
@@ -14,7 +13,6 @@ export interface AuthenticatedUser {
   profileDetails: {
     profilePicture?: string;
   };
-  notifications?: Notification[];
   createdAt: string;
   updatedAt: string;
 }
@@ -94,4 +92,5 @@ export type UserProfile = {
   fitnessDetails: UserFitnessDetailsPayload;
   pinnedBadges: ProfileBadge[];
   isFollowing?: boolean;
+  isBlocked?: boolean;
 };

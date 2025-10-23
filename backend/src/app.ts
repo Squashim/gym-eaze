@@ -12,6 +12,8 @@ import postsRoutes from './routes/postsRoutes';
 import commentRoutes from './routes/commentRoutes';
 import reportRoutes from './routes/reportRoutes';
 import userTrainingRoutes from './routes/userTrainingRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.use('/api/posts', postsRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/started-training-plans', userTrainingRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API działa 🚀');

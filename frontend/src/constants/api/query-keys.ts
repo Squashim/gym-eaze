@@ -2,8 +2,10 @@ import type {
   ExerciseQueryParams,
   PaginatedQueryParams,
   PostQueryParams,
+  ReportQueryParams,
   WorkoutQueryParams,
 } from '@/types/filters';
+import type { ItemType } from '../enums/item-type';
 
 export const QUERY_KEYS = {
   AUTH_USER: ['user', 'authenticated'],
@@ -14,6 +16,7 @@ export const QUERY_KEYS = {
   USER_BADGES: ['user', 'badges'],
   USER_FOLLOWERS: ['user', 'followers'],
   USER_FOLLOWING: ['user', 'following'],
+  USER_NOTIFICATIONS: ['user', 'notifications'],
 
   USER_PROFILE: (username: string) => ['user', 'profile', username],
 
@@ -54,4 +57,7 @@ export const QUERY_KEYS = {
     params,
     includePrivate,
   ],
+
+  REPORTS: (params: ReportQueryParams) => ['reports', params],
+  REPORT_ITEMS: (itemId: string, itemType: ItemType) => ['reports', 'items', itemId, itemType],
 } as const;

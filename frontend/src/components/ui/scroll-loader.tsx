@@ -1,7 +1,7 @@
 import { Alert, AlertTitle } from './alert';
 import { Info, Loader2 } from 'lucide-react';
 
-type Items = 'post' | 'comment' | 'reply';
+type Items = 'post' | 'comment' | 'reply' | 'notification';
 
 interface ScrollLoaderProps {
   isFetchingNextPage: boolean;
@@ -22,6 +22,9 @@ const ITEM_TYPE_MESSAGES: Record<Items, { loading: string; noMore?: string }> = 
   },
   reply: {
     loading: 'Ładowanie kolejnych odpowiedzi...',
+  },
+  notification: {
+    loading: 'Ładowanie kolejnych powiadomień...',
   },
 };
 

@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import ScrollToTopButton from '@/components/ui/scroll-to-top-button';
 import useGetWorkoutComments from '@/hooks/query/workouts/use-get-workout-comments';
 import type { GetWorkoutApiResponse } from '@/types/workout';
+import ReportDialog from '../reports/report-dialog';
 
 interface WorkoutCommentsProps {
   workout: GetWorkoutApiResponse;
@@ -37,6 +38,7 @@ function WorkoutComments({ workout }: WorkoutCommentsProps) {
     data: likedComments,
     isLoading: isLikedCommentsLoading,
     isError: isLikedCommentsError,
+    refetch: refetchLikedComments,
   } = useGetLikedItems('comments');
   const { user } = useUser();
 
@@ -47,6 +49,7 @@ function WorkoutComments({ workout }: WorkoutCommentsProps) {
 
   const deleteDialog = useOpen();
   const editDialog = useOpen();
+  const reportDialog = useOpen();
 
   const { ref, inView } = useInView({
     threshold: 1,
@@ -134,12 +137,17 @@ function WorkoutComments({ workout }: WorkoutCommentsProps) {
 
   const handleCommentsRefresh = useCallback(async () => {
     await refetch();
+    await refetchLikedComments();
     toast.success('Komentarze zostały odświeżone');
-  }, [refetch]);
+  }, [refetch, refetchLikedComments]);
 
-  const handleCommentReport = useCallback((commentId: string) => {
-    console.log('TODO: Report comment', commentId);
-  }, []);
+  const handleCommentReport = useCallback(
+    (commentId: string) => {
+      setSelectedCommentId(commentId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -239,6 +247,19 @@ function WorkoutComments({ workout }: WorkoutCommentsProps) {
           open={deleteDialog.isOpen}
           title="Czy na pewno chcesz usunąć ten komentarz?"
           variant="destructive"
+        />
+      )}
+
+      {!!user && selectedCommentId && (
+        <ReportDialog
+          itemId={selectedCommentId}
+          itemType="Komentarz"
+          onClose={() => {
+            setSelectedCommentId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 

@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import ScrollToTopButton from '@/components/ui/scroll-to-top-button';
+import ReportDialog from '../reports/report-dialog';
 
 interface ExerciseCommentsProps {
   exercise: GetExerciseApiResponse;
@@ -37,6 +38,7 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
     data: likedComments,
     isLoading: isLikedCommentsLoading,
     isError: isLikedCommentsError,
+    refetch: refetchLikedComments,
   } = useGetLikedItems('comments');
   const { user } = useUser();
 
@@ -54,6 +56,7 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
   const exerciseRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const replyRef = useRef<HTMLDivElement>(null);
+  const reportDialog = useOpen();
 
   const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
   const [replyCommentId, setReplyCommentId] = useState<string | null>(null);
@@ -134,12 +137,17 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
 
   const handleCommentsRefresh = useCallback(async () => {
     await refetch();
+    await refetchLikedComments();
     toast.success('Komentarze zostały odświeżone');
-  }, [refetch]);
+  }, [refetch, refetchLikedComments]);
 
-  const handleCommentReport = useCallback((commentId: string) => {
-    console.log('TODO: Report comment', commentId);
-  }, []);
+  const handleCommentReport = useCallback(
+    (commentId: string) => {
+      setSelectedCommentId(commentId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -238,6 +246,19 @@ function ExerciseComments({ exercise }: ExerciseCommentsProps) {
           open={deleteDialog.isOpen}
           title="Czy na pewno chcesz usunąć ten komentarz?"
           variant="destructive"
+        />
+      )}
+
+      {!!user && selectedCommentId && (
+        <ReportDialog
+          itemId={selectedCommentId}
+          itemType="Komentarz"
+          onClose={() => {
+            setSelectedCommentId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 

@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner';
 import ScrollLoader from '@/components/ui/scroll-loader';
 import { Alert, AlertTitle } from '@/components/ui/alert';
+import ReportDialog from '../reports/report-dialog';
 
 interface PostDetailsProps {
   open: boolean;
@@ -47,6 +48,7 @@ const PostDetails = ({
   const { user } = useUser();
   const deleteDialog = useOpen();
   const editDialog = useOpen();
+  const reportDialog = useOpen();
   const {
     data,
     isLoading,
@@ -65,6 +67,7 @@ const PostDetails = ({
     data: likedComments,
     isLoading: isLikedCommentsLoading,
     isError: isLikedCommentsError,
+    refetch: refetchLikedComments,
   } = useGetLikedItems('comments');
   const { ref, inView } = useInView({
     threshold: 1,
@@ -149,15 +152,20 @@ const PostDetails = ({
 
   const handleCommentsRefresh = useCallback(async () => {
     await refetch();
+    await refetchLikedComments();
     if (postRef.current) {
       postRef.current.scrollIntoView({ behavior: 'smooth' });
     }
     toast.success('Komentarze zostały odświeżone');
-  }, [refetch]);
+  }, [refetch, refetchLikedComments]);
 
-  const handleCommentReport = useCallback((commentId: string) => {
-    console.log('TODO: Report comment', commentId);
-  }, []);
+  const handleCommentReport = useCallback(
+    (commentId: string) => {
+      setSelectedCommentId(commentId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -264,6 +272,19 @@ const PostDetails = ({
           open={deleteDialog.isOpen}
           title="Czy na pewno chcesz usunąć ten komentarz?"
           variant="destructive"
+        />
+      )}
+
+      {!!user && selectedCommentId && (
+        <ReportDialog
+          itemId={selectedCommentId}
+          itemType="Komentarz"
+          onClose={() => {
+            setSelectedCommentId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 

@@ -5,6 +5,7 @@ export interface UserProfile {
   description: string | null;
   followersCount: number;
   followingCount: number;
+  isBlocked?: boolean | null;
   goal?: string | null;
   personalDetails?: {
     firstName: string | null;

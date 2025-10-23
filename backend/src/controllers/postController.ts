@@ -2,6 +2,7 @@ import { Response } from 'express';
 import {
   createPost,
   deletePostService,
+  getPostByIdService,
   getUserPostsWithCursor,
   togglePostLikeService,
   updatePostService,
@@ -106,7 +107,16 @@ export const deletePost = async (req: AuthPostRequest, res: Response) => {
     return res.status(200).json({ message: 'Post został usunięty' });
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(400).json({ message: error.message });
+      switch (error.message) {
+        case 'USER_NOT_FOUND':
+          return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
+        case 'POST_NOT_FOUND':
+          return res.status(404).json({ message: 'Nie znaleziono posta' });
+        case 'FORBIDDEN':
+          return res.status(403).json({ message: 'Brak uprawnień do usunięcia posta' });
+        default:
+          return res.status(400).json({ message: error.message });
+      }
     }
     return res.status(500).json({ message: 'Błąd podczas usuwania posta' });
   }
@@ -162,6 +172,28 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     return res.status(500).json({
       message: error instanceof Error ? error.message : 'Błąd serwera',
+    });
+  }
+};
+
+export const getPost = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const post = await getPostByIdService(id);
+
+    return res.json(post);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Nie znaleziono posta') {
+        return res.status(404).json({ message: error.message });
+      } else {
+        return res.status(400).json({ message: error.message });
+      }
+    }
+
+    return res.status(500).json({
+      message: 'Bład serwera podczas pobierania posta',
     });
   }
 };

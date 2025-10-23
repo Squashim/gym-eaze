@@ -65,16 +65,23 @@ export const deleteExercise = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const deleted = await exerciseService.deleteExercise(id, userId!);
-
-    if (!deleted) {
-      return res.status(403).json({ message: 'Nie masz uprawnień do usunięcia tego ćwiczenia' });
-    }
+    await exerciseService.deleteExercise(id, userId!);
 
     res.status(200).json({ message: 'Ćwiczenie zostało usunięte' });
   } catch (err) {
-    if (err instanceof Error && err.message === 'NOT_FOUND') {
-      return res.status(404).json({ message: 'Ćwiczenie nie znalezione' });
+    if (err instanceof Error) {
+      switch (err.message) {
+        case 'USER_NOT_FOUND':
+          return res.status(404).json({ message: 'Użytkownik nie znaleziony' });
+        case 'EXERCISE_NOT_FOUND':
+          return res.status(404).json({ message: 'Ćwiczenie nie znalezione' });
+        case 'FORBIDDEN':
+          return res
+            .status(403)
+            .json({ message: 'Nie masz uprawnień do usunięcia tego ćwiczenia' });
+        default:
+          return res.status(404).json({ message: err.message });
+      }
     }
     res.status(500).json({ message: 'Błąd serwera' });
   }

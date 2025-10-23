@@ -303,7 +303,7 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="hover:bg-primary/90!
-                  hover:text-primary-foreground! focus-visible:text-primary-foreground! focus-visible:bg-primary/90! dark:focus-visible:bg-primary/90! dark:focus-visible:text-primary-foreground! font-medium pl-3 h-10 transition-colors"
+                  hover:text-primary-foreground! focus-visible:text-primary-foreground! focus-visible:bg-primary/90! dark:focus-visible:bg-primary/90! dark:focus-visible:text-primary-foreground! font-medium pl-3 h-10 transition-colors cursor-pointer"
                   disabled={logout.isPending}
                   onClick={(e) => {
                     e.preventDefault();
@@ -329,7 +329,7 @@ const Navbar = ({ isLoggedIn, isAdmin }: NavbarProps) => {
         </div>
       </nav>
 
-      {isLoggedIn && user && <Notification notifications={user.notifications} />}
+      {isLoggedIn && user && <Notification />}
 
       {renderMobileNavbar()}
     </header>

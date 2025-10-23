@@ -178,12 +178,20 @@ export const login = async (req: Request, res: Response) => {
       isFirstLogin,
     });
   } catch (err: unknown) {
-    const message =
-      err instanceof Error && err.message === 'INVALID_CREDENTIALS'
-        ? 'Nieprawidłowe dane logowania'
-        : 'Błąd logowania';
+    if (err instanceof Error) {
+      switch (err.message) {
+        case 'USER_BLOCKED':
+          return res.status(403).json({
+            message: 'Twoje konto zostało zablokowane. Skontaktuj się z administratorem.',
+          });
+        case 'INVALID_CREDENTIALS':
+          return res.status(401).json({ message: 'Nieprawidłowe dane logowania' });
+        default:
+          return res.status(401).json({ message: 'Błąd logowania' });
+      }
+    }
 
-    res.status(401).json({ message });
+    res.status(401).json({ message: 'Błąd logowania' });
   }
 };
 

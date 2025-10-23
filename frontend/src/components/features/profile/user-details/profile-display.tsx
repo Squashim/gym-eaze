@@ -16,7 +16,7 @@ import { FollowUsersDialog, ProfileFollows } from './profile-follows';
 import GuestViewAlert from './guest-view-alert';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2, Pencil, TriangleAlert } from 'lucide-react';
 import { useUserFollow } from '@/hooks/query/user/use-user-follow';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CircleFlag } from 'react-circle-flags';
@@ -103,7 +103,15 @@ function ProfileDisplay({
 
   return (
     <>
-      <Card className="min-h-[40dvh] gap-4 py-4 md:max-h-fit md:sticky md:top-18">
+      <Card className="min-h-[40dvh] gap-4 py-4 px-4 md:max-h-fit md:sticky md:top-18">
+        {profileData.isBlocked && (
+          <div className="bg-destructive/10 flex items-center gap-2 border border-destructive rounded-md text-left p-2">
+            <TriangleAlert className="text-destructive" size={18} />
+            <Typography className="text-destructive" variant="small">
+              Ten użytkownik został zablokowany.
+            </Typography>
+          </div>
+        )}
         <ProfileHeader
           isOwnProfile={isOwnProfile}
           isViewingAsGuest={isViewingAsGuest}
@@ -111,7 +119,7 @@ function ProfileDisplay({
           shouldShowPersonalDetails={visibility.shouldShowPersonalDetails}
         />
 
-        <CardContent className="grid gap-4 px-4">
+        <CardContent className="grid gap-4 px-0">
           {visibility.shouldShowFitnessDetails && (
             <FitnessRow details={profileData.fitnessDetails} />
           )}
@@ -148,11 +156,13 @@ function ProfileDisplay({
             </InfoField>
           )}
 
-          {profileData.pinnedBadges.length > 0 && visibility.shouldShowBadges && (
-            <InfoField label="Wyróżnione odznaki">
-              <PinnedBadges badges={profileData.pinnedBadges} />
-            </InfoField>
-          )}
+          {profileData.pinnedBadges &&
+            profileData.pinnedBadges.length > 0 &&
+            visibility.shouldShowBadges && (
+              <InfoField label="Wyróżnione odznaki">
+                <PinnedBadges badges={profileData.pinnedBadges} />
+              </InfoField>
+            )}
 
           <GuestViewAlert
             isVisible={isViewingAsGuest && isOwnProfile}
@@ -195,7 +205,7 @@ function ProfileHeader({
   shouldShowPersonalDetails,
 }: ProfileHeaderProps) {
   return (
-    <header className="flex gap-3 px-4 flex-wrap">
+    <header className="flex gap-3 flex-wrap">
       <div className="relative">
         <ReusableAvatar
           className="size-20 shadow-sm"

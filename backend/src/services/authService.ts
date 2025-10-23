@@ -56,6 +56,10 @@ export const loginUser = async (
     throw new Error('INVALID_CREDENTIALS');
   }
 
+  if (user.isBlocked) {
+    throw new Error('USER_BLOCKED');
+  }
+
   const isFirstLogin = !user.lastLoginAt;
 
   user.lastLoginAt = new Date();
@@ -184,10 +188,6 @@ export const linkGoogleAccount = async (
 export const getCurrentUser = async (userId: string): Promise<ICurrentUser> => {
   const user = await User.findById(userId)
     .select('username email role profileDetails.profilePicture createdAt updatedAt')
-    .populate({
-      path: 'notifications',
-      select: 'type message updatedAt createdAt',
-    })
     .lean<ICurrentUser>();
 
   if (!user) {

@@ -4,6 +4,8 @@ import { LeanDocument } from '../types/utils';
 
 export interface INotification extends mongoose.Document {
   message: string;
+  from: string;
+  to: mongoose.Types.ObjectId;
   type: Notifications;
   createdAt: Date;
   updatedAt: Date;
@@ -13,6 +15,15 @@ const notificationSchema = new mongoose.Schema(
   {
     message: {
       type: String,
+      required: true,
+    },
+    from: {
+      type: String,
+      required: true,
+    },
+    to: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
     type: {

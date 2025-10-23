@@ -4,6 +4,11 @@ import Post, { IPost } from '../models/postModel';
 import { CreatePostData, PostFilters, UpdatePostData } from '../types/post';
 import User from '../models/userModel';
 import { parseDescription } from '../utils/parsers';
+import { UserRole } from '../constants/roles';
+import { CommentParentType } from '../constants/commentType';
+import { deleteCommentsAndLikes } from '../utils/helpers';
+import { sendNotificationService } from './notificationService';
+import { Notifications } from '../constants/notifications';
 
 export const createPost = async (
   data: CreatePostData,
@@ -120,14 +125,23 @@ export const updatePostService = async (
 
 export const deletePostService = async (postId: string, userId: string): Promise<void> => {
   const post = await Post.findById(postId);
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error('USER_NOT_FOUND');
+  }
 
   if (!post) {
-    throw new Error('Post nie istnieje');
+    throw new Error('POST_NOT_FOUND');
   }
 
-  if (post.author.toString() !== userId) {
-    throw new Error('Nie masz uprawnień do usunięcia tego posta');
+  if (user.role !== UserRole.admin && post.author.toString() !== userId.toString()) {
+    throw new Error('FORBIDDEN');
   }
+
+  await deleteCommentsAndLikes(CommentParentType.post, (post._id as Types.ObjectId).toString());
+
+  await User.updateMany({ 'likes.posts': post._id }, { $pull: { 'likes.posts': post._id } });
 
   if (post.image) {
     await deleteFromCloudinary(post.image);
@@ -164,6 +178,18 @@ export const togglePostLikeService = async (userId: string, postId: string) => {
     post.likes = (post.likes || 0) + 1;
     await user.save();
     await post.save();
+
+    if (post.author._id.toString() !== user._id.toString()) {
+      const trimmedContent =
+        post.content.length > 30 ? post.content.slice(0, 30) + '...' : post.content;
+      await sendNotificationService(
+        `Użytkownik "${user.username}" polubił Twój post "${trimmedContent}".`,
+        post.author._id.toString(),
+        Notifications.info,
+        user.username,
+      );
+    }
+
     return { message: 'Dodano polubienie', likes: post.likes };
   }
 };
@@ -226,6 +252,24 @@ export const getPostsService = async (
     hasMore,
     nextPage: hasMore ? page + 1 : null,
   };
+};
+
+export const getPostByIdService = async (postId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(postId)) {
+    throw new Error('Nieprawidłowe ID posta');
+  }
+
+  const post = await Post.findById(postId).populate({
+    path: 'author',
+    select: 'username profileDetails.profilePicture',
+    model: 'User',
+  });
+
+  if (!post) {
+    throw new Error('Nie znaleziono posta');
+  }
+
+  return post;
 };
 
 export const getUserPostsWithCursor = async (

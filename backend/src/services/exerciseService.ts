@@ -1,5 +1,5 @@
 import Exercise, { IExercise } from '../models/exerciseModel';
-import { uploadExerciseMedia } from '../config/cloudinary';
+import { deleteFromCloudinary, uploadExerciseMedia } from '../config/cloudinary';
 import { validateExerciseData, validateExercisePatchData } from '../utils/exerciseValidation';
 import mongoose, { FilterQuery, Types } from 'mongoose';
 import User from '../models/userModel';
@@ -12,6 +12,11 @@ import {
   UpdateExerciseData,
 } from '../types/exercise';
 import { PrivacySettings } from '../constants/privacySettings';
+import { UserRole } from '../constants/roles';
+import { CommentParentType } from '../constants/commentType';
+import { deleteCommentsAndLikes } from '../utils/helpers';
+import { sendNotificationService } from './notificationService';
+import { Notifications } from '../constants/notifications';
 
 export const createExercise = async (
   data: CreateExerciseData,
@@ -33,17 +38,49 @@ export const createExercise = async (
 
 export const deleteExercise = async (exerciseId: string, userId: string) => {
   const exercise = await Exercise.findById(exerciseId);
+  const user = await User.findById(userId);
 
-  if (!exercise) {
-    throw new Error('NOT_FOUND');
+  if (!user) {
+    throw new Error('USER_NOT_FOUND');
   }
 
-  if (exercise.author.toString() !== userId.toString()) {
-    return false;
+  if (!exercise) {
+    throw new Error('EXERCISE_NOT_FOUND');
+  }
+
+  if (user.role !== UserRole.admin && exercise.author.toString() !== userId.toString()) {
+    throw new Error('FORBIDDEN');
+  }
+
+  const usersWithFavorite = await User.find({
+    'favorites.exercises': exercise._id,
+  }).select('_id');
+
+  await deleteCommentsAndLikes(
+    CommentParentType.exercise,
+    (exercise._id as Types.ObjectId).toString(),
+  );
+
+  await User.updateMany(
+    { 'likes.exercises': exercise._id },
+    { $pull: { 'likes.exercises': exercise._id } },
+  );
+
+  await User.updateMany(
+    { 'favorites.exercises': exercise._id },
+    { $pull: { 'favorites.exercises': exercise._id } },
+  );
+
+  for (const favUser of usersWithFavorite) {
+    await sendNotificationService(
+      `Ćwiczenie "${exercise.name}" zostało usunięte z platformy, więc zostało również usunięte z Twoich ulubionych. Przepraszamy za niedogodności.`,
+      favUser._id.toString(),
+      Notifications.info,
+      'System',
+    );
   }
 
   await exercise.deleteOne();
-  return true;
 };
 
 export const updateExercise = async (
@@ -70,11 +107,13 @@ export const updateExercise = async (
 
   if (imageBuffer) {
     const uploaded = await uploadExerciseMedia(imageBuffer, undefined);
+    await deleteFromCloudinary(imageUrl);
     if (uploaded.imageUrl) imageUrl = uploaded.imageUrl;
   }
 
   if (videoBuffer) {
     const uploaded = await uploadExerciseMedia(undefined, videoBuffer);
+    await deleteFromCloudinary(videoUrl, 'video');
     if (uploaded.videoUrl) videoUrl = uploaded.videoUrl;
   }
 
@@ -122,6 +161,16 @@ export const toggleExerciseLikeService = async (userId: string, exerciseId: stri
     exercise.likes = (exercise.likes || 0) + 1;
     await user.save();
     await exercise.save();
+
+    if (exercise.author._id.toString() !== user._id.toString()) {
+      await sendNotificationService(
+        `Użytkownik "${user.username}" polubił Twoje ćwiczenie "${exercise.name}".`,
+        exercise.author._id.toString(),
+        Notifications.info,
+        user.username,
+      );
+    }
+
     return { message: 'Dodano polubienie', likes: exercise.likes };
   }
 };

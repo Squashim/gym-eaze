@@ -63,7 +63,10 @@ const reportSchema = new mongoose.Schema(
 
 reportSchema.index({ reportedItemId: 1, reportedItemType: 1 });
 reportSchema.index({ status: 1 });
-reportSchema.index({ reporterId: 1, reportedItemId: 1, reportedItemType: 1, reportType: 1 });
+reportSchema.index(
+  { reporterId: 1, reportedItemId: 1, reportedItemType: 1, reportType: 1 },
+  { unique: true },
+);
 
 reportSchema.pre('save', function (next) {
   if (this.isModified('status') && this.status !== StatusReport.pending) {

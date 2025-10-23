@@ -22,10 +22,13 @@ import type { GetExerciseApiResponse } from '@/types/exercise';
 import { InfoField } from '@/components/ui/info-fields';
 import HashtagList from '@/components/ui/hashtag-list';
 import ExerciseComments from '@/components/features/exercises/exercise-comments';
+import ReportDialog from '@/components/features/reports/report-dialog';
+import useOpen from '@/hooks/utils/use-open';
 
 const ExerciseDetails = () => {
   const { id } = useParams();
   const { user } = useUser();
+  const reportDialog = useOpen();
   const { data: exercise, isLoading, isError, error } = useGetExercise(id!);
 
   const isAuthor = useMemo(() => {
@@ -43,6 +46,12 @@ const ExerciseDetails = () => {
         exercise={exercise}
         isError={isError}
         isLoading={isLoading}
+        reportDialog={{
+          isOpen: reportDialog.isOpen,
+          onOpenChange: reportDialog.setIsOpen,
+          onClose: reportDialog.close,
+          open: reportDialog.open,
+        }}
       />
     </PageLayout>
   );
@@ -56,9 +65,22 @@ interface ExerciseContentProps {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
+  reportDialog: {
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    onClose: () => void;
+    open: () => void;
+  };
 }
 
-function ExerciseContent({ auth, exercise, isLoading, isError, error }: ExerciseContentProps) {
+function ExerciseContent({
+  auth,
+  exercise,
+  isLoading,
+  isError,
+  error,
+  reportDialog,
+}: ExerciseContentProps) {
   if (isLoading) {
     return <ExerciseSkeleton />;
   }
@@ -68,57 +90,73 @@ function ExerciseContent({ auth, exercise, isLoading, isError, error }: Exercise
   }
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
-      <ExerciseHeader auth={auth} exercise={exercise} />
+    <>
+      <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
+        <ExerciseHeader auth={auth} exercise={exercise} onReport={reportDialog.open} />
 
-      <div className="w-full bg-accent/60 rounded-xl shadow-lg max-w-xl mx-auto">
-        <video
-          className="w-full aspect-square rounded-xl h-full object-contain dark:grayscale-[0.2] dark:contrast-110"
-          controls
-          loop
-          muted
-          src={exercise.video}
-        >
-          Twoja przeglądarka nie obsługuje odtwarzania filmów.
-        </video>
-      </div>
-
-      <div className="flex flex-col gap-4 min-w-0">
-        <div className="flex justify-between items-center gap-3 flex-wrap">
-          <div className="inline-flex gap-2">
-            {auth.isAuthor && (
-              <VisibilityBadge type="Exercise" variant="accent" visibility={exercise.visibility} />
-            )}
-            {exercise.advancedLevel !== AdvancedLevel.none && (
-              <AdvancedLevelBadge advancedLevel={exercise.advancedLevel} />
-            )}
-          </div>
-
-          <LikesBadge likes={exercise.likes} />
+        <div className="w-full bg-accent/60 rounded-xl shadow-lg max-w-xl mx-auto">
+          <video
+            className="w-full aspect-square rounded-xl h-full object-contain dark:grayscale-[0.2] dark:contrast-110"
+            controls
+            loop
+            muted
+            src={exercise.video}
+          >
+            Twoja przeglądarka nie obsługuje odtwarzania filmów.
+          </video>
         </div>
 
-        <InfoField label="Opis ćwiczenia" variant="p">
-          <Typography
-            className="break-words whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar px-2 py-1 rounded-md bg-accent/60"
-            variant="p"
-          >
-            {exercise.description}
-          </Typography>
-        </InfoField>
+        <div className="flex flex-col gap-4 min-w-0">
+          <div className="flex justify-between items-center gap-3 flex-wrap">
+            <div className="inline-flex gap-2">
+              {auth.isAuthor && (
+                <VisibilityBadge
+                  type="Exercise"
+                  variant="accent"
+                  visibility={exercise.visibility}
+                />
+              )}
+              {exercise.advancedLevel !== AdvancedLevel.none && (
+                <AdvancedLevelBadge advancedLevel={exercise.advancedLevel} />
+              )}
+            </div>
 
-        <ItemsHorizontalGallery items={exercise.muscleGroup} label="Aktywne grupy mięśniowe" />
+            <LikesBadge likes={exercise.likes} />
+          </div>
 
-        <ItemsHorizontalGallery
-          className="rounded-full"
-          items={exercise.equipment}
-          label="Potrzebny sprzęt ćwiczeniowy"
+          <InfoField label="Opis ćwiczenia" variant="p">
+            <Typography
+              className="break-words whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar px-2 py-1 rounded-md bg-accent/60"
+              variant="p"
+            >
+              {exercise.description}
+            </Typography>
+          </InfoField>
+
+          <ItemsHorizontalGallery items={exercise.muscleGroup} label="Aktywne grupy mięśniowe" />
+
+          <ItemsHorizontalGallery
+            className="rounded-full"
+            items={exercise.equipment}
+            label="Potrzebny sprzęt ćwiczeniowy"
+          />
+        </div>
+
+        <ExerciseMetaInfo exercise={exercise} isAuthor={auth.isAuthor} />
+
+        <ExerciseComments exercise={exercise} />
+      </section>
+
+      {auth.isLogged && !auth.isAuthor && (
+        <ReportDialog
+          itemId={exercise._id}
+          itemType="Ćwiczenie"
+          onClose={reportDialog.onClose}
+          onOpenChange={reportDialog.onOpenChange}
+          open={reportDialog.isOpen}
         />
-      </div>
-
-      <ExerciseMetaInfo exercise={exercise} isAuthor={auth.isAuthor} />
-
-      <ExerciseComments exercise={exercise} />
-    </section>
+      )}
+    </>
   );
 }
 
@@ -176,9 +214,10 @@ const ExerciseSkeleton = () => {
 interface ExerciseHeaderProps {
   exercise: GetExerciseApiResponse;
   auth: { isAuthor: boolean; isLogged: boolean };
+  onReport: () => void;
 }
 
-function ExerciseHeader({ exercise, auth }: ExerciseHeaderProps) {
+function ExerciseHeader({ exercise, auth, onReport }: ExerciseHeaderProps) {
   const { toggleLikeExercise, toggleFavoriteExercise, deleteExercise } = useExercise();
   const { data: userLikes, isLoading: isLikedItemsLoading } = useGetLikedItems('exercises');
   const { data: userFavorites, isLoading: isFavoritedItemsLoading } = useGetFavoritedItems(
@@ -212,8 +251,8 @@ function ExerciseHeader({ exercise, auth }: ExerciseHeaderProps) {
   }, [deleteExercise, exercise._id]);
 
   const handleReport = useCallback(() => {
-    //TODO: implement report functionality
-  }, []);
+    onReport();
+  }, [onReport]);
 
   return (
     <header className="col-span-full flex flex-col md:flex-row md:items-center md:justify-between md:gap-4">

@@ -42,10 +42,13 @@ import type {
 import { BicepsFlexed, CalendarDays, Clock, ImageOff, Info } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import ReportDialog from '@/components/features/reports/report-dialog';
+import useOpen from '@/hooks/utils/use-open';
 
 function WorkoutDetails() {
   const { user } = useUser();
   const { id } = useParams();
+  const reportDialog = useOpen();
   const { data: workout, isLoading, isError, error } = useGetWorkout(id!);
 
   const isAuthor = useMemo(() => {
@@ -70,6 +73,12 @@ function WorkoutDetails() {
         error={error}
         isError={isError}
         isLoading={isLoading}
+        reportDialog={{
+          isOpen: reportDialog.isOpen,
+          onOpenChange: reportDialog.setIsOpen,
+          onClose: reportDialog.close,
+          open: reportDialog.open,
+        }}
         weeks={weeks}
         workout={workout}
       />
@@ -84,9 +93,23 @@ interface WorkoutContentProps {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
+  reportDialog: {
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    onClose: () => void;
+    open: () => void;
+  };
 }
 
-function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: WorkoutContentProps) {
+function WorkoutContent({
+  isLoading,
+  workout,
+  weeks,
+  auth,
+  error,
+  isError,
+  reportDialog,
+}: WorkoutContentProps) {
   if (isLoading) {
     return <WorkoutSkeleton />;
   }
@@ -96,39 +119,51 @@ function WorkoutContent({ isLoading, workout, weeks, auth, error, isError }: Wor
   }
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
-      <WorkoutHeader auth={auth} workout={workout} />
+    <>
+      <section className="grid grid-cols-1 md:grid-cols-[0.75fr_1fr] gap-4 w-full">
+        <WorkoutHeader auth={auth} onReport={reportDialog.open} workout={workout} />
 
-      <div className="w-full bg-accent/60 rounded-xl shadow-lg overflow-hidden h-[500px]">
-        <img
-          alt={`Zdjęcie planu treningowego ${workout.name}`}
-          className="w-full rounded-xl h-full object-cover dark:grayscale-[0.2] dark:contrast-110"
-          loading="lazy"
-          src={workout.image}
-        />
-      </div>
-
-      <div className="flex flex-col gap-4 min-w-0 h-full max-h-[500px]">
-        <div className="flex justify-between items-center gap-3 flex-wrap">
-          <div className="inline-flex gap-2">
-            {auth.isAuthor && (
-              <VisibilityBadge type="Workout" variant="accent" visibility={workout.visibility} />
-            )}
-            {workout.advancedLevel !== AdvancedLevel.none && (
-              <AdvancedLevelBadge advancedLevel={workout.advancedLevel} />
-            )}
-          </div>
-
-          <LikesBadge likes={workout.likes} />
+        <div className="w-full bg-accent/60 rounded-xl shadow-lg overflow-hidden h-[500px]">
+          <img
+            alt={`Zdjęcie planu treningowego ${workout.name}`}
+            className="w-full rounded-xl h-full object-cover dark:grayscale-[0.2] dark:contrast-110"
+            loading="lazy"
+            src={workout.image}
+          />
         </div>
 
-        <WorkoutDays weeks={weeks} />
-      </div>
+        <div className="flex flex-col gap-4 min-w-0 h-full max-h-[500px]">
+          <div className="flex justify-between items-center gap-3 flex-wrap">
+            <div className="inline-flex gap-2">
+              {auth.isAuthor && (
+                <VisibilityBadge type="Workout" variant="accent" visibility={workout.visibility} />
+              )}
+              {workout.advancedLevel !== AdvancedLevel.none && (
+                <AdvancedLevelBadge advancedLevel={workout.advancedLevel} />
+              )}
+            </div>
 
-      <WorkoutMetaInfo isAuthor={auth.isAuthor} workout={workout} />
+            <LikesBadge likes={workout.likes} />
+          </div>
 
-      <WorkoutComments workout={workout} />
-    </section>
+          <WorkoutDays weeks={weeks} />
+        </div>
+
+        <WorkoutMetaInfo isAuthor={auth.isAuthor} workout={workout} />
+
+        <WorkoutComments workout={workout} />
+      </section>
+
+      {auth.isLogged && !auth.isAuthor && (
+        <ReportDialog
+          itemId={workout._id}
+          itemType="Trening"
+          onClose={reportDialog.onClose}
+          onOpenChange={reportDialog.onOpenChange}
+          open={reportDialog.isOpen}
+        />
+      )}
+    </>
   );
 }
 
@@ -183,9 +218,10 @@ interface WorkoutHeaderProps {
     isAuthor: boolean;
     isLogged: boolean;
   };
+  onReport: () => void;
 }
 
-function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
+function WorkoutHeader({ workout, auth, onReport }: WorkoutHeaderProps) {
   const { deleteWorkout, toggleFavoriteWorkout, toggleLikeWorkout, downloadWorkout } = useWorkout();
   const { data: userLikes, isLoading: isLikedItemsLoading } = useGetLikedItems('trainingPlans');
   const { data: userFavorites, isLoading: isFavoritedItemsLoading } = useGetFavoritedItems(
@@ -219,8 +255,8 @@ function WorkoutHeader({ workout, auth }: WorkoutHeaderProps) {
   }, [deleteWorkout, workout]);
 
   const handleReport = useCallback(() => {
-    //TODO: implement report functionality
-  }, []);
+    onReport();
+  }, [onReport]);
 
   const handleDownload = useCallback(() => {
     downloadWorkout.mutate(workout._id);

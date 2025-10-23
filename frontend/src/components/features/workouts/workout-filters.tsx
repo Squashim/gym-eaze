@@ -72,7 +72,6 @@ function WorkoutFilters({
     filters.maxDuration ?? WORKOUT.MAX_DAYS,
   ]);
   const debouncedSearch = useDebounce(searchText, 350);
-  const debouncedSliderValues = useDebounce(sliderValues, 350);
 
   const activeFiltersCount = useMemo(() => {
     let durationActive = false;
@@ -80,7 +79,10 @@ function WorkoutFilters({
     const count = Object.entries(filters).reduce((acc, [key, value]) => {
       if (key === 'search') return acc;
       if (key === 'minDuration' || key === 'maxDuration') {
-        if ((key === 'minDuration' && value !== 1) || (key === 'maxDuration' && value !== 30)) {
+        if (
+          (key === 'minDuration' && value && value !== 1) ||
+          (key === 'maxDuration' && value && value !== WORKOUT.MAX_DAYS)
+        ) {
           durationActive = true;
         }
         return acc;
@@ -97,13 +99,6 @@ function WorkoutFilters({
   useEffect(() => {
     setFilters({ search: debouncedSearch });
   }, [debouncedSearch, setFilters]);
-
-  useEffect(() => {
-    setFilters({
-      minDuration: debouncedSliderValues[0],
-      maxDuration: debouncedSliderValues[1],
-    });
-  }, [debouncedSliderValues, setFilters]);
 
   const handleSearchClear = () => {
     setSearchText('');
@@ -196,7 +191,13 @@ function WorkoutFilters({
                 <Slider
                   max={WORKOUT.MAX_DAYS}
                   min={1}
-                  onValueChange={setSliderValues}
+                  onValueChange={(values) => {
+                    setSliderValues(values);
+                    setFilters({
+                      minDuration: values[0],
+                      maxDuration: values[1],
+                    });
+                  }}
                   step={1}
                   value={sliderValues}
                 />
