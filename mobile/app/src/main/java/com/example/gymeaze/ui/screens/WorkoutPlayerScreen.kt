@@ -89,7 +89,12 @@ fun WorkoutPlayerScreen(
             ) { targetState ->
                 when (targetState) {
                     PlayerState.LOADING -> LoadingState()
-                    PlayerState.EXERCISE -> ExerciseState(uiState)
+                    PlayerState.EXERCISE -> ExerciseState(
+                        state = uiState,
+                        onStartTimer = { viewModel.startExerciseTimer() },
+                        onStopTimer = viewModel::stopExerciseTimer,
+                        onResetTimer = viewModel::resetExerciseTimer
+                    )
                     PlayerState.REST -> RestState(
                         state = uiState,
                         onDecreaseTime = viewModel::decreaseRestTime,
@@ -163,7 +168,12 @@ private fun LoadingState() {
 }
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ExerciseState(state: WorkoutPlayerUiState) {
+private fun ExerciseState(
+    state: WorkoutPlayerUiState,
+    onStartTimer: () -> Unit,
+    onStopTimer: () -> Unit,
+    onResetTimer: () -> Unit
+) {
     val exercise = state.currentExercise
     val set = state.currentSet
     if (exercise == null || set == null || state.dayDetails == null) {
@@ -217,10 +227,58 @@ private fun ExerciseState(state: WorkoutPlayerUiState) {
                 }
             }
         } else if (set.duration != null && set.duration > 0) {
-            TimerDisplay(
-                timeRemaining = state.exerciseTimeRemaining,
-                label = "Czas ćwiczenia"
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                TimerDisplay(
+                    timeRemaining = state.exerciseTimeRemaining,
+                    label = "Czas ćwiczenia"
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Button(
+                        onClick = if (state.isExerciseTimerRunning) onStopTimer else onStartTimer,
+                        modifier = Modifier.size(width = 120.dp, height = 48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (state.isExerciseTimerRunning) getErrorColor().copy(alpha = 0.1f) else getPrimaryColor().copy(alpha=0.1f),
+                            contentColor = if (state.isExerciseTimerRunning) getErrorColor() else getPrimaryColor()
+                        ),
+                        border = BorderStroke(1.dp, if (state.isExerciseTimerRunning) getErrorColor() else getPrimaryColor())
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                if (state.isExerciseTimerRunning) Icons.Default.PauseCircleOutline else Icons.Default.PlayCircleOutline,
+                                contentDescription = if (state.isExerciseTimerRunning) "Stop" else "Start",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(if (state.isExerciseTimerRunning) "Stop" else "Start", fontSize = 14.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    OutlinedButton(
+                        onClick = onResetTimer,
+                        modifier = Modifier.size(width = 120.dp, height = 48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, getOnSurfaceSecondaryColor()),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = getOnSurfaceSecondaryColor())
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Replay, contentDescription = "Reset", modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Reset", fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
         }
         Spacer(modifier = Modifier.height(24.dp))
 
