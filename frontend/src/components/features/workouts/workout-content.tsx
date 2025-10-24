@@ -29,6 +29,7 @@ interface WorkoutContentProps {
   className?: string;
   isLoading: boolean;
   isError: boolean;
+  isViewingAsGuest?: boolean;
 }
 
 function WorkoutContent({
@@ -38,6 +39,7 @@ function WorkoutContent({
   isError,
   className,
   pagination,
+  isViewingAsGuest = false,
 }: WorkoutContentProps) {
   const scrollRef = useRef<HTMLHeadingElement>(null);
   const totalPages = useMemo(() => {
@@ -72,7 +74,12 @@ function WorkoutContent({
         <Typography className="col-span-full" ref={scrollRef} variant="h4">
           {renderSubtitle()}
         </Typography>
-        <WorkoutList isFetchingError={isError} pageType={pageType} workouts={workouts?.items} />
+        <WorkoutList
+          isFetchingError={isError}
+          isViewingAsGuest={isViewingAsGuest}
+          pageType={pageType}
+          workouts={workouts?.items}
+        />
       </section>
 
       <ReusablePagination

@@ -27,6 +27,7 @@ type ExerciseContentProps = {
   };
   pageType?: PageType;
   className?: string;
+  isViewingAsGuest?: boolean;
   isLoading: boolean;
   isError: boolean;
 };
@@ -37,6 +38,7 @@ const ExerciseContent = ({
   isError,
   pagination,
   className,
+  isViewingAsGuest = false,
   pageType = 'browser',
 }: ExerciseContentProps) => {
   const scrollRef = useRef<HTMLHeadingElement>(null);
@@ -72,7 +74,12 @@ const ExerciseContent = ({
         <Typography className="col-span-full" ref={scrollRef} variant="h4">
           {renderSubtitle()}
         </Typography>
-        <ExerciseList exercises={exercises?.items} isFetchingError={isError} pageType={pageType} />
+        <ExerciseList
+          exercises={exercises?.items}
+          isFetchingError={isError}
+          isViewingAsGuest={isViewingAsGuest}
+          pageType={pageType}
+        />
       </section>
 
       <ReusablePagination

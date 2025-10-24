@@ -58,11 +58,12 @@ export const QUERY_KEYS = {
     includePrivate,
   ],
 
-  USER_ACTIVE_WORKOUTS: (userId: string, params: PaginatedQueryParams) => [
+  USER_ACTIVE_WORKOUTS: (userId: string, params: PaginatedQueryParams, includePrivate: boolean) => [
     'user',
     userId,
     'active-workouts',
     params,
+    includePrivate,
   ],
 
   REPORTS: (params: ReportQueryParams) => ['reports', params],

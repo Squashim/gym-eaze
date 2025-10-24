@@ -4,10 +4,14 @@ import type { GetActiveWorkoutsApiResponse } from '@/types/active-workout';
 import type { PaginatedQueryParams, PaginatedResponse } from '@/types/filters';
 import { useQuery } from '@tanstack/react-query';
 
-function useGetActiveWorkouts(userId: string, params: PaginatedQueryParams) {
+function useGetActiveWorkouts(
+  userId: string,
+  params: PaginatedQueryParams,
+  includePrivate: boolean = true,
+) {
   return useQuery<PaginatedResponse<GetActiveWorkoutsApiResponse>>({
-    queryKey: QUERY_KEYS.USER_ACTIVE_WORKOUTS(userId, params),
-    queryFn: () => getAll(userId, params),
+    queryKey: QUERY_KEYS.USER_ACTIVE_WORKOUTS(userId, params, includePrivate),
+    queryFn: () => getAll(userId, params, includePrivate),
     retry: false,
     enabled: !!userId,
   });

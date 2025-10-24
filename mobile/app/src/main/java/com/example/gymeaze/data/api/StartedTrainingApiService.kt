@@ -11,8 +11,9 @@ import retrofit2.http.Query
 
 interface StartedTrainingApiService {
 
-    @GET("/api/started-training-plans/started")
+    @GET("/api/started-training-plans/user/{userId}")
     suspend fun getStartedTrainingPlans(
+        @Path("userId") userId: String,
         @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 10
     ): Response<StartedTrainingPlansResponse>

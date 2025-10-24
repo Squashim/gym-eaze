@@ -30,13 +30,19 @@ interface WorkoutListProps {
   isFetchingError?: boolean;
   pageType?: PageType;
   workouts?: GetWorkoutsApiResponse[];
+  isViewingAsGuest?: boolean;
 }
 
-function WorkoutList({ workouts, isFetchingError, pageType }: WorkoutListProps) {
+function WorkoutList({
+  workouts,
+  isFetchingError,
+  pageType,
+  isViewingAsGuest = false,
+}: WorkoutListProps) {
   const { data: favoritedWorkouts, isLoading: isFavoritedWorkoutsLoading } = useGetFavoritedItems(
     'trainingPlans',
     {
-      enabled: pageType !== 'user',
+      enabled: pageType !== 'user' && pageType !== 'profile',
     },
   );
   const { data: likedWorkouts, isLoading: isLikedWorkoutsLoading } =
@@ -56,7 +62,7 @@ function WorkoutList({ workouts, isFetchingError, pageType }: WorkoutListProps) 
       {...workout}
       isDetailsLoading={isDetailsLoading}
       isFavorited={favoritedWorkouts?.has(workout._id)}
-      isLiked={likedWorkouts?.has(workout._id)}
+      isLiked={isViewingAsGuest ? false : likedWorkouts?.has(workout._id)}
       pageType={pageType}
     />
   ));

@@ -4,6 +4,7 @@ import type { WorkoutStatus } from '@/constants/enums/workout-status';
 
 export type GetActiveWorkoutsApiResponse = {
   _id: string;
+  originalId: string;
   name: string;
   image: string;
   goal: Goal;

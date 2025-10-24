@@ -12,15 +12,24 @@ import {
 
 export const getStartedTrainingPlans = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.userId!;
+    const { userId: targetUserId } = req.params;
+    const currentUserId = req.userId;
+    const includePrivate =
+      typeof req.query.includePrivate === 'undefined' ? true : req.query.includePrivate === 'true';
     const page = req.query.page ? Number(req.query.page) : 1;
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
 
-    const result = await getStartedTrainingPlansService(userId, page, pageSize);
+    const result = await getStartedTrainingPlansService(
+      targetUserId,
+      page,
+      pageSize,
+      includePrivate,
+      currentUserId!,
+    );
     return res.json(result);
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(500).json({ message: error.message });
+      return res.status(400).json({ message: error.message });
     } else {
       return res.status(500).json({ message: 'Błąd serwera' });
     }

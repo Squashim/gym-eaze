@@ -23,6 +23,7 @@ function WorkoutsTab({ profileId, isOwnProfile, isViewingAsGuest }: WorkoutsTabP
         className="sm:grid-cols-1 lg:grid-cols-2"
         isError={isError}
         isLoading={isLoading}
+        isViewingAsGuest={isViewingAsGuest}
         pageType={isOwnProfile && !isViewingAsGuest ? 'user' : 'profile'}
         pagination={{
           params,

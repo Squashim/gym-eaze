@@ -6,13 +6,30 @@ import TrainingPlan from '../models/trainingPlanModel';
 import Exercise from '../models/exerciseModel';
 
 export const getStartedTrainingPlansService = async (
-  userId: string,
+  targetUserId: string,
   page: number,
   pageSize: number,
+  includePrivate: boolean,
+  currentUserId: string,
 ) => {
-  const user = await User.findById(userId);
+  if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+    throw new Error('Nieprawidłowy identyfikator użytkownika');
+  }
+
+  const user = await User.findById(targetUserId);
   if (!user) {
     throw new Error('Użytkownik nie został znaleziony');
+  }
+
+  const isPublic = user.privacySettings.isTrainingStatisticsPublic;
+  const isOwnProfile = targetUserId === currentUserId;
+
+  if (!isOwnProfile && !isPublic) {
+    return { items: [], total: 0, page, pageSize };
+  }
+
+  if (isOwnProfile && !includePrivate && !isPublic) {
+    return { items: [], total: 0, page, pageSize };
   }
 
   const skip = (page - 1) * pageSize;
@@ -25,7 +42,7 @@ export const getStartedTrainingPlansService = async (
       .skip(skip)
       .limit(pageSize)
       .select(
-        'trainingPlanSnapshot.name trainingPlanSnapshot.image trainingPlanSnapshot.goal trainingPlanSnapshot.advancedLevel trainingPlanSnapshot.author trainingPlanSnapshot.days progress createdAt',
+        'trainingPlanSnapshot.originalId trainingPlanSnapshot.name trainingPlanSnapshot.image trainingPlanSnapshot.goal trainingPlanSnapshot.advancedLevel trainingPlanSnapshot.author trainingPlanSnapshot.days progress createdAt',
       )
       .lean(),
     UserHasTrainingPlans.countDocuments({ _id: { $in: startedTrainingIds } }),
@@ -45,6 +62,7 @@ export const getStartedTrainingPlansService = async (
 
     return {
       _id: item._id,
+      originalId: snapshot.originalId,
       name: snapshot.name,
       image: snapshot.image,
       goal: snapshot.goal,

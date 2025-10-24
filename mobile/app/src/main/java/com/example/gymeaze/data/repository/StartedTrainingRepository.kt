@@ -39,9 +39,9 @@ class StartedTrainingRepository(private val context: Context) {
             .create(StartedTrainingApiService::class.java)
     }
 
-    suspend fun getStartedTrainingPlans(page: Int, pageSize: Int): Result<StartedTrainingPlansResponse> = withContext(Dispatchers.IO) {
+    suspend fun getStartedTrainingPlans(userId: String, page: Int, pageSize: Int): Result<StartedTrainingPlansResponse> = withContext(Dispatchers.IO) {
         try {
-            val response = api.getStartedTrainingPlans(page, pageSize)
+            val response = api.getStartedTrainingPlans(userId, page, pageSize)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
