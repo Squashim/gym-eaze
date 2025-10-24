@@ -228,7 +228,7 @@ private fun ExerciseState(state: WorkoutPlayerUiState) {
             InfoSection(title = "Zaangażowane partie", icon = Icons.Default.SportsGymnastics) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     exercise.muscleGroup.forEach { muscle ->
@@ -243,7 +243,7 @@ private fun ExerciseState(state: WorkoutPlayerUiState) {
             InfoSection(title = "Wymagany sprzęt", icon = Icons.Default.MonitorWeight) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     exercise.equipment.forEach { eq ->
@@ -618,7 +618,7 @@ private fun InfoChip(label: String, value: String) {
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
-            fontSize = 28.sp,
+            fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
             color = getPrimaryColor()
         )
