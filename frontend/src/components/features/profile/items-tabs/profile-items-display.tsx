@@ -8,8 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Typography from '@/components/ui/typography';
 import ExercisesTab from './exercises-tab';
 import WorkoutsTab from './workouts-tab';
+import ActiveWorkoutsTab from './active-workouts-tab';
 
-export type ProfileItemsTabs = Exclude<ItemType, 'Komentarz'>;
+export type ProfileItemsTabs = Exclude<ItemType, 'Komentarz'> | 'Aktywne';
 
 interface ProfileItemsDisplayProps {
   profileId?: string;
@@ -88,6 +89,13 @@ function ProfileItemsDisplay({
       </TabsContent>
       <TabsContent value={ItemType.Training}>
         <WorkoutsTab
+          isOwnProfile={isOwnProfile}
+          isViewingAsGuest={isViewingAsGuest}
+          profileId={profileId}
+        />
+      </TabsContent>
+      <TabsContent value="Aktywne">
+        <ActiveWorkoutsTab
           isOwnProfile={isOwnProfile}
           isViewingAsGuest={isViewingAsGuest}
           profileId={profileId}
