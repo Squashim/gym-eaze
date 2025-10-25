@@ -27,6 +27,7 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface UserApiService {
 
@@ -86,4 +87,9 @@ interface UserApiService {
 
     @GET("/api/user/following")
     suspend fun getFollowing(): Response<List<FollowerUser>>
+
+    @GET("/api/user/{username}/profile")
+    suspend fun getUserProfile(
+        @Path("username") username: String
+    ): Response<UserProfileDetails>
 }

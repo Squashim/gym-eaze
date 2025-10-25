@@ -28,7 +28,9 @@ import com.example.gymeaze.util.ApiUtils
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
+import com.example.gymeaze.viewmodel.ProfileUiState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -386,6 +388,25 @@ class UserRepository(private val context: Context) {
     suspend fun getFollowing(): Result<List<FollowerUser>> = withContext(Dispatchers.IO) {
         try {
             val response = api.getFollowing()
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserProfile(username: String): Result<UserProfileDetails> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getUserProfile(username)
             val body = response.body()
 
             return@withContext if (response.isSuccessful && body != null) {

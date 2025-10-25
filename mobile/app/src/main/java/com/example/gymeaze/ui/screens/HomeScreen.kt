@@ -1,5 +1,7 @@
 package com.example.gymeaze.ui.screens
 
+import android.R.attr.description
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,14 +24,20 @@ import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Man
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TrackChanges
+import androidx.compose.material.icons.filled.Woman
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,10 +50,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -62,17 +72,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
+import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.profile.FollowListDialog
@@ -80,7 +95,9 @@ import com.example.gymeaze.ui.screens.profile.FollowStatsSection
 import com.example.gymeaze.ui.screens.trainingsPlan.TrainingPlansNavigationScreen
 import com.example.gymeaze.ui.screens.trainingsPlan.guest.WorkoutsNotLoggedInScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
+import com.example.gymeaze.ui.theme.getCardBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
+import com.example.gymeaze.ui.theme.getInputBorderColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -88,6 +105,7 @@ import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.example.gymeaze.viewmodel.ProfileViewModel
+import com.example.gymeaze.viewmodel.UserViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -168,19 +186,6 @@ fun HomeScreen(
                         onStartedPlanClick = onStartedPlanClick,
                         setShowBottomBar = { showBottomBar = it }
                     )
-                } else {
-                    WorkoutsNotLoggedInScreen(
-                        onSettingsClick = onSettingsClick, // Przekaż callback
-                        onPlanClick = { planId ->
-                            // Tutaj obsłuż kliknięcie w plan
-                            // Opcja 1: Jeśli masz nawigację wewnętrzną
-                            //selectedPlanId = planId
-                            //showPlanDetails = true
-
-                            // Opcja 2: Jeśli przekazujesz callback z wyższego poziomu
-                            // onPlanClick(planId)
-                        }
-                    )
                 }
             }
 
@@ -232,10 +237,15 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit
 ) {
-
     val uiState by profileViewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val userViewModel: UserViewModel = viewModel()
+    val availableBadges by userViewModel.availableBadges.collectAsState()
+
+
+
+    LaunchedEffect(username) {
+        profileViewModel.loadUserProfile(username)
+    }
 
     LaunchedEffect(Unit) {
         profileViewModel.loadFollowersAndFollowing()
@@ -249,6 +259,7 @@ fun ProfileScreen(
             profileViewModel.clearOperationMessages()
         }
     }
+
     LaunchedEffect(uiState.operationSuccessMessage) {
         uiState.operationSuccessMessage?.let { message ->
             scope.launch {
@@ -266,22 +277,43 @@ fun ProfileScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-            item {
-                WelcomeSection(
-                    username = username,
-                    currentDate = currentDate,
-                    onEditProfileClick = onEditProfileClick
-                )
-            }
-            item {
-                FollowStatsSection(
-                    followersCount = uiState.followersCount,
-                    followingCount = uiState.followingCount,
-                    onFollowersClick = { profileViewModel.showFollowersDialog() },
-                    onFollowingClick = { profileViewModel.showFollowingDialog() }
-                )
-            }
-            item {
+        item {
+
+            val profile = uiState.userProfile
+            val bmi = calculateBmi(
+                profile?.fitnessDetails?.height,
+                profile?.fitnessDetails?.weight
+            )
+
+            WelcomeSection(
+                username = username,
+                currentDate = currentDate,
+                onEditProfileClick = onEditProfileClick,
+                profilePicture = profile?.profilePicture,
+                description = profile?.description,
+                firstName = profile?.personalDetails?.firstName,
+                lastName = profile?.personalDetails?.lastName,
+                country = profile?.personalDetails?.country,
+                gender = profile?.fitnessDetails?.gender,
+                age = profile?.fitnessDetails?.age,
+                height = profile?.fitnessDetails?.height,
+                weight = profile?.fitnessDetails?.weight?.toDouble(),
+                bmi = bmi,
+                trainingGoal = profile?.goal,
+                pinnedBadges = profile?.pinnedBadges ?: emptyList()
+            )
+        }
+
+        item {
+            FollowStatsSection(
+                followersCount = uiState.followersCount,
+                followingCount = uiState.followingCount,
+                onFollowersClick = { profileViewModel.showFollowersDialog() },
+                onFollowingClick = { profileViewModel.showFollowingDialog() }
+            )
+        }
+
+        item {
             RecentActivitySection(
                 isLoading = uiState.isLoading,
                 startedPlans = uiState.startedPlans,
@@ -294,6 +326,7 @@ fun ProfileScreen(
             )
         }
     }
+
     if (uiState.showFollowersDialog) {
         FollowListDialog(
             title = "Obserwujący",
@@ -314,12 +347,19 @@ fun ProfileScreen(
         )
     }
 }
+
+private fun calculateBmi(height: Int?, weight: Int?): Double? {
+    if (height == null || weight == null || height == 0) return null
+    val heightInMeters = height / 100.0
+    return weight / (heightInMeters * heightInMeters)
+}
 @Composable
 private fun WelcomeSection(
     username: String,
     currentDate: String,
     onEditProfileClick: () -> Unit,
-    // Nowe parametry - na razie z wartościami domyślnymi
+    profilePicture: String? = null,
+    description: String? = null,
     firstName: String? = null,
     lastName: String? = null,
     country: String? = null,
@@ -329,8 +369,10 @@ private fun WelcomeSection(
     weight: Double? = null,
     bmi: Double? = null,
     trainingGoal: String? = null,
-    badges: List<String> = emptyList()
+    pinnedBadges: List<Badge> = emptyList()
 ) {
+    var selectedBadge by remember { mutableStateOf<Badge?>(null) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -347,31 +389,41 @@ private fun WelcomeSection(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // Górny wiersz z nazwą użytkownika i edycją
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = buildString {
-                            append(username)
-                            if (firstName != null && lastName != null) {
-                                append(" ($firstName $lastName)")
-                            }
-                        },
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = getOnSurfaceColor()
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    UserAvatar(
+                        imageUrl = profilePicture,
+                        username = username,
+                        modifier = Modifier.size(48.dp)
                     )
 
-                    Text(
-                        text = currentDate,
-                        fontSize = 12.sp,
-                        color = getOnSurfaceSecondaryColor(),
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = username,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = getOnSurfaceColor()
+                        )
+
+                        if (firstName != null && lastName != null) {
+                            Text(
+                                text = "$firstName $lastName",
+                                fontSize = 14.sp,
+                                color = getOnSurfaceSecondaryColor(),
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                        }
+                    }
                 }
 
                 IconButton(
@@ -387,39 +439,52 @@ private fun WelcomeSection(
                 }
             }
 
-            // Podstawowe informacje
+            description?.takeIf { it.isNotEmpty() }?.let { bio ->
+                Text(
+                    text = bio,
+                    fontSize = 14.sp,
+                    color = getOnSurfaceSecondaryColor(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+
             if (gender != null || age != null || country != null) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(18.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     gender?.let {
                         ProfileInfoChip(
                             icon = if (it.lowercase() == "mężczyzna" || it.lowercase() == "male")
-                                "♂" else "♀",
+                                Icons.Default.Man else Icons.Default.Woman,
                             text = it
                         )
                     }
 
                     age?.let {
                         ProfileInfoChip(
-                            icon = "🎂",
+                            icon = Icons.Default.Cake,
                             text = "$it lat"
                         )
                     }
 
                     country?.let {
                         ProfileInfoChip(
-                            icon = "🌍",
+                            icon = Icons.Default.Public,
                             text = it
                         )
                     }
                 }
             }
 
-            // Pomiary ciała
             if (height != null || weight != null || bmi != null) {
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -451,7 +516,6 @@ private fun WelcomeSection(
                 }
             }
 
-            // Cel treningowy
             trainingGoal?.let { goal ->
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -465,10 +529,13 @@ private fun WelcomeSection(
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "🎯",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(end = 8.dp)
+                    Icon(
+                        imageVector = Icons.Default.TrackChanges,
+                        contentDescription = "Cel treningowy",
+                        modifier = Modifier
+                            .size(42.dp)
+                            .padding(end = 8.dp),
+                        tint = getOnSurfaceColor()
                     )
                     Column {
                         Text(
@@ -486,8 +553,7 @@ private fun WelcomeSection(
                 }
             }
 
-            // Wyróżnione odznaki
-            if (badges.isNotEmpty()) {
+            if (pinnedBadges.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Column {
@@ -503,9 +569,213 @@ private fun WelcomeSection(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        badges.take(3).forEach { badge ->
-                            BadgeItem(badgeName = badge)
+                        pinnedBadges.forEach { badge ->
+                            BadgeItem(
+                                badge = badge,
+                                onClick = { selectedBadge = badge }
+                            )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    selectedBadge?.let { badge ->
+        BadgeDetailsDialog(
+            badge = badge,
+            onDismiss = { selectedBadge = null }
+        )
+    }
+}
+
+@Composable
+private fun BadgeItem(
+    badge: Badge,
+    onClick: () -> Unit
+) {
+    val imageUrl = badge.image
+    val title = badge.title
+
+    Box(
+        modifier = Modifier
+            .size(60.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                color = getSurfaceVariantColor(),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (imageUrl.isNotEmpty()) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Odznaka $title",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                onError = {
+                    println("ERROR loading badge image: $imageUrl for badge: $title")
+                }
+            )
+        } else {
+            Text(
+                text = "🏆",
+                fontSize = 24.sp,
+                color = getOnSurfaceColor()
+            )
+        }
+    }
+}
+
+@Composable
+private fun BadgeDetailsDialog(
+    badge: Badge,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = getCardBackgroundColor(),
+            shadowElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = badge.title,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = getOnSurfaceColor()
+                    )
+
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Zamknij",
+                            tint = getOnSurfaceSecondaryColor()
+                        )
+                    }
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (badge.image.isNotEmpty()) {
+                        AsyncImage(
+                            model = badge.image,
+                            contentDescription = badge.title,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    color = getSurfaceVariantColor(),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .background(
+                                    color = getSurfaceVariantColor(),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🏆",
+                                fontSize = 48.sp
+                            )
+                        }
+                    }
+
+                    if (badge.description.isNotEmpty()) {
+                        Text(
+                            text = badge.description,
+                            fontSize = 14.sp,
+                            color = getOnSurfaceColor(),
+                            textAlign = TextAlign.Center,
+                            lineHeight = 20.sp
+                        )
+                    }
+
+                    badge.awardedAt?.let { awardedAt ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Zdobyto:",
+                                fontSize = 12.sp,
+                                color = getOnSurfaceSecondaryColor(),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = formatBadgeDate(awardedAt),
+                                fontSize = 14.sp,
+                                color = getPrimaryColor(),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = getOnSurfaceColor()
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            getInputBorderColor()
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Zamknij",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
@@ -513,9 +783,20 @@ private fun WelcomeSection(
     }
 }
 
+private fun formatBadgeDate(dateString: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("pl"))
+        val date = inputFormat.parse(dateString)
+        date?.let { outputFormat.format(it) } ?: dateString
+    } catch (e: Exception) {
+        dateString
+    }
+}
+
 @Composable
 private fun ProfileInfoChip(
-    icon: String,
+    icon: ImageVector,
     text: String
 ) {
     Row(
@@ -526,11 +807,13 @@ private fun ProfileInfoChip(
             )
             .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(
-            text = icon,
-            fontSize = 14.sp
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = getOnSurfaceColor(),
+            modifier = Modifier.size(16.dp)
         )
         Text(
             text = text,
@@ -564,39 +847,12 @@ private fun MeasurementItem(
     }
 }
 
-@Composable
-private fun BadgeItem(badgeName: String) {
-    Box(
-        modifier = Modifier
-            .size(60.dp)
-            .background(
-                color = getSurfaceVariantColor(),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .border(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        // Tutaj możesz dodać ikonę odznaki
-        // Na razie placeholder
-        Text(
-            text = "🏆",
-            fontSize = 24.sp
-        )
-    }
-}
-
-// Funkcja pomocnicza do określenia koloru BMI
 private fun getBmiColor(bmi: Double): Color {
     return when {
-        bmi < 18.5 -> Color(0xFF3B82F6) // Niebieski - niedowaga
-        bmi < 25.0 -> Color(0xFF10B981) // Zielony - prawidłowa
-        bmi < 30.0 -> Color(0xFFF59E0B) // Pomarańczowy - nadwaga
-        else -> Color(0xFFEF4444) // Czerwony - otyłość
+        bmi < 18.5 -> Color(0xFF3B82F6)
+        bmi < 25.0 -> Color(0xFF10B981)
+        bmi < 30.0 -> Color(0xFFF59E0B)
+        else -> Color(0xFFEF4444)
     }
 }
 @Composable

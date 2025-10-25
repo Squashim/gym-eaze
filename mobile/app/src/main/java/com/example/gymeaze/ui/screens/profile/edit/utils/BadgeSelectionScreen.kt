@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -37,8 +38,18 @@ fun BadgeSelectionDialog(
     onConfirm: (List<Badge>) -> Unit,
     isLoading: Boolean = false
 ) {
-    var selectedBadgeIds by remember(currentlySelectedBadges) {
-        mutableStateOf(currentlySelectedBadges.map { it.id }.toSet())
+    var selectedBadgeIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Synchronizuj stan wewnętrzny z zewnętrznymi propami
+    LaunchedEffect(currentlySelectedBadges) {
+        selectedBadgeIds = currentlySelectedBadges.map { it.id }.toSet()
+    }
+
+    LaunchedEffect(availableBadges) {
+        println("Available badges: ${availableBadges.size}")
+        availableBadges.forEachIndexed { index, badge ->
+            println("Badge $index: id='${badge.id}', title='${badge.title}'")
+        }
     }
 
     Dialog(
@@ -144,7 +155,14 @@ fun BadgeSelectionDialog(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
-                            items(count = availableBadges.size) { index ->
+                            items(
+                                count = availableBadges.size,
+                                key = { index ->
+                                    // Używaj ID jeśli istnieje, w przeciwnym razie użyj indeksu
+                                    val badge = availableBadges[index]
+                                    if (badge.id.isNotEmpty()) badge.id else "badge_$index"
+                                }
+                            ) { index ->
                                 val badge = availableBadges[index]
                                 val isSelected = selectedBadgeIds.contains(badge.id)
                                 val canSelect = selectedBadgeIds.size < 5 || isSelected

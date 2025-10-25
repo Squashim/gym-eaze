@@ -45,7 +45,7 @@ fun FollowStatsSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -85,7 +85,7 @@ fun FollowStatItem(
     ) {
         Text(
             text = count.toString(),
-            fontSize = 24.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = getOnSurfaceColor()
         )

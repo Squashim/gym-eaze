@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.StartedTrainingPlan
+import com.example.gymeaze.data.models.UserProfileDetails
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class ProfileUiState(
     val startedPlans: List<StartedTrainingPlan> = emptyList(),
+    val userProfile: UserProfileDetails? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
     val deletingPlanId: String? = null,
@@ -168,5 +170,33 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun hideFollowingDialog() {
         _uiState.update { it.copy(showFollowingDialog = false) }
+    }
+
+    // W ProfileViewModel
+    fun loadUserProfile(username: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, operationError = null) }
+
+            val result = userRepository.getUserProfile(username)
+
+            if (result.isSuccess) {
+                val profile = result.getOrNull()
+                _uiState.update {
+                    it.copy(
+                        userProfile = profile,
+                        isLoading = false,
+                        operationError = null
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        operationError = result.exceptionOrNull()?.message
+                            ?: "Błąd ładowania profilu"
+                    )
+                }
+            }
+        }
     }
 }
