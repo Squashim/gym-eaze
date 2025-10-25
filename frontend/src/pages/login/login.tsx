@@ -185,8 +185,8 @@ const Login = () => {
           </CardContent>
         </Card>
         <div className="text-muted-foreground *:[a]:hover:text-accent-foreground transition-color text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-          Korzystając z serwisu zgadzasz się na <Link to="#">Warunki świadczenia usług</Link> i{' '}
-          <Link to="#">Politykę prywatności</Link>.
+          Korzystając z serwisu zgadzasz się na <Link to="/">Warunki świadczenia usług</Link> i{' '}
+          <Link to="/">Politykę prywatności</Link>.
         </div>
       </div>
     </>

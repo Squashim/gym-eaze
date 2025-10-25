@@ -191,6 +191,7 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
       className="max-w-lg md:max-w-3xl mx-auto"
       title={isEditMode ? 'Edytor planu treningowego' : 'Kreator planu treningowego'}
       titleClassName="text-center"
+      withFooter={false}
     >
       <Stepper step={step} steps={workoutCreatorConstants.steps} />
       <Card

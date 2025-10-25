@@ -179,6 +179,7 @@ const ExerciseCreator = ({ mode }: ExerciseCreatorProps) => {
       className="max-w-lg md:max-w-3xl mx-auto"
       title={isEditMode ? 'Edytor ćwiczenia' : 'Kreator ćwiczenia'}
       titleClassName="text-center"
+      withFooter={false}
     >
       <Stepper step={step} steps={exerciseCreatorConstants.steps} />
       <Card className="overflow-hidden min-h-[60dvh] flex flex-col items-center justify-center">

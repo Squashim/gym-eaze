@@ -52,6 +52,7 @@ function PrivacySettings() {
       className="mx-auto w-auto"
       description="Zarządzaj, kto może zobaczyć poszczególne informacje na Twoim profilu"
       title="Ustawienia prywatności"
+      withFooter={false}
     >
       <section className="grid w-full grid-cols-1 gap-4 max-w-4xl">
         <TabContent

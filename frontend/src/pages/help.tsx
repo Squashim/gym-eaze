@@ -8,14 +8,14 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Typography from '@/components/ui/typography';
 import usePageTitle from '@/hooks/utils/use-page-title';
-import { Lightbulb, Mail } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 
 function HelpPage() {
   usePageTitle('Pomoc - GymEaze');
 
   return (
     <PageLayout
-      description="Znajdziesz tu odpowiedzi na najczęstsze pytania oraz wskazówki dotyczące korzystania z platformy."
+      description="Znajdziesz tu odpowiedzi na najczęstsze pytania oraz wskazówki dotyczące korzystania z serwisu."
       title="Pomoc"
     >
       <div className="flex flex-col gap-4 px-4 pt-4 border border-border rounded-md bg-background/20 backdrop-blur-[4px]">
@@ -41,7 +41,7 @@ function HelpPage() {
               <Typography>
                 Wszystkie dane są automatycznie synchronizowane między aplikacją mobilną a
                 przeglądarkową. Oznacza to, że niezależnie od tego, czy korzystasz z aplikacji na
-                telefonie, czy z platformy w przeglądarce, Twoje postępy, plany treningowe i inne
+                telefonie, czy z serwisu przeglądarkowego, Twoje postępy, plany treningowe i inne
                 dane będą zawsze aktualne i dostępne.
               </Typography>
               <Typography className="mt-2">
@@ -164,20 +164,6 @@ function HelpPage() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-      </div>
-
-      <div className="flex flex-col gap-4 p-4 border border-border rounded-md bg-background/20 backdrop-blur-[4px]">
-        <Typography variant="h3">Wsparcie i błędy</Typography>
-        <Typography className="max-w-4xl">
-          Jeśli masz pytania, potrzebujesz pomocy lub znalazłeś/aś błąd podczas korzystania z
-          platformy to skontaktuj się z naszym zespołem wsparcia poprzez poniższy adres e-mail:
-        </Typography>
-        <div>
-          <a className="inline-flex gap-2 hover:underline" href="#">
-            <Mail />
-            gymeaze.pomoc@gmail.com
-          </a>
-        </div>
       </div>
     </PageLayout>
   );

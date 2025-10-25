@@ -1,6 +1,6 @@
 import { IBadge } from '../models/badgeModel';
 import Badge from '../models/badgeModel';
-import { uploadExerciseMedia } from '../config/cloudinary';
+import { deleteFromCloudinary, uploadExerciseMedia } from '../config/cloudinary';
 import User, { IUser } from '../models/userModel';
 import { Goal } from '../constants/goals';
 import bcrypt from 'bcryptjs';
@@ -74,6 +74,7 @@ export const updateUserProfileDetailsService = async (
   if (file) {
     const uploaded = await uploadExerciseMedia(file.buffer, undefined);
     if (uploaded.imageUrl) {
+      await deleteFromCloudinary(profilePicture);
       profilePicture = uploaded.imageUrl;
     }
   }
