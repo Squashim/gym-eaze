@@ -21,6 +21,7 @@ import ProfileEdit from './pages/user/profile-edit';
 import PrivacySettings from './pages/user/privacy-settings';
 import Profile from './pages/user/profile';
 import Dashboard from './pages/dashboard';
+import HelpPage from './pages/help';
 
 const router = createBrowserRouter([
   {
@@ -51,10 +52,6 @@ const router = createBrowserRouter([
                 element: <WorkoutDetails />,
               },
             ],
-          },
-          {
-            path: '/help',
-            element: <div>Pomoc</div>,
           },
         ],
       },
@@ -129,6 +126,10 @@ const router = createBrowserRouter([
                 element: <PrivacySettings />,
               },
             ],
+          },
+          {
+            path: 'help',
+            element: <HelpPage />,
           },
         ],
       },
