@@ -2,6 +2,7 @@ package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.FavoritesResponse
+import com.example.gymeaze.data.models.FollowResponse
 import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.GetPrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
@@ -92,4 +93,9 @@ interface UserApiService {
     suspend fun getUserProfile(
         @Path("username") username: String
     ): Response<UserProfileDetails>
+
+    @PATCH("/api/user/{id}/follow")
+    suspend fun toggleUserFollow(
+        @Path("id") userId: String
+    ): Response<FollowResponse>
 }

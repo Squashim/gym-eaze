@@ -13,6 +13,7 @@ data class UserProfileDetails(
     val followersCount: Int? = null,
     val followingCount: Int? = null,
     val isBlocked: Boolean? = null,
+    val isFollowing: Boolean = false,
     val goal: String? = null,
     val personalDetails: PersonalDetails? = null,
     val fitnessDetails: FitnessDetails? = null,
@@ -128,4 +129,11 @@ data class FollowerUser(
     val _id: String,
     val username: String,
     val profileDetails: ProfileDetails?
+)
+
+data class FollowResponse(
+    val message: String,
+    val isFollowing: Boolean,
+    val followersCount: Int,
+    val followingCount: Int
 )

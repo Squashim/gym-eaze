@@ -9,6 +9,7 @@ import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.FavoritesResponse
+import com.example.gymeaze.data.models.FollowResponse
 import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.PrivacySettings
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
@@ -407,6 +408,25 @@ class UserRepository(private val context: Context) {
     suspend fun getUserProfile(username: String): Result<UserProfileDetails> = withContext(Dispatchers.IO) {
         try {
             val response = api.getUserProfile(username)
+            val body = response.body()
+
+            return@withContext if (response.isSuccessful && body != null) {
+                Result.success(body)
+            } else {
+                val rawError = response.errorBody()?.string().orEmpty()
+                val message = AuthErrorMapper.mapAuthErrorToUserMessage(context, rawError, response.code())
+                Result.failure(IllegalStateException(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(IllegalStateException(context.getString(R.string.network_error_with_message, e.message ?: ""), e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleUserFollow(userId: String): Result<FollowResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.toggleUserFollow(userId)
             val body = response.body()
 
             return@withContext if (response.isSuccessful && body != null) {

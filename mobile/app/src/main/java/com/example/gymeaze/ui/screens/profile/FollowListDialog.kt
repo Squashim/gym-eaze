@@ -2,6 +2,7 @@ package com.example.gymeaze.ui.screens.profile
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,8 @@ fun FollowListDialog(
     users: List<FollowerUser>,
     isLoading: Boolean,
     onDismiss: () -> Unit,
-    isFollowers: Boolean = true
+    isFollowers: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -154,7 +156,7 @@ fun FollowListDialog(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(users) { user ->
-                            UserListItem(user = user)
+                            UserListItem(user = user, onUserClick = onUserClick)
                         }
                     }
                 }
@@ -187,10 +189,14 @@ fun FollowListDialog(
 }
 
 @Composable
-fun UserListItem(user: FollowerUser) {
+fun UserListItem(
+    user: FollowerUser,
+    onUserClick: (String) -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onUserClick(user.username) }
             .background(
                 color = getSurfaceColor(),
                 shape = RoundedCornerShape(12.dp)

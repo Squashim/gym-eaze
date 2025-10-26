@@ -29,7 +29,8 @@ data class ProfileUiState(
     val following: List<FollowerUser> = emptyList(),
     val isLoadingFollowers: Boolean = false,
     val showFollowersDialog: Boolean = false,
-    val showFollowingDialog: Boolean = false
+    val showFollowingDialog: Boolean = false,
+    val isFollowLoading: Boolean = false,
 
 )
 
@@ -122,7 +123,80 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun clearOperationMessages() {
         _uiState.update { it.copy(operationError = null, operationSuccessMessage = null) }
     }
-    //FOLLOW
+
+    fun showFollowersDialog() {
+        _uiState.update { it.copy(showFollowersDialog = true) }
+    }
+
+    fun hideFollowersDialog() {
+        _uiState.update { it.copy(showFollowersDialog = false) }
+    }
+
+    fun showFollowingDialog() {
+        _uiState.update { it.copy(showFollowingDialog = true) }
+    }
+
+    fun hideFollowingDialog() {
+        _uiState.update { it.copy(showFollowingDialog = false) }
+    }
+
+    fun loadUserProfile(username: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, operationError = null) }
+
+            val result = userRepository.getUserProfile(username)
+
+            if (result.isSuccess) {
+                val profile = result.getOrNull()
+                _uiState.update {
+                    it.copy(
+                        userProfile = profile,
+                        isLoading = false,
+                        operationError = null
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        operationError = result.exceptionOrNull()?.message
+                            ?: "Błąd ładowania profilu"
+                    )
+                }
+            }
+        }
+    }
+
+    fun toggleFollow(userId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isFollowLoading = true) }
+
+            val result = userRepository.toggleUserFollow(userId)
+
+            if (result.isSuccess) {
+                val response = result.getOrNull()
+                _uiState.update {
+                    it.copy(
+                        userProfile = it.userProfile?.copy(
+                            isFollowing = response?.isFollowing ?: false,
+                            followersCount = response?.followersCount
+                        ),
+                        followersCount = response?.followersCount ?: 0,
+                        isFollowLoading = false,
+                        operationSuccessMessage = response?.message
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isFollowLoading = false,
+                        operationError = result.exceptionOrNull()?.message ?: "Błąd obserwowania"
+                    )
+                }
+            }
+        }
+    }
+
     fun loadFollowersAndFollowing() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingFollowers = true) }
@@ -153,50 +227,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             }
 
             _uiState.update { it.copy(isLoadingFollowers = false) }
-        }
-    }
-
-    fun showFollowersDialog() {
-        _uiState.update { it.copy(showFollowersDialog = true) }
-    }
-
-    fun hideFollowersDialog() {
-        _uiState.update { it.copy(showFollowersDialog = false) }
-    }
-
-    fun showFollowingDialog() {
-        _uiState.update { it.copy(showFollowingDialog = true) }
-    }
-
-    fun hideFollowingDialog() {
-        _uiState.update { it.copy(showFollowingDialog = false) }
-    }
-
-    // W ProfileViewModel
-    fun loadUserProfile(username: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, operationError = null) }
-
-            val result = userRepository.getUserProfile(username)
-
-            if (result.isSuccess) {
-                val profile = result.getOrNull()
-                _uiState.update {
-                    it.copy(
-                        userProfile = profile,
-                        isLoading = false,
-                        operationError = null
-                    )
-                }
-            } else {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        operationError = result.exceptionOrNull()?.message
-                            ?: "Błąd ładowania profilu"
-                    )
-                }
-            }
         }
     }
 }

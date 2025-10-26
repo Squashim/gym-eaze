@@ -98,6 +98,7 @@ import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getCardBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
 import com.example.gymeaze.ui.theme.getInputBorderColor
+import com.example.gymeaze.ui.theme.getOnPrimaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -133,10 +134,13 @@ fun HomeScreen(
     onMyPosts: () -> Unit = {},
     onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
     onPlanClick: (planId: String) -> Unit = {},
-    onEditPlanClick: (planId: String) -> Unit = {}
+    onEditPlanClick: (planId: String) -> Unit = {},
+    onUserProfileClick: (String) -> Unit = {}
 ) {
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
+
+    var displayedUsername by remember { mutableStateOf(username) }
 
     val createPostViewModel: PostsViewModel = viewModel()
     val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
@@ -151,7 +155,11 @@ fun HomeScreen(
                 "community", "exercises", "workouts" -> {
                 }
                 else -> {
-                    GymEazeTopAppBar(onSettingsClick = onSettingsClick)
+                    GymEazeTopAppBar(
+                        onSettingsClick = onSettingsClick,
+                        showBackButton = displayedUsername != username,
+                        onBackClick = { displayedUsername = username }
+                    )
                 }
             }
         },
@@ -161,6 +169,9 @@ fun HomeScreen(
                     selectedRoute = selectedRoute,
                     onItemSelected = { route ->
                         selectedRoute = route
+                        if (route == "profile") {
+                            displayedUsername = username
+                        }
                     }
                 )
             }
@@ -199,13 +210,22 @@ fun HomeScreen(
             "profile" -> {
                 val profileViewModel: ProfileViewModel = viewModel()
 
-                LaunchedEffect(selectedRoute) {
-                    if (selectedRoute == "profile") {
+                LaunchedEffect(displayedUsername) {
+                    profileViewModel.loadUserProfile(displayedUsername)
+                    if (displayedUsername == username) {
                         profileViewModel.loadStartedPlans()
                     }
                 }
+
+                LaunchedEffect(selectedRoute) {
+                    if (selectedRoute == "profile" && displayedUsername == username) {
+                        profileViewModel.loadStartedPlans()
+                    }
+                }
+
                 ProfileScreen(
-                    username = username,
+                    username = displayedUsername,
+                    currentLoggedUsername = username,
                     currentDate = currentDate,
                     onEditProfileClick = onEditProfileClick,
                     onExerciseCreatorClick = onExerciseCreatorClick,
@@ -216,7 +236,10 @@ fun HomeScreen(
                     snackbarHostState = snackbarHostState,
                     scope = scope,
                     profileViewModel = profileViewModel,
-                    onStartedPlanClick = onStartedPlanClick
+                    onStartedPlanClick = onStartedPlanClick,
+                    onUserProfileClick = { clickedUsername ->
+                        displayedUsername = clickedUsername
+                    }
                 )
             }
         }
@@ -226,6 +249,7 @@ fun HomeScreen(
 fun ProfileScreen(
     isUserLoggedIn: Boolean,
     username: String,
+    currentLoggedUsername: String,
     currentDate: String,
     onEditProfileClick: () -> Unit,
     onExerciseCreatorClick: () -> Unit,
@@ -235,21 +259,19 @@ fun ProfileScreen(
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
     profileViewModel: ProfileViewModel,
-    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit
+    onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
+    onUserProfileClick: (String) -> Unit = {}
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val userViewModel: UserViewModel = viewModel()
     val availableBadges by userViewModel.availableBadges.collectAsState()
 
-
+    val isOwnProfile = username == currentLoggedUsername
 
     LaunchedEffect(username) {
         profileViewModel.loadUserProfile(username)
     }
 
-    LaunchedEffect(Unit) {
-        profileViewModel.loadFollowersAndFollowing()
-    }
 
     LaunchedEffect(uiState.operationError) {
         uiState.operationError?.let { error ->
@@ -278,7 +300,6 @@ fun ProfileScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-
             val profile = uiState.userProfile
             val bmi = calculateBmi(
                 profile?.fitnessDetails?.height,
@@ -288,6 +309,7 @@ fun ProfileScreen(
             WelcomeSection(
                 username = username,
                 currentDate = currentDate,
+                isOwnProfile = isOwnProfile,
                 onEditProfileClick = onEditProfileClick,
                 profilePicture = profile?.profilePicture,
                 description = profile?.description,
@@ -305,25 +327,51 @@ fun ProfileScreen(
         }
 
         item {
-            FollowStatsSection(
-                followersCount = uiState.followersCount,
-                followingCount = uiState.followingCount,
-                onFollowersClick = { profileViewModel.showFollowersDialog() },
-                onFollowingClick = { profileViewModel.showFollowingDialog() }
-            )
+            val profile = uiState.userProfile
+
+            if (!isOwnProfile && profile != null) {
+                FollowButton(
+                    isFollowing = profile.isFollowing,
+                    isLoading = uiState.isFollowLoading,
+                    onClick = { profileViewModel.toggleFollow(profile.id) }
+                )
+            }
         }
 
         item {
-            RecentActivitySection(
-                isLoading = uiState.isLoading,
-                startedPlans = uiState.startedPlans,
-                onStartedPlanClick = onStartedPlanClick,
-                onRefresh = { profileViewModel.loadStartedPlans() },
-                onDeletePlan = { planId -> profileViewModel.deleteStartedPlan(planId) },
-                onResetPlan = { planId -> profileViewModel.resetStartedPlan(planId) },
-                deletingPlanId = uiState.deletingPlanId,
-                resettingPlanId = uiState.resettingPlanId
+            val profile = uiState.userProfile
+
+            FollowStatsSection(
+                followersCount = profile?.followersCount ?: 0,
+                followingCount = profile?.followingCount ?: 0,
+                onFollowersClick = {
+                    if (isOwnProfile) {
+                        profileViewModel.loadFollowersAndFollowing()
+                        profileViewModel.showFollowersDialog()
+                    }
+                },
+                onFollowingClick = {
+                    if (isOwnProfile) {
+                        profileViewModel.loadFollowersAndFollowing()
+                        profileViewModel.showFollowingDialog()
+                    }
+                }
             )
+        }
+
+        if (isOwnProfile) {
+            item {
+                RecentActivitySection(
+                    isLoading = uiState.isLoading,
+                    startedPlans = uiState.startedPlans,
+                    onStartedPlanClick = onStartedPlanClick,
+                    onRefresh = { profileViewModel.loadStartedPlans() },
+                    onDeletePlan = { planId -> profileViewModel.deleteStartedPlan(planId) },
+                    onResetPlan = { planId -> profileViewModel.resetStartedPlan(planId) },
+                    deletingPlanId = uiState.deletingPlanId,
+                    resettingPlanId = uiState.resettingPlanId
+                )
+            }
         }
     }
 
@@ -333,7 +381,11 @@ fun ProfileScreen(
             users = uiState.followers,
             isLoading = uiState.isLoadingFollowers,
             isFollowers = true,
-            onDismiss = { profileViewModel.hideFollowersDialog() }
+            onDismiss = { profileViewModel.hideFollowersDialog() },
+            onUserClick = { clickedUsername ->
+                profileViewModel.hideFollowersDialog()
+                onUserProfileClick(clickedUsername)
+            }
         )
     }
 
@@ -343,7 +395,11 @@ fun ProfileScreen(
             users = uiState.following,
             isLoading = uiState.isLoadingFollowers,
             isFollowers = false,
-            onDismiss = { profileViewModel.hideFollowingDialog() }
+            onDismiss = { profileViewModel.hideFollowingDialog() },
+            onUserClick = { clickedUsername ->
+                profileViewModel.hideFollowingDialog()
+                onUserProfileClick(clickedUsername)
+            }
         )
     }
 }
@@ -353,10 +409,46 @@ private fun calculateBmi(height: Int?, weight: Int?): Double? {
     val heightInMeters = height / 100.0
     return weight / (heightInMeters * heightInMeters)
 }
+
+@Composable
+fun FollowButton(
+    isFollowing: Boolean,
+    isLoading: Boolean,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = !isLoading,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (isFollowing) getPrimaryColor() else Color.Transparent,
+            contentColor = if (isFollowing) getOnPrimaryColor() else getPrimaryColor()
+        ),
+        border = BorderStroke(1.dp,getPrimaryColor()),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = getOnPrimaryColor()
+            )
+        } else {
+            Text(
+                text = if (isFollowing) "Przestań obserwować" else "Obserwuj",
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+
+}
 @Composable
 private fun WelcomeSection(
     username: String,
     currentDate: String,
+    isOwnProfile: Boolean,
     onEditProfileClick: () -> Unit,
     profilePicture: String? = null,
     description: String? = null,
@@ -426,16 +518,18 @@ private fun WelcomeSection(
                     }
                 }
 
-                IconButton(
-                    onClick = onEditProfileClick,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edytuj profil",
-                        tint = getOnSurfaceSecondaryColor(),
-                        modifier = Modifier.size(20.dp)
-                    )
+                if (isOwnProfile) {
+                    IconButton(
+                        onClick = onEditProfileClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edytuj profil",
+                            tint = getOnSurfaceSecondaryColor(),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
