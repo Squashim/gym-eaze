@@ -1,5 +1,5 @@
-import mongoose, { Types } from "mongoose";
-import { BadgeActions, badgeActionValues } from "../constants/badgeActions";
+import mongoose, { Types } from 'mongoose';
+import { BadgeActions, badgeActionValues } from '../constants/badgeActions';
 
 export interface IBadge extends Document {
   _id: Types.ObjectId;
@@ -8,8 +8,7 @@ export interface IBadge extends Document {
   image: string;
   requirements: {
     action: BadgeActions;
-    target?: number;
-    isConnected?: boolean;
+    target: number;
   };
 }
 
@@ -35,14 +34,11 @@ const badgeSchema = new mongoose.Schema({
     target: {
       type: Number,
       default: 0,
-    },
-    isConnected: {
-      type: Boolean,
-      default: false,
+      required: true,
     },
   },
 });
 
-const Badge = mongoose.model<IBadge>("Badge", badgeSchema);
+const Badge = mongoose.model<IBadge>('Badge', badgeSchema);
 
 export default Badge;

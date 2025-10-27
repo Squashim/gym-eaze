@@ -17,6 +17,7 @@ import { CommentParentType } from '../constants/commentType';
 import { deleteCommentsAndLikes } from '../utils/helpers';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
+import { checkAndEarnBadges } from './badgeService';
 
 export const createExercise = async (
   data: CreateExerciseData,
@@ -33,7 +34,11 @@ export const createExercise = async (
     video: videoUrl,
   });
 
-  return await exercise.save();
+  const createdExercise = await exercise.save();
+
+  await checkAndEarnBadges(data.author.toString(), 'Exercises');
+
+  return createdExercise;
 };
 
 export const deleteExercise = async (exerciseId: string, userId: string) => {

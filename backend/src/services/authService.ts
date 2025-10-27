@@ -5,6 +5,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { ICurrentUser } from '../types/auth';
 import DeviceToken from '../models/deviceTokenModel';
 import { getGoogleUser, verifyGoogleToken } from '../utils/google';
+import { checkAndEarnBadges } from './badgeService';
 
 export const registerUser = async (username: string, email: string, password: string) => {
   if (!username || !email || !password) {
@@ -83,6 +84,8 @@ export const loginUser = async (
 
   await device.save();
 
+  await checkAndEarnBadges(user._id.toString(), 'AccountAge');
+
   return { accessToken, refreshToken, isFirstLogin };
 };
 
@@ -141,6 +144,8 @@ export const googleLogin = async (code: string, deviceInfo: string) => {
   });
 
   await device.save();
+
+  await checkAndEarnBadges(user._id.toString(), 'AccountAge');
 
   return { accessToken, refreshToken, isFirstLogin };
 };
