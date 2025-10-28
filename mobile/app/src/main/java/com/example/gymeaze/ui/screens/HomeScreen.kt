@@ -103,6 +103,7 @@ import com.example.gymeaze.ui.screens.exercises.logggedIn.ExerciseDetailScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.profile.FollowListDialog
 import com.example.gymeaze.ui.screens.profile.FollowStatsSection
+import com.example.gymeaze.ui.screens.profile.NotificationsDialog
 import com.example.gymeaze.ui.screens.profile.UserExercisesSection
 import com.example.gymeaze.ui.screens.profile.UserPostsSection
 import com.example.gymeaze.ui.screens.profile.UserTrainingPlansSection
@@ -122,6 +123,7 @@ import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
 import com.example.gymeaze.viewmodel.ExercisesViewModel
+import com.example.gymeaze.viewmodel.NotificationViewModel
 import com.example.gymeaze.viewmodel.ProfileViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
@@ -163,6 +165,9 @@ fun HomeScreen(
     val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
     val exercisesViewModel: ExercisesViewModel = viewModel()
 
+    val notificationViewModel: NotificationViewModel = viewModel()
+    val notificationUiState by notificationViewModel.uiState.collectAsState()
+
     var showBottomBar by remember { mutableStateOf(true) }
 
     var selectedExerciseId by remember { mutableStateOf<String?>(null) }
@@ -170,6 +175,8 @@ fun HomeScreen(
 
     var selectedPlanId by remember { mutableStateOf<String?>(null) }
     var showPlanDetail by remember { mutableStateOf(false) }
+
+    var showNotificationsSheet by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -187,7 +194,13 @@ fun HomeScreen(
                         showBackButton = displayedUsername != username,
                         onBackClick = {
                             displayedUsername = username
-                        }
+                        },
+                        showNotifications = isUserLoggedIn && displayedUsername == username,
+                        onNotificationsClick = {
+                            showNotificationsSheet = true
+                            notificationViewModel.refresh()
+                        },
+                        notificationCount = notificationUiState.total
                     )
                 }
             }
@@ -327,6 +340,47 @@ fun HomeScreen(
                     onBrowsePostClick = { /* TODO */ }
                 )
             }
+        }
+        if (showNotificationsSheet) {
+            NotificationsDialog(
+                notifications = notificationUiState.notifications,
+                total = notificationUiState.total,
+                isLoading = notificationUiState.isLoading,
+                hasMore = notificationUiState.hasMore,
+                onDismiss = {
+                    showNotificationsSheet = false
+                },
+                onDeleteAll = {
+                    notificationViewModel.deleteAllNotifications()
+                },
+                onLoadMore = {
+                    notificationViewModel.loadNotifications(isRefresh = false)
+                },
+                onNotificationClick = { notification ->
+
+                    when (notification.type) {
+                        "follow" -> {
+                            notification.relatedId?.let { userId ->
+                                onUserProfileClick(userId)
+                            }
+                        }
+
+                        "like", "comment" -> {
+                            notification.relatedId?.let { postId ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Post: $postId")
+                                }
+                            }
+                        }
+
+                        "plan_like", "plan_start" -> {
+                            notification.relatedId?.let { planId ->
+                                onPlanClick(planId)
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 }

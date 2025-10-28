@@ -5,34 +5,32 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
-import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
+import com.example.gymeaze.ui.theme.getPrimaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GymEazeTopAppBar(
     onSettingsClick: () -> Unit,
     showBackButton: Boolean = false,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    showNotifications: Boolean = false,
+    onNotificationsClick: () -> Unit = {},
+    notificationCount: Int = 0
 ) {
     val isDarkTheme = LocalDarkTheme.current
 
@@ -73,6 +71,33 @@ fun GymEazeTopAppBar(
             }
         },
         actions = {
+            if (showNotifications) {
+                BadgedBox(
+                    badge = {
+                        if (notificationCount > 0) {
+                            Badge(
+                                containerColor = getPrimaryColor(),
+                                contentColor = getOnSurfaceColor()
+                            ) {
+                                Text(
+                                    text = if (notificationCount > 99) "99+" else notificationCount.toString(),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Powiadomienia",
+                            tint = getOnSurfaceColor()
+                        )
+                    }
+                }
+            }
+
             IconButton(onClick = onSettingsClick) {
                 Icon(
                     imageVector = Icons.Default.Settings,
@@ -85,20 +110,4 @@ fun GymEazeTopAppBar(
             containerColor = getBackgroundColor()
         )
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GymEazeTopAppBarPreview() {
-    GymEazeTheme {
-        GymEazeTopAppBar(onSettingsClick = {}, showBackButton = false)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GymEazeTopAppBarWithBackPreview() {
-    GymEazeTheme {
-        GymEazeTopAppBar(onSettingsClick = {}, showBackButton = true)
-    }
 }
