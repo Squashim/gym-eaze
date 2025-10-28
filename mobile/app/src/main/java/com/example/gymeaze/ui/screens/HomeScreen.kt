@@ -1,5 +1,6 @@
 package com.example.gymeaze.ui.screens
 
+import UserStartedPlansSection
 import android.R.attr.description
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -520,6 +521,14 @@ fun ProfileScreen(
                                 onPlanClick = { planId ->
                                     onPlanClick(planId)
                                 }
+                            )
+                        }
+                        ProfileTab.STARTED_TRAINING_PLANS -> {
+                            UserStartedPlansSection(
+                                username = username,
+                                profileViewModel = profileViewModel,
+                                onStartedPlanClick = onStartedPlanClick,
+                                isOwnProfile = isOwnProfile
                             )
                         }
                     }

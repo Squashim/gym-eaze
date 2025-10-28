@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.data.models.UserProfileDetails
+import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +38,8 @@ data class ProfileUiState(
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = StartedTrainingRepository(application)
 
+    private val authRepository = AuthRepository(application)
+
     private val userRepository = UserRepository(application)
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -49,7 +52,22 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            val result = repository.getStartedTrainingPlans(page = 1, pageSize = 5)
+            val userId = authRepository.getCurrentUserId()
+
+            // Sprawdź czy userId nie jest null
+            if (userId.isNullOrEmpty()) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Użytkownik nie jest zalogowany"
+                )
+                return@launch
+            }
+
+            val result = repository.getStartedTrainingPlans(
+                userId = userId,
+                page = 1,
+                pageSize = 5
+            )
 
             result.onSuccess { response ->
                 _uiState.value = _uiState.value.copy(
@@ -297,5 +315,27 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun clearViewedProfile() {
         _viewedUserProfile.value = null
         _profileError.value = null
+    }
+
+    fun loadUserStartedPlans(username: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val plans = repository.getUserStartedPlans(username)
+                _uiState.update {
+                    it.copy(
+                        startedPlans = plans,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        operationError = "Nie udało się pobrać rozpoczętych planów"
+                    )
+                }
+            }
+        }
     }
 }

@@ -29,51 +29,99 @@ import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+
+
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.gymeaze.ui.theme.*
+
 enum class ProfileTab {
     POSTS,
     EXERCISES,
-    TRAINING_PLANS
+    TRAINING_PLANS,
+    STARTED_TRAINING_PLANS
 }
 
 @Composable
 fun ProfileTabRow(
     selectedTab: ProfileTab,
-    onTabSelected: (ProfileTab) -> Unit,
-    modifier: Modifier = Modifier
+    onTabSelected: (ProfileTab) -> Unit
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    TabRow(
+        selectedTabIndex = selectedTab.ordinal,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp)),
+        containerColor = getSurfaceColor(),
+        contentColor = getPrimaryColor(),
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab.ordinal]),
+                color = getPrimaryColor(),
+                height = 3.dp
+            )
+        },
+        divider = {}
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+        Tab(
+            selected = selectedTab == ProfileTab.POSTS,
+            onClick = { onTabSelected(ProfileTab.POSTS) },
+            modifier = Modifier.height(48.dp)
         ) {
-            ProfileTabItem(
-                icon = Icons.Default.Comment,
-                label = "Najnowsze posty",
-                isSelected = selectedTab == ProfileTab.POSTS,
-                onClick = { onTabSelected(ProfileTab.POSTS) },
-                modifier = Modifier.weight(1f)
+            Text(
+                text = "Posty",
+                fontSize = 14.sp,
+                fontWeight = if (selectedTab == ProfileTab.POSTS) FontWeight.Bold else FontWeight.Normal,
+                color = if (selectedTab == ProfileTab.POSTS) getPrimaryColor() else getOnSurfaceSecondaryColor()
             )
+        }
 
-            ProfileTabItem(
-                icon = Icons.Default.FitnessCenter,
-                label = "Ćwiczenia",
-                isSelected = selectedTab == ProfileTab.EXERCISES,
-                onClick = { onTabSelected(ProfileTab.EXERCISES) },
-                modifier = Modifier.weight(1f)
+        Tab(
+            selected = selectedTab == ProfileTab.EXERCISES,
+            onClick = { onTabSelected(ProfileTab.EXERCISES) },
+            modifier = Modifier.height(48.dp)
+        ) {
+            Text(
+                text = "Ćwiczenia",
+                fontSize = 14.sp,
+                fontWeight = if (selectedTab == ProfileTab.EXERCISES) FontWeight.Bold else FontWeight.Normal,
+                color = if (selectedTab == ProfileTab.EXERCISES) getPrimaryColor() else getOnSurfaceSecondaryColor()
             )
+        }
 
-            ProfileTabItem(
-                icon = Icons.Default.Assignment,
-                label = "Plany treningowe",
-                isSelected = selectedTab == ProfileTab.TRAINING_PLANS,
-                onClick = { onTabSelected(ProfileTab.TRAINING_PLANS) },
-                modifier = Modifier.weight(1f)
+        Tab(
+            selected = selectedTab == ProfileTab.TRAINING_PLANS,
+            onClick = { onTabSelected(ProfileTab.TRAINING_PLANS) },
+            modifier = Modifier.height(48.dp)
+        ) {
+            Text(
+                text = "Plany",
+                fontSize = 14.sp,
+                fontWeight = if (selectedTab == ProfileTab.TRAINING_PLANS) FontWeight.Bold else FontWeight.Normal,
+                color = if (selectedTab == ProfileTab.TRAINING_PLANS) getPrimaryColor() else getOnSurfaceSecondaryColor()
+            )
+        }
+
+        Tab(
+            selected = selectedTab == ProfileTab.STARTED_TRAINING_PLANS,
+            onClick = { onTabSelected(ProfileTab.STARTED_TRAINING_PLANS) },
+            modifier = Modifier.height(48.dp)
+        ) {
+            Text(
+                text = "Aktywne",
+                fontSize = 14.sp,
+                fontWeight = if (selectedTab == ProfileTab.STARTED_TRAINING_PLANS) FontWeight.Bold else FontWeight.Normal,
+                color = if (selectedTab == ProfileTab.STARTED_TRAINING_PLANS) getPrimaryColor() else getOnSurfaceSecondaryColor()
             )
         }
     }

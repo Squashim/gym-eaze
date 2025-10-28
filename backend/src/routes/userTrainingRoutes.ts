@@ -13,7 +13,7 @@ import {
 const router = express.Router();
 
 // Lista wszystkich rozpoczętych treningów z pełnymi informacjami (overview)
-router.get('/started', authenticate, getStartedTrainingPlans);
+router.get('/user/:userId', authenticate, getStartedTrainingPlans);
 
 // Rozpocznij nowy trening
 router.post('/:trainingPlanId/start', authenticate, startTrainingPlan);
