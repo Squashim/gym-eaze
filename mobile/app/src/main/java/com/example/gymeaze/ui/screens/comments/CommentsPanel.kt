@@ -40,8 +40,10 @@ fun CommentsPanel(
     initialCommentsCount: Int,
     onClose: () -> Unit,
     currentUsername: String,
-    reportViewModel: ReportViewModel, // ← DODAJ
-    onReportComment: (String) -> Unit) {
+    reportViewModel: ReportViewModel,
+    onReportComment: (String) -> Unit,
+    isUserLoggedIn: Boolean = true // DODAJ TEN PARAMETR
+) {
     val viewModel: PostsViewModel = viewModel()
     val comments by viewModel.comments.collectAsState()
     val hasMore by viewModel.hasMoreComment.collectAsState()
@@ -154,10 +156,11 @@ fun CommentsPanel(
                         showDeleteDialog = commentToDelete
                         deleteMessage = ""
                     },
-                    onReportClick = { commentToReport -> // ← POPRAWIONE
-                        onReportComment(commentToReport._id) // Przekazuj ID komentarza
+                    onReportClick = { commentToReport ->
+                        onReportComment(commentToReport._id)
                     },
-                    onLoginRequired = { showLoginDialog = true }
+                    onLoginRequired = { showLoginDialog = true },
+                    isUserLoggedIn = isUserLoggedIn // DODAJ TEN PARAMETR
                 )
 
                 if (expandedReplies.contains(comment._id)) {
@@ -177,10 +180,11 @@ fun CommentsPanel(
                                 showDeleteDialog = replyToDelete
                                 deleteMessage = ""
                             },
-                            onReportClick = { replyToReport -> // ← DODAJ TO
-                                onReportComment(replyToReport._id) // Zgłaszaj odpowiedź
+                            onReportClick = { replyToReport ->
+                                onReportComment(replyToReport._id)
                             },
-                            onLoginRequired = { showLoginDialog = true }
+                            onLoginRequired = { showLoginDialog = true },
+                            isUserLoggedIn = isUserLoggedIn // DODAJ TEN PARAMETR
                         )
                         Spacer(Modifier.padding(3.dp))
                     }
@@ -221,7 +225,7 @@ fun CommentsPanel(
                                 expandedReplies.forEach { id ->
                                     viewModel.loadReplies(id)
                                 }
-                                commentsCount = (commentsCount - 1).coerceAtLeast(0) // zmniejsz licznik
+                                commentsCount = (commentsCount - 1).coerceAtLeast(0)
                             }
                         }
                     }
@@ -337,7 +341,8 @@ fun CommentsPanel(
             )
         }
 
-        if (currentUsername.isNotEmpty()) {
+        // ZMIEŃ WARUNEK: z currentUsername.isNotEmpty() na isUserLoggedIn
+        if (isUserLoggedIn) {
             if (replyingTo != null) {
                 Row(
                     modifier = Modifier
@@ -466,7 +471,8 @@ fun CommentItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
-    onLoginRequired: () -> Unit = {}
+    onLoginRequired: () -> Unit = {},
+    isUserLoggedIn: Boolean = true
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(comment._id).collectAsState(initial = false)
@@ -483,7 +489,7 @@ fun CommentItem(
     }
 
     fun requireLogin(action: () -> Unit) {
-        if (currentUsername.isEmpty()) {
+        if (!isUserLoggedIn) {
             onLoginRequired()
         } else {
             action()
@@ -727,13 +733,14 @@ fun ReplyItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
-    onLoginRequired: () -> Unit = {}
+    onLoginRequired: () -> Unit = {},
+    isUserLoggedIn: Boolean = true
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(reply._id).collectAsState(initial = false)
 
     fun requireLogin(action: () -> Unit) {
-        if (currentUsername.isEmpty()) {
+        if (!isUserLoggedIn) { // ZMIEŃ WARUNEK
             onLoginRequired()
         } else {
             action()

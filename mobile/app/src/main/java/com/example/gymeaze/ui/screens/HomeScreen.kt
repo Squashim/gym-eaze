@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,18 +22,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Man
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Public
@@ -69,13 +78,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,14 +90,23 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.Badge
+import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.StartedTrainingPlan
+import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.DifficultyBadgeExercise
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.screens.exercises.ExerciseScreen
+import com.example.gymeaze.ui.screens.exercises.logggedIn.ExerciseDetailScreen
 import com.example.gymeaze.ui.screens.posts.PostScreen
 import com.example.gymeaze.ui.screens.profile.FollowListDialog
 import com.example.gymeaze.ui.screens.profile.FollowStatsSection
+import com.example.gymeaze.ui.screens.profile.UserExercisesSection
+import com.example.gymeaze.ui.screens.profile.UserPostsSection
+import com.example.gymeaze.ui.screens.profile.UserTrainingPlansSection
+import com.example.gymeaze.ui.screens.profile.components.ProfileTab
+import com.example.gymeaze.ui.screens.profile.components.ProfileTabRow
 import com.example.gymeaze.ui.screens.trainingsPlan.TrainingPlansNavigationScreen
 import com.example.gymeaze.ui.screens.trainingsPlan.guest.WorkoutsNotLoggedInScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
@@ -105,6 +120,7 @@ import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import com.example.gymeaze.viewmodel.ExerciseCreatorViewModel
+import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.ProfileViewModel
 import com.example.gymeaze.viewmodel.UserViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
@@ -144,27 +160,39 @@ fun HomeScreen(
 
     val createPostViewModel: PostsViewModel = viewModel()
     val createExerciseViewModel: ExerciseCreatorViewModel = viewModel()
+    val exercisesViewModel: ExercisesViewModel = viewModel()
+
     var showBottomBar by remember { mutableStateOf(true) }
+
+    var selectedExerciseId by remember { mutableStateOf<String?>(null) }
+    var showExerciseDetail by remember { mutableStateOf(false) }
+
+    var selectedPlanId by remember { mutableStateOf<String?>(null) }
+    var showPlanDetail by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
-            when (selectedRoute) {
-                "community", "exercises", "workouts" -> {
+            when {
+                showExerciseDetail || showPlanDetail -> {
+                }
+                selectedRoute in listOf("community", "exercises", "workouts") -> {
                 }
                 else -> {
                     GymEazeTopAppBar(
                         onSettingsClick = onSettingsClick,
                         showBackButton = displayedUsername != username,
-                        onBackClick = { displayedUsername = username }
+                        onBackClick = {
+                            displayedUsername = username
+                        }
                     )
                 }
             }
         },
         bottomBar = {
-            if (showBottomBar) {
+            if (showBottomBar && !showExerciseDetail && !showPlanDetail) {
                 GymEazeBottomNavigationBar(
                     selectedRoute = selectedRoute,
                     onItemSelected = { route ->
@@ -179,20 +207,64 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = getBackgroundColor()
     ) { paddingValues ->
-        when (selectedRoute) {
-            "exercises" -> ExerciseScreen(
-                onSettingsClick = onSettingsClick,
-                isUserLoggedIn = isUserLoggedIn,
-                createExerciseViewModel = createExerciseViewModel,
-                setShowBottomBar = { showBottomBar = it }
-            )
+        when {
+            showExerciseDetail && selectedExerciseId != null -> {
+                ExerciseDetailScreen(
+                    exerciseId = selectedExerciseId!!,
+                    onBackClick = {
+                        showExerciseDetail = false
+                        selectedExerciseId = null
+                    },
+                    onEditClick = null,
+                    onDeleteSuccess = {
+                        showExerciseDetail = false
+                        selectedExerciseId = null
+                    },
+                    exercisesViewModel = exercisesViewModel,
+                    isUserLoggedIn = isUserLoggedIn
+                )
+            }
 
-            "workouts" -> {
+            showPlanDetail && selectedPlanId != null -> {
+                TrainingPlanDetailScreen(
+                    planId = selectedPlanId!!,
+                    onBackClick = {
+                        showPlanDetail = false
+                        selectedPlanId = null
+                    },
+                    onExerciseClick = { exerciseId ->
+                        selectedExerciseId = exerciseId
+                        showExerciseDetail = true
+                    },
+                    onUserClick = { userId ->
+                    },
+                    navigateToWorkoutPlayer = { userTrainingPlanId, planName, dayNumber ->
+                        onStartedPlanClick(userTrainingPlanId, planName)
+                    },
+                    onEditPlanClick = { planId ->
+                        onEditPlanClick(planId)
+                    }
+                )
+            }
+
+            selectedRoute == "exercises" -> {
+                ExerciseScreen(
+                    onSettingsClick = onSettingsClick,
+                    isUserLoggedIn = isUserLoggedIn,
+                    createExerciseViewModel = createExerciseViewModel,
+                    setShowBottomBar = { showBottomBar = it }
+                )
+            }
+
+            selectedRoute == "workouts" -> {
                 if (isUserLoggedIn) {
                     TrainingPlansNavigationScreen(
                         onSettingsClick = onSettingsClick,
                         onCreateTrainingPlanClick = onCreateTrainingPlanClick,
-                        onPlanClick = onPlanClick,
+                        onPlanClick = { planId ->
+                            selectedPlanId = planId
+                            showPlanDetail = true
+                        },
                         onEditPlanClick = onEditPlanClick,
                         onStartedPlanClick = onStartedPlanClick,
                         setShowBottomBar = { showBottomBar = it }
@@ -200,14 +272,16 @@ fun HomeScreen(
                 }
             }
 
-            "community" -> PostScreen(
-                onSettingsClick = onSettingsClick,
-                isUserLoggedIn = isUserLoggedIn,
-                createPostViewModel = createPostViewModel,
-                setShowBottomBar = { showBottomBar = it }
-            )
+            selectedRoute == "community" -> {
+                PostScreen(
+                    onSettingsClick = onSettingsClick,
+                    isUserLoggedIn = isUserLoggedIn,
+                    createPostViewModel = createPostViewModel,
+                    setShowBottomBar = { showBottomBar = it }
+                )
+            }
 
-            "profile" -> {
+            selectedRoute == "profile" -> {
                 val profileViewModel: ProfileViewModel = viewModel()
 
                 LaunchedEffect(displayedUsername) {
@@ -239,7 +313,17 @@ fun HomeScreen(
                     onStartedPlanClick = onStartedPlanClick,
                     onUserProfileClick = { clickedUsername ->
                         displayedUsername = clickedUsername
-                    }
+                    },
+                    onExerciseClick = { exerciseId ->
+                        selectedExerciseId = exerciseId
+                        showExerciseDetail = true
+                    },
+                    onPlanClick = { planId ->
+                        selectedPlanId = planId
+                        showPlanDetail = true
+                    },
+                    onBrowseTrainingPlansClick = { /* TODO */ },
+                    onBrowsePostClick = { /* TODO */ }
                 )
             }
         }
@@ -260,18 +344,28 @@ fun ProfileScreen(
     scope: CoroutineScope,
     profileViewModel: ProfileViewModel,
     onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
-    onUserProfileClick: (String) -> Unit = {}
+    onUserProfileClick: (String) -> Unit = {},
+    onExerciseClick: (String) -> Unit = {},
+    onPlanClick: (String) -> Unit = {},
+    onBrowseTrainingPlansClick: () -> Unit,
+    onBrowsePostClick: () -> Unit,
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val userViewModel: UserViewModel = viewModel()
     val availableBadges by userViewModel.availableBadges.collectAsState()
 
+    val userExercisesViewModel: ExercisesViewModel = viewModel()
     val isOwnProfile = username == currentLoggedUsername
+
+    val postViewModel: PostsViewModel = viewModel()
+
+    var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
 
     LaunchedEffect(username) {
         profileViewModel.loadUserProfile(username)
+        userExercisesViewModel.loadExercisesByUsername(username)
+        postViewModel.fetchUserPostsByUsername(username)
     }
-
 
     LaunchedEffect(uiState.operationError) {
         uiState.operationError?.let { error ->
@@ -291,86 +385,145 @@ fun ProfileScreen(
         }
     }
 
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(getBackgroundColor()),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            val profile = uiState.userProfile
-            val bmi = calculateBmi(
-                profile?.fitnessDetails?.height,
-                profile?.fitnessDetails?.weight
-            )
+        BackgroundWithDotsAndCircles()
 
-            WelcomeSection(
-                username = username,
-                currentDate = currentDate,
-                isOwnProfile = isOwnProfile,
-                onEditProfileClick = onEditProfileClick,
-                profilePicture = profile?.profilePicture,
-                description = profile?.description,
-                firstName = profile?.personalDetails?.firstName,
-                lastName = profile?.personalDetails?.lastName,
-                country = profile?.personalDetails?.country,
-                gender = profile?.fitnessDetails?.gender,
-                age = profile?.fitnessDetails?.age,
-                height = profile?.fitnessDetails?.height,
-                weight = profile?.fitnessDetails?.weight?.toDouble(),
-                bmi = bmi,
-                trainingGoal = profile?.goal,
-                pinnedBadges = profile?.pinnedBadges ?: emptyList()
-            )
-        }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                val profile = uiState.userProfile
+                val bmi = calculateBmi(
+                    profile?.fitnessDetails?.height,
+                    profile?.fitnessDetails?.weight
+                )
 
-        item {
-            val profile = uiState.userProfile
-
-            if (!isOwnProfile && profile != null) {
-                FollowButton(
-                    isFollowing = profile.isFollowing,
-                    isLoading = uiState.isFollowLoading,
-                    onClick = { profileViewModel.toggleFollow(profile.id) }
+                WelcomeSection(
+                    username = username,
+                    currentDate = currentDate,
+                    isOwnProfile = isOwnProfile,
+                    onEditProfileClick = onEditProfileClick,
+                    profilePicture = profile?.profilePicture,
+                    description = profile?.description,
+                    firstName = profile?.personalDetails?.firstName,
+                    lastName = profile?.personalDetails?.lastName,
+                    country = profile?.personalDetails?.country,
+                    gender = profile?.fitnessDetails?.gender,
+                    age = profile?.fitnessDetails?.age,
+                    height = profile?.fitnessDetails?.height,
+                    weight = profile?.fitnessDetails?.weight?.toDouble(),
+                    bmi = bmi,
+                    trainingGoal = profile?.goal,
+                    pinnedBadges = profile?.pinnedBadges ?: emptyList()
                 )
             }
-        }
 
-        item {
-            val profile = uiState.userProfile
+            item {
+                val profile = uiState.userProfile
 
-            FollowStatsSection(
-                followersCount = profile?.followersCount ?: 0,
-                followingCount = profile?.followingCount ?: 0,
-                onFollowersClick = {
-                    if (isOwnProfile) {
-                        profileViewModel.loadFollowersAndFollowing()
-                        profileViewModel.showFollowersDialog()
+                if (!isOwnProfile && profile != null) {
+                    FollowButton(
+                        isFollowing = profile.isFollowing,
+                        isLoading = uiState.isFollowLoading,
+                        onClick = { profileViewModel.toggleFollow(profile.id) }
+                    )
+                }
+            }
+
+            item {
+                val profile = uiState.userProfile
+
+                FollowStatsSection(
+                    followersCount = profile?.followersCount ?: 0,
+                    followingCount = profile?.followingCount ?: 0,
+                    onFollowersClick = {
+                        if (isOwnProfile) {
+                            profileViewModel.loadFollowersAndFollowing()
+                            profileViewModel.showFollowersDialog()
+                        }
+                    },
+                    onFollowingClick = {
+                        if (isOwnProfile) {
+                            profileViewModel.loadFollowersAndFollowing()
+                            profileViewModel.showFollowingDialog()
+                        }
                     }
-                },
-                onFollowingClick = {
-                    if (isOwnProfile) {
-                        profileViewModel.loadFollowersAndFollowing()
-                        profileViewModel.showFollowingDialog()
+                )
+            }
+
+            if (isOwnProfile) {
+                item {
+                    RecentActivitySection(
+                        isLoading = uiState.isLoading,
+                        startedPlans = uiState.startedPlans,
+                        onStartedPlanClick = onStartedPlanClick,
+                        onRefresh = { profileViewModel.loadStartedPlans() },
+                        onDeletePlan = { planId -> profileViewModel.deleteStartedPlan(planId) },
+                        onResetPlan = { planId -> profileViewModel.resetStartedPlan(planId) },
+                        deletingPlanId = uiState.deletingPlanId,
+                        resettingPlanId = uiState.resettingPlanId
+                    )
+                }
+            } else {
+                item {
+                    ProfileTabRow(
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it }
+                    )
+                }
+
+                item {
+                    when (selectedTab) {
+                        ProfileTab.POSTS -> {
+                            UserPostsSection(
+                                username = username,
+                                onBrowsePostClick = onBrowsePostClick,
+                                postsViewModel = postViewModel,
+                                currentLoggedUsername = currentLoggedUsername,
+                                isUserLoggedIn = isUserLoggedIn,
+                                onEditPost = { post ->
+                                },
+                                onDeletePost = { post ->
+                                },
+                                onHashtagClick = { hashtag ->
+                                },
+                                onCommentClick = { postId ->
+                                },
+                                onReportClick = { postId ->
+                                },
+                                onToggleLike = { postId ->
+                                    postViewModel.toggleLike(postId)
+                                }
+                            )
+                        }
+                        ProfileTab.EXERCISES -> {
+                            UserExercisesSection(
+                                username = username,
+                                userExercisesViewModel = userExercisesViewModel,
+                                onExerciseClick = { exerciseId ->
+                                    onExerciseClick(exerciseId)
+                                },
+                                onBrowseExercisesClick = onBrowseExercisesClick,
+                                isOwnProfile = isOwnProfile,
+                            )
+                        }
+                        ProfileTab.TRAINING_PLANS -> {
+                            UserTrainingPlansSection(
+                                username = username,
+                                onBrowseTrainingPlansClick = onBrowseTrainingPlansClick,
+                                onPlanClick = { planId ->
+                                    onPlanClick(planId)
+                                }
+                            )
+                        }
                     }
                 }
-            )
-        }
-
-        if (isOwnProfile) {
-            item {
-                RecentActivitySection(
-                    isLoading = uiState.isLoading,
-                    startedPlans = uiState.startedPlans,
-                    onStartedPlanClick = onStartedPlanClick,
-                    onRefresh = { profileViewModel.loadStartedPlans() },
-                    onDeletePlan = { planId -> profileViewModel.deleteStartedPlan(planId) },
-                    onResetPlan = { planId -> profileViewModel.resetStartedPlan(planId) },
-                    deletingPlanId = uiState.deletingPlanId,
-                    resettingPlanId = uiState.resettingPlanId
-                )
             }
         }
     }

@@ -10,6 +10,7 @@ import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
+import com.example.gymeaze.data.models.ExercisesResponse
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
@@ -472,7 +473,6 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
 
-    //ULUBIONE CWICZENIA UZYTKOWNIKA
     fun loadFavoriteExercises(append: Boolean = false) {
         viewModelScope.launch {
             if (append) {
@@ -913,4 +913,56 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         _nextCursorComment.value = null
         _isLoadingComments.value = false
     }
+
+    fun loadExercisesByUsername(username: String, append: Boolean = false) {
+        viewModelScope.launch {
+            if (append) {
+                _uiState.value = _uiState.value.copy(isLoadingMore = true)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            }
+
+            try {
+                val currentState = _uiState.value
+                val page = if (append) currentState.currentPage + 1 else 1
+
+                val result = repository.getUserExercisesByUsername(
+                    username = username,
+                    page = page,
+                    pageSize = 20
+                )
+
+                result.onSuccess { response ->
+                    val newExercises = if (append) {
+                        currentState.exercises + response.items
+                    } else {
+                        response.items
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        exercises = newExercises,
+                        currentPage = response.page,
+                        totalPages = (response.total + response.pageSize - 1) / response.pageSize,
+                        hasMorePages = response.page * response.pageSize < response.total,
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = null
+                    )
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = exception.message ?: "Błąd podczas ładowania ćwiczeń użytkownika $username"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    error = e.message ?: "Nieoczekiwany błąd"
+                )
+            }
+        }
+    }
+
 }

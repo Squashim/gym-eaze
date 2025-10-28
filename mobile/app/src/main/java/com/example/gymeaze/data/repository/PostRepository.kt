@@ -405,4 +405,27 @@ class PostsRepository(private val context: Context) {
     }
 
 
+    suspend fun getUserPostsByUsername(
+        username: String,
+        cursor: String? = null,
+        limit: Int = 10
+    ): Result<PostResponse> {
+        return try {
+            val userRepository = UserRepository(context)
+            val userResult = userRepository.getUserProfile(username)
+
+            userResult.fold(
+                onSuccess = { user ->
+                    val userId = user.id
+                    val response = api.getUserPosts(userId, cursor, limit)
+                    Result.success(response)
+                },
+                onFailure = {
+                    Result.failure(IllegalStateException("Nie znaleziono użytkownika o nazwie $username"))
+                }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
