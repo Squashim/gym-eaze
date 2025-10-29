@@ -180,17 +180,14 @@ fun TrainingPlansScreen(
         ) {
             BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
-            // UPROSZCZONE: Używamy prostszego PullToRefreshBox z Material3
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { viewModel.refreshTrainingPlans() },
                 modifier = Modifier.fillMaxSize()
             ) {
-                // JEŚLI TRWA ODSWIEŻANIE, POKAŻ LOADING SCREEN
                 if (uiState.isRefreshing) {
                     LoadingScreen()
                 } else {
-                    // W PRZECIWNYM WYPADKU POKAŻ NORMALNĄ ZAWARTOŚĆ
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -298,13 +295,11 @@ fun TrainingPlansScreen(
                                             onCardClick = onPlanClick,
                                             onLikeClick = viewModel::toggleLike,
                                             onFavoriteClick = viewModel::toggleFavorite,
-                                            onEditClick = onEditPlanClick, // Dodaj tę linię
+                                            onEditClick = onEditPlanClick,
                                             onDeleteClick = { trainingPlan ->
-                                                // Tutaj możesz dodać logikę do usuwania
-                                                // Na przykład wywołać metodę w viewModel
                                                 viewModel.showDeleteDialog(trainingPlan)
                                             },
-                                            showOwnerActions = true // Dodaj tę linię
+                                            showOwnerActions = true
                                         )
                                     }
 
@@ -330,7 +325,6 @@ fun TrainingPlansScreen(
                 }
             }
 
-            // DODAJ TUTAJ DIALOG USUWANIA - tak jak w MyTrainingPlansScreen
             if (uiState.showDeleteDialog && uiState.planToDelete != null) {
                 DeleteConfirmationDialog(
                     planName = uiState.planToDelete!!.name,
@@ -372,7 +366,6 @@ fun TrainingPlansScreen(
     }
 }
 
-// Dodaj funkcję dialogu potwierdzenia usuwania
 @Composable
 private fun DeleteConfirmationDialog(
     planName: String,

@@ -74,7 +74,7 @@ fun EditTrainingPlanScreen(
         if (!uiState.isInitialLoadComplete) {
             viewModel.loadTrainingPlan(planId)
         } else {
-            //skip
+
         }
     }
 
@@ -178,12 +178,6 @@ fun EditTrainingPlanScreen(
                         .fillMaxSize()
                         .padding(paddingValues)
                 ) {
-                    EditTrainingPlanStepper(
-                        modifier = Modifier.padding(16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -250,7 +244,6 @@ fun EditTrainingPlanScreen(
                                         showDeleteDayDialog = true
                                     },
                                     onAddExercise = {
-                                        android.util.Log.d("EditTrainingPlanScreen", "Opening exercise selection for day $index")
                                         onNavigateToExerciseSelection(index)
                                     },
                                     onRemoveExercise = { exerciseIndex ->
@@ -433,38 +426,6 @@ fun EditTrainingPlanScreen(
                 onBackClick()
             }
         )
-    }
-}
-
-@Composable
-private fun EditTrainingPlanStepper(
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getPrimaryColor().copy(alpha = 0.1f)),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = null,
-                tint = getPrimaryColor(),
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Edycja planu treningowego",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = getPrimaryColor()
-            )
-        }
     }
 }
 

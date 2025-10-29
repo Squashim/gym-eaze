@@ -24,9 +24,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.Brightness1
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -52,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -62,6 +65,7 @@ import com.example.gymeaze.data.models.StartedDay
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
+import com.example.gymeaze.ui.theme.getOnPrimaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -242,10 +246,9 @@ private fun DayCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -271,10 +274,14 @@ private fun DayCard(
                         text = day.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = getOnSurfaceColor()
+                        color = getOnSurfaceColor(),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             Box(
                 modifier = Modifier.defaultMinSize(minWidth = 80.dp),
@@ -300,7 +307,7 @@ private fun DayCard(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Ukończono",
                                 tint = Color(0xFF4CAF50),
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -327,14 +334,14 @@ private fun DayCard(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .background(getErrorColor().copy(alpha = 0.15f)),
+                                .background(Color.Gray.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = Icons.Default.Schedule,
                                 contentDescription = "Nieukończono",
-                                tint = getErrorColor(),
-                                modifier = Modifier.size(18.dp)
+                                tint = Color.Gray,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
