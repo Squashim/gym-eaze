@@ -183,28 +183,39 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+
     fun toggleFollow(userId: String) {
         viewModelScope.launch {
+            val currentProfile = _uiState.value.userProfile
+
+            if (currentProfile == null) {
+                _uiState.update {
+                    it.copy(operationError = "Brak danych profilu")
+                }
+                return@launch
+            }
+
             _uiState.update { it.copy(isFollowLoading = true) }
 
             val result = userRepository.toggleUserFollow(userId)
 
-            if (result.isSuccess) {
+            _uiState.update { currentState ->
                 val response = result.getOrNull()
-                _uiState.update {
-                    it.copy(
-                        userProfile = it.userProfile?.copy(
-                            isFollowing = response?.isFollowing ?: false,
-                            followersCount = response?.followersCount
-                        ),
-                        followersCount = response?.followersCount ?: 0,
-                        isFollowLoading = false,
-                        operationSuccessMessage = response?.message
+                if (result.isSuccess && response != null) {
+                    val safeProfile = currentProfile.copy(
+                        profilePicture = currentProfile.profilePicture ?: "",
+                        description = currentProfile.description ?: "",
+                        isFollowing = response.isFollowing,
+                        followersCount = response.followersCount,
+                        followingCount = response.followingCount
                     )
-                }
-            } else {
-                _uiState.update {
-                    it.copy(
+                    currentState.copy(
+                        userProfile = safeProfile,
+                        isFollowLoading = false,
+                        operationSuccessMessage = response.message
+                    )
+                } else {
+                    currentState.copy(
                         isFollowLoading = false,
                         operationError = result.exceptionOrNull()?.message ?: "Błąd obserwowania"
                     )

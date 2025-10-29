@@ -42,7 +42,8 @@ fun CommentsPanel(
     currentUsername: String,
     reportViewModel: ReportViewModel,
     onReportComment: (String) -> Unit,
-    isUserLoggedIn: Boolean = true // DODAJ TEN PARAMETR
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     val viewModel: PostsViewModel = viewModel()
     val comments by viewModel.comments.collectAsState()
@@ -160,7 +161,8 @@ fun CommentsPanel(
                         onReportComment(commentToReport._id)
                     },
                     onLoginRequired = { showLoginDialog = true },
-                    isUserLoggedIn = isUserLoggedIn // DODAJ TEN PARAMETR
+                    isUserLoggedIn = isUserLoggedIn,
+                    onUserClick = onUserClick
                 )
 
                 if (expandedReplies.contains(comment._id)) {
@@ -184,7 +186,8 @@ fun CommentsPanel(
                                 onReportComment(replyToReport._id)
                             },
                             onLoginRequired = { showLoginDialog = true },
-                            isUserLoggedIn = isUserLoggedIn // DODAJ TEN PARAMETR
+                            isUserLoggedIn = isUserLoggedIn,
+                            onUserClick = onUserClick
                         )
                         Spacer(Modifier.padding(3.dp))
                     }
@@ -341,7 +344,6 @@ fun CommentsPanel(
             )
         }
 
-        // ZMIEŃ WARUNEK: z currentUsername.isNotEmpty() na isUserLoggedIn
         if (isUserLoggedIn) {
             if (replyingTo != null) {
                 Row(
@@ -472,7 +474,8 @@ fun CommentItem(
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
     onLoginRequired: () -> Unit = {},
-    isUserLoggedIn: Boolean = true
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(comment._id).collectAsState(initial = false)
@@ -504,7 +507,9 @@ fun CommentItem(
             UserAvatar(
                 imageUrl = comment.author.profileDetails?.profilePicture,
                 username = comment.author.username,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { onUserClick(comment.author.username) }
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -734,13 +739,14 @@ fun ReplyItem(
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
     onLoginRequired: () -> Unit = {},
-    isUserLoggedIn: Boolean = true
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(reply._id).collectAsState(initial = false)
 
     fun requireLogin(action: () -> Unit) {
-        if (!isUserLoggedIn) { // ZMIEŃ WARUNEK
+        if (!isUserLoggedIn) {
             onLoginRequired()
         } else {
             action()
@@ -756,7 +762,9 @@ fun ReplyItem(
         UserAvatar(
             imageUrl = reply.author.profileDetails?.profilePicture,
             username = reply.author.username,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onUserClick(reply.author.username) }
         )
 
         Column(modifier = Modifier.weight(1f)) {

@@ -50,58 +50,55 @@ fun UserTrainingPlansSection(
         viewModel.loadUserTrainingPlans(username)
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
 
-            Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = getPrimaryColor(),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            } else if (userPlans.isEmpty()) {
-                EmptySectionMessage(
-                    message = "$username nie ma jeszcze żadnych planów treningowych",
-                    icon = Icons.Default.Assignment
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = getPrimaryColor(),
+                    modifier = Modifier.size(24.dp)
                 )
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    userPlans.forEach { plan ->
-                        TrainingPlanCard(
-                            trainingPlan = plan,
-                            onCardClick = {
-                                onPlanClick(plan.id)
-                            },
-                            onLikeClick = { planId ->
-                                viewModel.toggleLike(planId)
-                            },
-                            onFavoriteClick = { planId ->
-                                viewModel.toggleFavorite(planId)
-                            },
-                            onEditClick = onEditPlan,
-                            onDeleteClick = { trainingPlan ->
-                                onDeletePlan(trainingPlan.id)
-                            },
-                            showOwnerActions = true
-                        )
-                    }
+            }
+        } else if (userPlans.isEmpty()) {
+            EmptySectionMessage(
+                message = "$username nie ma jeszcze żadnych planów treningowych",
+                icon = Icons.Default.Assignment
+            )
+        } else {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                userPlans.forEach { plan ->
+                    TrainingPlanCard(
+                        trainingPlan = plan,
+                        onCardClick = {
+                            onPlanClick(plan.id)
+                        },
+                        onLikeClick = { planId ->
+                            viewModel.toggleLike(planId)
+                        },
+                        onFavoriteClick = { planId ->
+                            viewModel.toggleFavorite(planId)
+                        },
+                        onEditClick = onEditPlan,
+                        onDeleteClick = { trainingPlan ->
+                            onDeletePlan(trainingPlan.id)
+                        },
+                        showOwnerActions = true
+                    )
                 }
             }
         }

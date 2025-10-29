@@ -23,7 +23,8 @@ import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable
 fun PostsFollowedUsers(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onUserClick: (String) -> Unit = {}
 ) {
     val viewModel: PostsViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
@@ -94,6 +95,7 @@ fun PostsFollowedUsers(
                 onToggleSeeMore = { true },
                 onRefreshPosts = { viewModel.refreshFollowedPosts() },
                 topBarTitle = "Posty obserwowanych",
+                onUserClick = onUserClick
             )
         }
 

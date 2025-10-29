@@ -58,67 +58,63 @@ fun UserExercisesSection(
     val isLoading = uiState.isLoading
     val favoriteExercises by userExercisesViewModel.favoriteExercises.collectAsState()
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
 
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = getPrimaryColor(),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            } else if (userExercises.isEmpty()) {
-                EmptySectionMessage(
-                    message = if (isOwnProfile)
-                        "Nie masz jeszcze żadnych ćwiczeń"
-                    else
-                        "$username nie ma jeszcze żadnych ćwiczeń",
-                    icon = Icons.Default.FitnessCenter
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 12.dp)
+    ){
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = getPrimaryColor(),
+                    modifier = Modifier.size(24.dp)
                 )
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    userExercises.forEach { exercise ->
-                        ExerciseCard(
-                            exercise = exercise,
-                            isLiked = userExercisesViewModel.isExerciseLiked(exercise.id),
-                            isFavorite = favoriteExercises.contains(exercise.id),
-                            isCurrentUserExercise = userExercisesViewModel.isCurrentUserExercise(exercise.author.username),
-                            onLikeClick = { exerciseId ->
-                                userExercisesViewModel.toggleLike(exerciseId) { success, message ->
+            }
+        } else if (userExercises.isEmpty()) {
+            EmptySectionMessage(
+                message = if (isOwnProfile)
+                    "Nie masz jeszcze żadnych ćwiczeń"
+                else
+                    "$username nie ma jeszcze żadnych ćwiczeń",
+                icon = Icons.Default.FitnessCenter
+            )
+        } else {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                userExercises.forEach { exercise ->
+                    ExerciseCard(
+                        exercise = exercise,
+                        isLiked = userExercisesViewModel.isExerciseLiked(exercise.id),
+                        isFavorite = favoriteExercises.contains(exercise.id),
+                        isCurrentUserExercise = userExercisesViewModel.isCurrentUserExercise(exercise.author.username),
+                        onLikeClick = { exerciseId ->
+                            userExercisesViewModel.toggleLike(exerciseId) { success, message ->
 
-                                }
-                            },
-                            onFavoriteClick = { exerciseId ->
-                                userExercisesViewModel.toggleFavorite(exerciseId) { success, message ->
-
-                                }
-                            },
-                            onEditClick = { exerciseId ->
-
-                            },
-                            onDeleteClick = { exerciseId ->
-
-                            },
-                            onExerciseClick = { exerciseId ->
-                                onExerciseClick(exerciseId)
                             }
-                        )
-                    }
+                        },
+                        onFavoriteClick = { exerciseId ->
+                            userExercisesViewModel.toggleFavorite(exerciseId) { success, message ->
+
+                            }
+                        },
+                        onEditClick = { exerciseId ->
+
+                        },
+                        onDeleteClick = { exerciseId ->
+
+                        },
+                        onExerciseClick = { exerciseId ->
+                            onExerciseClick(exerciseId)
+                        }
+                    )
                 }
             }
         }

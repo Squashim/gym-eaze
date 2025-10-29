@@ -23,7 +23,8 @@ import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable
 fun MyPosts(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onUserClick: (String) -> Unit = {}
 ) {
     val viewModel: PostsViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
@@ -95,6 +96,7 @@ fun MyPosts(
                 searchEnabled = true,
                 onRefreshPosts = { viewModel.refreshCurrentUserPosts() },
                 topBarTitle = "Moje posty",
+                onUserClick = onUserClick
             )
         }
 

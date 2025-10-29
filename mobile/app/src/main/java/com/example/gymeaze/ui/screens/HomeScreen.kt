@@ -159,6 +159,18 @@ fun HomeScreen(
     val currentDate = SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault()).format(Date())
     var selectedRoute by remember { mutableStateOf("profile") }
 
+    var previousRoute by remember { mutableStateOf<String?>(null) }
+
+    var savedExerciseSection by remember { mutableStateOf("menu") }
+    var savedExerciseId by remember { mutableStateOf<String?>(null) }
+
+    var previousPlanId by remember { mutableStateOf<String?>(null) }
+    var previousPlanSection by remember { mutableStateOf<String?>(null) }
+
+    var previousPlanContext by remember { mutableStateOf<String?>(null) }
+
+    var previousPostContext by remember { mutableStateOf<String?>(null) }
+
     var displayedUsername by remember { mutableStateOf(username) }
 
     val createPostViewModel: PostsViewModel = viewModel()
@@ -194,6 +206,10 @@ fun HomeScreen(
                         showBackButton = displayedUsername != username,
                         onBackClick = {
                             displayedUsername = username
+                            previousRoute?.let {
+                                selectedRoute = it
+                                previousRoute = null
+                            }
                         },
                         showNotifications = isUserLoggedIn && displayedUsername == username,
                         onNotificationsClick = {
@@ -211,6 +227,7 @@ fun HomeScreen(
                     selectedRoute = selectedRoute,
                     onItemSelected = { route ->
                         selectedRoute = route
+                        previousRoute = null
                         if (route == "profile") {
                             displayedUsername = username
                         }
@@ -235,7 +252,12 @@ fun HomeScreen(
                         selectedExerciseId = null
                     },
                     exercisesViewModel = exercisesViewModel,
-                    isUserLoggedIn = isUserLoggedIn
+                    isUserLoggedIn = isUserLoggedIn,
+                    onUserClick = { clickedUsername ->
+                        displayedUsername = clickedUsername
+                        previousRoute = selectedRoute
+                        selectedRoute = "profile"
+                    }
                 )
             }
 
@@ -266,7 +288,18 @@ fun HomeScreen(
                     onSettingsClick = onSettingsClick,
                     isUserLoggedIn = isUserLoggedIn,
                     createExerciseViewModel = createExerciseViewModel,
-                    setShowBottomBar = { showBottomBar = it }
+                    setShowBottomBar = { showBottomBar = it },
+                    initialExerciseSection = savedExerciseSection,
+                    initialSelectedExerciseId = savedExerciseId,
+                    onNavigationStateChanged = { section, exerciseId ->
+                        savedExerciseSection = section
+                        savedExerciseId = exerciseId
+                    },
+                    onUserClick = { clickedUsername ->
+                        displayedUsername = clickedUsername
+                        previousRoute = selectedRoute
+                        selectedRoute = "profile"
+                    }
                 )
             }
 
@@ -281,6 +314,14 @@ fun HomeScreen(
                         },
                         onEditPlanClick = onEditPlanClick,
                         onStartedPlanClick = onStartedPlanClick,
+                        onUserClick = { clickedUsername ->
+                            previousPlanContext = "workouts"
+                            previousPlanId = selectedPlanId
+
+                            displayedUsername = clickedUsername
+                            previousRoute = selectedRoute
+                            selectedRoute = "profile"
+                        },
                         setShowBottomBar = { showBottomBar = it }
                     )
                 }
@@ -291,7 +332,14 @@ fun HomeScreen(
                     onSettingsClick = onSettingsClick,
                     isUserLoggedIn = isUserLoggedIn,
                     createPostViewModel = createPostViewModel,
-                    setShowBottomBar = { showBottomBar = it }
+                    setShowBottomBar = { showBottomBar = it },
+                    onUserClick = { clickedUsername ->
+                        previousPostContext = "community"
+
+                        displayedUsername = clickedUsername
+                        previousRoute = selectedRoute
+                        selectedRoute = "profile"
+                    }
                 )
             }
 
@@ -333,11 +381,30 @@ fun HomeScreen(
                         showExerciseDetail = true
                     },
                     onPlanClick = { planId ->
-                        selectedPlanId = planId
-                        showPlanDetail = true
+                        if (previousPlanContext?.startsWith("plan_detail_") == true && previousPlanId != null) {
+                            selectedPlanId = previousPlanId
+                            showPlanDetail = true
+                            selectedRoute = "workouts"
+                            previousPlanContext = null
+                            previousPlanId = null
+                        } else if (previousPlanContext == "workouts" && previousPlanId != null) {
+                            selectedPlanId = previousPlanId
+                            showPlanDetail = true
+                            selectedRoute = "workouts"
+                            previousPlanContext = null
+                            previousPlanId = null
+                        } else {
+                            selectedPlanId = planId
+                            showPlanDetail = true
+                        }
                     },
                     onBrowseTrainingPlansClick = { /* TODO */ },
-                    onBrowsePostClick = { /* TODO */ }
+                    onBrowsePostClick = {
+                        if (previousPostContext == "community") {
+                            selectedRoute = "community"
+                            previousPostContext = null
+                        }
+                    }
                 )
             }
         }

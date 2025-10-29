@@ -50,6 +50,7 @@ fun TrainingPlansNavigationScreen(
     onPlanClick: (String) -> Unit,
     onEditPlanClick: (String) -> Unit,
     onStartedPlanClick: (userTrainingPlanId: String, planName: String) -> Unit,
+    onUserClick: (String) -> Unit,
     setShowBottomBar: (Boolean) -> Unit = {}
 ) {
     val trainingPlansViewModel: TrainingPlansViewModel = viewModel()
@@ -64,6 +65,8 @@ fun TrainingPlansNavigationScreen(
     var returnFromExercise by remember { mutableStateOf(false) }
 
     val isDarkTheme = LocalDarkTheme.current
+
+    var previousPlanContext by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(planSection) {
         setShowBottomBar(planSection == "menu")
@@ -181,6 +184,9 @@ fun TrainingPlansNavigationScreen(
                                 planSection = "exercise_details"
                             },
                             onUserClick = { userId ->
+                                // ZAPISZ KONTEKST PRZED PRZEJŚCIEM
+                                previousPlanContext = "plan_detail_${selectedPlanId}"
+                                onUserClick(userId)
                             },
                             navigateToWorkoutPlayer = { userTrainingPlanId, planName, dayNumber ->
                                 onStartedPlanClick(userTrainingPlanId, planName)

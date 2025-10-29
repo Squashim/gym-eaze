@@ -82,15 +82,12 @@ fun UserPostsSection(
         postsViewModel.fetchUserPostsByUsername(username, refresh = true)
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth())
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 0.dp, vertical = 12.dp)
+        )
         {
-            Spacer(modifier = Modifier.height(8.dp))
-
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -151,7 +148,7 @@ fun UserPostsSection(
                 }
             }
         }
-    }
+
 
     fullScreenMedia?.let { (post, isVideo) ->
         MediaFullScreenDialog(

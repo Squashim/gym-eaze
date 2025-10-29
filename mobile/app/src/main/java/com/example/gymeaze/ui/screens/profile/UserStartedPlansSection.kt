@@ -44,47 +44,44 @@ fun UserStartedPlansSection(
         }
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = getPrimaryColor(),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            } else if (startedPlans.isEmpty()) {
-                EmptySectionMessage(
-                    message = if (isOwnProfile)
-                        "Nie masz jeszcze żadnych rozpoczętych treningów"
-                    else
-                        "$username nie ma jeszcze żadnych rozpoczętych treningów",
-                    icon = Icons.Default.FitnessCenter
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = getPrimaryColor(),
+                    modifier = Modifier.size(24.dp)
                 )
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    startedPlans.forEach { plan ->
-                        StartedPlanCompactCard(
-                            plan = plan,
-                            onClick = if (isOwnProfile && plan.completedDays < plan.totalDays) {
-                                { onStartedPlanClick(plan.id, plan.name) }
-                            } else null
-                        )
-                    }
+            }
+        } else if (startedPlans.isEmpty()) {
+            EmptySectionMessage(
+                message = if (isOwnProfile)
+                    "Nie masz jeszcze żadnych rozpoczętych treningów"
+                else
+                    "$username nie ma jeszcze żadnych rozpoczętych treningów",
+                icon = Icons.Default.FitnessCenter
+            )
+        } else {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                startedPlans.forEach { plan ->
+                    StartedPlanCompactCard(
+                        plan = plan,
+                        onClick = if (isOwnProfile && plan.completedDays < plan.totalDays) {
+                            { onStartedPlanClick(plan.id, plan.name) }
+                        } else null
+                    )
                 }
             }
         }
