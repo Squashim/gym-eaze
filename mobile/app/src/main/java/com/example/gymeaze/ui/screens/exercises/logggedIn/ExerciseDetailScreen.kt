@@ -62,7 +62,8 @@ fun ExerciseDetailScreen(
     onEditClick: ((Exercise) -> Unit)? = null,
     onDeleteSuccess: () -> Unit = {},
     exercisesViewModel: ExercisesViewModel,
-    isUserLoggedIn: Boolean = true
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     val reportViewModel: ReportViewModel = viewModel()
 
@@ -257,6 +258,7 @@ fun ExerciseDetailScreen(
                     reportViewModel = reportViewModel, // ← DODAJ TO
                     isUserLoggedIn = isUserLoggedIn,
                     onShowLoginDialog = { showLoginDialog = true },
+                    onUserClick = onUserClick,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -392,6 +394,7 @@ private fun ExerciseDetailContent(
     reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
     isUserLoggedIn: Boolean = true,
     onShowLoginDialog: () -> Unit = {},
+    onUserClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val comments by exercisesViewModel.exerciseComments.collectAsState()
@@ -475,7 +478,8 @@ private fun ExerciseDetailContent(
         item {
             AuthorSection(
                 author = exercise.author,
-                createdAt = exercise.createdAt
+                createdAt = exercise.createdAt,
+                onUserClick = onUserClick
             )
         }
 
@@ -698,10 +702,11 @@ private fun ExerciseDetailContent(
                     showDeleteDialog = commentToDelete
                 },
                 onShowLoginDialog = onShowLoginDialog,
-                onReportClick = { commentId -> // ← DODAJ TO
+                onReportClick = { commentId ->
                     commentToReport = commentId
                     showReportDialog = true
-                }
+                },
+                onUserClick = onUserClick
             )
 
             if (expandedReplies.contains(comment._id)) {
@@ -710,7 +715,7 @@ private fun ExerciseDetailContent(
                     ExerciseReplyItem(
                         reply = reply,
                         viewModel = exercisesViewModel,
-                        reportViewModel = reportViewModel, // ← DODAJ TO
+                        reportViewModel = reportViewModel,
                         isUserLoggedIn = isUserLoggedIn,
                         currentUsername = currentUsername,
                         onEditClick = { replyToEdit ->
@@ -722,10 +727,11 @@ private fun ExerciseDetailContent(
                             showDeleteDialog = replyToDelete
                         },
                         onShowLoginDialog = onShowLoginDialog,
-                        onReportClick = { replyId -> // ← DODAJ TO
+                        onReportClick = { replyId ->
                             commentToReport = replyId
                             showReportDialog = true
-                        }
+                        },
+                        onUserClick = onUserClick
                     )
                 }
             }
@@ -1211,10 +1217,13 @@ private fun HashtagChip(hashtag: String) {
 @Composable
 private fun AuthorSection(
     author: ExerciseAuthor,
-    createdAt: String
+    createdAt: String,
+    onUserClick: (String) -> Unit = {}
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onUserClick(author.username) }, // Dodaj clickable tutaj
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
     ) {
@@ -1286,7 +1295,8 @@ private fun ExerciseCommentItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onShowLoginDialog: () -> Unit = {},
-    onReportClick: (String) -> Unit = {}
+    onReportClick: (String) -> Unit = {},
+    onUserClick: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
@@ -1311,7 +1321,9 @@ private fun ExerciseCommentItem(
             UserAvatar(
                 imageUrl = comment.author.profileDetails?.profilePicture,
                 username = comment.author.username,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { onUserClick(comment.author.username) } // Dodaj to
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -1324,7 +1336,8 @@ private fun ExerciseCommentItem(
                         text = comment.author.username,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
-                        color = getOnSurfaceColor()
+                        color = getOnSurfaceColor(),
+                        modifier = Modifier.clickable { onUserClick(comment.author.username) } // Dodaj to
                     )
 
                     if (isUserLoggedIn) {
@@ -1526,7 +1539,8 @@ private fun ExerciseReplyItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onShowLoginDialog: () -> Unit = {},
-    onReportClick: (String) -> Unit = {} // ← DODAJ TEN PARAMETR
+    onReportClick: (String) -> Unit = {},
+    onUserClick: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
@@ -1541,7 +1555,9 @@ private fun ExerciseReplyItem(
         UserAvatar(
             imageUrl = reply.author.profileDetails?.profilePicture,
             username = reply.author.username,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onUserClick(reply.author.username) } // Dodaj to
         )
 
         Column(modifier = Modifier.weight(1f)) {
@@ -1554,7 +1570,8 @@ private fun ExerciseReplyItem(
                     text = reply.author.username,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
-                    color = getOnSurfaceColor()
+                    color = getOnSurfaceColor(),
+                    modifier = Modifier.clickable { onUserClick(reply.author.username) } // Dodaj to
                 )
 
                 if (isUserLoggedIn) {

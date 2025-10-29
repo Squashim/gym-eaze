@@ -39,6 +39,7 @@ data class WorkoutPlayerUiState(
     val currentSetIndex: Int = 0,
     val restTimeRemaining: Int = 0,
     val exerciseTimeRemaining: Int = 0,
+    val isExerciseTimerRunning: Boolean = false,
     val error: String? = null,
     val isWorkoutComplete: Boolean = false,
     val summaryData: WorkoutSummaryData? = null
@@ -256,20 +257,69 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         cancelExerciseTimer()
         val currentSet = _uiState.value.currentSet
         if (currentSet?.duration != null && currentSet.duration > 0) {
-            startExerciseTimer(currentSet.duration)
+            startExerciseTimer()
+        } else {
+            _uiState.value = _uiState.value.copy(isExerciseTimerRunning = false, exerciseTimeRemaining = 0)
         }
     }
 
-    private fun startExerciseTimer(durationSeconds: Int) {
-        _uiState.value = _uiState.value.copy(exerciseTimeRemaining = durationSeconds)
-        exerciseTimer = object : CountDownTimer(durationSeconds * 1000L, 1000) {
+    fun startExerciseTimer(durationSeconds: Int? = null) {
+
+        val startTime = when {
+            durationSeconds != null -> durationSeconds
+            _uiState.value.exerciseTimeRemaining > 0 && !_uiState.value.isExerciseTimerRunning -> _uiState.value.exerciseTimeRemaining
+            else -> _uiState.value.currentSet?.duration ?: 0
+        }
+
+        if (startTime <= 0 || _uiState.value.playerState != PlayerState.EXERCISE) {
+
+            if (_uiState.value.playerState == PlayerState.EXERCISE) {
+                _uiState.value = _uiState.value.copy(isExerciseTimerRunning = false, exerciseTimeRemaining = 0)
+            }
+            return
+        }
+
+        cancelExerciseTimer()
+        _uiState.value = _uiState.value.copy(
+            exerciseTimeRemaining = startTime,
+            isExerciseTimerRunning = true
+        )
+        exerciseTimer = object : CountDownTimer(startTime * 1000L, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                _uiState.value = _uiState.value.copy(exerciseTimeRemaining = (millisUntilFinished / 1000).toInt())
+                if (_uiState.value.playerState == PlayerState.EXERCISE && _uiState.value.isExerciseTimerRunning) {
+                    _uiState.value = _uiState.value.copy(exerciseTimeRemaining = (millisUntilFinished / 1000).toInt())
+                } else {
+                    cancel()
+                }
             }
             override fun onFinish() {
-                _uiState.value = _uiState.value.copy(exerciseTimeRemaining = 0)
+                if (_uiState.value.playerState == PlayerState.EXERCISE) {
+                    _uiState.value = _uiState.value.copy(
+                        exerciseTimeRemaining = 0,
+                        isExerciseTimerRunning = false
+                    )
+                }
             }
         }.start()
+    }
+
+    fun stopExerciseTimer() {
+        if (_uiState.value.isExerciseTimerRunning) {
+            exerciseTimer?.cancel()
+            exerciseTimer = null
+            _uiState.value = _uiState.value.copy(isExerciseTimerRunning = false)
+        }
+    }
+
+    fun resetExerciseTimer() {
+        val duration = _uiState.value.currentSet?.duration
+        if (_uiState.value.playerState == PlayerState.EXERCISE && duration != null && duration > 0) {
+            cancelExerciseTimer()
+            _uiState.value = _uiState.value.copy(
+                exerciseTimeRemaining = duration,
+                isExerciseTimerRunning = false
+            )
+        }
     }
 
     fun prepareAndCompleteDay() {
@@ -316,14 +366,19 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
         exerciseTimer?.cancel()
         restTimer = null
         exerciseTimer = null
-        _uiState.value = _uiState.value.copy(exerciseTimeRemaining = 0)
+        _uiState.value = _uiState.value.copy(
+            isExerciseTimerRunning = false,
+            exerciseTimeRemaining = 0,
+            restTimeRemaining = 0
+        )
     }
+
     private fun cancelExerciseTimer() {
-        exerciseTimer?.cancel()
-        exerciseTimer = null
-        if (_uiState.value.playerState != PlayerState.REST) {
-            _uiState.value = _uiState.value.copy(exerciseTimeRemaining = 0)
+        if (exerciseTimer != null) {
+            exerciseTimer?.cancel()
+            exerciseTimer = null
         }
+        _uiState.value = _uiState.value.copy(isExerciseTimerRunning = false)
     }
 
     fun cleanup() {

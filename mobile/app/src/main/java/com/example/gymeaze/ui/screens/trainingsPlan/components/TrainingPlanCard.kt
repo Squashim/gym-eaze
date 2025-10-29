@@ -83,7 +83,6 @@ fun TrainingPlanCard(
         }
     }
 
-    // Sprawdź czy plan należy do aktualnego użytkownika
     val isOwner = currentUser?._id == trainingPlan.author?.id
 
     Card(
@@ -224,30 +223,6 @@ fun TrainingPlanCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    trainingPlan.totalExercises?.let { totalExercises ->
-                        Text(
-                            text = "Liczba użytych ćwiczeń: $totalExercises",
-                            fontSize = 10.sp,
-                            color = getOnSurfaceSecondaryColor()
-                        )
-                    }
-                    trainingPlan.totalDuration?.let { totalDuration ->
-                        Text(
-                            text = "Czas trwania całego treningu: ${formatDuration(totalDuration)}",
-                            fontSize = 10.sp,
-                            color = getOnSurfaceSecondaryColor()
-                        )
-                    }
-                }
-
-            }
-
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
@@ -286,7 +261,6 @@ fun TrainingPlanCard(
                         )
                     }
 
-                    // DODAJ WARUNEK: pokazuj ikonkę serduszka tylko jeśli to NIE jest plan użytkownika
                     if (!isOwner) {
                         IconButton(
                             onClick = {

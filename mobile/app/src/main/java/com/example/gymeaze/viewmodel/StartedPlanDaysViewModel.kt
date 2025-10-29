@@ -28,27 +28,42 @@ class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(appl
     private var currentUserTrainingPlanId: String? = null
 
     fun loadDays(userTrainingPlanId: String, planName: String) {
-        if (userTrainingPlanId == currentUserTrainingPlanId && _uiState.value.days.isNotEmpty()) {
-            _uiState.value = _uiState.value.copy(planName = planName)
-            return
-        }
+        if (userTrainingPlanId != currentUserTrainingPlanId || _uiState.value.days.isEmpty()) {
 
-        currentUserTrainingPlanId = userTrainingPlanId
-        _uiState.value = StartedPlanDaysUiState(isLoading = true, planName = planName, error = null)
+            currentUserTrainingPlanId = userTrainingPlanId
 
-        viewModelScope.launch {
-            val result = repository.getStartedTrainingPlanDays(userTrainingPlanId)
+            _uiState.value = StartedPlanDaysUiState(
+                isLoading = true,
+                planName = planName,
+                error = null,
+                days = emptyList()
+            )
 
-            result.onSuccess { response ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    days = response.days.sortedBy { it.dayNumber }
-                )
-            }.onFailure { exception ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = exception.message ?: "Błąd ładowania dni treningowych"
-                )
+            viewModelScope.launch {
+                val result = repository.getStartedTrainingPlanDays(userTrainingPlanId)
+
+                result.onSuccess { response ->
+
+                    if (currentUserTrainingPlanId == userTrainingPlanId) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            days = response.days.sortedBy { it.dayNumber }
+                        )
+                    } else {
+                    }
+                }.onFailure { exception ->
+                    if (currentUserTrainingPlanId == userTrainingPlanId) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Błąd ładowania dni treningowych"
+                        )
+                    } else {
+                    }
+                }
+            }
+        } else {
+            if (_uiState.value.planName != planName) {
+                _uiState.value = _uiState.value.copy(planName = planName)
             }
         }
     }

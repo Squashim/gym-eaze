@@ -52,6 +52,7 @@ fun SeeAllPostsContent(
     showLogoTopBar: Boolean = false,
     onRefreshPosts: () -> Unit,
     topBarTitle: String,
+    onUserClick: (String) -> Unit = {}
 ) {
     var selectedHashtags by remember { mutableStateOf<List<String>>(emptyList()) }
     var hashtagInput by remember { mutableStateOf("") }
@@ -268,11 +269,12 @@ fun SeeAllPostsContent(
                                         selectedPostId = post.id
                                         showCommentsSheet = true
                                     },
-                                    onReportClick = { // ← DODAJ TO
+                                    onReportClick = {
                                         itemToReport = post.id
                                         reportItemType = ReportItemType.POST
                                         showReportDialog = true
-                                    }
+                                    },
+                                    onUserClick = onUserClick
                                 )
 
                                 if (index == posts.size - 3) {
@@ -313,18 +315,18 @@ fun SeeAllPostsContent(
                                     onRefreshPosts()
                                 },
                                 currentUsername = currentUsername,
-                                reportViewModel = reportViewModel, // ← DODAJ TO
-                                onReportComment = { commentId -> // ← DODAJ TO
+                                reportViewModel = reportViewModel,
+                                onReportComment = { commentId ->
                                     itemToReport = commentId
                                     reportItemType = ReportItemType.COMMENT
                                     showReportDialog = true
-                                }
+                                },
+                                onUserClick = onUserClick
                             )
                         }
                     }
                 }
 
-                // ← DODAJ DIALOG ZGŁASZANIA
                 if (showReportDialog && itemToReport != null && reportItemType != null) {
                     ReportDialog(
                         itemId = itemToReport!!,

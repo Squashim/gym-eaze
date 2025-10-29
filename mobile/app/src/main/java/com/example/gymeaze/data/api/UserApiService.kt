@@ -2,6 +2,8 @@ package com.example.gymeaze.data.api
 
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.FavoritesResponse
+import com.example.gymeaze.data.models.FollowResponse
+import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.GetPrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateFitnessDataRequest
 import com.example.gymeaze.data.models.UpdateFitnessDataResponse
@@ -26,6 +28,7 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface UserApiService {
 
@@ -79,4 +82,20 @@ interface UserApiService {
 
     @GET("/api/user/favorites")
     suspend fun getUserFavorites(): Response<FavoritesResponse>
+
+    @GET("/api/user/followers")
+    suspend fun getFollowers(): Response<List<FollowerUser>>
+
+    @GET("/api/user/following")
+    suspend fun getFollowing(): Response<List<FollowerUser>>
+
+    @GET("/api/user/{username}/profile")
+    suspend fun getUserProfile(
+        @Path("username") username: String
+    ): Response<UserProfileDetails>
+
+    @PATCH("/api/user/{id}/follow")
+    suspend fun toggleUserFollow(
+        @Path("id") userId: String
+    ): Response<FollowResponse>
 }

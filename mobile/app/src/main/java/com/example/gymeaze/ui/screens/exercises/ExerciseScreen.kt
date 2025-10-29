@@ -26,7 +26,11 @@ fun ExerciseScreen(
     onSettingsClick: () -> Unit,
     isUserLoggedIn: Boolean,
     createExerciseViewModel: ExerciseCreatorViewModel,
-    setShowBottomBar: (Boolean) -> Unit = {}
+    setShowBottomBar: (Boolean) -> Unit = {},
+    onUserClick: (String) -> Unit = {},
+    initialExerciseSection: String = "menu",
+    initialSelectedExerciseId: String? = null,
+    onNavigationStateChanged: (section: String, exerciseId: String?) -> Unit = { _, _ -> }
 ) {
     val exercisesViewModel: ExercisesViewModel = viewModel()
 
@@ -45,7 +49,8 @@ fun ExerciseScreen(
                         selectedExerciseId = null
                     },
                     exercisesViewModel = exercisesViewModel,
-                    isUserLoggedIn = false
+                    isUserLoggedIn = false,
+                    onUserClick = onUserClick
                 )
             }
             else -> {
@@ -61,11 +66,14 @@ fun ExerciseScreen(
         return
     }
 
-    var exerciseSection by remember { mutableStateOf("menu") }
-    var selectedExerciseId by remember { mutableStateOf<String?>(null) }
+    var exerciseSection by remember { mutableStateOf(initialExerciseSection) }
+    var selectedExerciseId by remember { mutableStateOf(initialSelectedExerciseId) }
     var returnToSection by remember { mutableStateOf("menu") }
     var selectedExerciseForEdit by remember { mutableStateOf<Exercise?>(null) }
 
+    LaunchedEffect(exerciseSection, selectedExerciseId) {
+        onNavigationStateChanged(exerciseSection, selectedExerciseId)
+    }
 
     LaunchedEffect(exerciseSection) {
         setShowBottomBar(exerciseSection == "menu")
@@ -164,7 +172,8 @@ fun ExerciseScreen(
                                 "favorite" -> exercisesViewModel.refreshFavoriteExercises()
                             }
                         },
-                        exercisesViewModel = exercisesViewModel
+                        exercisesViewModel = exercisesViewModel,
+                        onUserClick = onUserClick
                     )
                 }
             }

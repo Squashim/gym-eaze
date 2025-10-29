@@ -7,6 +7,7 @@ import Exercise from '../models/exerciseModel';
 
 export const getStartedTrainingPlansService = async (
   targetUserId: string,
+  targetUserId: string,
   page: number,
   pageSize: number,
   includePrivate: boolean,
@@ -19,6 +20,17 @@ export const getStartedTrainingPlansService = async (
   const user = await User.findById(targetUserId);
   if (!user) {
     throw new Error('Użytkownik nie został znaleziony');
+  }
+
+  const isPublic = user.privacySettings.isTrainingStatisticsPublic;
+  const isOwnProfile = targetUserId === currentUserId;
+
+  if (!isOwnProfile && !isPublic) {
+    return { items: [], total: 0, page, pageSize };
+  }
+
+  if (isOwnProfile && !includePrivate && !isPublic) {
+    return { items: [], total: 0, page, pageSize };
   }
 
   const isPublic = user.privacySettings.isTrainingStatisticsPublic;

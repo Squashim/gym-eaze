@@ -46,7 +46,7 @@ fun TrainingPlanFiltersDialog(
     onApplyFilters: () -> Unit,
     onClearFilters: () -> Unit,
     onDismiss: () -> Unit,
-    isUserLoggedIn: Boolean = true // DODAJ TEN PARAMETR
+    isUserLoggedIn: Boolean = true
 ) {
     var minDurationText by remember { mutableStateOf(minDuration?.toString() ?: "") }
     var maxDurationText by remember { mutableStateOf(maxDuration?.toString() ?: "") }
@@ -113,7 +113,6 @@ fun TrainingPlanFiltersDialog(
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Header z tytułem i przyciskami
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -165,7 +164,6 @@ fun TrainingPlanFiltersDialog(
 
                     HorizontalDivider(color = getOnSurfaceSecondaryColor().copy(alpha = 0.2f))
 
-                    // Zawartość dialogu
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -173,7 +171,6 @@ fun TrainingPlanFiltersDialog(
                         verticalArrangement = Arrangement.spacedBy(24.dp),
                         contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
-                        // Sortowanie
                         item {
                             SortingSection(
                                 selectedSort = sortBy,
@@ -181,7 +178,6 @@ fun TrainingPlanFiltersDialog(
                             )
                         }
 
-                        // Toggle "Tylko obserwowani" - TYLKO DLA ZALOGOWANYCH
                         if (isUserLoggedIn) {
                             item {
                                 FollowersOnlyToggle(
@@ -191,7 +187,6 @@ fun TrainingPlanFiltersDialog(
                             }
                         }
 
-                        // Cel treningowy
                         item {
                             Column {
                                 Text(
@@ -208,7 +203,6 @@ fun TrainingPlanFiltersDialog(
                             }
                         }
 
-                        // Poziom trudności
                         item {
                             Column {
                                 Text(
@@ -225,7 +219,6 @@ fun TrainingPlanFiltersDialog(
                             }
                         }
 
-                        // Liczba dni
                         item {
                             Column {
                                 Text(
@@ -333,7 +326,6 @@ fun TrainingPlanFiltersDialog(
                             }
                         }
 
-                        // Hashtagi
                         item {
                             HashtagInputField(
                                 selectedHashtags = selectedHashtags,

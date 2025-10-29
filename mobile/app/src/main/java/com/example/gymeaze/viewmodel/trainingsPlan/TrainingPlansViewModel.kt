@@ -24,7 +24,9 @@ data class TrainingPlansUiState(
     val snackbarType: SnackbarType = SnackbarType.ERROR,
     val isRefreshing: Boolean = false,
     val showDeleteDialog: Boolean = false,
-    val planToDelete: TrainingPlan? = null
+    val planToDelete: TrainingPlan? = null,
+    val userTrainingPlans: List<TrainingPlan> = emptyList(),
+    val isLoadingContent: Boolean = false,
 )
 
 class TrainingPlansViewModel(application: Application) : AndroidViewModel(application) {
@@ -375,7 +377,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                 val result = repository.getTrainingPlans(
                     filters = filters,
                     sortBy = _sortBy.value,
-                    page = 1, // Zawsze ładuj pierwszą stronę przy odświeżaniu
+                    page = 1,
                     pageSize = 9
                 )
 
@@ -523,17 +525,14 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val planId = _uiState.value.planToDelete?.id
                 if (planId != null) {
-                    // Wywołaj API do usunięcia planu
                     val result = repository.deleteTrainingPlan(planId)
 
                     result.onSuccess {
-                        // Ukryj dialog
                         hideDeleteDialog()
 
-                        // Odśwież listę planów
                         refreshTrainingPlans()
 
-                        // Pokaż potwierdzenie
+
                         _uiState.update {
                             it.copy(
                                 snackbarMessage = "Plan został usunięty",
@@ -556,6 +555,69 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                         snackbarType = SnackbarType.ERROR
                     )
                 }
+            }
+        }
+    }
+
+    fun loadUserTrainingPlans(username: String, page: Int = 1) {
+        viewModelScope.launch {
+            if (page == 1) {
+                _uiState.value = _uiState.value.copy(
+                    isLoadingContent = true,
+                    userTrainingPlans = emptyList(),
+                    currentPage = 1
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(isLoadingMore = true)
+            }
+
+            try {
+                val userIdResult = repository.getUserIdByUsername(username)
+
+                userIdResult.onSuccess { userId ->
+                    val result = repository.getMyTrainingPlans(
+                        userId = userId,
+                        page = page,
+                        pageSize = 20
+                    )
+
+                    result.onSuccess { response ->
+                        val newPlans = if (page == 1) {
+                            response.items
+                        } else {
+                            _uiState.value.userTrainingPlans + response.items
+                        }
+
+                        val hasMore = page * response.pageSize < response.total
+
+                        _uiState.value = _uiState.value.copy(
+                            userTrainingPlans = newPlans,
+                            currentPage = page,
+                            hasMorePages = hasMore,
+                            isLoadingContent = false,
+                            isLoadingMore = false,
+                            error = null
+                        )
+                    }.onFailure { error ->
+                        _uiState.value = _uiState.value.copy(
+                            error = error.message ?: "Błąd ładowania planów",
+                            isLoadingContent = false,
+                            isLoadingMore = false
+                        )
+                    }
+                }.onFailure { error ->
+                    _uiState.value = _uiState.value.copy(
+                        error = error.message ?: "Nie znaleziono użytkownika",
+                        isLoadingContent = false,
+                        isLoadingMore = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Nieoczekiwany błąd",
+                    isLoadingContent = false,
+                    isLoadingMore = false
+                )
             }
         }
     }
