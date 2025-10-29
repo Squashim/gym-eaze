@@ -40,8 +40,11 @@ fun CommentsPanel(
     initialCommentsCount: Int,
     onClose: () -> Unit,
     currentUsername: String,
-    reportViewModel: ReportViewModel, // ← DODAJ
-    onReportComment: (String) -> Unit) {
+    reportViewModel: ReportViewModel,
+    onReportComment: (String) -> Unit,
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
+) {
     val viewModel: PostsViewModel = viewModel()
     val comments by viewModel.comments.collectAsState()
     val hasMore by viewModel.hasMoreComment.collectAsState()
@@ -154,10 +157,12 @@ fun CommentsPanel(
                         showDeleteDialog = commentToDelete
                         deleteMessage = ""
                     },
-                    onReportClick = { commentToReport -> // ← POPRAWIONE
-                        onReportComment(commentToReport._id) // Przekazuj ID komentarza
+                    onReportClick = { commentToReport ->
+                        onReportComment(commentToReport._id)
                     },
-                    onLoginRequired = { showLoginDialog = true }
+                    onLoginRequired = { showLoginDialog = true },
+                    isUserLoggedIn = isUserLoggedIn,
+                    onUserClick = onUserClick
                 )
 
                 if (expandedReplies.contains(comment._id)) {
@@ -177,10 +182,12 @@ fun CommentsPanel(
                                 showDeleteDialog = replyToDelete
                                 deleteMessage = ""
                             },
-                            onReportClick = { replyToReport -> // ← DODAJ TO
-                                onReportComment(replyToReport._id) // Zgłaszaj odpowiedź
+                            onReportClick = { replyToReport ->
+                                onReportComment(replyToReport._id)
                             },
-                            onLoginRequired = { showLoginDialog = true }
+                            onLoginRequired = { showLoginDialog = true },
+                            isUserLoggedIn = isUserLoggedIn,
+                            onUserClick = onUserClick
                         )
                         Spacer(Modifier.padding(3.dp))
                     }
@@ -221,7 +228,7 @@ fun CommentsPanel(
                                 expandedReplies.forEach { id ->
                                     viewModel.loadReplies(id)
                                 }
-                                commentsCount = (commentsCount - 1).coerceAtLeast(0) // zmniejsz licznik
+                                commentsCount = (commentsCount - 1).coerceAtLeast(0)
                             }
                         }
                     }
@@ -337,7 +344,7 @@ fun CommentsPanel(
             )
         }
 
-        if (currentUsername.isNotEmpty()) {
+        if (isUserLoggedIn) {
             if (replyingTo != null) {
                 Row(
                     modifier = Modifier
@@ -466,7 +473,9 @@ fun CommentItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
-    onLoginRequired: () -> Unit = {}
+    onLoginRequired: () -> Unit = {},
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(comment._id).collectAsState(initial = false)
@@ -483,7 +492,7 @@ fun CommentItem(
     }
 
     fun requireLogin(action: () -> Unit) {
-        if (currentUsername.isEmpty()) {
+        if (!isUserLoggedIn) {
             onLoginRequired()
         } else {
             action()
@@ -498,7 +507,9 @@ fun CommentItem(
             UserAvatar(
                 imageUrl = comment.author.profileDetails?.profilePicture,
                 username = comment.author.username,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { onUserClick(comment.author.username) }
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -727,13 +738,15 @@ fun ReplyItem(
     onEditClick: (Comment) -> Unit = {},
     onDeleteClick: (Comment) -> Unit = {},
     onReportClick: (Comment) -> Unit = {},
-    onLoginRequired: () -> Unit = {}
+    onLoginRequired: () -> Unit = {},
+    isUserLoggedIn: Boolean = true,
+    onUserClick: (String) -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val isLiked by viewModel.isCommentLiked(reply._id).collectAsState(initial = false)
 
     fun requireLogin(action: () -> Unit) {
-        if (currentUsername.isEmpty()) {
+        if (!isUserLoggedIn) {
             onLoginRequired()
         } else {
             action()
@@ -749,7 +762,9 @@ fun ReplyItem(
         UserAvatar(
             imageUrl = reply.author.profileDetails?.profilePicture,
             username = reply.author.username,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onUserClick(reply.author.username) }
         )
 
         Column(modifier = Modifier.weight(1f)) {

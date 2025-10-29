@@ -5,19 +5,42 @@ import com.google.gson.annotations.SerializedName
 
 // Profile Info
 data class UserProfileDetails(
+    @SerializedName("_id")
+    val id: String = "",
+    val username: String = "",
     val profilePicture: String = "",
     val description: String = "",
-    val goal: String = "",
+    val followersCount: Int? = null,
+    val followingCount: Int? = null,
+    val isBlocked: Boolean? = null,
+    val isFollowing: Boolean = false,
+    val goal: String? = null,
+    val personalDetails: PersonalDetails? = null,
+    val fitnessDetails: FitnessDetails? = null,
     val pinnedBadges: List<Badge> = emptyList(),
     val isBadgesDetailsPublic: Boolean = false,
     val isGoalPublic: Boolean = false
 )
+data class PersonalDetails(
+    val firstName: String = "",
+    val lastName: String = "",
+    val country: String = ""
+)
+
+data class FitnessDetails(
+    val height: Int? = null,
+    val weight: Int? = null,
+    val age: Int? = null,
+    val gender: String? = null
+)
+
 
 data class Badge(
     val id: String = "",
     val title: String = "",
     val description: String = "",
-    val image: String = ""
+    val image: String = "",
+    val awardedAt: String? = null
 )
 
 data class UpdateProfileResponse(
@@ -100,4 +123,17 @@ data class UpdatePrivacySettingsResponse(
 
 data class FavoritesResponse(
     val exercises: List<String>
+)
+
+data class FollowerUser(
+    val _id: String,
+    val username: String,
+    val profileDetails: ProfileDetails?
+)
+
+data class FollowResponse(
+    val message: String,
+    val isFollowing: Boolean,
+    val followersCount: Int,
+    val followingCount: Int
 )

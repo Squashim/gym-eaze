@@ -183,21 +183,6 @@ fun MyTrainingPlansScreen(
                                         fontSize = 14.sp,
                                         color = getOnSurfaceSecondaryColor()
                                     )
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    Button(
-                                        onClick = onCreatePlanClick,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = getPrimaryColor()
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Utwórz plan")
-                                    }
                                 }
                             }
                         }

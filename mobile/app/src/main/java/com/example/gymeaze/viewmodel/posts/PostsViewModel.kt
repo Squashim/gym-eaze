@@ -60,6 +60,11 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
     private var followedPostsLastLoadTime = 0L
     private var userPostsLastLoadTime = 0L
 
+    private var userPostsByUsernameCursor: String? = null
+    private var userPostsByUsernameHasMore = true
+    private val userPostsByUsernameCache = mutableListOf<PostUi>()
+    private var userPostsByUsernameLastLoadTime = 0L
+
     private val _content = MutableStateFlow("")
     val content: StateFlow<String> = _content.asStateFlow()
 
@@ -95,6 +100,10 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser
+
+    // W PostsViewModel.kt - dodaj te zmienne
+    private val _userPostsByUsername = MutableStateFlow<List<PostUi>>(emptyList())
+    val userPostsByUsername: StateFlow<List<PostUi>> = _userPostsByUsername.asStateFlow()
 
     init {
         fetchPosts()
@@ -501,30 +510,43 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         allPostsCache.clear()
         followedPostsCache.clear()
         userPostsCache.clear()
+        _userPostsByUsername.value = emptyList()
     }
 
     fun toggleLike(postId: String) {
         viewModelScope.launch {
-            val currentPosts = _posts.value.toMutableList()
-            val idx = currentPosts.indexOfFirst { it.id == postId }
-            if (idx == -1) return@launch
+            Log.d("PostsViewModel", "Toggling like for post: $postId")
 
-            val post = currentPosts[idx]
             val result = repository.toggleLike(postId)
             result.onSuccess { response ->
                 val isLiked = response.message == "Dodano polubienie"
-                val updatedPost = post.copy(
-                    likes = response.likes,
-                    isLiked = isLiked
-                )
-                currentPosts[idx] = updatedPost
-                _posts.value = currentPosts
-            }.onFailure {
-                _error.value = it.message
+
+                Log.d("PostsViewModel", "Like toggled successfully: likes=${response.likes}, isLiked=$isLiked")
+
+                // Zaktualizuj wszystkie listy, które mogą zawierać ten post
+                updatePostInAllLists(postId, response.likes, isLiked)
+
+            }.onFailure { error ->
+                Log.e("PostsViewModel", "Failed to toggle like: ${error.message}")
+                _error.value = error.message
             }
         }
     }
 
+    private fun updatePostInAllLists(postId: String, newLikes: Int, isLiked: Boolean) {
+        _posts.value = _posts.value.map { post ->
+            if (post.id == postId) {
+                post.copy(likes = newLikes, isLiked = isLiked)
+            } else post
+        }
+
+        _userPostsByUsername.value = _userPostsByUsername.value.map { post ->
+            if (post.id == postId) {
+                post.copy(likes = newLikes, isLiked = isLiked)
+            } else post
+        }
+
+    }
     fun updatePost(
         postId: String,
         content: String,
@@ -835,6 +857,79 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
         followedPostsCache.clear()
         userPostsCache.clear()
         _posts.value = emptyList()
+    }
+
+    // W PostsViewModel.kt - poprawiona funkcja
+    fun fetchUserPostsByUsername(username: String, refresh: Boolean = false) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            try {
+                if (refresh) {
+                    userPostsByUsernameCursor = null
+                    userPostsByUsernameHasMore = true
+                    userPostsByUsernameCache.clear()
+                    _userPostsByUsername.value = emptyList() // UŻYJ nowego Flow
+                }
+
+                if (!userPostsByUsernameHasMore && !refresh) return@launch
+                if (_isLoading.value && !refresh) return@launch
+
+                _isLoading.value = true
+                _error.value = null
+
+                // Sprawdź cache czasowy
+                if (!refresh && System.currentTimeMillis() - userPostsByUsernameLastLoadTime < 1000) {
+                    delay(1000 - (System.currentTimeMillis() - userPostsByUsernameLastLoadTime))
+                }
+
+                // Pobierz polubienia użytkownika
+                fetchUserLikes()
+
+                // UŻYJ nowej funkcji z repository
+                val responseResult = repository.getUserPostsByUsername(
+                    username = username,
+                    cursor = userPostsByUsernameCursor,
+                    limit = 15
+                )
+
+                responseResult.onSuccess { response ->
+                    val newPostsUi = response.items.map {
+                        it.toUiModel(isLiked = likedPosts.contains(it._id))
+                    }
+
+                    val updatedPosts = if (refresh || userPostsByUsernameCursor == null) {
+                        userPostsByUsernameCache.clear()
+                        userPostsByUsernameCache.addAll(newPostsUi)
+                        newPostsUi
+                    } else {
+                        userPostsByUsernameCache.addAll(newPostsUi)
+                        userPostsByUsernameCache.toList()
+                    }
+
+                    _userPostsByUsername.value = updatedPosts // UŻYJ nowego Flow
+                    userPostsByUsernameCursor = response.nextCursor
+                    userPostsByUsernameHasMore = response.hasMore
+                    userPostsByUsernameLastLoadTime = System.currentTimeMillis()
+
+                    Log.d("PostsViewModel", "Loaded ${newPostsUi.size} posts for user $username, hasMore: $userPostsByUsernameHasMore")
+                }.onFailure { error ->
+                    _error.value = error.message ?: "Błąd pobierania postów użytkownika $username"
+                    Log.e("PostsViewModel", "Error fetching user posts: ${error.message}")
+                }
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Błąd pobierania postów"
+                Log.e("PostsViewModel", "Exception in fetchUserPostsByUsername: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun clearUserPostsByUsername() {
+        userPostsByUsernameCursor = null
+        userPostsByUsernameHasMore = true
+        userPostsByUsernameCache.clear()
+        _userPostsByUsername.value = emptyList()
     }
 }
 

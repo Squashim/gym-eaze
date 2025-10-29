@@ -920,4 +920,44 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     fun clearPrivacySettingsError() {
         _privacySettingsError.value = null
     }
+
+    private val _userProfileMain = MutableStateFlow<UserProfileDetails?>(null)
+    val userProfileMain: StateFlow<UserProfileDetails?> = _userProfileMain.asStateFlow()
+
+    private val _profileLoading = MutableStateFlow(false)
+    val profileLoading: StateFlow<Boolean> = _profileLoading.asStateFlow()
+
+    private val _profileError = MutableStateFlow<String?>(null)
+    val profileError: StateFlow<String?> = _profileError.asStateFlow()
+
+    fun fetchUserProfileByUsername(username: String) {
+        viewModelScope.launch {
+            _profileLoading.value = true
+            _profileError.value = null
+
+            val authRepository = AuthRepository(getApplication())
+            val refreshResult = authRepository.refreshAccessToken()
+
+            if (refreshResult.isFailure) {
+                _profileError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
+                _profileLoading.value = false
+                handleTokenExpiration()
+                _navigateToAuth.value = true
+                return@launch
+            }
+
+            val result = userRepository.getUserProfile(username)
+
+            if (result.isSuccess) {
+                _userProfileMain.value = result.getOrNull()
+                _profileError.value = null
+            } else {
+                _profileError.value = result.exceptionOrNull()?.message
+                    ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
+            }
+
+            _profileLoading.value = false
+        }
+    }
+
 }

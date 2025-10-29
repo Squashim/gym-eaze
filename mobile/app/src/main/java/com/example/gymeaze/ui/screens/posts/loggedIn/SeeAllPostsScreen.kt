@@ -23,7 +23,8 @@ import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable
 fun SeeAllPostsScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onUserClick: (String) -> Unit = {}
 ) {
     val viewModel: PostsViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
@@ -96,6 +97,7 @@ fun SeeAllPostsScreen(
                 onToggleSeeMore = { true },
                 onRefreshPosts = { viewModel.refreshPosts() },
                 topBarTitle = "Wszystkie posty",
+                onUserClick = onUserClick
             )
         }
 

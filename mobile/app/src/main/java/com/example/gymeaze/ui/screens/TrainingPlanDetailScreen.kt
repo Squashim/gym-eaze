@@ -467,12 +467,12 @@ private fun HashtagChip(hashtag: String) {
 private fun ActionButtonsSection(
     trainingPlan: TrainingPlan,
     likes: Int,
-    isUserLoggedIn: Boolean, // DODAJ TEN PARAMETR
+    isUserLoggedIn: Boolean,
     onLikeClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onDownloadPdf: () -> Unit,
     isDownloadingPdf: Boolean,
-    onShowLoginDialog: () -> Unit // DODAJ TEN PARAMETR
+    onShowLoginDialog: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -893,9 +893,9 @@ private fun ExerciseItem(
 @Composable
 private fun StartTrainingButton(
     isStarting: Boolean,
-    isUserLoggedIn: Boolean, // DODAJ TEN PARAMETR
+    isUserLoggedIn: Boolean,
     onClick: () -> Unit,
-    onShowLoginDialog: () -> Unit, // DODAJ TEN PARAMETR
+    onShowLoginDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Button(
@@ -979,6 +979,8 @@ private fun TrainingPlanDetailContent(
 
     val scope = rememberCoroutineScope()
 
+    var previousPlanContext by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(plan.id) {
         viewModel.loadTrainingPlanComments(plan.id, refresh = true)
         if (isUserLoggedIn) {
@@ -989,7 +991,6 @@ private fun TrainingPlanDetailContent(
     LazyColumn(
         modifier = modifier.fillMaxSize()
     ) {
-        // Header z obrazem
         item {
             Box(
                 modifier = Modifier
@@ -1035,16 +1036,13 @@ private fun TrainingPlanDetailContent(
                     )
                 }
 
-                // Prawy górny róg - przyciski akcji
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Sprawdź czy to plan aktualnego użytkownika
                     if (isUserLoggedIn && viewModel.isCurrentUserTrainingPlan(plan.author?.username ?: "")) {
-                        // Przycisk edycji
                         IconButton(
                             onClick = {
                                 onEditPlanClick(plan.id)
@@ -1062,7 +1060,6 @@ private fun TrainingPlanDetailContent(
                             )
                         }
 
-                        // Przycisk usuwania
                         IconButton(
                             onClick = {
                                 onDeletePlanClick()
@@ -1080,7 +1077,6 @@ private fun TrainingPlanDetailContent(
                             )
                         }
                     } else {
-                        // Dla cudzych planów - przycisk zgłoszenia
                         IconButton(
                             onClick = {
                                 if (!isUserLoggedIn) {
@@ -1122,11 +1118,13 @@ private fun TrainingPlanDetailContent(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.Top
                     ) {
-                        // Lewa kolumna - avatar i informacje o użytkowniku
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onUserClick(plan.author?.username ?: "?") }
+                                .clickable {
+                                    previousPlanContext = "plan_detail_${plan.id}"
+                                    onUserClick(plan.author?.username ?: "?")
+                                }
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
@@ -1167,7 +1165,6 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Informacje o planie
         item {
             Card(
                 modifier = Modifier
@@ -1212,27 +1209,25 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Przyciski akcji - DODAJ isUserLoggedIn i onShowLoginDialog
         item {
             ActionButtonsSection(
                 likes = plan.likes,
-                isUserLoggedIn = isUserLoggedIn, // DODAJ
+                isUserLoggedIn = isUserLoggedIn,
                 onLikeClick = viewModel::toggleLike,
                 onFavoriteClick = viewModel::toggleFavorite,
                 onDownloadPdf = viewModel::downloadPdf,
                 isDownloadingPdf = isDownloadingPdf,
                 trainingPlan = plan,
-                onShowLoginDialog = onShowLoginDialog // DODAJ
+                onShowLoginDialog = onShowLoginDialog
             )
         }
 
-        // Przycisk rozpocznij trening - DODAJ isUserLoggedIn i onShowLoginDialog
         item {
             StartTrainingButton(
                 isStarting = uiState.isStartingPlan,
-                isUserLoggedIn = isUserLoggedIn, // DODAJ
+                isUserLoggedIn = isUserLoggedIn,
                 onClick = { viewModel.startTrainingPlan() },
-                onShowLoginDialog = onShowLoginDialog, // DODAJ
+                onShowLoginDialog = onShowLoginDialog,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -1240,7 +1235,6 @@ private fun TrainingPlanDetailContent(
             )
         }
 
-        // Plan treningowy - dni
         item {
             Text(
                 text = "Plan treningowy (${plan.days.size} dni)",
@@ -1262,10 +1256,6 @@ private fun TrainingPlanDetailContent(
             )
         }
 
-        // Reszta kodu pozostaje bez zmian...
-        // (Separator, komentarze, itd.)
-
-        // Separator przed komentarzami
         item {
             HorizontalDivider(
                 color = getOnSurfaceSecondaryColor().copy(alpha = 0.3f),
@@ -1274,7 +1264,6 @@ private fun TrainingPlanDetailContent(
             )
         }
 
-        // Nagłówek sekcji komentarzy
         item {
             Row(
                 modifier = Modifier
@@ -1423,7 +1412,6 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Brak komentarzy
         if (comments.isEmpty() && !isLoading) {
             item {
                 Column(
@@ -1456,7 +1444,6 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Lista komentarzy
         items(comments, key = { it._id }) { comment ->
             TrainingPlanCommentItem(
                 comment = comment,
@@ -1497,10 +1484,13 @@ private fun TrainingPlanDetailContent(
                     commentToReport = commentId
                     showReportCommentDialog = true
                 },
+                onUserClick = { username ->
+                    previousPlanContext = "plan_detail_${plan.id}"
+                    onUserClick(username)
+                },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            // Odpowiedzi
             if (expandedReplies.contains(comment._id)) {
                 val replies by viewModel.getRepliesForTrainingPlanComment(comment._id).collectAsState()
                 replies.forEach { reply ->
@@ -1523,13 +1513,16 @@ private fun TrainingPlanDetailContent(
                             commentToReport = replyId
                             showReportCommentDialog = true
                         },
+                        onUserClick = { username ->
+                            previousPlanContext = "plan_detail_${plan.id}"
+                            onUserClick(username)
+                        },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
             }
         }
 
-        // Przycisk załaduj więcej
         if (hasMore && !isLoading) {
             item {
                 Box(
@@ -1547,7 +1540,6 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Loading indicator
         if (isLoading) {
             item {
                 Box(
@@ -1561,13 +1553,11 @@ private fun TrainingPlanDetailContent(
             }
         }
 
-        // Bottom spacer
         item {
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
 
-    // Dialogi
     if (showDeleteDialog != null) {
         DeleteCommentDialog(
             onConfirm = {
@@ -1643,6 +1633,7 @@ private fun TrainingPlanCommentItem(
     onDeleteClick: (Comment) -> Unit = {},
     onShowLoginDialog: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
+    onUserClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -1668,7 +1659,9 @@ private fun TrainingPlanCommentItem(
             UserAvatar(
                 imageUrl = comment.author.profileDetails?.profilePicture,
                 username = comment.author.username,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { onUserClick(comment.author.username) }
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -1884,6 +1877,7 @@ private fun TrainingPlanReplyItem(
     onDeleteClick: (Comment) -> Unit = {},
     onShowLoginDialog: () -> Unit = {},
     onReportClick: (String) -> Unit = {},
+    onUserClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -1899,7 +1893,9 @@ private fun TrainingPlanReplyItem(
         UserAvatar(
             imageUrl = reply.author.profileDetails?.profilePicture,
             username = reply.author.username,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier
+                .size(40.dp)
+                .clickable { onUserClick(reply.author.username) }
         )
 
         Column(modifier = modifier.weight(1f)) {

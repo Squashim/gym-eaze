@@ -27,7 +27,8 @@ fun PostScreen(
     onSettingsClick: () -> Unit,
     isUserLoggedIn: Boolean,
     createPostViewModel: PostsViewModel,
-    setShowBottomBar: (Boolean) -> Unit
+    setShowBottomBar: (Boolean) -> Unit,
+    onUserClick: (String) -> Unit = {}
 ) {
     if (!isUserLoggedIn) {
         PostsOverviewScreen()
@@ -58,13 +59,16 @@ fun PostScreen(
                 onCreated = { postSection = "menu" }
             )
             "myPosts" -> MyPosts(
-                onBackClick = { postSection = "menu" }
+                onBackClick = { postSection = "menu" },
+                onUserClick = onUserClick
             )
             "browse" -> SeeAllPostsScreen(
-                onBackClick = { postSection = "menu" }
+                onBackClick = { postSection = "menu" },
+                onUserClick = onUserClick
             )
             "followed" -> PostsFollowedUsers(
-                onBackClick = { postSection = "menu" }
+                onBackClick = { postSection = "menu" },
+                onUserClick = onUserClick
             )
         }
     }

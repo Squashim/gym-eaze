@@ -8,6 +8,7 @@ import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.ExerciseApiService
 import com.example.gymeaze.data.api.PostApiService
+import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
@@ -533,4 +534,35 @@ class ExerciseRepository(private val context: Context) {
             null
         }
     }
+
+    suspend fun getUserExercisesByUsername(
+        username: String,
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<ExercisesResponse> = withContext(Dispatchers.IO) {
+        try {
+            val userRepository = UserRepository(context)
+            val userResult = userRepository.getUserProfile(username)
+
+            userResult.fold(
+                onSuccess = { user ->
+                    val userId = user.id
+                    val response = api.getUserExercises(userId, page, pageSize)
+                    if (response.isSuccessful && response.body() != null) {
+                        Result.success(response.body()!!)
+                    } else {
+                        val raw = response.errorBody()?.string()
+                        val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                        Result.failure(IllegalStateException(msg))
+                    }
+                },
+                onFailure = {
+                    Result.failure(IllegalStateException("Nie znaleziono użytkownika o nazwie $username"))
+                }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }

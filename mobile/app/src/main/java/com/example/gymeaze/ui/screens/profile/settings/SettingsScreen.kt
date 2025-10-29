@@ -109,15 +109,6 @@ fun SettingsScreen(
                             onClick = callback
                         )
                     }
-
-                    onNotificationsClick?.let { callback ->
-                        SettingsItem(
-                            icon = Icons.Default.Notifications,
-                            title = stringResource(R.string.notifications),
-                            subtitle = stringResource(R.string.notifications_subtitle),
-                            onClick = callback
-                        )
-                    }
                 }
 
                 // sekcja: Pomoc

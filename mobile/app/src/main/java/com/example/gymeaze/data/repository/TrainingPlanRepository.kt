@@ -7,6 +7,7 @@ import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.PostApiService
 import com.example.gymeaze.data.api.TrainingPlanApiService
+import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
@@ -30,11 +31,13 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 import com.example.gymeaze.data.models.UserFavorites
+import org.json.JSONObject
 
 class TrainingPlanRepository(private val context: Context) {
 
     private val userPreferences = UserPreferences(context)
     private val authRepository = AuthRepository(context)
+
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -66,6 +69,15 @@ class TrainingPlanRepository(private val context: Context) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(PostApiService::class.java)
+    }
+
+    private val apiUser: UserApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(UserApiService::class.java)
     }
     suspend fun createTrainingPlan(
         name: String,
@@ -468,4 +480,55 @@ class TrainingPlanRepository(private val context: Context) {
             null
         }
     }
+
+    suspend fun getUserIdByUsername(username: String): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiUser.getUserProfile(username)
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!.id)
+            } else {
+                Result.failure(Exception("Nie znaleziono użytkownika"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Pobierz plany treningowe użytkownika (zmieniona - przyjmuje userId)
+     */
+    suspend fun getMyTrainingPlans(
+        userId: String,
+        page: Int = 1,
+        pageSize: Int = 9
+    ): Result<TrainingPlansResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getMyTrainingPlansByUserId(userId, page, pageSize)
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = parseErrorMessage(raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun parseErrorMessage(raw: String?, code: Int): String {
+        if (raw.isNullOrEmpty()) {
+            return "Unknown error (HTTP $code)"
+        }
+
+        return try {
+            val json = JSONObject(raw)
+            json.optString("message", "Error (HTTP $code)")
+        } catch (e: Exception) {
+            "Error parsing message (HTTP $code)"
+        }
+    }
+
 }
