@@ -23,13 +23,19 @@ type ExerciseListProps = {
   isFetchingError?: boolean;
   pageType?: PageType;
   exercises?: GetExercisesApiResponse[];
+  isViewingAsGuest?: boolean;
 };
 
-const ExerciseList = ({ exercises, isFetchingError, pageType = 'browser' }: ExerciseListProps) => {
+const ExerciseList = ({
+  exercises,
+  isFetchingError,
+  pageType = 'browser',
+  isViewingAsGuest = false,
+}: ExerciseListProps) => {
   const { data: favoritedExercises, isLoading: isFavoritedExercisesLoading } = useGetFavoritedItems(
     'exercises',
     {
-      enabled: pageType !== 'user',
+      enabled: pageType !== 'user' && pageType !== 'profile',
     },
   );
   const { data: likedExercises, isLoading: isLikedExercisesLoading } =
@@ -49,7 +55,7 @@ const ExerciseList = ({ exercises, isFetchingError, pageType = 'browser' }: Exer
       {...ex}
       isDetailsLoading={isDetailsLoading}
       isFavorited={favoritedExercises?.has(ex._id)}
-      isLiked={likedExercises?.has(ex._id)}
+      isLiked={isViewingAsGuest ? false : likedExercises?.has(ex._id)}
       pageType={pageType}
     />
   ));

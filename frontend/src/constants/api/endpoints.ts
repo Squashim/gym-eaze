@@ -34,6 +34,10 @@ export const WORKOUT = {
   comments: (id: string) => `training-plans/${id}/comments`,
 } as const;
 
+export const ACTIVE_WORKOUT = {
+  base: (userId: string) => `started-training-plans/user/${userId}`,
+} as const;
+
 export const POST = {
   base: 'posts',
   toggleLike: (id: string) => `posts/${id}/like`,

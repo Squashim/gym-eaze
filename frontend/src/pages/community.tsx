@@ -106,7 +106,7 @@ function Community() {
 
   return (
     <>
-      <PageLayout className="max-w-xl sm:max-w-2xl" title="Najnowsze posty">
+      <PageLayout className="max-w-xl sm:max-w-2xl" title="Najnowsze posty" withFooter={false}>
         {user && <PostCreator mode="create" />}
         <PostFilters
           clearParams={clearParams}

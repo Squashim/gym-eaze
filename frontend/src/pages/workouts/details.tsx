@@ -64,7 +64,7 @@ function WorkoutDetails() {
   usePageTitle(workout?.name ?? 'Szczegóły planu');
 
   return (
-    <PageLayout>
+    <PageLayout withFooter={false}>
       <WorkoutContent
         auth={{
           isAuthor,

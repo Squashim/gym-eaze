@@ -1,7 +1,13 @@
 import type { ProfileItemsTabs } from '@/components/features/profile/items-tabs/profile-items-display';
 import type { ProfileEditTabs } from '@/pages/user/profile-edit';
 import type { UserPrivacySettings } from '@/types/user';
-import { BicepsFlexed, CalendarDaysIcon, MessageSquare, type LucideIcon } from 'lucide-react';
+import {
+  BicepsFlexed,
+  CalendarDaysIcon,
+  MessageSquare,
+  PlayCircle,
+  type LucideIcon,
+} from 'lucide-react';
 
 export const profileEditTabsMapping: { label: string; value: ProfileEditTabs }[] = [
   {
@@ -41,6 +47,11 @@ export const profileItemsTabsMapping: {
     label: 'Plany treningowe',
     value: 'Trening',
     icon: CalendarDaysIcon,
+  },
+  {
+    label: 'Aktywne plany',
+    value: 'Aktywne',
+    icon: PlayCircle,
   },
 ];
 

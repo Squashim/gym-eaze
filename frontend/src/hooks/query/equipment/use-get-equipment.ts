@@ -3,7 +3,7 @@ import { QUERY_KEYS } from '@/constants/api/query-keys';
 import type { Equipment } from '@/types/equipment';
 import { useQuery } from '@tanstack/react-query';
 
-function useGetEquipment() {
+function useGetEquipment(options?: { enabled: boolean }) {
   return useQuery<Equipment[]>({
     queryKey: QUERY_KEYS.EQUIPMENT,
     queryFn: getEquipment,
@@ -11,6 +11,7 @@ function useGetEquipment() {
     refetchOnWindowFocus: false,
     gcTime: Infinity,
     retry: false,
+    ...options,
   });
 }
 

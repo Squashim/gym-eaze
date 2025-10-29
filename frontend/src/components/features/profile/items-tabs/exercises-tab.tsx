@@ -25,6 +25,7 @@ function ExercisesTab({ profileId, isOwnProfile, isViewingAsGuest }: ExercisesTa
         exercises={exercises}
         isError={isError}
         isLoading={isLoading}
+        isViewingAsGuest={isViewingAsGuest}
         pageType={isOwnProfile && !isViewingAsGuest ? 'user' : 'profile'}
         pagination={{
           params,

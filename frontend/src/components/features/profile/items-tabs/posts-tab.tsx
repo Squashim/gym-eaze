@@ -11,6 +11,8 @@ import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import PostDetails from '../../posts/post-details';
 import { EditPostDialog } from '../../posts/post-dialogs';
 import ReusableAlertDialog from '@/components/ui/reusable-alert-dialog';
+import ReportDialog from '../../reports/report-dialog';
+import { useUser } from '@/context/user';
 
 interface PostsTabProps {
   isOwnProfile: boolean;
@@ -22,6 +24,10 @@ function PostsTab({ isOwnProfile, profileId, isViewingAsGuest }: PostsTabProps) 
   const deleteDialog = useOpen();
   const editDialog = useOpen();
   const detailsDialog = useOpen();
+  const reportDialog = useOpen();
+
+  const { user } = useUser();
+
   const { toggleLikePost, deletePost } = usePost();
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useGetUserPosts(profileId);
@@ -92,9 +98,13 @@ function PostsTab({ isOwnProfile, profileId, isViewingAsGuest }: PostsTabProps) 
     }
   };
 
-  const handlePostReport = useCallback((postId: string) => {
-    console.log('TODO: Report post', postId);
-  }, []);
+  const handlePostReport = useCallback(
+    (postId: string) => {
+      setSelectedPostId(postId);
+      reportDialog.open();
+    },
+    [reportDialog],
+  );
 
   return (
     <>
@@ -138,6 +148,20 @@ function PostsTab({ isOwnProfile, profileId, isViewingAsGuest }: PostsTabProps) 
           onOpenChange={detailsDialog.setIsOpen}
           open={detailsDialog.isOpen}
           post={selectedPost}
+        />
+      )}
+
+      {user && selectedPostId && (
+        <ReportDialog
+          isReply
+          itemId={selectedPostId}
+          itemType="Post"
+          onClose={() => {
+            setSelectedPostId(null);
+            reportDialog.close();
+          }}
+          onOpenChange={reportDialog.setIsOpen}
+          open={reportDialog.isOpen}
         />
       )}
 

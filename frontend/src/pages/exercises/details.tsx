@@ -39,7 +39,7 @@ const ExerciseDetails = () => {
   usePageTitle(exercise?.name ?? 'Szczegóły ćwiczenia');
 
   return (
-    <PageLayout>
+    <PageLayout withFooter={false}>
       <ExerciseContent
         auth={{ isAuthor, isLogged: !!user }}
         error={error}

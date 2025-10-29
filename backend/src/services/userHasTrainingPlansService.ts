@@ -17,7 +17,6 @@ export const getStartedTrainingPlansService = async (
   }
 
   const user = await User.findById(targetUserId);
-
   if (!user) {
     throw new Error('Użytkownik nie został znaleziony');
   }
@@ -43,7 +42,7 @@ export const getStartedTrainingPlansService = async (
       .skip(skip)
       .limit(pageSize)
       .select(
-        'trainingPlanSnapshot.originalID trainingPlanSnapshot.name trainingPlanSnapshot.image trainingPlanSnapshot.goal trainingPlanSnapshot.advancedLevel trainingPlanSnapshot.author trainingPlanSnapshot.days progress createdAt',
+        'trainingPlanSnapshot.originalId trainingPlanSnapshot.name trainingPlanSnapshot.image trainingPlanSnapshot.goal trainingPlanSnapshot.advancedLevel trainingPlanSnapshot.author trainingPlanSnapshot.days progress createdAt',
       )
       .lean(),
     UserHasTrainingPlans.countDocuments({ _id: { $in: startedTrainingIds } }),

@@ -6,7 +6,7 @@ function Dashboard() {
   usePageTitle('Panel administracyjny');
 
   return (
-    <PageLayout title="Panel zarządzania">
+    <PageLayout title="Panel zarządzania" withFooter={false}>
       <ReportsContent />
     </PageLayout>
   );

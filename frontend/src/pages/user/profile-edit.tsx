@@ -27,6 +27,7 @@ function ProfileEdit() {
       className="mx-auto w-auto"
       description="Edytuj ustawienia swojego konta"
       title="Zarządzaj kontem"
+      withFooter={false}
     >
       <Tabs
         className="grid w-full grid-cols-1 gap-4 max-w-4xl lg:min-w-4xl"

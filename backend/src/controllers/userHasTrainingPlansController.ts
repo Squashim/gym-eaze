@@ -13,7 +13,7 @@ import {
 export const getStartedTrainingPlans = async (req: AuthRequest, res: Response) => {
   try {
     const { userId: targetUserId } = req.params;
-    const currentUserId = req.userId!;
+    const currentUserId = req.userId;
     const includePrivate =
       typeof req.query.includePrivate === 'undefined' ? true : req.query.includePrivate === 'true';
     const page = req.query.page ? Number(req.query.page) : 1;
@@ -24,7 +24,7 @@ export const getStartedTrainingPlans = async (req: AuthRequest, res: Response) =
       page,
       pageSize,
       includePrivate,
-      currentUserId,
+      currentUserId!,
     );
     return res.json(result);
   } catch (error) {

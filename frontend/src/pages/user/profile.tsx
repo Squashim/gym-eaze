@@ -33,7 +33,7 @@ function Profile() {
 
   return (
     <>
-      <PageLayout>
+      <PageLayout withFooter={false}>
         <section className="grid grid-cols-1 md:grid-cols-[0.65fr_1fr] gap-4 md:gap-6 w-full">
           <ProfileDisplay
             effectiveIsOwnProfile={effectiveIsOwnProfile}

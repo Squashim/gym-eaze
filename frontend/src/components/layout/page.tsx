@@ -1,11 +1,13 @@
 import type { PropsWithChildren } from 'react';
 import Typography from '../ui/typography';
 import { cn } from '@/lib/utils';
+import Footer from './footer';
 
 type PageLayoutProps = {
   title?: string;
   description?: string;
   className?: string;
+  withFooter?: boolean;
   titleClassName?: string;
 };
 
@@ -14,6 +16,7 @@ const PageLayout = ({
   titleClassName,
   title,
   description,
+  withFooter = true,
   children,
 }: PropsWithChildren<PageLayoutProps>) => {
   return (
@@ -29,6 +32,8 @@ const PageLayout = ({
         )}
       </header>
       {children}
+
+      {withFooter && <Footer />}
     </div>
   );
 };

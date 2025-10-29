@@ -41,16 +41,6 @@ class StartedTrainingRepository(private val context: Context) {
             .create(StartedTrainingApiService::class.java)
     }
 
-    private val apites: TrainingPlanApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BuildConfig.API_URL)
-            .client(httpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(TrainingPlanApiService::class.java)
-    }
-
-
     suspend fun getStartedTrainingPlans(userId: String, page: Int, pageSize: Int): Result<StartedTrainingPlansResponse> = withContext(Dispatchers.IO) {
         try {
             val response = api.getStartedTrainingPlans(userId,page, pageSize)
@@ -68,11 +58,9 @@ class StartedTrainingRepository(private val context: Context) {
 
     suspend fun getUserStartedPlans(username: String): List<StartedTrainingPlan> = withContext(Dispatchers.IO) {
         try {
-            // 🔹 Pobierz userId na podstawie username
             val trainingPlanRepo = TrainingPlanRepository(context)
             val userIdResult = trainingPlanRepo.getUserIdByUsername(username)
 
-            // 🔹 Jeśli udało się uzyskać userId → pobierz rozpoczęte plany
             userIdResult.fold(
                 onSuccess = { userId ->
                     val result = getStartedTrainingPlans(userId, 1, 10)
