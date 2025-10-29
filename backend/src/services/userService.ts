@@ -11,6 +11,7 @@ import { UserProfile } from '../types/user';
 import DeviceToken from '../models/deviceTokenModel';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
+import { checkAndEarnBadges } from './badgeService';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -436,6 +437,8 @@ export const toggleUserFollowService = async (userId: string, targetUserId: stri
       Notifications.info,
       user.username,
     );
+
+    await checkAndEarnBadges(targetUser._id.toString(), 'Followers');
 
     return {
       message: 'Zacząłeś obserwować użytkownika',

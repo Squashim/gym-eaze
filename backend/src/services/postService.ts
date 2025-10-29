@@ -9,12 +9,13 @@ import { CommentParentType } from '../constants/commentType';
 import { deleteCommentsAndLikes } from '../utils/helpers';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
+import { checkAndEarnBadges } from './badgeService';
 
 export const createPost = async (
   data: CreatePostData,
   imageBuffer?: Buffer,
   videoBuffer?: Buffer,
-): Promise<IPost> => {
+) => {
   let imageUrl: string | undefined;
   let videoUrl: string | undefined;
 
@@ -49,7 +50,9 @@ export const createPost = async (
     video: videoUrl,
   });
 
-  return await post.save();
+  await post.save();
+
+  await checkAndEarnBadges(data.author.toString(), 'Posts');
 };
 
 export const updatePostService = async (

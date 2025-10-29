@@ -23,6 +23,7 @@ import { deleteCommentsAndLikes } from '../utils/helpers';
 import { CommentParentType } from '../constants/commentType';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
+import { checkAndEarnBadges } from './badgeService';
 
 export const createTrainingPlan = async (
   data: CreateTrainingPlanData,
@@ -63,7 +64,11 @@ export const createTrainingPlan = async (
     days: daysWithDuration,
   });
 
-  return await trainingPlan.save();
+  const plan = await trainingPlan.save();
+
+  await checkAndEarnBadges(userId.toString(), 'Trainings');
+
+  return plan;
 };
 
 export const deleteTrainingPlan = async (planId: string, userId: string) => {

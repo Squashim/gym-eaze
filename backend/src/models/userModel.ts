@@ -70,10 +70,6 @@ export interface IUser extends Document {
     awardedAt: Date;
   }[];
   notifications?: Types.ObjectId[];
-  sensor?: {
-    isUsed: boolean;
-    addedAt: Date;
-  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -279,16 +275,6 @@ const userSchema = new mongoose.Schema<IUser>(
         ref: 'Notification',
       },
     ],
-
-    sensor: {
-      isUsed: {
-        type: Boolean,
-        default: false,
-      },
-      addedAt: {
-        type: Date,
-      },
-    },
   },
   { timestamps: true },
 );
