@@ -46,7 +46,6 @@ import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.MyPosts
 import com.example.gymeaze.ui.screens.posts.loggedIn.PostsFollowedUsers
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
-import com.example.gymeaze.ui.screens.profile.settings.NotificationsScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanViewModel
@@ -191,11 +190,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         when {
-                            showNotificationsScreen -> {
-                                NotificationsScreen(
-                                    onReturnClick = userViewModel::hideNotificationsScreen,
-                                )
-                            }
                             showPrivacySettings -> {
                                 PrivacySettingsScreen(
                                     onReturnClick = userViewModel::hidePrivacySettingsScreen,

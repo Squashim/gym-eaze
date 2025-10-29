@@ -202,6 +202,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             _uiState.update { currentState ->
                 val response = result.getOrNull()
                 if (result.isSuccess && response != null) {
+                    loadUserProfile(currentProfile.username)
                     val safeProfile = currentProfile.copy(
                         profilePicture = currentProfile.profilePicture ?: "",
                         description = currentProfile.description ?: "",
@@ -214,6 +215,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                         isFollowLoading = false,
                         operationSuccessMessage = response.message
                     )
+
                 } else {
                     currentState.copy(
                         isFollowLoading = false,
@@ -221,6 +223,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     )
                 }
             }
+        }
+    }
+
+    fun refreshUserProfile(username: String) {
+        viewModelScope.launch {
+            loadUserProfile(username)
         }
     }
 

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -549,12 +550,23 @@ fun ProfileScreen(
             item {
                 val profile = uiState.userProfile
 
-                if (!isOwnProfile && profile != null) {
-                    FollowButton(
-                        isFollowing = profile.isFollowing,
-                        isLoading = uiState.isFollowLoading,
-                        onClick = { profileViewModel.toggleFollow(profile.id) }
-                    )
+                if (!isOwnProfile) {
+                    if (profile != null) {
+                        FollowButton(
+                            isFollowing = profile.isFollowing,
+                            isLoading = uiState.isFollowLoading,
+                            onClick = { profileViewModel.toggleFollow(profile.id) }
+                        )
+                    } else {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .wrapContentWidth()
+                            )
+                        }
+                    }
                 }
             }
 
@@ -725,8 +737,8 @@ fun FollowButton(
             )
         }
     }
-
 }
+
 @Composable
 private fun WelcomeSection(
     username: String,
