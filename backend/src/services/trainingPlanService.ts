@@ -1,4 +1,4 @@
-import mongoose, { FilterQuery, Types } from 'mongoose';
+import mongoose, { FilterQuery, ObjectId, Types } from 'mongoose';
 import { deleteFromCloudinary, uploadTrainingPlanMedia } from '../config/cloudinary';
 import TrainingPlan, { ITrainingPlan } from '../models/trainingPlanModel';
 import {
@@ -35,13 +35,41 @@ export const createTrainingPlan = async (
 
   const { imageUrl } = await uploadTrainingPlanMedia(imageBuffer);
 
+  const allExerciseIds: string[] = [];
+  data.days.forEach((day) => {
+    day.exercises.forEach((exercise) => {
+      allExerciseIds.push(exercise.id.toString());
+    });
+  });
+
+  const exerciseDetails = await getExercisesByIdsService(allExerciseIds);
+  const exerciseMap = new Map(exerciseDetails.map((ex) => [(ex._id as ObjectId).toString(), ex]));
+
   const daysWithDuration = data.days.map((day) => {
     const exercisesWithDuration = day.exercises.map((exercise, idx, arr) => {
       const isLastExercise = idx === arr.length - 1;
       const duration = calculateExerciseDuration(exercise, isLastExercise ? true : false);
+
+      const exerciseDetail = exerciseMap.get(exercise.id.toString());
+      if (!exerciseDetail) {
+        throw new Error('Błąd podczas mapowania ćwiczeń.');
+      }
+
       return {
-        ...exercise,
+        originalId: exercise.id,
+
+        isRepsSet: exercise.isRepsSet,
+        restAfterSet: exercise.restAfterSet,
+        sets: exercise.sets,
         duration,
+
+        name: exerciseDetail.name,
+        description: exerciseDetail.description,
+        image: exerciseDetail.image,
+        video: exerciseDetail.video,
+        advancedLevel: exerciseDetail.advancedLevel,
+        muscleGroup: exerciseDetail.muscleGroup,
+        equipment: exerciseDetail.equipment,
       };
     });
 
@@ -276,6 +304,8 @@ export const getTrainingPlanByIdService = async (planId: string, currentUserId?:
 
   const trainingPlan = await TrainingPlan.findById(planId)
     .populate('author', 'username profileDetails.profilePicture')
+    .populate('days.exercises.muscleGroup', 'name')
+    .populate('days.exercises.equipment', 'name')
     .lean();
 
   if (!trainingPlan) {
@@ -426,6 +456,9 @@ export const getTrainingPlansByUserService = async (
   return { items, total, page, pageSize };
 };
 
+// poprawa wyswietlania cwiczen stworzonego planu mobilka/backend
+// poprawa edycji planu treningowe front/mobilka/backend
+
 export const generateTrainingPlanPDFService = async (planId: string, userId?: string) => {
   const trainingPlan = await getTrainingPlanByIdService(planId, userId);
 
@@ -433,28 +466,7 @@ export const generateTrainingPlanPDFService = async (planId: string, userId?: st
     throw new Error('Plan treningowy nie został znaleziony');
   }
 
-  const exerciseIds: string[] = [];
-  trainingPlan.days.forEach((day) => {
-    day.exercises.forEach((exercise) => {
-      exerciseIds.push(exercise.id.toString());
-    });
-  });
-
-  const exerciseArray = await getExercisesByIdsService(exerciseIds);
-  const exercisesMap: Record<string, unknown> = {};
-  exerciseArray.forEach((ex) => {
-    exercisesMap[ex._id.toString()] = ex;
-  });
-
-  const daysExercises = trainingPlan.days.map((day) => ({
-    ...day,
-    exercises: day.exercises.map((ex) => ({
-      ...ex,
-      details: exercisesMap[ex.id.toString()] || null,
-    })),
-  }));
-
-  const html = generateTrainingPlanHTML(trainingPlan, daysExercises);
+  const html = generateTrainingPlanHTML(trainingPlan);
 
   const browser = await puppeteer.launch({
     headless: true,

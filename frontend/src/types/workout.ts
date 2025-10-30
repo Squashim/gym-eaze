@@ -8,7 +8,7 @@ export type DurationSet = { duration: number };
 export type WorkoutSets = RepsSet | DurationSet;
 export type WorkoutWeek = {
   name: string;
-  days: WorkoutDay[];
+  days: WorkoutApiDay[];
 };
 
 export interface WorkoutSheetTabProps {
@@ -65,7 +65,7 @@ export type GetWorkoutsApiResponse = {
   createdAt: string;
 };
 
-type WorkoutApiDay = {
+export type WorkoutApiDay = {
   name: string;
   dayNumber: number;
   totalDuration: number;
@@ -73,17 +73,47 @@ type WorkoutApiDay = {
   exercises: WorkoutApiExercise[];
 };
 
-type WorkoutApiExercise =
+export type WorkoutApiExercise =
   | {
-      id: string;
+      originalId: string;
+
+      name: string;
+      image: string;
+      video: string;
+      muscleGroup: {
+        _id: string;
+        name: string;
+      }[];
+      equipment: {
+        _id: string;
+        name: string;
+      }[];
+      advancedLevel: AdvancedLevel;
+      description: string;
+
       isRepsSet: true;
       duration: number;
       restAfterSet: number;
       sets: RepsSet[];
     }
   | {
+      originalId: string;
+
+      name: string;
+      image: string;
+      video: string;
+      muscleGroup: {
+        _id: string;
+        name: string;
+      }[];
+      equipment: {
+        _id: string;
+        name: string;
+      }[];
+      advancedLevel: AdvancedLevel;
+      description: string;
+
       isRepsSet: false;
-      id: string;
       duration: number;
       restAfterSet: number;
       sets: DurationSet[];

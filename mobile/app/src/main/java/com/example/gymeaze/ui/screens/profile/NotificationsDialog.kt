@@ -46,14 +46,14 @@ fun NotificationsDialog(
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(listState) {
+    LaunchedEffect(listState, notifications.size, isLoading, hasMore) {
         snapshotFlow {
-            listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-        }.collect { lastVisibleIndex ->
-            if (lastVisibleIndex != null &&
-                lastVisibleIndex >= notifications.size - 2 &&
-                hasMore &&
-                !isLoading) {
+            val layoutInfo = listState.layoutInfo
+            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalItems = layoutInfo.totalItemsCount
+            lastVisible >= totalItems - 2
+        }.collect { isAtEnd ->
+            if (isAtEnd && hasMore && !isLoading) {
                 onLoadMore()
             }
         }

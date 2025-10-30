@@ -8,7 +8,6 @@ import {
   ExerciseFilters,
   PageSize,
   SortBy,
-  TrainingPlanExercise,
   UpdateExerciseData,
 } from '../types/exercise';
 import { PrivacySettings } from '../constants/privacySettings';
@@ -362,9 +361,9 @@ export const getExercisesByIdsService = async (ids: string[]) => {
   }
 
   const exercises = await Exercise.find({ _id: { $in: ids } })
-    .select('image name muscleGroup')
+    .select('image name muscleGroup equipment description video advancedLevel')
     .populate('muscleGroup', 'name')
-    .lean<TrainingPlanExercise[]>();
+    .populate('equipment', 'name');
 
   return exercises;
 };

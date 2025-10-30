@@ -1,4 +1,4 @@
-export const generateTrainingPlanHTML = (trainingPlan: any, daysExercises: any): string => {
+export const generateTrainingPlanHTML = (trainingPlan: any): string => {
   const goalTranslations: Record<string, string> = {
     weight_loss: 'Redukcja',
     muscle_gain: 'Masa mięśniowa',
@@ -297,14 +297,6 @@ export const generateTrainingPlanHTML = (trainingPlan: any, daysExercises: any):
           color: #2c3e50;
         }
 
-        .exercise-muscle {
-          font-size: 11px;
-          color: #666;
-          background: #f0f0f0;
-          padding: 3px 8px;
-          border-radius: 4px;
-        }
-
         .sets-container {
           display: flex;
           gap: 6px;
@@ -421,7 +413,7 @@ export const generateTrainingPlanHTML = (trainingPlan: any, daysExercises: any):
           }
         </div>
 
-        ${daysExercises
+        ${trainingPlan.days
           .map(
             (day: any, dayIndex: number) => `
           <div class="day">
@@ -449,17 +441,10 @@ export const generateTrainingPlanHTML = (trainingPlan: any, daysExercises: any):
             `
                 : day.exercises
                     .map(
-                      (exercise: any) => `
+                      (exercise: any, exerciseIndex: number) => `
               <div class="exercise">
                 <div class="exercise-header">
-                  <div class="exercise-name">${exercise.details?.name || 'Ćwiczenie'}</div>
-                  ${
-                    exercise.details?.muscleGroup?.name
-                      ? `
-                    <div class="exercise-muscle">${exercise.details?.muscleGroup.name}</div>
-                  `
-                      : ''
-                  }
+                  <div class="exercise-name">${exercise.name}</div>
                 </div>
 
                 <div class="sets-container">
@@ -484,13 +469,17 @@ export const generateTrainingPlanHTML = (trainingPlan: any, daysExercises: any):
                     .join('')}
                 </div>
 
-                ${
-                  exercise.restAfterSet && exercise.sets.length > 1
-                    ? `
-                  <div class="rest-info">Odpoczynek: ${formatSetDuration(exercise.restAfterSet)}</div>
-                `
-                    : ''
-                }
+               ${
+                 exercise.restAfterSet && exercise.sets.length > 1
+                   ? `
+                      <div class="rest-info">Odpoczynek między seriami: ${formatSetDuration(exercise.restAfterSet)}</div>
+                    `
+                   : exercise.restAfterSet && exerciseIndex < day.exercises.length - 1
+                     ? `
+                      <div class="rest-info">Odpoczynek: ${formatSetDuration(exercise.restAfterSet)}</div>
+                    `
+                     : ''
+               }
               </div>
             `,
                     )

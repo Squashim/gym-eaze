@@ -1,7 +1,6 @@
 import BackHeader from '@/components/ui/back-header';
 import WorkoutComments from '@/components/features/workouts/workout-comments';
 import PageLayout from '@/components/layout/page';
-import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import HashtagList from '@/components/ui/hashtag-list';
@@ -15,7 +14,6 @@ import Typography from '@/components/ui/typography';
 import { AdvancedLevel } from '@/constants/enums/advanced-level';
 import { Goal } from '@/constants/enums/goals';
 import { useUser } from '@/context/user';
-import useGetExercisesByIds from '@/hooks/query/exercises/use-get-exercises-by-ids';
 import useGetFavoritedItems from '@/hooks/query/user/use-get-favorited-items';
 import useGetLikedItems from '@/hooks/query/user/use-get-liked-items';
 import useGetWorkout from '@/hooks/query/workouts/use-get-workout';
@@ -30,16 +28,16 @@ import {
   parseWorkoutSetsLabel,
 } from '@/lib/parsers';
 import { cn, getApiErrorMsg, getDayTimeRange, getWeeks } from '@/lib/utils';
-import type { GetExercisesByIdsApiResponse } from '@/types/exercise';
 import type {
   DurationSet,
   GetWorkoutApiResponse,
   RepsSet,
-  WorkoutDay,
+  WorkoutApiDay,
+  WorkoutApiExercise,
   WorkoutExercise,
   WorkoutWeek,
 } from '@/types/workout';
-import { BicepsFlexed, CalendarDays, Clock, ImageOff, Info } from 'lucide-react';
+import { BicepsFlexed, CalendarDays, Clock, ImageOff } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReportDialog from '@/components/features/reports/report-dialog';
@@ -302,15 +300,10 @@ interface WorkoutDaysProps {
 }
 
 function WorkoutDays({ weeks }: WorkoutDaysProps) {
-  const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
+  const [selectedDay, setSelectedDay] = useState<WorkoutApiDay | null>(null);
   const [selectedTab, setSelectedTab] = useState<string>('week-1');
 
-  const exerciseIds = useMemo(() => {
-    if (!selectedDay) return null;
-    return selectedDay.exercises.map((exercise) => exercise.id);
-  }, [selectedDay]);
-
-  const handleDaySelect = useCallback((day: WorkoutDay) => {
+  const handleDaySelect = useCallback((day: WorkoutApiDay) => {
     setSelectedDay(day);
   }, []);
 
@@ -323,9 +316,7 @@ function WorkoutDays({ weeks }: WorkoutDaysProps) {
   }
 
   if (selectedDay) {
-    return (
-      <WorkoutExercises exerciseIds={exerciseIds} onBack={handleBack} selectedDay={selectedDay} />
-    );
+    return <WorkoutExercises onBack={handleBack} selectedDay={selectedDay} />;
   }
 
   return (
@@ -366,8 +357,8 @@ function WorkoutDays({ weeks }: WorkoutDaysProps) {
 }
 
 interface DayItemProps {
-  day: WorkoutDay;
-  onSelect: (day: WorkoutDay) => void;
+  day: WorkoutApiDay;
+  onSelect: (day: WorkoutApiDay) => void;
 }
 
 function DayItem({ day, onSelect }: DayItemProps) {
@@ -405,14 +396,11 @@ function DayItem({ day, onSelect }: DayItemProps) {
 }
 
 interface WorkoutExercisesProps {
-  selectedDay: WorkoutDay;
+  selectedDay: WorkoutApiDay;
   onBack: () => void;
-  exerciseIds: string[] | null;
 }
 
-function WorkoutExercises({ selectedDay, onBack, exerciseIds }: WorkoutExercisesProps) {
-  const { data: exercisesByIds, isLoading, isError } = useGetExercisesByIds(exerciseIds || []);
-
+function WorkoutExercises({ selectedDay, onBack }: WorkoutExercisesProps) {
   return (
     <div className="flex flex-col flex-1 h-full min-h-0 max-h-[600px] overflow-hidden gap-3">
       <div className="sticky top-0 flex items-center justify-between gap-4 border flex-wrap bg-card rounded-md px-2 py-1">
@@ -423,46 +411,25 @@ function WorkoutExercises({ selectedDay, onBack, exerciseIds }: WorkoutExercises
       </div>
 
       <div className="overflow-y-auto scrollbar h-full flex flex-col gap-3">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => <Skeleton className="min-h-24" key={index} />)
-        ) : isError ? (
-          <Alert>
-            <Info />
-            <AlertTitle>Wystąpił błąd podczas pobierania ćwiczeń. Odśwież stronę.</AlertTitle>
-          </Alert>
-        ) : (
-          exercisesByIds?.map((exercise) => {
-            const dayExercise = selectedDay.exercises.find((fe) => fe.id === exercise._id);
-            const restAfterSets = dayExercise ? dayExercise.restAfterSet : 0;
-
-            return (
-              <WorkoutExercise
-                dayExercise={dayExercise}
-                exercise={exercise}
-                key={exercise._id}
-                restAfterSets={restAfterSets}
-              />
-            );
-          })
-        )}
+        {selectedDay.exercises.map((exercise) => (
+          <WorkoutExercise exercise={exercise} key={exercise.originalId} />
+        ))}
       </div>
     </div>
   );
 }
 
 interface WorkoutExerciseProps {
-  exercise: GetExercisesByIdsApiResponse;
-  restAfterSets: number;
-  dayExercise: WorkoutExercise | undefined;
+  exercise: WorkoutApiExercise;
 }
 
-function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerciseProps) {
+function WorkoutExercise({ exercise }: WorkoutExerciseProps) {
   const displayMuscleGroups = exercise.muscleGroup.map((mg) => mg.name).join(' • ');
 
   const groupedSets = useMemo(() => {
-    if (!dayExercise) return [];
+    if (!exercise) return [];
 
-    if (dayExercise.sets.length === 0) return [];
+    if (exercise.sets.length === 0) return [];
 
     const groups: {
       count: number;
@@ -474,8 +441,8 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
 
     let currentGroup: (typeof groups)[0] | null = null;
 
-    dayExercise.sets.forEach((set) => {
-      const isReps = dayExercise.isRepsSet;
+    exercise.sets.forEach((set) => {
+      const isReps = exercise.isRepsSet;
       const setData = {
         repetitions: isReps ? (set as RepsSet).repetitions : undefined,
         duration: !isReps ? (set as DurationSet).duration : undefined,
@@ -498,7 +465,7 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
     });
 
     return groups;
-  }, [dayExercise]);
+  }, [exercise]);
 
   const maxVisibleGroupSets = 2;
   const { visibleGroupedSets, hiddenGroupedSets, totalHiddenSets } = useMemo(() => {
@@ -515,10 +482,7 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
   }, [groupedSets, maxVisibleGroupSets]);
 
   return (
-    <div
-      className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground relative flex-wrap min-[425px]:flex-nowrap"
-      key={exercise._id}
-    >
+    <div className="rounded-md p-3 shadow-md flex items-center gap-2 border bg-card text-card-foreground relative flex-wrap min-[425px]:flex-nowrap">
       <div className="flex-shrink-0 overflow-hidden h-full aspect-square max-h-18">
         <img
           alt={`zdjęcie poglądowe ćwiczenia ${exercise.name}`}
@@ -548,13 +512,13 @@ function WorkoutExercise({ exercise, restAfterSets, dayExercise }: WorkoutExerci
             </Badge>
           )}
           <Badge className="justify-start" variant="secondary">
-            przerwa {parseSecondsToTimeString(restAfterSets)}
+            przerwa {parseSecondsToTimeString(exercise.restAfterSet)}
           </Badge>
         </div>
       </div>
 
       <div className="ml-auto absolute top-4 right-4 min-[425px]:static">
-        <DetailsActionBtn redirectTo={`/exercises/${exercise._id}`} />
+        <DetailsActionBtn redirectTo={`/exercises/${exercise.originalId}`} />
       </div>
     </div>
   );

@@ -3,7 +3,6 @@ import User from '../models/userModel';
 import UserHasTrainingPlans from '../models/userHasTrainingPlansModel';
 import { StatusTraining } from '../constants/statuses';
 import TrainingPlan from '../models/trainingPlanModel';
-import Exercise from '../models/exerciseModel';
 
 export const getStartedTrainingPlansService = async (
   targetUserId: string,
@@ -111,15 +110,6 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
     }
   }
 
-  const exerciseIds = trainingPlan.days.flatMap((day) => day.exercises.map((ex) => ex.id));
-
-  const exercises = await Exercise.find({ _id: { $in: exerciseIds } })
-    .populate('muscleGroup', 'name')
-    .populate('equipment', 'name')
-    .lean();
-
-  const exercisesMap = new Map(exercises.map((ex: any) => [ex._id.toString(), ex]));
-
   const trainingPlanSnapshot = {
     originalId: trainingPlan._id,
     name: trainingPlan.name,
@@ -132,45 +122,7 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
       username: (trainingPlan.author as any).username,
       profilePicture: (trainingPlan.author as any).profileDetails?.profilePicture,
     },
-    days: trainingPlan.days.map((day) => ({
-      name: day.name,
-      dayNumber: day.dayNumber,
-      totalDuration: day.totalDuration,
-      isRestDay: day.isRestDay,
-      exercises: day.exercises.map((ex) => {
-        const exerciseId = (ex.id as { _id: Types.ObjectId })._id;
-        const exerciseData: any = exercisesMap.get(exerciseId.toString());
-
-        if (!exerciseData) {
-          throw new Error(`Ćwiczenie o ID ${exerciseId} nie zostało znalezione`);
-        }
-
-        return {
-          originalId: exerciseId,
-          name: exerciseData.name,
-          description: exerciseData.description,
-          image: exerciseData.image,
-          video: exerciseData.video,
-          advancedLevel: exerciseData.advancedLevel,
-          muscleGroup: Array.isArray(exerciseData.muscleGroup)
-            ? exerciseData.muscleGroup.map((mg: any) => ({
-                id: mg._id,
-                name: mg.name,
-              }))
-            : [],
-          equipment: Array.isArray(exerciseData.equipment)
-            ? exerciseData.equipment.map((eq: any) => ({
-                id: eq._id,
-                name: eq.name,
-              }))
-            : [],
-          isRepsSet: ex.isRepsSet,
-          duration: ex.duration,
-          restAfterSet: ex.restAfterSet,
-          sets: ex.sets,
-        };
-      }),
-    })),
+    days: trainingPlan.days,
   };
 
   const userTrainingPlan = new UserHasTrainingPlans({
