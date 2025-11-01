@@ -13,14 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { isDefaultExercise } from '@/lib/utils';
 import type { GetExercisesByIdsApiResponse } from '@/types/exercise';
+import type { WorkoutApiExercise } from '@/types/workout';
 
 type ExerciseCopyDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetExerciseId: string;
   sourceExerciseId: string | null;
-  orderedExercises: GetExercisesByIdsApiResponse[];
+  orderedExercises: (GetExercisesByIdsApiResponse | WorkoutApiExercise)[];
   setTargetExerciseId: (val: string) => void;
   onCopy: () => void;
   onClose: () => void;
@@ -53,12 +55,19 @@ function ExerciseCopyDialog({
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
               {orderedExercises
-                .filter((ex) => ex._id !== sourceExerciseId)
-                .map((ex) => (
-                  <SelectItem key={ex._id} value={ex._id}>
-                    {ex.name}
-                  </SelectItem>
-                ))}
+                .filter((ex) => {
+                  const exerciseId = isDefaultExercise(ex) ? ex.originalId : ex._id;
+                  return exerciseId !== sourceExerciseId;
+                })
+                .map((ex) => {
+                  const exerciseId = isDefaultExercise(ex) ? ex.originalId : ex._id;
+
+                  return (
+                    <SelectItem key={exerciseId} value={exerciseId}>
+                      {ex.name}
+                    </SelectItem>
+                  );
+                })}
             </SelectContent>
           </Select>
         </div>

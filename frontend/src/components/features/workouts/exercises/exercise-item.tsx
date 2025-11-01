@@ -8,15 +8,18 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import ExerciseManageDropdown from './exercise-manage-dropdown';
 import { useCallback } from 'react';
+import type { WorkoutApiExercise } from '@/types/workout';
+import { isDefaultExercise } from '@/lib/utils';
 
 interface ExerciseItemProps {
-  exercise: GetExercisesByIdsApiResponse;
+  exercise: GetExercisesByIdsApiResponse | WorkoutApiExercise;
   setsCount: number;
   exercisesCount?: number;
   restAfterSets: number;
   onExerciseRemove: (id: string) => void;
   onSelect: (id: string | null) => void;
   onDialogOpen: (exerciseId: string) => void;
+  isLastExercise: boolean;
   id: string;
 }
 
@@ -28,6 +31,7 @@ const ExerciseItem = ({
   onSelect,
   id,
   restAfterSets,
+  isLastExercise,
   setsCount,
 }: ExerciseItemProps) => {
   const displayMuscleGroups = exercise.muscleGroup.map((mg) => mg.name).join(' • ');
@@ -43,25 +47,25 @@ const ExerciseItem = ({
   };
 
   const handleDelete = useCallback(() => {
-    onExerciseRemove(exercise._id);
-  }, [onExerciseRemove, exercise._id]);
+    onExerciseRemove(isDefaultExercise(exercise) ? exercise.originalId : exercise._id);
+  }, [onExerciseRemove, exercise]);
 
   const handleDialogOpen = useCallback(() => {
-    onDialogOpen(exercise._id);
-  }, [onDialogOpen, exercise._id]);
+    onDialogOpen(isDefaultExercise(exercise) ? exercise.originalId : exercise._id);
+  }, [onDialogOpen, exercise]);
 
   const handleSelect = useCallback(() => {
-    onSelect(exercise._id);
-  }, [onSelect, exercise._id]);
+    onSelect(isDefaultExercise(exercise) ? exercise.originalId : exercise._id);
+  }, [onSelect, exercise]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        onSelect(exercise._id);
+        onSelect(isDefaultExercise(exercise) ? exercise.originalId : exercise._id);
       }
     },
-    [onSelect, exercise._id],
+    [onSelect, exercise],
   );
 
   return (
@@ -93,9 +97,11 @@ const ExerciseItem = ({
         </Typography>
         <div className="flex items-center gap-1">
           <Badge variant="accent">{parseWorkoutSetsLabel(setsCount)}</Badge>
-          <Badge className="justify-start" variant="secondary">
-            przerwa {parseSecondsToTimeString(restAfterSets)}
-          </Badge>
+          {exercisesCount && !(isLastExercise && setsCount === 1) && (
+            <Badge className="justify-start" variant="secondary">
+              przerwa {parseSecondsToTimeString(restAfterSets)}
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -106,7 +112,9 @@ const ExerciseItem = ({
           onDialogOpen={handleDialogOpen}
         />
 
-        <DetailsActionBtn redirectTo={`/exercises/${exercise._id}`} />
+        <DetailsActionBtn
+          redirectTo={`/exercises/${isDefaultExercise(exercise) ? exercise.originalId : exercise._id}`}
+        />
       </div>
     </div>
   );

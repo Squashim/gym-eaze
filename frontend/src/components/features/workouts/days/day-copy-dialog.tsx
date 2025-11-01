@@ -18,13 +18,16 @@ import {
 } from '@/components/ui/select';
 import Typography from '@/components/ui/typography';
 import type { TrainingDaySchema } from '@/schemas/workout-schema';
-import type { WorkoutWeek } from '@/types/workout';
+import type { WorkoutDay } from '@/types/workout';
 
 type DayCopyDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   days: TrainingDaySchema[];
-  weeks: WorkoutWeek[];
+  weeks: {
+    name: string;
+    days: WorkoutDay[];
+  }[];
   sourceDay: TrainingDaySchema | null;
   targetDayNumber: string;
   setTargetDayNumber: (val: string) => void;

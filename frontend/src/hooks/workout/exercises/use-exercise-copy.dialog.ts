@@ -3,17 +3,19 @@ import useOpen from '../../utils/use-open';
 import type { GetExercisesByIdsApiResponse } from '@/types/exercise';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import type { WorkoutApiExercise } from '@/types/workout';
+import { isDefaultExercise } from '@/lib/utils';
 
 interface UseExerciseCopyDialogProps {
   exerciseIds: string[];
-  exercisesByIds: GetExercisesByIdsApiResponse[] | undefined;
+  orderedExercises: (GetExercisesByIdsApiResponse | WorkoutApiExercise)[];
   onExerciseCopy: (sourceId: string, targetId: string) => void;
   onReorder: (newOrder: string[]) => void;
 }
 
 function useExerciseCopyDialog({
   exerciseIds,
-  exercisesByIds,
+  orderedExercises,
   onExerciseCopy,
   onReorder,
 }: UseExerciseCopyDialogProps) {
@@ -21,12 +23,17 @@ function useExerciseCopyDialog({
   const [sourceExerciseId, setSourceExerciseId] = useState<string | null>(null);
   const [targetExerciseId, setTargetExerciseId] = useState<string>('');
 
-  const orderedExercises = useMemo(() => {
-    if (!exercisesByIds) return [];
+  const reorderedExercises = useMemo(() => {
+    if (!orderedExercises) return [];
     return exerciseIds
-      .map((id) => exercisesByIds.find((ex) => ex._id === id))
-      .filter(Boolean) as GetExercisesByIdsApiResponse[];
-  }, [exerciseIds, exercisesByIds]);
+      .map((id) =>
+        orderedExercises.find((ex) => {
+          const exerciseId = isDefaultExercise(ex) ? ex.originalId : ex._id;
+          return exerciseId === id;
+        }),
+      )
+      .filter(Boolean) as (GetExercisesByIdsApiResponse | WorkoutApiExercise)[];
+  }, [exerciseIds, orderedExercises]);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -65,7 +72,7 @@ function useExerciseCopyDialog({
 
   return {
     dialog,
-    orderedExercises,
+    reorderedExercises,
     sourceExerciseId,
     targetExerciseId,
     setTargetExerciseId,

@@ -3,13 +3,14 @@ import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
-import type { DurationSet, RepsSet, WorkoutApiDay } from '@/types/workout';
+import type { DurationSet, RepsSet, WorkoutApiDay, WorkoutApiExercise } from '@/types/workout';
 import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import type { FieldValues } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 import { parseTimeBrackets } from './parsers';
 import { Country } from '@/constants/enums/countries';
+import type { GetExercisesByIdsApiResponse } from '@/types/exercise';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -301,3 +302,9 @@ export function isItemReplyCommentsQuery(queryKey: unknown): boolean {
     (queryKey[0] === 'posts' || queryKey[0] === 'exercises' || queryKey[0] === 'workouts')
   );
 }
+
+export const isDefaultExercise = (
+  exercise: GetExercisesByIdsApiResponse | WorkoutApiExercise,
+): exercise is WorkoutApiExercise => {
+  return Boolean('originalId' in exercise);
+};

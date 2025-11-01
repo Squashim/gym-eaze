@@ -185,14 +185,120 @@ export const updateTrainingPlanService = async (
   }
 
   if (updateData.days) {
+    const newExerciseIds = new Set(
+      updateData.days.flatMap((day) => day.exercises.map((exercise) => exercise.id.toString())),
+    );
+
+    const exerciseDetails = await getExercisesByIdsService(Array.from(newExerciseIds));
+    const exerciseMap = new Map(exerciseDetails.map((ex) => [(ex._id as ObjectId).toString(), ex]));
+
+    const oldExercisesMap = new Map<string, any>();
+    trainingPlan.days.forEach((day) => {
+      day.exercises.forEach((exercise) => {
+        oldExercisesMap.set(exercise.originalId.toString(), exercise);
+      });
+    });
+
     updateData.days = updateData.days.map((day) => {
-      const exercisesWithDuration = day.exercises.map((exercise, idx, arr) => {
+      const exercisesWithDuration = day.exercises.map((newExercise, idx, arr) => {
         const isLastExercise = idx === arr.length - 1;
-        const duration = calculateExerciseDuration(exercise, isLastExercise ? true : false);
-        return {
-          ...exercise,
-          duration,
-        };
+        const exerciseId = newExercise.id.toString();
+        const oldExercise = oldExercisesMap.get(exerciseId);
+        const exerciseDetail = exerciseMap.get(exerciseId);
+        const exerciseAvailableInDB = !!exerciseDetail;
+
+        if (oldExercise) {
+          const parametersChanged =
+            oldExercise.isRepsSet !== newExercise.isRepsSet ||
+            oldExercise.sets.length !== newExercise.sets.length ||
+            oldExercise.restAfterSet !== newExercise.restAfterSet ||
+            !oldExercise.sets.every((oldSet: any, index: number) => {
+              const newSet = newExercise.sets[index];
+              return JSON.stringify(oldSet) === JSON.stringify(newSet);
+            });
+
+          let detailsChanged = false;
+          if (exerciseDetail) {
+            detailsChanged =
+              oldExercise.name !== exerciseDetail.name ||
+              oldExercise.description !== exerciseDetail.description ||
+              oldExercise.image !== exerciseDetail.image ||
+              oldExercise.video !== exerciseDetail.video ||
+              oldExercise.advancedLevel !== exerciseDetail.advancedLevel ||
+              JSON.stringify(oldExercise.muscleGroup) !==
+                JSON.stringify(exerciseDetail.muscleGroup) ||
+              JSON.stringify(oldExercise.equipment) !== JSON.stringify(exerciseDetail.equipment);
+          }
+
+          if (parametersChanged || detailsChanged) {
+            const newDuration = calculateExerciseDuration(
+              newExercise,
+              isLastExercise ? true : false,
+            );
+
+            if (exerciseAvailableInDB) {
+              return {
+                originalId: oldExercise.originalId,
+
+                isRepsSet: newExercise.isRepsSet,
+                restAfterSet: newExercise.restAfterSet,
+                sets: newExercise.sets,
+                duration: newDuration,
+
+                name: exerciseDetail.name,
+                description: exerciseDetail.description,
+                image: exerciseDetail.image,
+                video: exerciseDetail.video,
+                advancedLevel: exerciseDetail.advancedLevel,
+                muscleGroup: exerciseDetail.muscleGroup,
+                equipment: exerciseDetail.equipment,
+              };
+            } else {
+              return {
+                originalId: oldExercise.originalId,
+
+                isRepsSet: newExercise.isRepsSet,
+                restAfterSet: newExercise.restAfterSet,
+                sets: newExercise.sets,
+                duration: newDuration,
+
+                name: oldExercise.name,
+                description: oldExercise.description,
+                image: oldExercise.image,
+                video: oldExercise.video,
+                advancedLevel: oldExercise.advancedLevel,
+                muscleGroup: oldExercise.muscleGroup,
+                equipment: oldExercise.equipment,
+              };
+            }
+          } else {
+            return oldExercise;
+          }
+        } else {
+          const exerciseDetail = exerciseMap.get(exerciseId);
+          if (!exerciseDetail) {
+            throw new Error('Błąd podczas mapowania ćwiczeń.');
+          }
+
+          const duration = calculateExerciseDuration(newExercise, isLastExercise ? true : false);
+
+          return {
+            originalId: newExercise.id,
+
+            isRepsSet: newExercise.isRepsSet,
+            restAfterSet: newExercise.restAfterSet,
+            sets: newExercise.sets,
+            duration,
+
+            name: exerciseDetail.name,
+            description: exerciseDetail.description,
+            image: exerciseDetail.image,
+            video: exerciseDetail.video,
+            advancedLevel: exerciseDetail.advancedLevel,
+            muscleGroup: exerciseDetail.muscleGroup,
+            equipment: exerciseDetail.equipment,
+          };
+        }
       });
 
       const totalDuration = exercisesWithDuration.reduce(
@@ -200,7 +306,11 @@ export const updateTrainingPlanService = async (
         0,
       );
 
-      return { ...day, totalDuration, exercises: exercisesWithDuration };
+      return {
+        ...day,
+        totalDuration,
+        exercises: exercisesWithDuration,
+      };
     });
   }
 
