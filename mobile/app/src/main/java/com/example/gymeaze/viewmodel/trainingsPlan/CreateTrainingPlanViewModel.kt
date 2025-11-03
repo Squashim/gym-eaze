@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 data class TrainingSet(
     val repetitions: Int? = null,
-    val weight: Double? = 0.5,
+    val weight: Double? = null,
     val duration: Int? = null
 ) {
     val isRepsSet: Boolean get() = repetitions != null
@@ -29,7 +29,7 @@ data class DayExercise(
     val isRepsSet: Boolean = true,
     val duration: Int = 0,
     val restAfterSet: Int = 60,
-    val sets: List<TrainingSet> = listOf(TrainingSet(repetitions = 10, weight = 0.5))
+    val sets: List<TrainingSet> = listOf(TrainingSet(repetitions = 10))
 )
 
 data class TrainingDay(
@@ -38,18 +38,6 @@ data class TrainingDay(
     val isRestDay: Boolean = false,
     val exercises: List<DayExercise> = emptyList(),
     val totalDuration: Int = 0
-)
-
-data class ValidationError(
-    val field: String,
-    val message: String
-)
-
-data class SetValidation(
-    val repetitionsError: String? = null,
-    val weightError: String? = null,
-    val durationError: String? = null,
-    val restTimeError: String? = null
 )
 
 enum class TrainingPlanCreatorStep { BASIC, DAYS_AND_EXERCISES, SUMMARY }
@@ -102,13 +90,11 @@ data class CreateTrainingPlanState(
 
                 dayExercise.sets.all { set ->
                     if (set.isRepsSet) {
-
-                        val repsValid = set.repetitions != null && set.repetitions!! in 1..100
-                        val weightValid = set.weight != null && set.weight!! >= 0.5 && set.weight!! <= 300.0
+                        val repsValid = set.repetitions != null && set.repetitions in 1..100
+                        val weightValid = set.weight == null || set.weight <= 300.0
                         repsValid && weightValid
                     } else {
-
-                        set.duration != null && set.duration!! in 30..21600
+                        set.duration != null && set.duration in 30..21600
                     }
                 }
             }
@@ -210,7 +196,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                 val dayExercise = DayExercise(
                     exercise = exercise,
                     isRepsSet = true,
-                    sets = listOf(TrainingSet(repetitions = 10, weight = 0.5))
+                    sets = listOf(TrainingSet(repetitions = 10))
                 )
                 val updatedExercises = day.exercises + dayExercise
                 currentDays[dayIndex] = day.copy(exercises = updatedExercises)
@@ -261,7 +247,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                 exercises[exerciseIndex] = exercise.copy(
                     isRepsSet = !exercise.isRepsSet,
                     sets = if (!exercise.isRepsSet) {
-                        listOf(TrainingSet(repetitions = 10, weight = 0.5))
+                        listOf(TrainingSet(repetitions = 10))
                     } else {
                         listOf(TrainingSet(duration = 60))
                     }
@@ -281,7 +267,7 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                 val exercise = exercises[exerciseIndex]
                 if (exercise.sets.size < 15) {
                     val newSet = if (exercise.isRepsSet) {
-                        TrainingSet(repetitions = 10, weight = 0.5)
+                        TrainingSet(repetitions = 10)
                     } else {
                         TrainingSet(duration = 60)
                     }
@@ -453,20 +439,15 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                     dayExercise.sets.forEachIndexed { setIndex, set ->
                         if (set.isRepsSet) {
 
-                            if (set.repetitions == null || set.repetitions!! !in 1..100) {
+                            if (set.repetitions == null || set.repetitions !in 1..100) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Powtórzenia muszą być między 1 a 100")
                             }
 
-                            if (set.weight != null && (set.weight!! < 0.5 || set.weight!! > 400.0)) {
-                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga musi być między 0.5kg a 400kg")
-                            }
-
-                            if (set.weight == null) {
-                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga jest wymagana")
+                            if (set.weight != null &&  set.weight > 300.0) {
+                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga może mieć maksymalnie 300kg")
                             }
                         } else {
-
-                            if (set.duration == null || set.duration!! !in 30..21600) {
+                            if (set.duration == null || set.duration !in 30..21600) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Czas musi być między 30s a 6h")
                             }
                         }
@@ -524,17 +505,4 @@ class CreateTrainingPlanViewModel(application: Application) : AndroidViewModel(a
                 !days[dayIndex].isRestDay &&
                 days[dayIndex].exercises.isNotEmpty()
     }
-
-    fun forceToggleRestDay(dayIndex: Int) {
-        val currentDays = _uiState.value.days.toMutableList()
-        if (dayIndex in currentDays.indices) {
-            val day = currentDays[dayIndex]
-            currentDays[dayIndex] = day.copy(
-                isRestDay = !day.isRestDay,
-                exercises = if (!day.isRestDay) emptyList() else day.exercises
-            )
-            _uiState.value = _uiState.value.copy(days = currentDays)
-        }
-    }
-
 }

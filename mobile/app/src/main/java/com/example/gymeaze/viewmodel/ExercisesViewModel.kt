@@ -606,10 +606,10 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun switchToMode(mode: ExerciseMode, userId: String? = null) {
-        if (_currentMode.value == mode) return
+        if (_currentMode.value == mode && _uiState.value.exercises.isNotEmpty()) return
 
         _currentMode.value = mode
-        _uiState.value = ExercisesUiState()
+        _uiState.value = ExercisesUiState(isLoading = true)
 
         when (mode) {
             ExerciseMode.ALL -> loadExercises()

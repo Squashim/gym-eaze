@@ -54,7 +54,7 @@ function ReportList({ isLoading, isError, reports }: ReportListProps) {
 
   return reports.map((report) => (
     <ReportGroup
-      isAuthor={isAuthor(report.reportedItem ? report.reportedItem.author._id : null)}
+      isAuthor={isAuthor(report.reportedItem ? report.reportedItem.author?._id : null)}
       key={report.reportedItemId}
       report={report}
     />

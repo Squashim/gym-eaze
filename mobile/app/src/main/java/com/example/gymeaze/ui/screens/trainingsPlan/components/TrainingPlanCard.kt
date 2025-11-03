@@ -56,6 +56,7 @@ import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.ui.theme.getYellowColor
 import com.example.gymeaze.util.GlobalFavoriteState
+import com.example.gymeaze.util.GlobalLikeState
 import com.example.gymeaze.util.formatToRelativeTime
 
 @Composable
@@ -73,6 +74,8 @@ fun TrainingPlanCard(
     val context = LocalContext.current
     val favoriteIds by GlobalFavoriteState.getInstance(context).favoriteTrainingPlanIds.collectAsState()
     val isFavoriteGlobal = favoriteIds.contains(trainingPlan.id)
+
+    val globalLikeState = GlobalLikeState.getInstance(context)
 
     val authRepository = AuthRepository(context)
     val currentUser by produceState<User?>(initialValue = null) {
@@ -241,13 +244,14 @@ fun TrainingPlanCard(
                             onClick = {
                                 try {
                                     onLikeClick(trainingPlan.id)
+                                    globalLikeState.toggleLike(trainingPlan.id)
                                 } catch (e: Exception) {
                                 }
                             },
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
-                                imageVector = if (trainingPlan.likes > 0) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
+                                imageVector = if (globalLikeState.isLiked(trainingPlan.id)) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
                                 contentDescription = "Polub",
                                 tint = getPrimaryColor(),
                                 modifier = Modifier.size(20.dp)

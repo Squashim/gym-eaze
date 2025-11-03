@@ -566,9 +566,6 @@ export const getTrainingPlansByUserService = async (
   return { items, total, page, pageSize };
 };
 
-// poprawa wyswietlania cwiczen stworzonego planu mobilka/backend
-// poprawa edycji planu treningowe front/mobilka/backend
-
 export const generateTrainingPlanPDFService = async (planId: string, userId?: string) => {
   const trainingPlan = await getTrainingPlanByIdService(planId, userId);
 

@@ -14,7 +14,7 @@ data class Exercise(
     val advancedLevel: String,
     val muscleGroup: List<MuscleGroup>,
     val equipment: List<Equipment>,
-    val hashtags: List<String> = emptyList(),
+    val hashtags: List<String>? = emptyList(),
     val author: ExerciseAuthor,
     val createdAt: String,
     val updatedAt: String

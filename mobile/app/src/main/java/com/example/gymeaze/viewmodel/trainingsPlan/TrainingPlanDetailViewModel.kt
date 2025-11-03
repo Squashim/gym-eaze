@@ -49,7 +49,6 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
     private val repository = TrainingPlanRepository(application)
     private val authRepository = AuthRepository(application)
-    private val exerciseRepository = ExerciseRepository(application)
     private val postRepository = PostsRepository(application)
 
     private val startedTrainingRepository = StartedTrainingRepository(application)
@@ -60,7 +59,6 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     val isDownloadingPdf: StateFlow<Boolean> = _isDownloadingPdf.asStateFlow()
 
     private val _downloadProgress = MutableStateFlow(0f)
-    val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
 
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
@@ -75,6 +73,9 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+
+    private val _likedPlans = MutableStateFlow<Set<String>>(emptySet())
+    val likedPlans: StateFlow<Set<String>> = _likedPlans
 
     init {
         loadCurrentUser()
@@ -113,8 +114,6 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                         error = null
                     )
 
-                    loadExerciseDetails(plan)
-
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         trainingPlan = null,
@@ -132,57 +131,6 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    private fun loadExerciseDetails(plan: TrainingPlan) {
-        viewModelScope.launch {
-            try {
-
-                val exerciseIds = plan.days.flatMap { day ->
-                    day.exercises.map { it.id }
-                }.distinct()
-
-                if (exerciseIds.isEmpty()) {
-                    return@launch
-                }
-
-                loadExercisesIndividually(plan, exerciseIds)
-
-            } catch (e: Exception) {
-            }
-        }
-    }
-
-    private fun loadExercisesIndividually(plan: TrainingPlan, exerciseIds: List<String>) {
-        viewModelScope.launch {
-            val exerciseMap = mutableMapOf<String, Exercise>()
-
-            exerciseIds.forEach { exerciseId ->
-                try {
-                    val result = exerciseRepository.getExerciseById(exerciseId)
-                    result.onSuccess { exercise ->
-                        exerciseMap[exerciseId] = exercise
-                    }
-                } catch (e: Exception) {
-                }
-            }
-
-            if (exerciseMap.isNotEmpty()) {
-                val updatedPlan = plan.copy(
-                    days = plan.days.map { day ->
-                        day.copy(
-                            exercises = day.exercises.map { dayExercise ->
-                                dayExercise.copy(
-                                    exercise = exerciseMap[dayExercise.id]
-                                )
-                            }
-                        )
-                    }
-                )
-
-                _uiState.value = _uiState.value.copy(trainingPlan = updatedPlan)
-            }
-        }
-    }
-
     fun toggleLike() {
         val currentPlan = _uiState.value.trainingPlan ?: return
 
@@ -191,11 +139,18 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 val result = repository.toggleTrainingPlanLike(currentPlan.id)
                 result.onSuccess { likeResponse ->
                     _uiState.value = _uiState.value.copy(
+                        snackbarMessage = likeResponse.message,
+                        snackbarType = SnackbarType.SUCCESS,
                         trainingPlan = currentPlan.copy(
                             likes = likeResponse.likes,
-                            days = currentPlan.days ?: emptyList()
+                            days = currentPlan.days
                         )
                     )
+                    _likedPlans.update { current  ->
+                        if(current.contains(currentPlan.id)) current - currentPlan.id
+                        else current + currentPlan.id
+                    }
+
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         error = exception.message ?: "Błąd podczas polubienia planu",
@@ -433,6 +388,10 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
             }
         }
     }
+
+    fun isTrainingPlanLiked(planId: String): Flow<Boolean>  = _likedPlans.map { it.contains(planId) }.distinctUntilChanged()
+
+
     //=========================COMMENTS SECTION=============================
 
     private val _trainingPlanComments = MutableStateFlow<List<Comment>>(emptyList())
@@ -648,25 +607,17 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    fun fetchUserCommentLikes() {
+    fun fetchUserLikes() {
         viewModelScope.launch {
             try {
                 val response = repository.getUserLikes()
                 response.onSuccess { likesResponse ->
                     _likedComments.value = likesResponse.comments.map { it.toString() }.toSet()
+                    _likedPlans.value = likesResponse.trainingPlans.map{it.toString()}.toSet()
                 }
             } catch (e: Exception) {
-                println("Błąd podczas pobierania polubionych komentarzy: ${e.message}")
+                println("Błąd podczas pobierania polubionych: ${e.message}")
             }
         }
-    }
-
-    fun clearTrainingPlanComments() {
-        _trainingPlanComments.value = emptyList()
-        _repliesMap.value = emptyMap()
-        _likedComments.value = emptySet()
-        _hasMoreComments.value = false
-        _nextCursorComment.value = null
-        _isLoadingComments.value = false
     }
 }

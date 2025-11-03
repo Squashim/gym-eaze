@@ -23,7 +23,7 @@ export type GetReportsApiResponse = {
   lastReportedAt: string;
   reportedItem?: {
     _id: string;
-    author: Author & { isBlocked?: boolean };
+    author?: Author & { isBlocked?: boolean };
     content?: string;
     name?: string;
     parentType?: ItemType;

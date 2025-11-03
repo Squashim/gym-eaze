@@ -148,6 +148,23 @@ class ExerciseRepository(private val context: Context) {
         }
     }
 
+    suspend fun getExerciseByIds(exerciseIds: List<String>): Result<List<Exercise>> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getExercisesByIds(exerciseIds)
+
+            if (response.isSuccessful && response.body() != null) {
+                val exercises = response.body()!!
+                Result.success(exercises)
+            } else {
+                val raw = response.errorBody()?.string()
+                val msg = AuthErrorMapper.mapAuthErrorToUserMessage(context, raw, response.code())
+                Result.failure(IllegalStateException(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun toggleExerciseLike(exerciseId: String): Result<LikeResponse> = withContext(Dispatchers.IO) {
         try {
             val response = api.toggleExerciseLike(exerciseId)

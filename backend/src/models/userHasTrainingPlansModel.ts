@@ -1,9 +1,9 @@
 import mongoose, { Types } from 'mongoose';
-import { ITrainingPlan } from './trainingPlanModel';
-import { IExercise } from './exerciseModel';
 import { Goal } from '../constants/goals';
 import { AdvancedLevel } from '../constants/advancedLevel';
 import { Set } from '../types/trainingPlan';
+import { IMuscleGroup } from './muscleGroup';
+import { IEquipment } from './equipmentModel';
 
 export interface IUserHasTrainingPlans extends mongoose.Document {
   userId: Types.ObjectId;
@@ -26,13 +26,15 @@ export interface IUserHasTrainingPlans extends mongoose.Document {
       isRestDay: boolean;
       exercises: {
         originalId: Types.ObjectId;
+
         name: string;
         description: string;
         image: string;
         video: string;
         advancedLevel: AdvancedLevel;
-        muscleGroup: { id: Types.ObjectId; name: string }[];
-        equipment: { id: Types.ObjectId; name: string }[];
+        muscleGroup: (Types.ObjectId | IMuscleGroup)[];
+        equipment: (Types.ObjectId | IEquipment)[];
+
         isRepsSet: boolean;
         duration: number;
         restAfterSet: number;
@@ -45,14 +47,6 @@ export interface IUserHasTrainingPlans extends mongoose.Document {
     totalDays: number;
     completedDays: {
       dayNumber: number;
-      exercises: {
-        exerciseOriginalId: Types.ObjectId;
-        sets: {
-          balancePercentage?: number;
-          tempoPercentage?: number;
-          time?: number;
-        }[];
-      }[];
     }[];
   };
   createdAt: Date;
@@ -149,26 +143,16 @@ const userHasTrainingPlansSchema = new mongoose.Schema(
               },
               muscleGroup: [
                 {
-                  id: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    required: true,
-                  },
-                  name: {
-                    type: String,
-                    required: true,
-                  },
+                  type: mongoose.Schema.Types.ObjectId,
+                  ref: 'MuscleGroup',
+                  required: true,
                 },
               ],
               equipment: [
                 {
-                  id: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    required: true,
-                  },
-                  name: {
-                    type: String,
-                    required: true,
-                  },
+                  type: mongoose.Schema.Types.ObjectId,
+                  ref: 'Equipment',
+                  required: true,
                 },
               ],
               isRepsSet: {
@@ -191,6 +175,9 @@ const userHasTrainingPlansSchema = new mongoose.Schema(
             },
           ],
         },
+        {
+          _id: false,
+        },
       ],
     },
     completedAt: {
@@ -208,29 +195,6 @@ const userHasTrainingPlansSchema = new mongoose.Schema(
             type: Number,
             required: true,
           },
-          exercises: [
-            {
-              exerciseOriginalId: {
-                type: mongoose.Schema.Types.ObjectId,
-                required: true,
-              },
-              sets: [
-                {
-                  balancePercentage: {
-                    type: Number,
-                  },
-                  tempoPercentage: {
-                    type: Number,
-                  },
-                  time: {
-                    type: Number,
-                  },
-                  _id: false,
-                },
-              ],
-              _id: false,
-            },
-          ],
           _id: false,
         },
       ],

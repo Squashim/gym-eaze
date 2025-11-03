@@ -89,9 +89,10 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const trainingPlan = await TrainingPlan.findById(trainingPlanId)
-    .populate('author', 'username profileDetails.profilePicture')
-    .populate('days.exercises.id');
+  const trainingPlan = await TrainingPlan.findById(trainingPlanId).populate(
+    'author',
+    'username profileDetails.profilePicture',
+  );
 
   if (!trainingPlan) {
     throw new Error('Plan treningowy nie został znaleziony');
@@ -263,14 +264,24 @@ export const getStartedTrainingPlanDayDetailsService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId).lean();
+  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId)
+    .populate({
+      path: 'trainingPlanSnapshot.days.exercises.equipment',
+      model: 'Equipment',
+      select: 'name',
+    })
+    .populate({
+      path: 'trainingPlanSnapshot.days.exercises.muscleGroup',
+      model: 'MuscleGroup',
+      select: 'name',
+    })
+    .lean();
 
   if (!userTrainingPlan) {
     throw new Error('Rozpoczęty plan treningowy nie został znaleziony');
   }
 
   const snapshot = (userTrainingPlan as any).trainingPlanSnapshot;
-  const progress = (userTrainingPlan as any).progress;
 
   const day = snapshot.days.find((d: any) => d.dayNumber === dayNumber);
 
@@ -278,25 +289,11 @@ export const getStartedTrainingPlanDayDetailsService = async (
     throw new Error('Dzień treningowy nie został znaleziony');
   }
 
-  const exercises = day.exercises.map((exercise: any) => ({
-    originalId: exercise.originalId,
-    name: exercise.name,
-    description: exercise.description,
-    image: exercise.image,
-    video: exercise.video,
-    muscleGroup: exercise.muscleGroup,
-    equipment: exercise.equipment,
-    isRepsSet: exercise.isRepsSet,
-    duration: exercise.duration,
-    restAfterSet: exercise.restAfterSet,
-    sets: exercise.sets,
-  }));
-
   return {
     dayNumber: day.dayNumber,
     name: day.name,
     totalDuration: day.totalDuration,
-    exercises,
+    exercises: day.exercises,
   };
 };
 

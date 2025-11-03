@@ -48,6 +48,7 @@ import com.example.gymeaze.ui.screens.posts.loggedIn.PostsFollowedUsers
 import com.example.gymeaze.ui.screens.profile.settings.HelpScreen
 import com.example.gymeaze.ui.screens.profile.settings.PrivacySettingsScreen
 import com.example.gymeaze.util.GlobalFavoriteState
+import com.example.gymeaze.util.GlobalLikeState
 import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.trainingsPlan.EditTrainingPlanViewModel
 import com.example.gymeaze.viewmodel.ExercisesViewModel
@@ -68,6 +69,7 @@ class MainActivity : ComponentActivity() {
 
                 if (isLoggedIn) {
                     GlobalFavoriteState.getInstance(this@MainActivity).refreshFromBackend()
+                    GlobalLikeState.getInstance(this@MainActivity).refreshFromBackend()
                 }
             } catch (e: Exception) {
             }
@@ -259,7 +261,6 @@ class MainActivity : ComponentActivity() {
                                 val isEditMode = authViewModel.isEditPlanExerciseSelectionActive()
 
                                 ExerciseSelectionScreen(
-                                    dayIndex = selectedDayIndex!!,
                                     onBackClick = {
                                         if (isEditMode) {
                                             authViewModel.clearEditPlanExerciseSelectionCallback()
@@ -338,7 +339,10 @@ class MainActivity : ComponentActivity() {
 
                                 EditTrainingPlanScreen(
                                     planId = selectedEditPlanId!!,
-                                    onBackClick = authViewModel::hideEditTrainingPlanScreen,
+                                    onBackClick = {
+                                        authViewModel.hideEditTrainingPlanScreen()
+                                        editViewModel.clearTrainingPlan()
+                                    },
                                     onSaveSuccess = authViewModel::hideEditTrainingPlanScreen,
                                     onNavigateToExerciseSelection = { dayIndex ->
                                         authViewModel.setEditPlanExerciseSelectionCallback { exercise ->

@@ -137,7 +137,7 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
                 },
                 selectedMuscleGroups = muscleGroupsWithImages,
                 selectedEquipment = equipmentWithImages,
-                hashtags = exercise.hashtags,
+                hashtags = exercise.hashtags ?: emptyList(),
                 existingImageUrl = exercise.image,
                 existingVideoUrl = exercise.video,
                 imageUri = null,
