@@ -1,6 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import User from '../models/userModel';
-import UserHasTrainingPlans from '../models/userHasTrainingPlansModel';
+import StartedTrainingPlan from '../models/startedTrainingPlanModel';
 import { StatusTraining } from '../constants/statuses';
 import TrainingPlan from '../models/trainingPlanModel';
 
@@ -36,7 +36,7 @@ export const getStartedTrainingPlansService = async (
   const startedTrainingIds = user.statistics.startedTrainingPlans.map((stp) => stp.trainingPlanId);
 
   const [items, total] = await Promise.all([
-    UserHasTrainingPlans.find({ _id: { $in: startedTrainingIds } })
+    StartedTrainingPlan.find({ _id: { $in: startedTrainingIds } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(pageSize)
@@ -44,7 +44,7 @@ export const getStartedTrainingPlansService = async (
         'trainingPlanSnapshot.originalId trainingPlanSnapshot.name trainingPlanSnapshot.image trainingPlanSnapshot.goal trainingPlanSnapshot.advancedLevel trainingPlanSnapshot.author trainingPlanSnapshot.days progress createdAt',
       )
       .lean(),
-    UserHasTrainingPlans.countDocuments({ _id: { $in: startedTrainingIds } }),
+    StartedTrainingPlan.countDocuments({ _id: { $in: startedTrainingIds } }),
   ]);
 
   const itemsWithFullInfo = items.map((item: any) => {
@@ -101,7 +101,7 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
   const startedTrainingIds = user.statistics.startedTrainingPlans.map((stp) => stp.trainingPlanId);
 
   if (startedTrainingIds.length > 0) {
-    const existingUserTrainingPlans = await UserHasTrainingPlans.find({
+    const existingUserTrainingPlans = await StartedTrainingPlan.find({
       _id: { $in: startedTrainingIds },
       'trainingPlanSnapshot.originalId': trainingPlanId,
     });
@@ -126,7 +126,7 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
     days: trainingPlan.days,
   };
 
-  const userTrainingPlan = new UserHasTrainingPlans({
+  const userTrainingPlan = new StartedTrainingPlan({
     userId: user._id,
     trainingPlanSnapshot,
     progress: {
@@ -163,7 +163,7 @@ export const deleteStartedTrainingPlanService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findByIdAndDelete(userTrainingPlanId);
+  const userTrainingPlan = await StartedTrainingPlan.findByIdAndDelete(userTrainingPlanId);
   if (!userTrainingPlan) {
     throw new Error('Rozpoczęty plan treningowy nie został znaleziony');
   }
@@ -188,7 +188,7 @@ export const resetStartedTrainingPlanService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId);
+  const userTrainingPlan = await StartedTrainingPlan.findById(userTrainingPlanId);
   if (!userTrainingPlan) {
     throw new Error('Rozpoczęty plan treningowy nie został znaleziony');
   }
@@ -224,7 +224,7 @@ export const getStartedTrainingPlanDaysService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId)
+  const userTrainingPlan = await StartedTrainingPlan.findById(userTrainingPlanId)
     .select('trainingPlanSnapshot.days progress.completedDays')
     .lean();
 
@@ -264,7 +264,7 @@ export const getStartedTrainingPlanDayDetailsService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId)
+  const userTrainingPlan = await StartedTrainingPlan.findById(userTrainingPlanId)
     .populate({
       path: 'trainingPlanSnapshot.days.exercises.equipment',
       model: 'Equipment',
@@ -308,7 +308,7 @@ export const completeDayTrainingService = async (
 
   const [user, userTrainingPlan] = await Promise.all([
     User.findById(userId),
-    UserHasTrainingPlans.findById(userTrainingPlanId),
+    StartedTrainingPlan.findById(userTrainingPlanId),
   ]);
 
   if (!user) {
@@ -333,30 +333,7 @@ export const completeDayTrainingService = async (
     throw new Error('Ten dzień jest już ukończony');
   }
 
-  const completedDay = {
-    dayNumber,
-    exercises: day.exercises.map((exercise) => ({
-      exerciseOriginalId: exercise.originalId,
-      sets: exercise.sets.map((set: any) => {
-        let time = 0;
-        if ('repetitions' in set) {
-          time = set.repetitions * 3;
-        } else if ('duration' in set) {
-          time = set.duration;
-        }
-        return { time };
-      }),
-    })),
-  };
-
-  userTrainingPlan.progress.completedDays.push(completedDay);
-
-  const totalDayTime = completedDay.exercises.reduce(
-    (sum, ex) => sum + ex.sets.reduce((s, set) => s + (set.time || 0), 0),
-    0,
-  );
-
-  user.statistics.totalTrainingsTime += totalDayTime;
+  userTrainingPlan.progress.completedDays.push({ dayNumber });
 
   const allDaysCompleted = userTrainingPlan.trainingPlanSnapshot.days.every((day) => {
     if (day.isRestDay) return true;

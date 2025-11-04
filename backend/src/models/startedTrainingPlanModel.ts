@@ -5,7 +5,7 @@ import { Set } from '../types/trainingPlan';
 import { IMuscleGroup } from './muscleGroup';
 import { IEquipment } from './equipmentModel';
 
-export interface IUserHasTrainingPlans extends mongoose.Document {
+export interface IStartedTrainingPlan extends mongoose.Document {
   userId: Types.ObjectId;
   trainingPlanSnapshot: {
     originalId: Types.ObjectId;
@@ -53,7 +53,7 @@ export interface IUserHasTrainingPlans extends mongoose.Document {
   updatedAt: Date;
 }
 
-const userHasTrainingPlansSchema = new mongoose.Schema(
+const startedTrainingPlanSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -203,9 +203,9 @@ const userHasTrainingPlansSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const UserHasTrainingPlans = mongoose.model<IUserHasTrainingPlans>(
-  'UserHasTrainingPlans',
-  userHasTrainingPlansSchema,
+const StartedTrainingPlan = mongoose.model<IStartedTrainingPlan>(
+  'StartedTrainingPlan',
+  startedTrainingPlanSchema,
 );
 
-export default UserHasTrainingPlans;
+export default StartedTrainingPlan;

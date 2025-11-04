@@ -8,7 +8,7 @@ import {
   getStartedTrainingPlans,
   resetStartedTrainingPlan,
   startTrainingPlan,
-} from '../controllers/userHasTrainingPlansController';
+} from '../controllers/startedTrainingPlanController';
 
 const router = express.Router();
 

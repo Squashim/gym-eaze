@@ -1,12 +1,12 @@
-import Badge from "../../models/badgeModel";
-import Equipment from "../../models/equipmentModel";
-import Exercise from "../../models/exerciseModel";
-import MuscleGroup from "../../models/muscleGroup";
-import Post from "../../models/postModel";
-import TrainingPlan from "../../models/trainingPlanModel";
-import User from "../../models/userModel";
-import Comment from "../../models/commentModel";
-import UserHasTrainingPlans from "../../models/userHasTrainingPlansModel";
+import Badge from '../../models/badgeModel';
+import Equipment from '../../models/equipmentModel';
+import Exercise from '../../models/exerciseModel';
+import MuscleGroup from '../../models/muscleGroup';
+import Post from '../../models/postModel';
+import TrainingPlan from '../../models/trainingPlanModel';
+import User from '../../models/userModel';
+import Comment from '../../models/commentModel';
+import UserHasTrainingPlans from '../../models/startedTrainingPlanModel';
 
 export const downloadedBadge = async () => {
   const badge = await Badge.find();
@@ -25,20 +25,20 @@ export const downloadedMuscleGroup = async () => {
 
 export const downloadedExercises = async () => {
   const exercises = await Exercise.find()
-    .populate("muscleGroup")
-    .populate("equipment")
-    .populate("hashtags");
+    .populate('muscleGroup')
+    .populate('equipment')
+    .populate('hashtags');
 
   console.log(JSON.stringify(exercises, null, 2));
 };
 
 export const downloadedUsers = async () => {
-  const users = await User.find().populate("favorites.exercises.exerciseId");
+  const users = await User.find().populate('favorites.exercises.exerciseId');
   console.log(JSON.stringify(users, null, 2));
 };
 
 export const downloadedPosts = async () => {
-  const posts = await Post.find().populate("author");
+  const posts = await Post.find().populate('author');
   console.log(JSON.stringify(posts, null, 2));
 };
 

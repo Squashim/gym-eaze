@@ -8,7 +8,7 @@ import {
   getStartedTrainingPlansService,
   resetStartedTrainingPlanService,
   startTrainingPlanService,
-} from '../services/userHasTrainingPlansService';
+} from '../services/startedTrainingPlanService';
 
 export const getStartedTrainingPlans = async (req: AuthRequest, res: Response) => {
   try {

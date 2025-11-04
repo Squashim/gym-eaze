@@ -1,11 +1,11 @@
-import { Types } from 'mongoose';
 import User from '../../models/userModel';
 import { UserRole } from '../../constants/roles';
 import { Goal } from '../../constants/goals';
-import { Gender } from '../../constants/genders';
-import { StatusTraining } from '../../constants/statuses';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
+import { badgesIds } from './badgeData';
+import { Country } from '../../constants/countries';
+import { Gender } from '../../constants/genders';
 
 const saltRounds = 10;
 
@@ -45,43 +45,55 @@ const users = [
     role: UserRole.admin,
     profileDetails: {
       profilePicture:
-        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
-      description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
+        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762268402/exercises/images/slifczyhytpf0vvn9kx8.png',
+      description: 'Oficjalne konto GymEaze',
       goal: Goal.calorieBurn,
     },
+    followers: [userIds.monikaGym],
     followedUsers: [
-      {
-        _id: userIds.monikaGym,
-      },
+      userIds.monikaGym,
+      userIds.walterWhite,
+      userIds.jessiePinkman,
+      userIds.saulGoodman,
+      userIds.hankSchrader,
+      userIds.gusFring,
     ],
+    privacySettings: {
+      isTrainingStatisticsPublic: false,
+    },
     badges: [
       {
-        badge: new Types.ObjectId('6887b71977991eea1a365c96'),
+        badge: badgesIds.time.oneYear,
         isPinnded: true,
         awardedAt: new Date(),
       },
       {
-        badge: new Types.ObjectId('6887b73a2078947c7f327f80'),
+        badge: badgesIds.exercises.first,
         isPinned: false,
         awardedAt: new Date(),
       },
       {
-        badge: new Types.ObjectId('6887b63aa3234565c7b5392b'),
+        badge: badgesIds.exercises.five,
         isPinned: true,
         awardedAt: new Date(),
       },
       {
-        badge: new Types.ObjectId('6887b62a0b6d756908a8e1b4'),
+        badge: badgesIds.exercises.ten,
         isPinned: false,
         awardedAt: new Date(),
       },
       {
-        badge: new Types.ObjectId('6887b61df9e7b4515c87c154'),
+        badge: badgesIds.exercises.twenty,
+        isPinned: true,
+        awardedAt: new Date(),
+      },
+      {
+        badge: badgesIds.workouts.first,
         isPinned: false,
         awardedAt: new Date(),
       },
       {
-        badge: new Types.ObjectId('6887b4a86ded2a8bbf369396'),
+        badge: badgesIds.workouts.five,
         isPinned: false,
         awardedAt: new Date(),
       },
@@ -94,10 +106,20 @@ const users = [
     password: 'monikaGym12345678!',
     role: UserRole.user,
     profileDetails: {
-      profilePicture:
-        'https://res.cloudinary.com/dtglpgvzi/image/upload/v1757191016/profile_pictures/mrydusfs3zbeyiwpvdem.jpg',
       description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
+      goal: Goal.muscleGain,
     },
+    personalDetails: {
+      firstName: 'Monika',
+      country: Country.PL,
+    },
+    fitnessDetails: {
+      height: 160,
+      weight: 62,
+      age: 28,
+      gender: Gender.female,
+    },
+    followers: [userIds.admin],
   },
   {
     _id: userIds.walterWhite,
@@ -108,7 +130,28 @@ const users = [
     profileDetails: {
       profilePicture:
         'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230010/walterwhite_xfninq.png',
+      description: 'Ja jestem tym, który ćwiczy.',
+      goal: Goal.endurance,
     },
+    personalDetails: {
+      firstName: 'Walter',
+      lastName: 'White',
+      country: Country.US,
+    },
+    fitnessDetails: {
+      height: 175,
+      weight: 78,
+      age: 52,
+      gender: Gender.male,
+    },
+    privacySettings: {
+      isPersonalDetailsPublic: false,
+      isFitnessDetailsPublic: true,
+      isBadgesDetailsPublic: true,
+      isGoalPublic: true,
+      isTrainingStatisticsPublic: false,
+    },
+    followers: [userIds.admin],
   },
   {
     _id: userIds.jessiePinkman,
@@ -120,6 +163,13 @@ const users = [
       profilePicture:
         'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230219/jessiePinkman_r3kx75.png',
     },
+    fitnessDetails: {
+      height: 173,
+      weight: 70,
+      age: 25,
+      gender: Gender.male,
+    },
+    followers: [userIds.admin],
   },
   {
     _id: userIds.saulGoodman,
@@ -130,7 +180,20 @@ const users = [
     profileDetails: {
       profilePicture:
         'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230476/Saul_Goodman_xyplfj.png',
+      description: 'Lepiej zadzwoń do Saula!',
+      goal: Goal.flexibility,
     },
+    personalDetails: {
+      firstName: 'Jimmy',
+      country: Country.US,
+    },
+    fitnessDetails: {
+      height: 177,
+      weight: 85,
+      age: 47,
+      gender: Gender.male,
+    },
+    followers: [userIds.admin],
   },
   {
     _id: userIds.hankSchrader,
@@ -141,7 +204,20 @@ const users = [
     profileDetails: {
       profilePicture:
         'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230643/Hank_Schrader_wz7mov.png',
+      description: 'Kolekcjoner odznak i minerałów.',
+      goal: Goal.strength,
     },
+    personalDetails: {
+      firstName: 'Hank',
+      country: Country.US,
+    },
+    fitnessDetails: {
+      height: 183,
+      weight: 95,
+      age: 45,
+      gender: Gender.male,
+    },
+    followers: [userIds.admin],
   },
   {
     _id: userIds.gusFring,
@@ -153,200 +229,24 @@ const users = [
       profilePicture:
         'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759230808/Gus_Fring_q3a5nt.png',
     },
-  },
-  /*
-  {
-    _id: new Types.ObjectId('68875a0b053920a2eca69cbe'), // monikaGym
-    username: 'monikaGym',
-    email: 'monikaGym@example.com',
-    password: 'TestPasswordddd123!',
-    lastLoginAt: new Date(),
-    role: UserRole.user,
-    favorites: {
-      trainingPlans: [],
-      exercises: [
-        new Types.ObjectId('68875b48a6d40cbbe47d1d9a'),
-        new Types.ObjectId('68875afe9d9533738f442263'),
-      ],
-    },
-    followedUsers: [],
-    followers: [
-      new Types.ObjectId('6887cc687882c42182cdf1f5'), //paulaRunner
-    ],
-    statistics: {
-      totalWeight: 0,
-      totalTrainingsTime: 0,
-      startedTrainingPlans: [
-        {
-          trainingPlanId: '6888e4ecdbbdf0460db19682',
-          status: StatusTraining.active,
-        },
-      ],
-    },
-    profileDetails: {
-      profilePicture: 'https://i.ibb.co/mrLmnSXK/Zrzut-ekranu-2025-07-28-133242.png',
-      description: 'Miłośniczka fitnessu i zdrowego stylu życia.',
-      goal: Goal.calorieBurn,
-    },
     personalDetails: {
-      firstName: 'Monika',
-      lastName: 'Młynarczyk',
-      country: 'PL',
-    },
-    fitnessDetails: {
-      height: 165,
-      weight: 60,
-      age: 28,
-      gender: Gender.female,
-    },
-    privacySettings: {
-      isPersonalDetailsPublic: true,
-      isFitnessDetailsPublic: true,
-      isBadgesDetailsPublic: true,
-      isGoalPublic: true,
-      isTrainingStatisticsPublic: true,
-    },
-    badges: [
-      {
-        badge: new Types.ObjectId('6887b71977991eea1a365c96'),
-        isPinnded: true,
-        awardedAt: new Date(),
-      },
-      {
-        badge: new Types.ObjectId('6887b73a2078947c7f327f80'),
-        isPinned: false,
-        awardedAt: new Date(),
-      },
-      {
-        badge: new Types.ObjectId('6887b63aa3234565c7b5392b'),
-        isPinned: true,
-        awardedAt: new Date(),
-      },
-    ],
-    notifications: [
-      new Types.ObjectId('6887b9757bd7aefa4ba5edec'),
-      new Types.ObjectId('6888cb96cc1c5787cec0f18f'),
-      new Types.ObjectId('6888e5ab11463715323aa72c'),
-    ],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    _id: new Types.ObjectId('6887c5f43118c221f43b4e23'), // fitnessFan
-    username: 'fitnessFan',
-    email: 'fitnessFan@example.com',
-    password: 'TestPasswordddd123!',
-    lastLoginAt: new Date(),
-    role: UserRole.user,
-    favorites: {
-      trainingPlans: [],
-      exercises: [new Types.ObjectId('6887c6be1f99e50d61923bb2')],
-    },
-    followedUsers: [],
-    followers: [
-      new Types.ObjectId('6887cc687882c42182cdf1f5'), // monikaGym
-    ],
-    statistics: {
-      totalWeight: 0,
-      totalTrainingsTime: 0,
-      startedTrainingPlans: [],
-    },
-    profileDetails: {
-      profilePicture: 'https://i.ibb.co/dJ10xpBG/Zrzut-ekranu-2025-07-28-205510.png',
-      description: 'Entuzjasta zdrowego stylu życia i aktywności fizycznej.',
-      goal: Goal.muscleGain,
-    },
-    personalDetails: {
-      firstName: 'Fabian',
-      lastName: 'Czarnecki',
-      country: 'PL',
-    },
-    fitnessDetails: {
-      height: 195,
-      weight: 90,
-      age: 32,
-      gender: Gender.male,
-    },
-    privacySettings: {
-      isPersonalDetailsPublic: true,
-      isFitnessDetailsPublic: true,
-      isBadgesDetailsPublic: true,
-      isGoalPublic: true,
-      isTrainingStatisticsPublic: true,
-    },
-    badges: [
-      {
-        badge: new Types.ObjectId('6887b71977991eea1a365c96'),
-        isPinned: true,
-        awardedAt: new Date(),
-      },
-      {
-        badge: new Types.ObjectId('6887b73a2078947c7f327f80'),
-        isPinned: false,
-        awardedAt: new Date(),
-      },
-    ],
-    notifications: [
-      new Types.ObjectId('6887b9757bd7aefa4ba5edec'),
-      new Types.ObjectId('6888cb96cc1c5787cec0f18f'),
-    ],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    _id: new Types.ObjectId('6887cc687882c42182cdf1f5'), // paulaRunner
-    username: 'paulaRunner',
-    email: 'paulaRunner@example.com',
-    password: 'TestPasswordddd123!',
-    lastLoginAt: new Date(),
-    role: UserRole.user,
-    favorites: {
-      trainingPlans: [],
-      exercises: [],
-    },
-    followedUsers: [
-      new Types.ObjectId('68875a0b053920a2eca69cbe'), //MonikaGym
-      new Types.ObjectId('6887c5f43118c221f43b4e23'), //fitnessFan
-    ],
-    followers: [],
-    statistics: {
-      totalWeight: 0,
-      totalTrainingsTime: 0,
-      startedTrainingPlans: [],
-    },
-    profileDetails: {
-      profilePicture: 'https://i.ibb.co/XZRX3GwZ/Zrzut-ekranu-2025-07-28-211226.png',
-      description: 'Biegaczka z pasją do długich dystansów.',
-      goal: Goal.muscleGain,
-    },
-    personalDetails: {
-      firstName: 'Paulina',
-      lastName: 'Majewska',
-      country: 'PL',
-    },
-    fitnessDetails: {
-      height: 173,
-      weight: 60,
-      age: 22,
-      gender: Gender.female,
+      firstName: 'Gustavo',
+      lastName: 'Fring',
+      country: Country.CL,
     },
     privacySettings: {
       isPersonalDetailsPublic: false,
       isFitnessDetailsPublic: false,
-      isBadgesDetailsPublic: true,
-      isGoalPublic: true,
-      isTrainingStatisticsPublic: true,
+      isBadgesDetailsPublic: false,
+      isGoalPublic: false,
+      isTrainingStatisticsPublic: false,
     },
-    badges: [
-      {
-        badge: new Types.ObjectId('6887b73a2078947c7f327f80'),
-        isPinned: false,
-        awardedAt: new Date(),
-      },
-    ],
-    notifications: [new Types.ObjectId('6888cb96cc1c5787cec0f18f')],
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    fitnessDetails: {
+      height: 180,
+      weight: 82,
+      age: 55,
+      gender: Gender.male,
+    },
+    followers: [userIds.admin],
   },
-  */
 ];

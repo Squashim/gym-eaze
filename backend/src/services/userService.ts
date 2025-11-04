@@ -12,7 +12,7 @@ import DeviceToken from '../models/deviceTokenModel';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
 import { checkAndEarnBadges } from './badgeService';
-import UserHasTrainingPlans from '../models/userHasTrainingPlansModel';
+import UserHasTrainingPlans from '../models/startedTrainingPlanModel';
 import Notification from '../models/notificationModel';
 import Post from '../models/postModel';
 import { deleteCommentsAndLikes } from '../utils/helpers';
