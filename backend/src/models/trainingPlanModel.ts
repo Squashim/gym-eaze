@@ -5,6 +5,8 @@ import { IExercise } from '../models/exerciseModel';
 import { Goal, goalValues } from '../constants/goals';
 import { IUser } from './userModel';
 import { Set } from '../types/trainingPlan';
+import { IMuscleGroup } from './muscleGroup';
+import { IEquipment } from './equipmentModel';
 
 export interface ITrainingPlan extends mongoose.Document {
   name: string;
@@ -21,11 +23,20 @@ export interface ITrainingPlan extends mongoose.Document {
     totalDuration: number;
     isRestDay: boolean;
     exercises: {
-      id: Types.ObjectId | IExercise;
+      originalId: Types.ObjectId | IExercise;
+
       isRepsSet: boolean;
       duration: number;
       restAfterSet: number;
       sets: Set[];
+
+      name: string;
+      description: string;
+      image: string;
+      video: string;
+      advancedLevel: AdvancedLevel;
+      muscleGroup: (Types.ObjectId | IMuscleGroup)[];
+      equipment: (Types.ObjectId | IEquipment)[];
     }[];
   }[];
   hashtags?: string[];
@@ -36,7 +47,7 @@ export interface ITrainingPlan extends mongoose.Document {
 
 const exerciseSchema = new mongoose.Schema(
   {
-    id: {
+    originalId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Exercise',
       required: true,
@@ -71,6 +82,50 @@ const exerciseSchema = new mongoose.Schema(
         message: 'Każda seria musi być albo powtórzeniowa, albo czasowa.',
       },
     },
+
+    name: {
+      type: String,
+      maxLength: 150,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function (v: string) {
+          const normalized = v.replace(/\r\n/g, '\n');
+          return normalized.length <= 850;
+        },
+        message: 'Opis może mieć maksymalnie 850 znaków',
+      },
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    video: {
+      type: String,
+      required: true,
+    },
+    advancedLevel: {
+      type: String,
+      enum: advancedLevelValues,
+      required: true,
+    },
+    muscleGroup: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MuscleGroup',
+        required: true,
+      },
+    ],
+    equipment: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Equipment',
+        required: true,
+      },
+    ],
   },
   {
     _id: false,

@@ -48,11 +48,11 @@ data class EditTrainingPlanState(
                 if (dayExercise.restAfterSet !in 30..5400) return@all false
                 dayExercise.sets.all { set ->
                     if (set.isRepsSet) {
-                        val repsValid = set.repetitions != null && set.repetitions!! in 1..100
-                        val weightValid = set.weight != null && set.weight!! >= 0.5 && set.weight!! <= 300.0
+                        val repsValid = set.repetitions != null && set.repetitions in 1..100
+                        val weightValid = set.weight == null || set.weight <= 300.0
                         repsValid && weightValid
                     } else {
-                        set.duration != null && set.duration!! in 30..21600
+                        set.duration != null && set.duration in 30..21600
                     }
                 }
             }
@@ -63,10 +63,70 @@ data class EditTrainingPlanState(
 class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TrainingPlanRepository(application)
-    private val exerciseRepository = ExerciseRepository(application)
 
     private val _uiState = MutableStateFlow(EditTrainingPlanState())
     val uiState: StateFlow<EditTrainingPlanState> = _uiState.asStateFlow()
+
+    private fun normalizeTrainingPlan(plan: TrainingPlan): List<TrainingDay> {
+        return plan.days.map { apiDay ->
+            TrainingDay(
+                dayNumber = apiDay.dayNumber,
+                name = apiDay.name,
+                isRestDay = apiDay.isRestDay,
+                exercises = apiDay.exercises.map { apiExercise ->
+                    if (apiExercise.exercise != null) {
+                        DayExercise(
+                            exercise = apiExercise.exercise,
+                            isRepsSet = apiExercise.isRepsSet,
+                            duration = apiExercise.duration ?: 0,
+                            restAfterSet = apiExercise.restAfterSet,
+                            sets = apiExercise.sets.map {
+                                TrainingSet(
+                                    repetitions = it.repetitions,
+                                    weight = it.weight,
+                                    duration = it.duration
+                                )
+                            }
+                        )
+                    } else {
+                        val pseudoExercise = Exercise(
+                            id = apiExercise.originalId ?: apiExercise.id,
+                            name = apiExercise.name,
+                            description = apiExercise.description,
+                            image = apiExercise.image,
+                            video = apiExercise.video,
+                            advancedLevel = apiExercise.advancedLevel,
+                            muscleGroup = apiExercise.muscleGroup,
+                            equipment = apiExercise.equipment,
+                            hashtags = apiExercise.hashtags,
+                            author = ExerciseAuthor(
+                                id = "",
+                                username = ""
+                            ),
+                            isLiked = false,
+                            createdAt = "",
+                            updatedAt = "",
+                            visibility = "Publiczny"
+                        )
+
+                        DayExercise(
+                            exercise = pseudoExercise,
+                            isRepsSet = apiExercise.isRepsSet,
+                            duration = apiExercise.duration ?: 0,
+                            restAfterSet = apiExercise.restAfterSet,
+                            sets = apiExercise.sets.map {
+                                TrainingSet(
+                                    repetitions = it.repetitions,
+                                    weight = it.weight,
+                                    duration = it.duration
+                                )
+                            }
+                        )
+                    }
+                }
+            )
+        }
+    }
 
     fun loadTrainingPlan(planId: String) {
         if (_uiState.value.isInitialLoadComplete) {
@@ -80,8 +140,21 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                 val planResult = repository.getTrainingPlanById(planId)
 
                 planResult.onSuccess { plan ->
-                    loadAllAvailableExercises(plan)
+                    val normalizedDays = normalizeTrainingPlan(plan);
 
+                    _uiState.value = _uiState.value.copy(
+                        originalPlan = plan,
+                        name = plan.name,
+                        description = plan.description ?: "",
+                        goal = plan.goal,
+                        visibility = plan.visibility,
+                        advancedLevel = plan.advancedLevel,
+                        hashtags = plan.hashtags,
+                        days = normalizedDays,
+                        isLoading = false,
+                        isInitialLoadComplete = true,
+                        error = null
+                    )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -94,91 +167,6 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                     error = "Nieoczekiwany błąd: ${e.message}"
                 )
             }
-        }
-    }
-
-    private fun loadAllAvailableExercises(plan: TrainingPlan) {
-        viewModelScope.launch {
-            try {
-                val exercisesResult = exerciseRepository.getExercises(
-                    filters = ExerciseFilters(),
-                    sortBy = "latest",
-                    page = 1,
-                    pageSize = 1000
-                )
-
-                exercisesResult.onSuccess { exercisesResponse ->
-                    val allExercises = exercisesResponse.items
-
-                    convertPlanToUIFormat(plan, allExercises)
-
-                }.onFailure { exception ->
-                    convertPlanToUIFormat(plan, emptyList())
-                }
-
-            } catch (e: Exception) {
-                convertPlanToUIFormat(plan, emptyList())
-            }
-        }
-    }
-
-    private fun convertPlanToUIFormat(plan: TrainingPlan, allExercises: List<Exercise>) {
-        try {
-            val exerciseMap = allExercises.associateBy { it.id }
-
-            val convertedDays = plan.days.mapIndexed { index, apiDay ->
-                TrainingDay(
-                    dayNumber = index + 1,
-                    name = apiDay.name,
-                    isRestDay = apiDay.isRestDay,
-                    exercises = if (apiDay.isRestDay) {
-                        emptyList()
-                    } else {
-                        apiDay.exercises.mapNotNull { apiExercise ->
-                            val exercise = exerciseMap[apiExercise.id]
-                            if (exercise == null) {
-                                null
-                            } else {
-                                DayExercise(
-                                    exercise = exercise,
-                                    isRepsSet = apiExercise.isRepsSet,
-                                    duration = apiExercise.duration ?: 0,
-                                    restAfterSet = apiExercise.restAfterSet,
-                                    sets = apiExercise.sets.map { apiSet ->
-                                        TrainingSet(
-                                            repetitions = apiSet.repetitions,
-                                            weight = apiSet.weight,
-                                            duration = apiSet.duration
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                    },
-                    totalDuration = apiDay.totalDuration ?: 0
-                )
-            }
-
-            _uiState.value = _uiState.value.copy(
-                originalPlan = plan,
-                name = plan.name,
-                description = plan.description ?: "",
-                goal = plan.goal,
-                visibility = plan.visibility,
-                advancedLevel = plan.advancedLevel,
-                hashtags = plan.hashtags,
-                days = convertedDays,
-                availableExercises = allExercises,
-                isLoading = false,
-                isInitialLoadComplete = true,
-                error = null
-            )
-
-        } catch (e: Exception) {
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                error = "Błąd podczas konwersji planu: ${e.message}"
-            )
         }
     }
 
@@ -245,6 +233,10 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
+    fun clearTrainingPlan(){
+        _uiState.value = EditTrainingPlanState()
+    }
+
     fun toggleRestDay(index: Int) {
         val currentDays = _uiState.value.days.toMutableList()
         if (index in currentDays.indices) {
@@ -286,7 +278,7 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
         val dayExercise = DayExercise(
             exercise = exercise,
             isRepsSet = true,
-            sets = listOf(TrainingSet(repetitions = 10, weight = 0.5))
+            sets = listOf(TrainingSet(repetitions = 10))
         )
 
         val updatedExercises = day.exercises + dayExercise
@@ -300,7 +292,7 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
             val day = currentDays[dayIndex]
             val updatedExercises = day.exercises.toMutableList()
             if (exerciseIndex in updatedExercises.indices) {
-                val removedExercise = updatedExercises.removeAt(exerciseIndex)
+                updatedExercises.removeAt(exerciseIndex)
                 currentDays[dayIndex] = day.copy(exercises = updatedExercises)
                 _uiState.value = _uiState.value.copy(days = currentDays)
             }
@@ -332,7 +324,7 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                 exercises[exerciseIndex] = exercise.copy(
                     isRepsSet = !exercise.isRepsSet,
                     sets = if (!exercise.isRepsSet) {
-                        listOf(TrainingSet(repetitions = 10, weight = 0.5))
+                        listOf(TrainingSet(repetitions = 10))
                     } else {
                         listOf(TrainingSet(duration = 60))
                     }
@@ -352,7 +344,7 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                 val exercise = exercises[exerciseIndex]
                 if (exercise.sets.size < 15) {
                     val newSet = if (exercise.isRepsSet) {
-                        TrainingSet(repetitions = 10, weight = 0.5)
+                        TrainingSet(repetitions = 10)
                     } else {
                         TrainingSet(duration = 60)
                     }
@@ -407,18 +399,6 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                 days[dayIndex].exercises.isNotEmpty()
     }
 
-    fun forceToggleRestDay(dayIndex: Int) {
-        val currentDays = _uiState.value.days.toMutableList()
-        if (dayIndex in currentDays.indices) {
-            val day = currentDays[dayIndex]
-            currentDays[dayIndex] = day.copy(
-                isRestDay = !day.isRestDay,
-                exercises = if (!day.isRestDay) emptyList() else day.exercises
-            )
-            _uiState.value = _uiState.value.copy(days = currentDays)
-        }
-    }
-
     private fun validateDaysAndExercises(days: List<TrainingDay>): List<String> {
         val errors = mutableListOf<String>()
 
@@ -462,19 +442,15 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
 
                     dayExercise.sets.forEachIndexed { setIndex, set ->
                         if (set.isRepsSet) {
-                            if (set.repetitions == null || set.repetitions!! !in 1..100) {
+                            if (set.repetitions == null || set.repetitions !in 1..100) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Powtórzenia muszą być między 1 a 100")
                             }
 
-                            if (set.weight != null && (set.weight!! < 0.5 || set.weight!! > 400.0)) {
+                            if (set.weight != null && set.weight > 300.0) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga musi być między 0.5kg a 400kg")
                             }
-
-                            if (set.weight == null) {
-                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga jest wymagana")
-                            }
                         } else {
-                            if (set.duration == null || set.duration!! !in 30..21600) {
+                            if (set.duration == null || set.duration !in 30..21600) {
                                 errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Czas musi być między 30s a 6h")
                             }
                         }

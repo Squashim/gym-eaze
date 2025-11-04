@@ -47,7 +47,6 @@ import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
-import okhttp3.internal.concurrent.formatDuration
 
 @Composable
 fun TrainingDayCard(

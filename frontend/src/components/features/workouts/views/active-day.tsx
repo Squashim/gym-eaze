@@ -23,13 +23,15 @@ import ActiveExercise from './active-exercise';
 import useExercisesManager from '@/hooks/workout/exercises/use-exercises-manager';
 import ExercisesList from '../exercises/exercises-list';
 import { Alert, AlertTitle } from '@/components/ui/alert';
+import type { WorkoutApiExercise } from '@/types/workout';
 
 interface ActiveDayViewProps {
   day: TrainingDaySchema;
   onDaySelect: (day: TrainingDaySchema | null) => void;
+  defaultExercisesMap?: Map<string, WorkoutApiExercise>;
 }
 
-const ActiveDay = ({ day, onDaySelect }: ActiveDayViewProps) => {
+const ActiveDay = ({ day, onDaySelect, defaultExercisesMap }: ActiveDayViewProps) => {
   const exercisesSheet = useOpen();
 
   const {
@@ -55,6 +57,7 @@ const ActiveDay = ({ day, onDaySelect }: ActiveDayViewProps) => {
     return (
       <ActiveExercise
         dayNumber={day.dayNumber}
+        defaultExercisesMap={defaultExercisesMap}
         exerciseId={selectedExerciseId}
         exerciseIds={exerciseIds}
         onExerciseSelect={setSelectedExerciseId}
@@ -149,6 +152,7 @@ const ActiveDay = ({ day, onDaySelect }: ActiveDayViewProps) => {
             </Alert>
           ) : (
             <ExercisesList
+              defaultExercisesMap={defaultExercisesMap}
               exerciseIds={exerciseIds}
               formExercises={formExercises}
               onExerciseCopy={onExerciseCopy}

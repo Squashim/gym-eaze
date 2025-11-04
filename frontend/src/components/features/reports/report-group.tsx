@@ -90,7 +90,7 @@ function ReportGroup({ report, isAuthor }: ReportGroupProps) {
       const displayContent = rawContent.length > 50 ? rawContent.slice(0, 50) + '...' : rawContent;
 
       await createNotification.mutateAsync({
-        to: report.reportedItem!.author._id,
+        to: report.reportedItem!.author!._id,
         type: 'Ostrzeżenie',
         from: 'Administrator',
         message: `Twoja treść (${report.reportedItemType}) - '${displayContent}' została zgłoszona przez innych użytkowników i narusza nasze wytyczne. Prosimy o zapoznanie się z zasadami i dostosowanie swojej aktywności na platformie, aby uniknąć dalszych konsekwencji.`,
@@ -169,7 +169,7 @@ function ReportGroup({ report, isAuthor }: ReportGroupProps) {
       });
 
       await createNotification.mutateAsync({
-        to: report.reportedItem!.author._id,
+        to: report.reportedItem!.author!._id,
         type: 'Informacja',
         from: 'Administrator',
         message: `Twoja treść (${report.reportedItemType}) - '${displayContent}' została usunięta z powodu naruszenia wytycznych. Dziękujemy za zrozumienie i zachęcamy do zapoznania się z zasadami platformy.`,
@@ -217,7 +217,7 @@ function ReportGroup({ report, isAuthor }: ReportGroupProps) {
         itemType: report.reportedItemType,
       });
 
-      await blockUser.mutateAsync(report.reportedItem!.author._id);
+      await blockUser.mutateAsync(report.reportedItem!.author!._id);
 
       await updateReportStatus.mutateAsync({
         itemId: report.reportedItemId,
@@ -311,28 +311,37 @@ function ReportGroup({ report, isAuthor }: ReportGroupProps) {
                 </InfoField>
 
                 <InfoField className="gap-2" label="Autor">
-                  <Button asChild className="p-2 w-fit" variant="ghost">
-                    <a
-                      className="hover:ring-ring/50 hover:ring-[3px]"
-                      href={`/profile/${report.reportedItem.author.username}`}
-                      rel="noreferrer"
-                      target="_blank"
-                      title="Zobacz profil autora"
-                    >
-                      <ReusableAvatar
-                        className="cursor-pointer shadow-sm size-8"
-                        profilePicture={report.reportedItem.author.profileDetails?.profilePicture}
-                        username={report.reportedItem.author.username}
-                      />
-                      {report.reportedItem.author.username}
-                    </a>
-                  </Button>
-
-                  {report.reportedItem.author.isBlocked && (
-                    <Badge className="w-fit" variant="destructive">
-                      <Ban className="mr-1 size-3" />
-                      Użytkownik zablokowany
-                    </Badge>
+                  {report.reportedItem.author ? (
+                    <>
+                      <Button asChild className="p-2 w-fit" variant="ghost">
+                        <a
+                          className="hover:ring-ring/50 hover:ring-[3px]"
+                          href={`/profile/${report.reportedItem.author.username}`}
+                          rel="noreferrer"
+                          target="_blank"
+                          title="Zobacz profil autora"
+                        >
+                          <ReusableAvatar
+                            className="cursor-pointer shadow-sm size-8"
+                            profilePicture={
+                              report.reportedItem.author.profileDetails?.profilePicture
+                            }
+                            username={report.reportedItem.author.username}
+                          />
+                          {report.reportedItem.author.username}
+                        </a>
+                      </Button>
+                      {report.reportedItem.author.isBlocked && (
+                        <Badge className="w-fit" variant="destructive">
+                          <Ban className="mr-1 size-3" />
+                          Użytkownik zablokowany
+                        </Badge>
+                      )}
+                    </>
+                  ) : (
+                    <Button className="p-2 w-fit" disabled variant="ghost">
+                      Konto usunięte
+                    </Button>
                   )}
 
                   <Typography className="text-xs" variant="muted">
@@ -354,7 +363,8 @@ function ReportGroup({ report, isAuthor }: ReportGroupProps) {
           isPendingStatus={report.status === ReportStatus.pending}
           isReportedItemAvailable={!!report.reportedItem}
           isReportsShown={showReportsDetails}
-          isUserBlocked={report.reportedItem?.author.isBlocked}
+          isUserBlocked={report.reportedItem?.author?.isBlocked}
+          isUserRemoved={Boolean(report.reportedItem?.author?._id) === false}
           isWarnLoading={warnLoading}
           onBlockUser={blockUserDialog.open}
           onDeleteContent={deleteContentDialog.open}
@@ -423,7 +433,7 @@ function ReportGroup({ report, isAuthor }: ReportGroupProps) {
         onClose={blockUserDialog.close}
         onConfirm={handleBlockUser}
         open={blockUserDialog.isOpen}
-        title={`Blokada użytkownika @${report.reportedItem?.author.username}`}
+        title={`Blokada użytkownika @${report.reportedItem?.author?.username}`}
         variant="destructive"
       />
 
@@ -522,6 +532,7 @@ interface ReportGroupActionsProps {
   isReportsShown: boolean;
   isReportedItemAvailable: boolean;
   isUserBlocked?: boolean;
+  isUserRemoved?: boolean;
   onWarn: () => void;
   onDismiss: () => void;
   onDeleteContent: () => void;
@@ -540,6 +551,7 @@ function ReportGroupActions({
   isAuthor,
   isUserBlocked,
   isReportedItemAvailable,
+  isUserRemoved,
   onWarn,
   onDismiss,
   onDeleteContent,
@@ -551,7 +563,7 @@ function ReportGroupActions({
     <div className="flex flex-col gap-2 h-full ">
       {isPendingStatus ? (
         <>
-          {!isAuthor && !isUserBlocked && isReportedItemAvailable && (
+          {!isAuthor && !isUserBlocked && !isUserRemoved && isReportedItemAvailable && (
             <Button disabled={isLoading} onClick={onWarn}>
               {isWarnLoading && <Loader2 className="animate-spin" />}
               {isWarnLoading ? 'Wysyłanie...' : 'Wyślij ostrzeżenie do autora'}
@@ -559,7 +571,9 @@ function ReportGroupActions({
           )}
 
           <Button
-            className={cn((isAuthor || isUserBlocked || !isReportedItemAvailable) && 'mt-11')}
+            className={cn(
+              (isAuthor || isUserBlocked || isUserRemoved || !isReportedItemAvailable) && 'mt-11',
+            )}
             disabled={isLoading}
             onClick={onDismiss}
             variant="outline"
@@ -568,7 +582,7 @@ function ReportGroupActions({
             {isDismissLoading ? 'Odrzucanie...' : 'Odrzuć zgłoszenie'}
           </Button>
 
-          {!isAuthor && !isUserBlocked && isReportedItemAvailable && (
+          {!isAuthor && !isUserBlocked && !isUserRemoved && isReportedItemAvailable && (
             <>
               <Separator className="my-2 rounded-md" />
               <Button disabled={isLoading} onClick={onDeleteContent} variant="destructive">

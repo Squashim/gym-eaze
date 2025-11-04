@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,10 +23,15 @@ import com.example.gymeaze.ui.components.ExerciseCard
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 
+enum class ExerciseTab{
+    COMMUNITY,
+    MY,
+    FAVORITES
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseSelectionScreen(
-    dayIndex: Int,
     onBackClick: () -> Unit,
     onExerciseSelected: (Exercise) -> Unit,
     viewModel: ExercisesViewModel = viewModel()
@@ -33,12 +39,14 @@ fun ExerciseSelectionScreen(
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
+    var selectedTab by remember { mutableStateOf(ExerciseTab.COMMUNITY) }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Wybierz ćwiczenie",
+                        text = "Dodaj ćwiczenia",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -65,46 +73,119 @@ fun ExerciseSelectionScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = viewModel::updateSearchQuery,
-                placeholder = {
-                    Text(
-                        text = "Wyszukaj ćwiczenia...",
-                        color = getOnSurfaceSecondaryColor()
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Wyszukaj",
-                        tint = getOnSurfaceSecondaryColor()
-                    )
-                },
+            TabRow(
+                selectedTabIndex = selectedTab.ordinal,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = getPrimaryColor(),
-                    unfocusedBorderColor = getInputBorderColor(),
-                    focusedTextColor = getOnSurfaceColor(),
-                    unfocusedTextColor = getOnSurfaceColor(),
-                    cursorColor = getPrimaryColor()
-                ),
-                singleLine = true
-            )
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                containerColor = getSurfaceColor(),
+                contentColor = getPrimaryColor(),
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab.ordinal]),
+                        color = getPrimaryColor(),
+                        height = 3.dp
+                    )
+                },
+                divider = {}
+            ) {
+                Tab(
+                    selected = selectedTab === ExerciseTab.COMMUNITY,
+                    onClick = {selectedTab = ExerciseTab.COMMUNITY},
+                    modifier = Modifier.height(48.dp)
+                ){
+                    Text(
+                        text = "Publiczne",
+                        fontSize = 14.sp,
+                        fontWeight = if (selectedTab == ExerciseTab.COMMUNITY) FontWeight.Bold else FontWeight.Normal,
+                        color = if (selectedTab == ExerciseTab.COMMUNITY) getPrimaryColor() else getOnSurfaceSecondaryColor()
+                    )
+                }
+
+                Tab(
+                    selected = selectedTab == ExerciseTab.MY,
+                    onClick = { selectedTab = ExerciseTab.MY },
+                    modifier = Modifier.height(48.dp)
+                ) {
+                    Text(
+                        text = "Moje",
+                        fontSize = 14.sp,
+                        fontWeight = if (selectedTab == ExerciseTab.MY) FontWeight.Bold else FontWeight.Normal,
+                        color = if (selectedTab == ExerciseTab.MY) getPrimaryColor() else getOnSurfaceSecondaryColor()
+                    )
+                }
+
+                Tab(
+                    selected = selectedTab == ExerciseTab.FAVORITES,
+                    onClick = { selectedTab = ExerciseTab.FAVORITES },
+                    modifier = Modifier.height(48.dp)
+                ) {
+                    Text(
+                        text = "Ulubione",
+                        fontSize = 14.sp,
+                        fontWeight = if (selectedTab == ExerciseTab.FAVORITES) FontWeight.Bold else FontWeight.Normal,
+                        color = if (selectedTab == ExerciseTab.FAVORITES) getPrimaryColor() else getOnSurfaceSecondaryColor()
+                    )
+                }
+            }
+
+            if(selectedTab == ExerciseTab.COMMUNITY){
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = viewModel::updateSearchQuery,
+                    placeholder = {
+                        Text(
+                            text = "Wyszukaj ćwiczenia...",
+                            color = getOnSurfaceSecondaryColor()
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Wyszukaj",
+                            tint = getOnSurfaceSecondaryColor()
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = getPrimaryColor(),
+                        unfocusedBorderColor = getInputBorderColor(),
+                        focusedTextColor = getOnSurfaceColor(),
+                        unfocusedTextColor = getOnSurfaceColor(),
+                        cursorColor = getPrimaryColor()
+                    ),
+                    singleLine = true
+                )
+            }
+
+            LaunchedEffect(selectedTab) {
+                when (selectedTab) {
+                    ExerciseTab.COMMUNITY -> {
+                        viewModel.switchToMode(ExercisesViewModel.ExerciseMode.ALL)
+                    }
+                    ExerciseTab.MY -> {
+                        val userId = viewModel.currentUser.value?._id
+                        if (userId != null) {
+                            viewModel.switchToMode(ExercisesViewModel.ExerciseMode.MY_EXERCISES, userId)
+                        }
+                    }
+                    ExerciseTab.FAVORITES -> {
+                        viewModel.switchToMode(ExercisesViewModel.ExerciseMode.FAVORITES)
+                    }
+                }
+            }
 
             when {
                 uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = getPrimaryColor())
                     }
                 }
+
                 uiState.error != null -> {
                     Column(
                         modifier = Modifier
@@ -123,7 +204,14 @@ fun ExerciseSelectionScreen(
                         }
                     }
                 }
+
                 uiState.exercises.isEmpty() -> {
+                    val (titleText, subtitleText) = when (selectedTab) {
+                        ExerciseTab.COMMUNITY -> "Nie znaleziono ćwiczeń" to "Spróbuj zmienić kryteria wyszukiwania"
+                        ExerciseTab.MY -> "Nie masz jeszcze własnych ćwiczeń" to "Dodaj nowe ćwiczenie, aby je tu zobaczyć"
+                        ExerciseTab.FAVORITES -> "Brak ulubionych ćwiczeń" to "Oznacz ćwiczenia jako ulubione, aby pojawiły się tutaj"
+                    }
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -132,19 +220,21 @@ fun ExerciseSelectionScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Nie znaleziono ćwiczeń",
+                            text = titleText,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor()
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Spróbuj zmienić kryteria wyszukiwania",
+                            text = subtitleText,
                             fontSize = 14.sp,
-                            color = getOnSurfaceSecondaryColor()
+                            color = getOnSurfaceSecondaryColor(),
+                            lineHeight = 18.sp
                         )
                     }
                 }
+
                 else -> {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),

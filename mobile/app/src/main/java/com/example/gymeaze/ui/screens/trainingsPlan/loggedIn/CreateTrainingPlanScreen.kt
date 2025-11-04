@@ -640,7 +640,6 @@ fun CreateTrainingPlanScreen(
             TrainingPlanBottomBar(
                 step = uiState.currentStep,
                 isLoading = uiState.isLoading,
-                canProceed = true,
                 onPrev = viewModel::prevStep,
                 onNext = viewModel::nextStep,
                 onCreate = viewModel::createTrainingPlan,
@@ -1259,7 +1258,6 @@ private fun DaysAndExercisesStep(
                 itemsIndexed(uiState.days) { index, day ->
                     DayWithExercisesCard(
                         day = day,
-                        dayIndex = index,
                         onNameChange = { name -> viewModel.updateDayName(index, name) },
                         onToggleRestDay = {
                             if (viewModel.shouldWarnBeforeRestDayConversion(index)) {
@@ -1297,7 +1295,6 @@ private fun DaysAndExercisesStep(
 @Composable
 private fun DayWithExercisesCard(
     day: TrainingDay,
-    dayIndex: Int,
     onNameChange: (String) -> Unit,
     onToggleRestDay: () -> Unit,
     onRemoveDay: () -> Unit,
@@ -1421,7 +1418,6 @@ private fun DayWithExercisesCard(
                     day.exercises.forEachIndexed { exerciseIndex, dayExercise ->
                         ExerciseItem(
                             dayExercise = dayExercise,
-                            exerciseIndex = exerciseIndex,
                             onRemove = { onRemoveExercise(exerciseIndex) },
                             onUpdateRestTime = { restTime -> onUpdateRestTime(exerciseIndex, restTime) },
                             onToggleType = { onToggleExerciseType(exerciseIndex) },
@@ -1532,151 +1528,6 @@ private fun ImageUploadSection(
 }
 
 @Composable
-private fun DaysStep(
-    uiState: CreateTrainingPlanState,
-    viewModel: CreateTrainingPlanViewModel
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Dni treningowe",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = getOnSurfaceColor()
-            )
-
-            if (uiState.days.size < 30) {
-                FloatingActionButton(
-                    onClick = viewModel::addDay,
-                    modifier = Modifier.size(48.dp),
-                    containerColor = getPrimaryColor()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Dodaj dzień",
-                        tint = getOnPrimaryColor()
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (uiState.days.isEmpty()) {
-            EmptyDaysMessage()
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                itemsIndexed(uiState.days) { index, day ->
-                    DayCard(
-                        day = day,
-                        onNameChange = { name -> viewModel.updateDayName(index, name) },
-                        onToggleRestDay = { viewModel.toggleRestDay(index) },
-                        onRemoveDay = { viewModel.removeDay(index) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DayCard(
-    day: TrainingDay,
-    onNameChange: (String) -> Unit,
-    onToggleRestDay: () -> Unit,
-    onRemoveDay: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Dzień ${day.dayNumber}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = getOnSurfaceColor()
-                )
-
-                IconButton(onClick = onRemoveDay) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Usuń dzień",
-                        tint = getErrorColor()
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = day.name,
-                onValueChange = onNameChange,
-                label = { Text("Nazwa dnia") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = getPrimaryColor(),
-                    unfocusedBorderColor = getInputBorderColor()
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Dzień odpoczynku",
-                    fontSize = 14.sp,
-                    color = getOnSurfaceColor()
-                )
-
-                Switch(
-                    checked = day.isRestDay,
-                    onCheckedChange = { onToggleRestDay() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = getOnPrimaryColor(),
-                        checkedTrackColor = getPrimaryColor()
-                    )
-                )
-            }
-
-            if (!day.isRestDay) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Ćwiczenia: ${day.exercises.size}",
-                    fontSize = 12.sp,
-                    color = getOnSurfaceSecondaryColor()
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun EmptyDaysMessage() {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -1708,131 +1559,8 @@ private fun EmptyDaysMessage() {
 }
 
 @Composable
-private fun ExercisesStep(
-    uiState: CreateTrainingPlanState,
-    viewModel: CreateTrainingPlanViewModel,
-    onNavigateToExerciseSelection: (Int) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        itemsIndexed(uiState.days.filter { !it.isRestDay }) { index, day ->
-            val dayIndex = uiState.days.indexOf(day)
-
-            ExerciseDayCard(
-                day = day,
-                dayIndex = dayIndex,
-                onAddExercise = { onNavigateToExerciseSelection(dayIndex) },
-                onRemoveExercise = { exerciseIndex ->
-                    viewModel.removeExerciseFromDay(dayIndex, exerciseIndex)
-                },
-                onUpdateRestTime = { exerciseIndex, restTime ->
-                    viewModel.updateExerciseRestTime(dayIndex, exerciseIndex, restTime)
-                },
-                onToggleExerciseType = { exerciseIndex ->
-                    viewModel.toggleExerciseType(dayIndex, exerciseIndex)
-                },
-                onAddSet = { exerciseIndex ->
-                    viewModel.addSetToExercise(dayIndex, exerciseIndex)
-                },
-                onRemoveSet = { exerciseIndex, setIndex ->
-                    viewModel.removeSetFromExercise(dayIndex, exerciseIndex, setIndex)
-                },
-                onUpdateSet = { exerciseIndex, setIndex, set ->
-                    viewModel.updateSet(dayIndex, exerciseIndex, setIndex, set)
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ExerciseDayCard(
-    day: TrainingDay,
-    dayIndex: Int,
-    onAddExercise: () -> Unit,
-    onRemoveExercise: (Int) -> Unit,
-    onUpdateRestTime: (Int, Int) -> Unit,
-    onToggleExerciseType: (Int) -> Unit,
-    onAddSet: (Int) -> Unit,
-    onRemoveSet: (Int, Int) -> Unit,
-    onUpdateSet: (Int, Int, TrainingSet) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = day.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = getOnSurfaceColor()
-                )
-
-                if (day.exercises.size < 15) {
-                    IconButton(onClick = onAddExercise) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Dodaj ćwiczenie",
-                            tint = getPrimaryColor()
-                        )
-                    }
-                }
-            }
-
-            if (day.exercises.isEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Brak ćwiczeń. Kliknij +, aby dodać pierwsze ćwiczenie.",
-                    fontSize = 14.sp,
-                    color = getOnSurfaceSecondaryColor(),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                day.exercises.forEachIndexed { exerciseIndex, dayExercise ->
-                    ExerciseItem(
-                        dayExercise = dayExercise,
-                        exerciseIndex = exerciseIndex,
-                        onRemove = { onRemoveExercise(exerciseIndex) },
-                        onUpdateRestTime = { restTime -> onUpdateRestTime(exerciseIndex, restTime) },
-                        onToggleType = { onToggleExerciseType(exerciseIndex) },
-                        onAddSet = { onAddSet(exerciseIndex) },
-                        onRemoveSet = { setIndex -> onRemoveSet(exerciseIndex, setIndex) },
-                        onUpdateSet = { setIndex, set -> onUpdateSet(exerciseIndex, setIndex, set) }
-                    )
-
-                    if (exerciseIndex < day.exercises.size - 1) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = getInputBorderColor())
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun ExerciseItem(
     dayExercise: DayExercise,
-    exerciseIndex: Int,
     onRemove: () -> Unit,
     onUpdateRestTime: (Int) -> Unit,
     onToggleType: () -> Unit,
@@ -2036,7 +1764,7 @@ private fun SetItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val repsError = set.repetitions == null || set.repetitions!! !in 1..100
+                    val repsError = set.repetitions == null || set.repetitions !in 1..100
                     OutlinedTextField(
                         value = set.repetitions?.toString() ?: "",
                         onValueChange = { value ->
@@ -2062,17 +1790,18 @@ private fun SetItem(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    val weightError = set.weight == null || set.weight!! < 0.5 || set.weight!! > 300.0
+                    val weight = set.weight ?: 0.0
+                    val weightError = weight > 300.0
                     OutlinedTextField(
-                        value = set.weight?.toString() ?: "0.5",
+                        value = if(weight == 0.0) "" else weight.toString(),
                         onValueChange = { value ->
-                            if (value.isEmpty()) {
-
-                                onUpdate(set.copy(weight = 0.5))
-                            } else {
-                                val weight = value.toDoubleOrNull()
-                                if (weight != null && weight >= 0.5 && weight <= 300.0) {
-                                    onUpdate(set.copy(weight = weight))
+                            val weightValue = value.toDoubleOrNull()
+                            when{
+                                value.isEmpty() || weightValue == 0.0 -> {
+                                    onUpdate(set.copy(weight = null))
+                                }
+                                weightValue != null && weightValue <= 300.0 -> {
+                                    onUpdate(set.copy(weight = weightValue))
                                 }
                             }
                         },
@@ -2080,7 +1809,7 @@ private fun SetItem(
                         modifier = Modifier.width(80.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        placeholder = { Text("0.5") },
+                        placeholder = { Text("Brak") },
                         isError = weightError,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = if (weightError) getErrorColor() else getPrimaryColor(),
@@ -2089,7 +1818,7 @@ private fun SetItem(
                     )
                 }
             } else {
-                val durationError = set.duration == null || set.duration!! !in 30..21600
+                val durationError = set.duration == null || set.duration !in 30..21600
                 OutlinedTextField(
                     value = set.duration?.toString() ?: "",
                     onValueChange = { value ->
@@ -2479,7 +2208,6 @@ private fun DaySummaryCard(day: TrainingDay) {
 private fun TrainingPlanBottomBar(
     step: TrainingPlanCreatorStep,
     isLoading: Boolean,
-    canProceed: Boolean,
     onPrev: () -> Unit,
     onNext: () -> Unit,
     onCreate: () -> Unit,
@@ -2507,7 +2235,7 @@ private fun TrainingPlanBottomBar(
         Button(
             onClick = if (step == TrainingPlanCreatorStep.SUMMARY) onCreate else onNext,
             modifier = Modifier.weight(1f),
-            enabled = canProceed && !isLoading,
+            enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(containerColor = getPrimaryColor()),
             shape = RoundedCornerShape(8.dp)
         ) {

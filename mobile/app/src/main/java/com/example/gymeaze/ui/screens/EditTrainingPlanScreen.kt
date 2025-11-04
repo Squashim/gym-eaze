@@ -73,8 +73,6 @@ fun EditTrainingPlanScreen(
     LaunchedEffect(planId) {
         if (!uiState.isInitialLoadComplete) {
             viewModel.loadTrainingPlan(planId)
-        } else {
-
         }
     }
 
@@ -1196,7 +1194,7 @@ private fun EditSetItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val repsError = set.repetitions == null || set.repetitions!! !in 1..100
+                    val repsError = set.repetitions == null || set.repetitions !in 1..100
                     OutlinedTextField(
                         value = set.repetitions?.toString() ?: "",
                         onValueChange = { value ->
@@ -1222,16 +1220,18 @@ private fun EditSetItem(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    val weightError = set.weight == null || set.weight!! < 0.5 || set.weight!! > 300.0
+                    val weight = set.weight ?: 0.0
+                    val weightError = weight > 300.0
                     OutlinedTextField(
-                        value = set.weight?.toString() ?: "0.5",
+                        value = if(weight == 0.0) "" else weight.toString(),
                         onValueChange = { value ->
-                            if (value.isEmpty()) {
-                                onUpdate(set.copy(weight = 0.5))
-                            } else {
-                                val weight = value.toDoubleOrNull()
-                                if (weight != null && weight >= 0.5 && weight <= 300.0) {
-                                    onUpdate(set.copy(weight = weight))
+                            val weightValue = value.toDoubleOrNull()
+                            when{
+                                value.isEmpty() || weightValue == 0.0 -> {
+                                    onUpdate(set.copy(weight = null))
+                                }
+                                weightValue != null && weightValue <= 300.0 -> {
+                                    onUpdate(set.copy(weight = weightValue))
                                 }
                             }
                         },
@@ -1239,7 +1239,7 @@ private fun EditSetItem(
                         modifier = Modifier.width(80.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        placeholder = { Text("0.5") },
+                        placeholder = { Text("Brak") },
                         isError = weightError,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = if (weightError) getErrorColor() else getPrimaryColor(),

@@ -6,11 +6,11 @@ import { Goal, goalValues } from '../constants/goals';
 import { IBadge } from '../models/badgeModel';
 import { IExercise } from '../models/exerciseModel';
 import { ITrainingPlan } from '../models/trainingPlanModel';
-import { IUserHasTrainingPlans } from '../models/userHasTrainingPlansModel';
 import { statusesValues, StatusTraining } from '../constants/statuses';
 import '../models/notificationModel';
 import { IPost } from './postModel';
 import { IComment } from './commentModel';
+import { IStartedTrainingPlan } from './startedTrainingPlanModel';
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -34,10 +34,8 @@ export interface IUser extends Document {
   followedUsers: (Types.ObjectId | IUser)[];
   followers: (Types.ObjectId | IUser)[];
   statistics: {
-    totalWeight: number;
-    totalTrainingsTime: number;
     startedTrainingPlans: {
-      trainingPlanId: Types.ObjectId | IUserHasTrainingPlans;
+      trainingPlanId: Types.ObjectId | IStartedTrainingPlan;
       status: StatusTraining;
     }[];
   };
@@ -167,7 +165,7 @@ const userSchema = new mongoose.Schema<IUser>(
         {
           trainingPlanId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'UserHasTrainingPlans',
+            ref: 'StartedTrainingPlan',
             required: true,
           },
           status: {

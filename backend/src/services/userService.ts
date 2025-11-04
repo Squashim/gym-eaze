@@ -6,12 +6,20 @@ import { Goal } from '../constants/goals';
 import bcrypt from 'bcryptjs';
 import { Gender } from '../constants/genders';
 import { Country } from '../constants/countries';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { UserProfile } from '../types/user';
 import DeviceToken from '../models/deviceTokenModel';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
 import { checkAndEarnBadges } from './badgeService';
+import Notification from '../models/notificationModel';
+import Post from '../models/postModel';
+import { deleteCommentsAndLikes } from '../utils/helpers';
+import { CommentParentType } from '../constants/commentType';
+import TrainingPlan from '../models/trainingPlanModel';
+import Exercise from '../models/exerciseModel';
+import Comment from '../models/commentModel';
+import StartedTrainingPlan from '../models/startedTrainingPlanModel';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -183,12 +191,107 @@ export const updateUserService = async (userId: string, data: UpdateUserInput) =
 };
 
 export const deleteUserService = async (userId: string) => {
-  await DeviceToken.deleteMany({ userId });
-  const deletedUser = await User.findByIdAndDelete(userId);
+  const user = await User.findById(userId);
 
-  if (!deletedUser) {
+  if (!user) {
     throw new Error('USER_NOT_FOUND');
   }
+
+  await DeviceToken.deleteMany({ userId });
+
+  if (user.profileDetails?.profilePicture) {
+    await deleteFromCloudinary(user.profileDetails.profilePicture);
+  }
+
+  await StartedTrainingPlan.deleteMany({ userId: user._id });
+
+  await Notification.deleteMany({ to: user._id });
+
+  const userPosts = await Post.find({ author: user._id });
+  for (const post of userPosts) {
+    if (post.image) {
+      await deleteFromCloudinary(post.image);
+    }
+    if (post.video) {
+      await deleteFromCloudinary(post.video, 'video');
+    }
+
+    await deleteCommentsAndLikes(CommentParentType.post, (post._id as Types.ObjectId).toString());
+  }
+  await Post.deleteMany({ author: user._id });
+
+  const userTrainingPlans = await TrainingPlan.find({ author: user._id });
+  for (const plan of userTrainingPlans) {
+    await deleteCommentsAndLikes(
+      CommentParentType.training,
+      (plan._id as Types.ObjectId).toString(),
+    );
+  }
+  await TrainingPlan.deleteMany({ author: user._id });
+
+  const userExercises = await Exercise.find({ author: user._id });
+  for (const exercise of userExercises) {
+    await deleteCommentsAndLikes(
+      CommentParentType.exercise,
+      (exercise._id as Types.ObjectId).toString(),
+    );
+  }
+  await Exercise.deleteMany({ author: user._id });
+
+  const userComments = await Comment.find({ author: userId });
+  const commentIds = userComments.map((comment) => comment._id);
+  if (commentIds.length > 0) {
+    await User.updateMany(
+      { 'likes.comments': { $in: commentIds } },
+      { $pull: { 'likes.comments': { $in: commentIds } } },
+    );
+  }
+  await Comment.deleteMany({ author: user._id });
+
+  await User.updateMany(
+    {
+      followers: user._id,
+    },
+    {
+      $pull: { followers: user._id },
+    },
+  );
+
+  await User.updateMany(
+    {
+      followedUsers: user._id,
+    },
+    {
+      $pull: { followedUsers: user._id },
+    },
+  );
+
+  await User.updateMany(
+    { 'likes.exercises': { $in: user.likes?.exercises || [] } },
+    { $pull: { 'likes.exercises': { $in: user.likes?.exercises || [] } } },
+  );
+
+  await User.updateMany(
+    { 'likes.posts': { $in: user.likes?.posts || [] } },
+    { $pull: { 'likes.posts': { $in: user.likes?.posts || [] } } },
+  );
+
+  await User.updateMany(
+    { 'likes.trainingPlans': { $in: user.likes?.trainingPlans || [] } },
+    { $pull: { 'likes.trainingPlans': { $in: user.likes?.trainingPlans || [] } } },
+  );
+
+  await User.updateMany(
+    { 'favorites.exercises': { $in: user.favorites?.exercises || [] } },
+    { $pull: { 'favorites.exercises': { $in: user.favorites?.exercises || [] } } },
+  );
+
+  await User.updateMany(
+    { 'favorites.trainingPlans': { $in: user.favorites?.trainingPlans || [] } },
+    { $pull: { 'favorites.trainingPlans': { $in: user.favorites?.trainingPlans || [] } } },
+  );
+
+  const deletedUser = await user.deleteOne();
 
   return deletedUser;
 };

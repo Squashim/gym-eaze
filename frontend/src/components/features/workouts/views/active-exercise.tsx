@@ -13,21 +13,31 @@ import { DetailsActionBtn } from '@/components/ui/reusable-buttons';
 import useActiveExerciseManager from '@/hooks/workout/sets/use-active-exercise-manager';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import type { WorkoutApiExercise } from '@/types/workout';
+import { isDefaultExercise } from '@/lib/utils';
 
 interface ActiveExerciseProps {
   exerciseId: string;
   exerciseIds: string[];
   dayNumber: number;
   onExerciseSelect: (id: string | null) => void;
+  defaultExercisesMap?: Map<string, WorkoutApiExercise>;
 }
 
 const ActiveExercise = ({
   onExerciseSelect,
+  defaultExercisesMap,
   exerciseId,
   exerciseIds,
   dayNumber,
 }: ActiveExerciseProps) => {
-  const { data: exercise, isLoading, isError } = useGetExercise(exerciseId);
+  const {
+    data: fetchedExercise,
+    isLoading,
+    isError,
+  } = useGetExercise(exerciseId, {
+    enabled: !defaultExercisesMap?.has(exerciseId),
+  });
 
   const {
     alertDialog,
@@ -45,6 +55,14 @@ const ActiveExercise = ({
     dayNumber,
     onExerciseSelect,
   });
+
+  const exercise = useMemo(() => {
+    if (defaultExercisesMap && defaultExercisesMap.has(exerciseId)) {
+      return defaultExercisesMap.get(exerciseId);
+    } else {
+      return fetchedExercise;
+    }
+  }, [defaultExercisesMap, exerciseId, fetchedExercise]);
 
   const displayMuscleGroups = useMemo(() => {
     if (!exercise) return '';
@@ -84,19 +102,21 @@ const ActiveExercise = ({
               </Typography>
               <div className="flex gap-2 items-center">
                 <AdvancedLevelBadge advancedLevel={exercise.advancedLevel} />
-                <LikesBadge likes={exercise.likes} />
+                {!isDefaultExercise(exercise) && <LikesBadge likes={exercise.likes} />}
               </div>
-              <Button asChild className="p-0 text-xs h-auto text-muted-foreground" variant="link">
-                <a href={`/profile/${exercise.author.username}`} rel="noreferrer" target="_blank">
-                  Autor: {exercise.author.username}
-                </a>
-              </Button>
+              {!isDefaultExercise(exercise) && (
+                <Button asChild className="p-0 text-xs h-auto text-muted-foreground" variant="link">
+                  <a href={`/profile/${exercise.author.username}`} rel="noreferrer" target="_blank">
+                    Autor: {exercise.author.username}
+                  </a>
+                </Button>
+              )}
             </div>
 
             <div className="sm:ml-auto max-[425px]:w-full">
               <DetailsActionBtn
                 className="max-[425px]:w-full"
-                redirectTo={`/exercises/${exercise._id}`}
+                redirectTo={`/exercises/${isDefaultExercise(exercise) ? exercise.originalId : exercise._id}`}
               />
             </div>
           </div>

@@ -469,7 +469,7 @@ private fun ExerciseDetailContent(
             EquipmentSection(equipment = exercise.equipment)
         }
 
-        if (exercise.hashtags.isNotEmpty()) {
+        if (exercise.hashtags != null && exercise.hashtags.isNotEmpty()) {
             item {
                 HashtagsSection(hashtags = exercise.hashtags)
             }

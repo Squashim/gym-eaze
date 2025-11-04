@@ -10,7 +10,7 @@ export const seedPosts = async () => {
 const posts = [
   {
     _id: '68d03088cef6312f5db20e6c',
-    author: '68aadfbccc15cf46f25867ad', // admin
+    author: userIds.admin, // admin
     content:
       'Cześć! To Twój pierwszy krok w stronę lepszej formy. GymEaze to społeczność, dzięki której osiągniesz swoje cele i poczujesz radość z każdego treningu. 💪. Motywujemy się nawzajem, dzielimy poradami i wspieramy w trudniejszych chwilach. 🚀. W GymEaze chodzi o to, żeby każdy czuł, że nie trenuje sam. ',
     image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1758393730/admin_post_viiswk.png',
@@ -19,8 +19,29 @@ const posts = [
     updatedAt: new Date(),
   },
   {
+    _id: '68d03142d345678901cdef12',
+    author: userIds.saulGoodman,
+    content:
+      'Nowy trener personalny = nowa ja! 💼💪 Inwestycja w siebie to najlepsza inwestycja. 30 dni z profesjonalistą i już widzę różnicę.',
+    hashtags: ['trener_personalny', 'inwestycja', 'profesjonalista'],
+    likes: 28,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    _id: '68d0313a0515b24d71e60cc2',
+    author: userIds.jessiePinkman, // JessiePinkman
+    content:
+      'Yo! Taneczny szał w rytm latino! Godzina zumby i jestem zniszczony, ale w dobrym tego słowa znaczeniu! Ponad 500 kcal poszło w taneczne piekło i mega się przy tym bawiłem! Kto leci ze mną na następne zajęcia?',
+    hashtags: ['taniec', 'zumba', 'zabawa', 'radość', 'fitness', 'latinodance'],
+    likes: 56,
+    commentsCount: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
     _id: '68d0308f5a016ed4aef6267a',
-    author: '68aadfbccc15cf46f25867ad', // admin
+    author: userIds.admin, // admin
     content:
       'Wow! 😃💪 Nie mogę uwierzyć, jak szybko rośnie nasza społeczność GymEaze! Każdy nowy użytkownik, każdy dodany trening i każda motywująca wiadomość sprawiają, że to miejsce staje się coraz bardziej inspirujące. 🌟 To dzięki Wam GymEaze staje się przestrzenią, gdzie ludzie naprawdę wspierają się w osiąganiu celów. Widząc Wasze postępy i zaangażowanie, wiem, że razem możemy osiągnąć naprawdę wiele! 🚀 Dziękuję, że jesteście częścią tej społeczności. Nie przestawajcie dzielić się swoimi sukcesami i motywować innych - razem rośniemy silniejsi! 💥',
     hashtags: ['społeczność', 'motywacja', 'sukces'],
@@ -31,7 +52,7 @@ const posts = [
   },
   {
     _id: '68d030986d15791d3290871e',
-    author: '68aadfbccc15cf46f25867ad', // admin
+    author: userIds.admin, // admin
     content:
       '🔥 Pochwalcie się dzisiaj! 🔥 Ile kalorii udało Wam się dziś spalić? Napiszcie swoje wyniki w komentarzu i zobaczmy, kto dzisiaj króluje na siłowni! 💪🥵',
     video: 'https://res.cloudinary.com/dtglpgvzi/video/upload/v1758475408/293079_small_kgxoh1.mp4',
@@ -42,7 +63,7 @@ const posts = [
   },
   {
     _id: '68d0309e60b0903569587609',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Dzisiaj na treningu total body udało mi się spalić aż 500 kalorii! 💪🔥 Czuję się niesamowicie zmotywowana i gotowa na kolejne wyzwania. A Wy? Ile kalorii spaliliście podczas swojego treningu? Podzielcie się swoimi wynikami w komentarzach! P.S Wrzucam filmik z treningu!',
     video:
@@ -54,7 +75,7 @@ const posts = [
   },
   {
     _id: '68d030d509a2f6adc2474914',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Ranek z intensywnym treningiem interwałowym HIIT! 💥 Po 45 minutach na liczniku aż 620 spalonych kalorii. To najlepszy zastrzyk energii na cały dzień. Kto dziś razem ze mną? #HIIT #motywacja',
     hashtags: ['HIIT', 'motywacja', 'trening', 'kalorie', 'energia', 'poranek'],
@@ -64,7 +85,7 @@ const posts = [
   },
   {
     _id: '68d030e2bd1491f772bf9fde',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Dzisiejszy bieg przełajowy w lesie to czysta przyjemność! 🏃‍♂️🌲 10 km za mną, a Garmin pokazuje 780 kcal. Czy może być coś lepszego niż endorfiny po biegu? Pytanie do biegaczy - jaka wasza ulubiona trasa?',
     hashtags: ['bieganie', 'endorfiny', 'las', 'garmin', 'kardio', 'zdrowie'],
@@ -74,7 +95,7 @@ const posts = [
   },
   {
     _id: '68d030ec9090a6d1e602fa16',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Session done! ✅ Dziś mocny trening siłowy nóg + 20 minut cardio na finisz. Łącznie ponad 700 kcal poszło w powietrze! 🔥 Czuję, że rosnę! Jakie było wasze największe osiągnięcie tygodnia?',
     hashtags: ['treningnóg', 'silownia', 'cardio', 'progress', 'motivation', 'fitness'],
@@ -84,7 +105,7 @@ const posts = [
   },
   {
     _id: '68d030f33c6f4a6d84a009af',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Yoga Flow na powitanie słońca ☀️✨ 90 minut głębokiego rozciągania i oddechu. Spalone kalorie? Mniej, bo tylko 280, ale za to nieziemski spokój ducha i energia na resztę dnia. Dla was liczą się kalorie czy może coś innego?',
     hashtags: ['yoga', 'rozciaganie', 'mindfulness', 'spokój', 'energia', 'ranek'],
@@ -94,7 +115,7 @@ const posts = [
   },
   {
     _id: '68d030f913631e808e44cfef',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Trening obwodowy to mistrzostwo świata! 🏆 5 obwodów, 10 stacji, 45 minut i 550 kcal historii. Konkretny wycisk i mega satysfakcja. Polecam każdemu, kto lubi wyzwania! Kto próbował?',
     hashtags: ['treningobwodowy', 'wycisk', 'satysfakcja', 'wyzwanie', 'fitness', 'motywacja'],
@@ -104,7 +125,7 @@ const posts = [
   },
   {
     _id: '68d030ff558aa2f9507f71a6',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Pływanie to mój sposób na wszystko! 🏊‍♀️ Godzina w basenie i 600 kcal mniej. Odpręża, relaksuje i świetnie rzeźbi sylwetkę. Jaka jest wasza ulubiona aktywność, która nie feels like a workout?',
     hashtags: ['plywanie', 'basen', 'relaks', 'trening', 'kalorie', 'zdrowie'],
@@ -114,7 +135,7 @@ const posts = [
   },
   {
     _id: '68d0310602bad324c3e2fc11',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Dzień z crossfit! 🏋️‍♀️ WOD z deadliftami, wall balls i podciąganiem. Czas: 18:45. Kalorie: ok 500. Poziom zmęczenia: maksymalny. Poziom satysfakcji: jeszcze wyższy! CF community, przedstawcie się!',
     hashtags: ['crossfit', 'WOD', 'deadlift', 'wallballs', 'podsciaganie', 'hardwork'],
@@ -124,7 +145,7 @@ const posts = [
   },
   {
     _id: '68d0311ed82e5501e29f5bc0',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Spacer metaboliczny z obciążeniem! 💥 10 tysięcy kroków z kamizelką 8kg. Efekt: 450 kcal i świetne samopoczucie. Czasami nie trzeba mega intensywności, by zrobić coś dobrego dla ciała. A wy lubicie spacery?',
     hashtags: ['spacer', 'kroki', 'healthylifestyle', 'obciążenie', 'outdoor', 'metabolism'],
@@ -134,23 +155,12 @@ const posts = [
   },
   {
     _id: '68d0312a59b14122341d5073',
-    author: '68d0243f1ef234cc5446b600', // monikaGym
+    author: userIds.monikaGym, // monikaGym
     content:
       'Rowerowa misja ukończona! 🚴‍♀️ 35 km po malowniczych szlakach za mną. Czas: 1h 25min, kalorie: 510. Widoki bezcenne! Rowery górskie, szosówki - co wolicie? Jakie macie plany na aktywny weekend?',
     hashtags: ['rower', 'góry', 'outdoor', 'kolarstwo', 'weekend', 'przyroda'],
     likes: 31,
     commentsCount: 1,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    _id: '68d0313a0515b24d71e60cc2',
-    author: userIds.jessiePinkman, // JessiePinkman
-    content:
-      'Taneczny szał w rytm latino! 💃🕺 Godzina zumby to zawsze ponad 500 kcal zabawy i uśmiechu. To dowód, że trening nie musi być nudny! Jaka jest wasza ulubiona aktywność, przy której zapominacie, że ćwiczycie?',
-    hashtags: ['taniec', 'zumba', 'zabawa', 'radość', 'fitness', 'latinodance'],
-    likes: 56,
-    commentsCount: 2,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

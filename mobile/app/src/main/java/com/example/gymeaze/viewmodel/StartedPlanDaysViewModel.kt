@@ -49,7 +49,6 @@ class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(appl
                             isLoading = false,
                             days = response.days.sortedBy { it.dayNumber }
                         )
-                    } else {
                     }
                 }.onFailure { exception ->
                     if (currentUserTrainingPlanId == userTrainingPlanId) {

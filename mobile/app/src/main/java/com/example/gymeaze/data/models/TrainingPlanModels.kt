@@ -3,6 +3,7 @@ package com.example.gymeaze.data.models
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.constants.PrivacySettings
+import com.example.gymeaze.viewmodel.trainingsPlan.TrainingDay
 import com.google.gson.annotations.SerializedName
 
 data class TrainingPlan(
@@ -15,7 +16,7 @@ data class TrainingPlan(
     val visibility: String,
     val advancedLevel: String,
     val likes: Int = 0,
-    val days: List<TrainingDay> = emptyList(),
+    val days: List<com.example.gymeaze.data.models.TrainingDay> = emptyList(),
     val hashtags: List<String> = emptyList(),
     val createdAt: String,
     val updatedAt: String,
@@ -42,57 +43,33 @@ data class TrainingDay(
 
 data class DayExercise(
     val id: String,
+    val originalId: String? = null,
     val exercise: Exercise? = null,
     val isRepsSet: Boolean = true,
     val duration: Int? = null,
     val restAfterSet: Int = 60,
-    val sets: List<ExerciseSet> = emptyList()
+    val sets: List<ExerciseSet> = emptyList(),
+
+    val name: String,
+    val description: String,
+    val image: String,
+    val video: String,
+    val advancedLevel: String,
+    val muscleGroup: List<MuscleGroup>,
+    val equipment: List<Equipment>,
+    val hashtags: List<String> = emptyList(),
 )
 
 data class ExerciseSet(
     val repetitions: Int? = null,
     val weight: Double? = null,
-    val duration: Int? = null
-)
-
-data class CreateTrainingPlanRequest(
-    val title: String,
-    val description: String? = null,
-    val goal: String,
-    val visibility: String,
-    val advancedLevel: String,
-    val hashtags: List<String> = emptyList(),
-    val days: List<CreateTrainingDay>
-)
-
-data class CreateTrainingDay(
-    val name: String,
-    val isRestDay: Boolean = false,
-    val exercises: List<CreateDayExercise> = emptyList()
-)
-
-data class CreateDayExercise(
-    val id: String,
-    val isRepsSet: Boolean = true,
     val duration: Int? = null,
-    val restAfterSet: Int = 60,
-    val sets: List<CreateExerciseSet> = emptyList()
+    val isRepsSet: Boolean = true
 )
 
 data class CreateExerciseSet(
     val repetitions: Int,
     val weight: Double = 0.0
-)
-
-data class TrainingPlanFormData(
-    val title: String = "",
-    val description: String = "",
-    val goal: String = Goals.NONE,
-    val visibility: String = PrivacySettings.PUBLIC,
-    val advancedLevel: String = AdvancedLevel.EASY,
-    val hashtags: List<String> = emptyList(),
-    val days: List<TrainingDayFormData> = emptyList(),
-    val selectedImageUri: String? = null
 )
 
 data class TrainingDayFormData(
@@ -175,10 +152,6 @@ data class UpdateExerciseSet(
     val repetitions: Int?,
     val weight: Double?,
     val duration: Int?
-)
-
-data class DeleteResponse(
-    val message: String
 )
 
 

@@ -3,13 +3,14 @@ import type { TrainingDaySchema } from '@/schemas/workout-schema';
 import type { ApiResponse, GoogleLoginConflictResponse } from '@/types/api';
 import type { Equipment } from '@/types/equipment';
 import type { MuscleGroup } from '@/types/muscle-group';
-import type { DurationSet, RepsSet } from '@/types/workout';
+import type { DurationSet, RepsSet, WorkoutApiDay, WorkoutApiExercise } from '@/types/workout';
 import { AxiosError, isAxiosError } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import type { FieldValues } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 import { parseTimeBrackets } from './parsers';
 import { Country } from '@/constants/enums/countries';
+import type { GetExercisesByIdsApiResponse } from '@/types/exercise';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -214,7 +215,7 @@ export function serializeQuery(params: Record<string, unknown>): string {
   return searchParams.toString();
 }
 
-export function getWeeks(days: TrainingDaySchema[]) {
+export function getWeeks<T extends TrainingDaySchema | WorkoutApiDay>(days: T[]) {
   return Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => {
     const start = weekIndex * 7;
     const end = Math.min(start + 7, days.length);
@@ -240,7 +241,7 @@ export function getWorkoutDefaultSets(isRepsSet: boolean): RepsSet[] | DurationS
   }
 }
 
-export function calculateWorkoutTime(day: TrainingDaySchema): number {
+export function calculateWorkoutTime<T extends TrainingDaySchema | WorkoutApiDay>(day: T): number {
   let totalSeconds = 0;
   day.exercises.forEach((ex, idx) => {
     const setsCount = ex.sets.length;
@@ -263,7 +264,7 @@ export function calculateWorkoutTime(day: TrainingDaySchema): number {
   return totalSeconds;
 }
 
-export function getDayTimeRange(day: TrainingDaySchema): string {
+export function getDayTimeRange<T extends TrainingDaySchema | WorkoutApiDay>(day: T): string {
   const totalSeconds = calculateWorkoutTime(day);
   return parseTimeBrackets(totalSeconds);
 }
@@ -301,3 +302,9 @@ export function isItemReplyCommentsQuery(queryKey: unknown): boolean {
     (queryKey[0] === 'posts' || queryKey[0] === 'exercises' || queryKey[0] === 'workouts')
   );
 }
+
+export const isDefaultExercise = (
+  exercise: GetExercisesByIdsApiResponse | WorkoutApiExercise,
+): exercise is WorkoutApiExercise => {
+  return Boolean('originalId' in exercise);
+};

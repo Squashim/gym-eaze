@@ -417,6 +417,8 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                 val result = repository.toggleTrainingPlanLike(planId)
                 result.onSuccess { likeResponse ->
                     _uiState.value = _uiState.value.copy(
+                        snackbarMessage = likeResponse.message,
+                        snackbarType = SnackbarType.SUCCESS,
                         trainingPlans = _uiState.value.trainingPlans.map { plan ->
                             if (plan.id == planId) {
                                 TrainingPlan(

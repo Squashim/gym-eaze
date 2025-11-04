@@ -1,9 +1,8 @@
 import mongoose, { Types } from 'mongoose';
 import User from '../models/userModel';
-import UserHasTrainingPlans from '../models/userHasTrainingPlansModel';
+import StartedTrainingPlan from '../models/startedTrainingPlanModel';
 import { StatusTraining } from '../constants/statuses';
 import TrainingPlan from '../models/trainingPlanModel';
-import Exercise from '../models/exerciseModel';
 
 export const getStartedTrainingPlansService = async (
   targetUserId: string,
@@ -37,7 +36,7 @@ export const getStartedTrainingPlansService = async (
   const startedTrainingIds = user.statistics.startedTrainingPlans.map((stp) => stp.trainingPlanId);
 
   const [items, total] = await Promise.all([
-    UserHasTrainingPlans.find({ _id: { $in: startedTrainingIds } })
+    StartedTrainingPlan.find({ _id: { $in: startedTrainingIds } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(pageSize)
@@ -45,7 +44,7 @@ export const getStartedTrainingPlansService = async (
         'trainingPlanSnapshot.originalId trainingPlanSnapshot.name trainingPlanSnapshot.image trainingPlanSnapshot.goal trainingPlanSnapshot.advancedLevel trainingPlanSnapshot.author trainingPlanSnapshot.days progress createdAt',
       )
       .lean(),
-    UserHasTrainingPlans.countDocuments({ _id: { $in: startedTrainingIds } }),
+    StartedTrainingPlan.countDocuments({ _id: { $in: startedTrainingIds } }),
   ]);
 
   const itemsWithFullInfo = items.map((item: any) => {
@@ -90,9 +89,10 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const trainingPlan = await TrainingPlan.findById(trainingPlanId)
-    .populate('author', 'username profileDetails.profilePicture')
-    .populate('days.exercises.id');
+  const trainingPlan = await TrainingPlan.findById(trainingPlanId).populate(
+    'author',
+    'username profileDetails.profilePicture',
+  );
 
   if (!trainingPlan) {
     throw new Error('Plan treningowy nie został znaleziony');
@@ -101,7 +101,7 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
   const startedTrainingIds = user.statistics.startedTrainingPlans.map((stp) => stp.trainingPlanId);
 
   if (startedTrainingIds.length > 0) {
-    const existingUserTrainingPlans = await UserHasTrainingPlans.find({
+    const existingUserTrainingPlans = await StartedTrainingPlan.find({
       _id: { $in: startedTrainingIds },
       'trainingPlanSnapshot.originalId': trainingPlanId,
     });
@@ -110,15 +110,6 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
       throw new Error('Ten plan treningowy jest już rozpoczęty');
     }
   }
-
-  const exerciseIds = trainingPlan.days.flatMap((day) => day.exercises.map((ex) => ex.id));
-
-  const exercises = await Exercise.find({ _id: { $in: exerciseIds } })
-    .populate('muscleGroup', 'name')
-    .populate('equipment', 'name')
-    .lean();
-
-  const exercisesMap = new Map(exercises.map((ex: any) => [ex._id.toString(), ex]));
 
   const trainingPlanSnapshot = {
     originalId: trainingPlan._id,
@@ -132,48 +123,10 @@ export const startTrainingPlanService = async (userId: string, trainingPlanId: s
       username: (trainingPlan.author as any).username,
       profilePicture: (trainingPlan.author as any).profileDetails?.profilePicture,
     },
-    days: trainingPlan.days.map((day) => ({
-      name: day.name,
-      dayNumber: day.dayNumber,
-      totalDuration: day.totalDuration,
-      isRestDay: day.isRestDay,
-      exercises: day.exercises.map((ex) => {
-        const exerciseId = (ex.id as { _id: Types.ObjectId })._id;
-        const exerciseData: any = exercisesMap.get(exerciseId.toString());
-
-        if (!exerciseData) {
-          throw new Error(`Ćwiczenie o ID ${exerciseId} nie zostało znalezione`);
-        }
-
-        return {
-          originalId: exerciseId,
-          name: exerciseData.name,
-          description: exerciseData.description,
-          image: exerciseData.image,
-          video: exerciseData.video,
-          advancedLevel: exerciseData.advancedLevel,
-          muscleGroup: Array.isArray(exerciseData.muscleGroup)
-            ? exerciseData.muscleGroup.map((mg: any) => ({
-                id: mg._id,
-                name: mg.name,
-              }))
-            : [],
-          equipment: Array.isArray(exerciseData.equipment)
-            ? exerciseData.equipment.map((eq: any) => ({
-                id: eq._id,
-                name: eq.name,
-              }))
-            : [],
-          isRepsSet: ex.isRepsSet,
-          duration: ex.duration,
-          restAfterSet: ex.restAfterSet,
-          sets: ex.sets,
-        };
-      }),
-    })),
+    days: trainingPlan.days,
   };
 
-  const userTrainingPlan = new UserHasTrainingPlans({
+  const userTrainingPlan = new StartedTrainingPlan({
     userId: user._id,
     trainingPlanSnapshot,
     progress: {
@@ -210,7 +163,7 @@ export const deleteStartedTrainingPlanService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findByIdAndDelete(userTrainingPlanId);
+  const userTrainingPlan = await StartedTrainingPlan.findByIdAndDelete(userTrainingPlanId);
   if (!userTrainingPlan) {
     throw new Error('Rozpoczęty plan treningowy nie został znaleziony');
   }
@@ -235,7 +188,7 @@ export const resetStartedTrainingPlanService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId);
+  const userTrainingPlan = await StartedTrainingPlan.findById(userTrainingPlanId);
   if (!userTrainingPlan) {
     throw new Error('Rozpoczęty plan treningowy nie został znaleziony');
   }
@@ -271,7 +224,7 @@ export const getStartedTrainingPlanDaysService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId)
+  const userTrainingPlan = await StartedTrainingPlan.findById(userTrainingPlanId)
     .select('trainingPlanSnapshot.days progress.completedDays')
     .lean();
 
@@ -311,14 +264,24 @@ export const getStartedTrainingPlanDayDetailsService = async (
     throw new Error('Użytkownik nie został znaleziony');
   }
 
-  const userTrainingPlan = await UserHasTrainingPlans.findById(userTrainingPlanId).lean();
+  const userTrainingPlan = await StartedTrainingPlan.findById(userTrainingPlanId)
+    .populate({
+      path: 'trainingPlanSnapshot.days.exercises.equipment',
+      model: 'Equipment',
+      select: 'name',
+    })
+    .populate({
+      path: 'trainingPlanSnapshot.days.exercises.muscleGroup',
+      model: 'MuscleGroup',
+      select: 'name',
+    })
+    .lean();
 
   if (!userTrainingPlan) {
     throw new Error('Rozpoczęty plan treningowy nie został znaleziony');
   }
 
   const snapshot = (userTrainingPlan as any).trainingPlanSnapshot;
-  const progress = (userTrainingPlan as any).progress;
 
   const day = snapshot.days.find((d: any) => d.dayNumber === dayNumber);
 
@@ -326,25 +289,11 @@ export const getStartedTrainingPlanDayDetailsService = async (
     throw new Error('Dzień treningowy nie został znaleziony');
   }
 
-  const exercises = day.exercises.map((exercise: any) => ({
-    originalId: exercise.originalId,
-    name: exercise.name,
-    description: exercise.description,
-    image: exercise.image,
-    video: exercise.video,
-    muscleGroup: exercise.muscleGroup,
-    equipment: exercise.equipment,
-    isRepsSet: exercise.isRepsSet,
-    duration: exercise.duration,
-    restAfterSet: exercise.restAfterSet,
-    sets: exercise.sets,
-  }));
-
   return {
     dayNumber: day.dayNumber,
     name: day.name,
     totalDuration: day.totalDuration,
-    exercises,
+    exercises: day.exercises,
   };
 };
 
@@ -359,7 +308,7 @@ export const completeDayTrainingService = async (
 
   const [user, userTrainingPlan] = await Promise.all([
     User.findById(userId),
-    UserHasTrainingPlans.findById(userTrainingPlanId),
+    StartedTrainingPlan.findById(userTrainingPlanId),
   ]);
 
   if (!user) {
@@ -384,30 +333,7 @@ export const completeDayTrainingService = async (
     throw new Error('Ten dzień jest już ukończony');
   }
 
-  const completedDay = {
-    dayNumber,
-    exercises: day.exercises.map((exercise) => ({
-      exerciseOriginalId: exercise.originalId,
-      sets: exercise.sets.map((set: any) => {
-        let time = 0;
-        if ('repetitions' in set) {
-          time = set.repetitions * 3;
-        } else if ('duration' in set) {
-          time = set.duration;
-        }
-        return { time };
-      }),
-    })),
-  };
-
-  userTrainingPlan.progress.completedDays.push(completedDay);
-
-  const totalDayTime = completedDay.exercises.reduce(
-    (sum, ex) => sum + ex.sets.reduce((s, set) => s + (set.time || 0), 0),
-    0,
-  );
-
-  user.statistics.totalTrainingsTime += totalDayTime;
+  userTrainingPlan.progress.completedDays.push({ dayNumber });
 
   const allDaysCompleted = userTrainingPlan.trainingPlanSnapshot.days.every((day) => {
     if (day.isRestDay) return true;

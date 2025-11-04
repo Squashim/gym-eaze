@@ -52,7 +52,11 @@ import {
 } from '@/lib/parsers';
 import { BicepsFlexed, CalendarDays, Clock, Flame, Loader2 } from 'lucide-react';
 import { useWorkout } from '@/hooks/query/workouts/use-workout';
-import type { CreateWorkoutPayload, UpdateWorkoutPayload } from '@/types/workout';
+import type {
+  CreateWorkoutPayload,
+  UpdateWorkoutPayload,
+  WorkoutApiExercise,
+} from '@/types/workout';
 import HashtagList from '@/components/ui/hashtag-list';
 import { useUnsavedChangesWarning } from '@/hooks/utils/use-unsaved-changes-warning';
 import { toast } from 'sonner';
@@ -100,6 +104,19 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
 
   const imageFile = form.watch('stepOne.image');
 
+  const defaultExercisesMap = useMemo(() => {
+    if (!workoutData) return undefined;
+    const defaultExercisesMap = new Map<string, WorkoutApiExercise>();
+
+    workoutData.days.forEach((day) => {
+      day.exercises.forEach((exercise) => {
+        defaultExercisesMap.set(exercise.originalId, exercise);
+      });
+    });
+
+    return defaultExercisesMap;
+  }, [workoutData]);
+
   const isEditModeLoading = useMemo(() => {
     return isEditMode && (isLoading || isFilesLoading);
   }, [isEditMode, isLoading, isFilesLoading]);
@@ -130,7 +147,26 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
           hashtags: workoutData.hashtags || [],
         },
         stepTwo: {
-          days: workoutData.days,
+          days: workoutData.days.map(({ name, dayNumber, isRestDay, exercises }) => ({
+            name,
+            dayNumber,
+            isRestDay,
+            exercises: exercises.map(({ originalId, isRepsSet, restAfterSet, sets }) =>
+              isRepsSet
+                ? {
+                    id: originalId,
+                    isRepsSet: true,
+                    restAfterSet,
+                    sets,
+                  }
+                : {
+                    id: originalId,
+                    isRepsSet: false,
+                    restAfterSet,
+                    sets,
+                  },
+            ),
+          })),
         },
       });
     };
@@ -230,7 +266,7 @@ function WorkoutCreator({ mode }: WorkoutCreatorProps) {
                 onSubmit={handleSubmit(onSubmit)}
               >
                 {step === 0 && <WorkoutCreatorStepOne />}
-                {step === 1 && <WorkoutCreatorStepTwo />}
+                {step === 1 && <WorkoutCreatorStepTwo defaultExercisesMap={defaultExercisesMap} />}
                 {step === 2 && <WorkoutCreatorStepThree />}
 
                 <StepActions
@@ -444,12 +480,22 @@ function WorkoutCreatorStepOne() {
   );
 }
 
-function WorkoutCreatorStepTwo() {
+interface WorkoutCreatorStepTwoProps {
+  defaultExercisesMap?: Map<string, WorkoutApiExercise>;
+}
+
+function WorkoutCreatorStepTwo({ defaultExercisesMap }: WorkoutCreatorStepTwoProps) {
   const [selectedDay, setSelectedDay] = useState<TrainingDaySchema | null>(null);
   const [selectedTab, setSelectedTab] = useState<string>('week-1');
 
   if (selectedDay) {
-    return <ActiveDay day={selectedDay} onDaySelect={setSelectedDay} />;
+    return (
+      <ActiveDay
+        day={selectedDay}
+        defaultExercisesMap={defaultExercisesMap}
+        onDaySelect={setSelectedDay}
+      />
+    );
   }
 
   return (

@@ -8,7 +8,7 @@ import {
   getStartedTrainingPlansService,
   resetStartedTrainingPlanService,
   startTrainingPlanService,
-} from '../services/userHasTrainingPlansService';
+} from '../services/startedTrainingPlanService';
 
 export const getStartedTrainingPlans = async (req: AuthRequest, res: Response) => {
   try {
@@ -44,7 +44,6 @@ export const startTrainingPlan = async (req: AuthRequest, res: Response) => {
     const result = await startTrainingPlanService(userId, trainingPlanId);
     return res.status(201).json(result);
   } catch (error) {
-    console.log(error);
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message });
     } else {

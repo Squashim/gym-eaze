@@ -200,7 +200,6 @@ fun TrainingPlanDetailScreen(
                         onExerciseClick = onExerciseClick,
                         onUserClick = onUserClick,
                         onBackClick = onBackClick,
-                        navigateToWorkoutPlayer = navigateToWorkoutPlayer,
                         isDownloadingPdf = isDownloadingPdf,
                         onReportClick = { showReportDialog = true },
                         onEditPlanClick = onEditPlanClick,
@@ -467,6 +466,7 @@ private fun HashtagChip(hashtag: String) {
 private fun ActionButtonsSection(
     trainingPlan: TrainingPlan,
     likes: Int,
+    isLiked: Boolean,
     isUserLoggedIn: Boolean,
     onLikeClick: () -> Unit,
     onFavoriteClick: () -> Unit,
@@ -501,7 +501,7 @@ private fun ActionButtonsSection(
             border = BorderStroke(1.dp, getInputBorderColor())
         ) {
             Icon(
-                imageVector = if (likes > 0) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
+                imageVector = if (isUserLoggedIn && isLiked) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
                 contentDescription = null,
                 tint = getPrimaryColor(),
                 modifier = Modifier.size(18.dp)
@@ -610,7 +610,7 @@ private fun TrainingDayDetailCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${day.name}",
+                    text = day.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = getOnSurfaceColor()
@@ -667,7 +667,7 @@ private fun ExerciseItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onExerciseClick(exercise.id) },
+            .clickable { onExerciseClick(exercise.originalId!!) },
         color = getOnSurfaceColor().copy(alpha = 0.05f),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -692,21 +692,12 @@ private fun ExerciseItem(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (exercise.exercise != null && exercise.exercise.image.isNotEmpty()) {
-                            AsyncImage(
-                                model = exercise.exercise.image,
-                                contentDescription = exercise.exercise.name,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.FitnessCenter,
-                                contentDescription = null,
-                                tint = getOnSurfaceSecondaryColor(),
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
+                        AsyncImage(
+                            model = exercise.image,
+                            contentDescription = exercise.name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
 
@@ -715,7 +706,7 @@ private fun ExerciseItem(
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = exercise.exercise?.name ?: "Ładowanie ćwiczenia...",
+                        text = exercise.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = getOnSurfaceColor(),
@@ -775,25 +766,23 @@ private fun ExerciseItem(
                         )
                     }
 
-                    exercise.exercise?.let { ex ->
-                        if (ex.muscleGroup.isNotEmpty()) {
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(ex.muscleGroup.take(2)) { muscleGroup ->
-                                    Surface(
-                                        color = getPrimaryColor().copy(alpha = 0.1f),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Text(
-                                            text = muscleGroup.name,
-                                            fontSize = 10.sp,
-                                            color = getPrimaryColor(),
-                                            fontWeight = FontWeight.Medium,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
-                                    }
+                    if (exercise.muscleGroup.isNotEmpty()) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(exercise.muscleGroup.take(2)) { muscleGroup ->
+                                Surface(
+                                    color = getPrimaryColor().copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text(
+                                        text = muscleGroup.name,
+                                        fontSize = 10.sp,
+                                        color = getPrimaryColor(),
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
                                 }
                             }
                         }
@@ -950,7 +939,6 @@ private fun TrainingPlanDetailContent(
     onExerciseClick: (String) -> Unit,
     onUserClick: (String) -> Unit,
     onBackClick: () -> Unit,
-    navigateToWorkoutPlayer: (userTrainingPlanId: String, planName: String, dayNumber: Int) -> Unit,
     isDownloadingPdf: Boolean,
     onReportClick: () -> Unit,
     onEditPlanClick: (String) -> Unit,
@@ -960,6 +948,7 @@ private fun TrainingPlanDetailContent(
     val comments by viewModel.trainingPlanComments.collectAsState()
     val hasMore by viewModel.hasMoreComments.collectAsState()
     val isLoading by viewModel.isLoadingComments.collectAsState()
+    val isLiked by viewModel.isTrainingPlanLiked(plan.id).collectAsState(initial = false)
     val currentUser by viewModel.currentUser.collectAsState()
     val currentUsername = if (isUserLoggedIn) currentUser?.username.orEmpty() else ""
     val uiState by viewModel.uiState.collectAsState()
@@ -979,12 +968,10 @@ private fun TrainingPlanDetailContent(
 
     val scope = rememberCoroutineScope()
 
-    var previousPlanContext by remember { mutableStateOf<String?>(null) }
-
     LaunchedEffect(plan.id) {
         viewModel.loadTrainingPlanComments(plan.id, refresh = true)
         if (isUserLoggedIn) {
-            viewModel.fetchUserCommentLikes()
+            viewModel.fetchUserLikes()
         }
     }
 
@@ -1122,7 +1109,6 @@ private fun TrainingPlanDetailContent(
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable {
-                                    previousPlanContext = "plan_detail_${plan.id}"
                                     onUserClick(plan.author?.username ?: "?")
                                 }
                         ) {
@@ -1212,6 +1198,7 @@ private fun TrainingPlanDetailContent(
         item {
             ActionButtonsSection(
                 likes = plan.likes,
+                isLiked = isLiked,
                 isUserLoggedIn = isUserLoggedIn,
                 onLikeClick = viewModel::toggleLike,
                 onFavoriteClick = viewModel::toggleFavorite,
@@ -1448,7 +1435,6 @@ private fun TrainingPlanDetailContent(
             TrainingPlanCommentItem(
                 comment = comment,
                 viewModel = viewModel,
-                reportViewModel = reportViewModel,
                 isUserLoggedIn = isUserLoggedIn,
                 onReply = { commentId, username ->
                     if (isUserLoggedIn) {
@@ -1485,7 +1471,6 @@ private fun TrainingPlanDetailContent(
                     showReportCommentDialog = true
                 },
                 onUserClick = { username ->
-                    previousPlanContext = "plan_detail_${plan.id}"
                     onUserClick(username)
                 },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -1497,7 +1482,6 @@ private fun TrainingPlanDetailContent(
                     TrainingPlanReplyItem(
                         reply = reply,
                         viewModel = viewModel,
-                        reportViewModel = reportViewModel,
                         isUserLoggedIn = isUserLoggedIn,
                         currentUsername = currentUsername,
                         onEditClick = { replyToEdit ->
@@ -1514,7 +1498,6 @@ private fun TrainingPlanDetailContent(
                             showReportCommentDialog = true
                         },
                         onUserClick = { username ->
-                            previousPlanContext = "plan_detail_${plan.id}"
                             onUserClick(username)
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -1623,7 +1606,6 @@ private fun TrainingPlanDetailContent(
 private fun TrainingPlanCommentItem(
     comment: Comment,
     viewModel: TrainingPlanDetailViewModel,
-    reportViewModel: ReportViewModel,
     isUserLoggedIn: Boolean = true,
     onReply: (String, String) -> Unit,
     isExpanded: Boolean,
@@ -1870,7 +1852,6 @@ private fun TrainingPlanCommentItem(
 private fun TrainingPlanReplyItem(
     reply: Comment,
     viewModel: TrainingPlanDetailViewModel,
-    reportViewModel: ReportViewModel,
     isUserLoggedIn: Boolean = true,
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
