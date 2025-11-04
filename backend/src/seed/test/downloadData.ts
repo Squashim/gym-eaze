@@ -6,7 +6,7 @@ import Post from '../../models/postModel';
 import TrainingPlan from '../../models/trainingPlanModel';
 import User from '../../models/userModel';
 import Comment from '../../models/commentModel';
-import UserHasTrainingPlans from '../../models/startedTrainingPlanModel';
+import StartedTrainingPlan from '../../models/startedTrainingPlanModel';
 
 export const downloadedBadge = async () => {
   const badge = await Badge.find();
@@ -52,7 +52,7 @@ export const downloadedComments = async () => {
   console.log(JSON.stringify(comments, null, 2));
 };
 
-export const downloadedUserHasTrainingPlans = async () => {
-  const userHasTrainingPlans = await UserHasTrainingPlans.find();
-  console.log(JSON.stringify(userHasTrainingPlans, null, 2));
+export const downloadedStartedTrainingPlan = async () => {
+  const startedTrainingPlans = await StartedTrainingPlan.find();
+  console.log(JSON.stringify(startedTrainingPlans, null, 2));
 };

@@ -12,7 +12,6 @@ import DeviceToken from '../models/deviceTokenModel';
 import { sendNotificationService } from './notificationService';
 import { Notifications } from '../constants/notifications';
 import { checkAndEarnBadges } from './badgeService';
-import UserHasTrainingPlans from '../models/startedTrainingPlanModel';
 import Notification from '../models/notificationModel';
 import Post from '../models/postModel';
 import { deleteCommentsAndLikes } from '../utils/helpers';
@@ -20,6 +19,7 @@ import { CommentParentType } from '../constants/commentType';
 import TrainingPlan from '../models/trainingPlanModel';
 import Exercise from '../models/exerciseModel';
 import Comment from '../models/commentModel';
+import StartedTrainingPlan from '../models/startedTrainingPlanModel';
 
 export const getUserLikesService = async (userId: string) => {
   const user = await User.findById(userId).select('likes');
@@ -203,7 +203,7 @@ export const deleteUserService = async (userId: string) => {
     await deleteFromCloudinary(user.profileDetails.profilePicture);
   }
 
-  await UserHasTrainingPlans.deleteMany({ userId: user._id });
+  await StartedTrainingPlan.deleteMany({ userId: user._id });
 
   await Notification.deleteMany({ to: user._id });
 

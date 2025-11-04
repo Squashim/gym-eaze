@@ -165,7 +165,7 @@ const userSchema = new mongoose.Schema<IUser>(
         {
           trainingPlanId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'UserHasTrainingPlans',
+            ref: 'StartedTrainingPlan',
             required: true,
           },
           status: {

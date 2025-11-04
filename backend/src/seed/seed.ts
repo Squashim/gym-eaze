@@ -13,7 +13,6 @@ import {
   downloadedPosts,
   downloadedTrainingPlans,
   downloadedComments,
-  downloadedUserHasTrainingPlans,
 } from './test/downloadData';
 import { seedUsers } from './data/userData';
 import { seedPosts } from './data/postData';
@@ -32,7 +31,6 @@ const checkAddedData = async () => {
     await downloadedPosts();
     await downloadedTrainingPlans();
     await downloadedComments();
-    await downloadedUserHasTrainingPlans();
   } catch (error) {
     console.error('Błąd', error);
   }
