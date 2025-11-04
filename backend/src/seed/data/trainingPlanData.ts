@@ -18,7 +18,7 @@ const trainingPlans = [
     description:
       'Plan dla początkująco-średniozaawansowanych. 4 dni treningowe + 3 dni regeneracji.',
     image:
-      'https://res.cloudinary.com/dtglpgvzi/image/upload/v1759616818/training-plans/images/qufwr8aouovypfquzar2.png',
+      'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762273458/danielle-cerullo-CQfNt66ttZM-unsplash_k9wqxe.jpg',
     goal: 'Spalanie kalorii',
     visibility: 'Publiczny',
     advancedLevel: 'Średniozaawansowany',
@@ -673,6 +673,16 @@ const trainingPlans = [
           {
             originalId: exercisesIds.machineLegExtension,
 
+            name: 'Wyprosty kolan na maszynie siedząc (Leg Extension)',
+            description: `Usiądź na maszynie, oprzyj plecy o oparcie i ustaw wałki na wysokości kostek.\nChwyć uchwyty dla stabilizacji i napnij mięśnie ud.\nPowoli prostuj nogi w kolanach, maksymalnie napinając mięśnie czworogłowe.\nKontrolowanym ruchem opuść nogi do pozycji wyjściowej.\nĆwiczenie izoluje mięśnie przedniej części uda.`,
+            image:
+              'https://res.cloudinary.com/dtglpgvzi/image/upload/v1756148331/wyprosty-nog-na-maszynie_ztruqy.webp',
+            video:
+              'https://res.cloudinary.com/dtglpgvzi/video/upload/v1756148464/wyprosty-nog-na-maszynie_b3b0sz.webm',
+            advancedLevel: AdvancedLevel.easy,
+            muscleGroup: [muscleGroupsIds.quads],
+            equipment: [equipmentIds.legExtensionMachine],
+
             isRepsSet: true,
             duration: 600,
             restAfterSet: 120,
@@ -732,7 +742,7 @@ const trainingPlans = [
             ],
           },
           {
-            id: exercisesIds.legPress,
+            originalId: exercisesIds.legPress,
 
             name: 'Wypychanie nóg na suwnicy (Leg Press)',
             description: `1. Usiądź na maszynie, stopy ustaw na platformie na szerokość barków.\n2. Oprzyj plecy o oparcie, uchwyć uchwyty dla stabilizacji.\n3. Powoli uginaj kolana, opuszczając platformę w kierunku klatki piersiowej, utrzymując stopy płasko.\n4. Wypchnij platformę, prostując nogi, ale nie blokując kolan na górze.\nĆwiczenie rozwija mięśnie ud, pośladków i łydek, pozwalając na bezpieczne podnoszenie dużych obciążeń.`,
@@ -1758,6 +1768,20 @@ const trainingPlans = [
           },
           {
             originalId: exercisesIds.barbellPreacherCurl,
+
+            name: 'Uginanie przedramion na modlitewniku przy użyciu sztangi łamanej (Barbell Preacher Curl)',
+            description: `1. Usiądź na modlitewniku, oprzyj ramiona na poduszce i chwyć sztangę.\n2. Unieś sztangę, zginając ramiona w łokciach, skupiając się na pracy bicepsów.\n3. Powoli opuść sztangę do pozycji wyjściowej, kontrolując ciężar.\nĆwiczenie izoluje biceps, minimalizując udział innych mięśni.`,
+            image:
+              'https://res.cloudinary.com/dtglpgvzi/image/upload/v1756148310/uginanie-ramion-modlitewnik_lr4jjn.webp',
+            video:
+              'https://res.cloudinary.com/dtglpgvzi/video/upload/v1756148441/uginanie-ramion-modlitewnik_psnfxx.webm',
+            advancedLevel: AdvancedLevel.easy,
+            muscleGroup: [muscleGroupsIds.biceps],
+            equipment: [
+              equipmentIds.preacherCurlBench,
+              equipmentIds.curlBarbell,
+              equipmentIds.weightPlates,
+            ],
 
             isRepsSet: true,
             duration: 261,

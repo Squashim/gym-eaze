@@ -18,7 +18,6 @@ import { seedUsers } from './data/userData';
 import { seedPosts } from './data/postData';
 import { seedTrainingPlans } from './data/trainingPlanData';
 import { seedComments } from './data/commentData';
-import { seedNotifications } from './data/notificationData';
 
 const checkAddedData = async () => {
   await connectToDB();
@@ -47,7 +46,6 @@ const seed = async () => {
     await seedPosts();
     await seedTrainingPlans();
     await seedComments();
-    await seedNotifications();
   } catch (error) {
     console.error('Błąd:', error);
   } finally {

@@ -128,7 +128,7 @@ const badges = [
     _id: badgesIds.workouts.first,
     title: 'Trener w akcji - 1 utworzony trening',
     description: 'Twój pierwszy trening jest już utworzony. Świetna robota',
-    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762269159/plan__1_exdgl3.png',
+    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762273305/tr_1_kmklc1.png',
     requirements: {
       action: 'Trainings',
       target: 1,
@@ -138,7 +138,7 @@ const badges = [
     _id: badgesIds.workouts.five,
     title: 'Twórca formy - 5 utworzonych treningów',
     description: 'Pomagasz innym w drodze do lepszej formy',
-    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762268987/10_pan_mx0rrz.png',
+    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762273311/tr_2_arw7n5.png',
     requirements: {
       action: 'Trainings',
       target: 5,
@@ -148,7 +148,7 @@ const badges = [
     _id: badgesIds.workouts.ten,
     title: 'Mentor społeczności - 10 utworzonych treningów',
     description: 'Twoje plany inspirują innych. Jesteś prawdziwym liderem',
-    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762268991/15_plan_vktfgo.png',
+    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762273314/tr_3_aysset.png',
     requirements: {
       action: 'Trainings',
       target: 10,
@@ -158,7 +158,7 @@ const badges = [
     _id: badgesIds.workouts.twenty,
     title: 'Architekt siły - 20 utworzonych treningów',
     description: 'Budujesz społeczność treningową cegła po cegle',
-    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762268998/20_plan_cqdhb3.png',
+    image: 'https://res.cloudinary.com/dtglpgvzi/image/upload/v1762273315/tr_4_xvga6m.png',
     requirements: {
       action: 'Trainings',
       target: 20,
