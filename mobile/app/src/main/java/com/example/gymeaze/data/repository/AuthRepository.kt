@@ -6,7 +6,7 @@ import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.AuthApiService
-import com.example.gymeaze.data.api.TokenAuthenticator
+import com.example.gymeaze.util.TokenAuthenticator
 import com.example.gymeaze.data.models.AccountLinkingError
 import com.example.gymeaze.data.models.GoogleAuthLoginRequest
 import com.example.gymeaze.data.models.GoogleLinkRequest
@@ -38,7 +38,7 @@ class AuthRepository(private val context: Context){
 
     private val httpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .authenticator(TokenAuthenticator(this))
+        .authenticator(TokenAuthenticator(userPreferences, this))
         .build()
 
     private val api: AuthApiService by lazy {

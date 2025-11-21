@@ -1,6 +1,5 @@
 package com.example.gymeaze.util
 
-import android.util.Log
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.UserPreferences
 import kotlinx.coroutines.runBlocking
