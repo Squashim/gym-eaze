@@ -67,17 +67,6 @@ data class ExerciseSet(
     val isRepsSet: Boolean = true
 )
 
-data class CreateExerciseSet(
-    val repetitions: Int,
-    val weight: Double = 0.0
-)
-
-data class TrainingDayFormData(
-    val name: String = "",
-    val isRestDay: Boolean = false,
-    val exercises: List<DayExerciseFormData> = emptyList()
-)
-
 data class DayExerciseFormData(
     val exerciseId: String = "",
     val exercise: Exercise? = null,

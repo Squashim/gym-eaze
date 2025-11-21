@@ -255,7 +255,7 @@ fun ExerciseDetailScreen(
                 ExerciseDetailContent(
                     exercise = currentExercise!!,
                     exercisesViewModel = exercisesViewModel,
-                    reportViewModel = reportViewModel, // ← DODAJ TO
+                    reportViewModel = reportViewModel,
                     isUserLoggedIn = isUserLoggedIn,
                     onShowLoginDialog = { showLoginDialog = true },
                     onUserClick = onUserClick,
@@ -391,7 +391,7 @@ fun DeleteExerciseDialog(
 private fun ExerciseDetailContent(
     exercise: Exercise,
     exercisesViewModel: ExercisesViewModel,
-    reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
+    reportViewModel: ReportViewModel,
     isUserLoggedIn: Boolean = true,
     onShowLoginDialog: () -> Unit = {},
     onUserClick: (String) -> Unit = {},
@@ -413,7 +413,6 @@ private fun ExerciseDetailContent(
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf<Comment?>(null) }
 
-    // ← DODAJ STANY DLA ZGŁASZANIA
     var showReportDialog by remember { mutableStateOf(false) }
     var commentToReport by remember { mutableStateOf<String?>(null) }
 
@@ -815,7 +814,6 @@ private fun ExerciseDetailContent(
         )
     }
 
-    // ← DODAJ DIALOG ZGŁASZANIA KOMENTARZY
     if (showReportDialog && commentToReport != null) {
         ReportDialog(
             itemId = commentToReport!!,
@@ -1223,7 +1221,7 @@ private fun AuthorSection(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onUserClick(author.username) }, // Dodaj clickable tutaj
+            .clickable { onUserClick(author.username) },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = getSurfaceColor())
     ) {
@@ -1323,7 +1321,7 @@ private fun ExerciseCommentItem(
                 username = comment.author.username,
                 modifier = Modifier
                     .size(40.dp)
-                    .clickable { onUserClick(comment.author.username) } // Dodaj to
+                    .clickable { onUserClick(comment.author.username) }
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -1337,7 +1335,7 @@ private fun ExerciseCommentItem(
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
                         color = getOnSurfaceColor(),
-                        modifier = Modifier.clickable { onUserClick(comment.author.username) } // Dodaj to
+                        modifier = Modifier.clickable { onUserClick(comment.author.username) }
                     )
 
                     if (isUserLoggedIn) {
@@ -1406,7 +1404,7 @@ private fun ExerciseCommentItem(
                                     DropdownMenuItem(
                                         onClick = {
                                             showMenu = false
-                                            onReportClick(comment._id) // ← ZMIENIONE
+                                            onReportClick(comment._id)
                                         },
                                         text = {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1533,7 +1531,7 @@ private fun ExerciseCommentItem(
 private fun ExerciseReplyItem(
     reply: Comment,
     viewModel: ExercisesViewModel,
-    reportViewModel: ReportViewModel, // ← DODAJ TEN PARAMETR
+    reportViewModel: ReportViewModel,
     isUserLoggedIn: Boolean = true,
     currentUsername: String,
     onEditClick: (Comment) -> Unit = {},
@@ -1557,7 +1555,7 @@ private fun ExerciseReplyItem(
             username = reply.author.username,
             modifier = Modifier
                 .size(32.dp)
-                .clickable { onUserClick(reply.author.username) } // Dodaj to
+                .clickable { onUserClick(reply.author.username) }
         )
 
         Column(modifier = Modifier.weight(1f)) {
@@ -1571,7 +1569,7 @@ private fun ExerciseReplyItem(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                     color = getOnSurfaceColor(),
-                    modifier = Modifier.clickable { onUserClick(reply.author.username) } // Dodaj to
+                    modifier = Modifier.clickable { onUserClick(reply.author.username) }
                 )
 
                 if (isUserLoggedIn) {
@@ -1633,7 +1631,7 @@ private fun ExerciseReplyItem(
                                     text = { Text("Zgłoś", color = getOnSurfaceColor()) },
                                     onClick = {
                                         showMenu = false
-                                        onReportClick(reply._id) // ← ZMIENIONE
+                                        onReportClick(reply._id)
                                     },
                                     leadingIcon = {
                                         Icon(

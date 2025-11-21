@@ -40,7 +40,6 @@ fun BadgeSelectionDialog(
 ) {
     var selectedBadgeIds by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    // Synchronizuj stan wewnętrzny z zewnętrznymi propami
     LaunchedEffect(currentlySelectedBadges) {
         selectedBadgeIds = currentlySelectedBadges.map { it.id }.toSet()
     }
@@ -158,7 +157,6 @@ fun BadgeSelectionDialog(
                             items(
                                 count = availableBadges.size,
                                 key = { index ->
-                                    // Używaj ID jeśli istnieje, w przeciwnym razie użyj indeksu
                                     val badge = availableBadges[index]
                                     if (badge.id.isNotEmpty()) badge.id else "badge_$index"
                                 }

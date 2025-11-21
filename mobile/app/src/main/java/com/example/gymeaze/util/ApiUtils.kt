@@ -14,7 +14,6 @@ object ApiUtils {
     }
 
     fun createPartsFromStringArray(fieldName: String, items: List<String>): List<MultipartBody.Part> {
-        // POPRAWKA: Dla pustej listy wysyłamy jeden pusty element
         return if (items.isEmpty()) {
             listOf(MultipartBody.Part.createFormData(fieldName, ""))
         } else {
@@ -26,12 +25,11 @@ object ApiUtils {
 
 
     fun prepareFilePart(partName: String, file: File): MultipartBody.Part {
-        // Określ dokładny MIME type na podstawie rozszerzenia
         val mimeType = when (file.extension.lowercase()) {
             "png" -> "image/png"
             "jpg", "jpeg" -> "image/jpeg"
             "webp" -> "image/webp"
-            else -> "image/jpeg" // domyślny
+            else -> "image/jpeg"
         }
 
         val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())

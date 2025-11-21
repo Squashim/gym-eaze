@@ -79,7 +79,6 @@ fun ExerciseCreatorScreen(
         }
     }
 
-    // DODAJ TO - Funkcja obsługująca powrót
     val handleBackClick = {
         if (ui.name.isNotBlank() ||
             ui.imageUri != null ||
@@ -89,10 +88,8 @@ fun ExerciseCreatorScreen(
             ui.selectedEquipment.isNotEmpty() ||
             ui.hashtags.isNotEmpty()
         ) {
-            // Jeśli są jakieś dane, pokaż dialog
             showExitDialog = true
         } else {
-            // Jeśli puste, po prostu wyjdź i wyczyść
             viewModel.clearData()
             onBackClick()
         }
@@ -113,7 +110,7 @@ fun ExerciseCreatorScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = handleBackClick) { // ZMIEŃ TO
+                    IconButton(onClick = handleBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -209,7 +206,7 @@ fun ExerciseCreatorScreen(
             onDismiss = { showExitDialog = false },
             onConfirm = {
                 showExitDialog = false
-                viewModel.clearData() // Resetuje wszystkie pola
+                viewModel.clearData()
                 onBackClick()
             },
             isEditMode = ui.isEditMode
@@ -804,20 +801,6 @@ private fun VisibilityBadge(isPublic: Boolean) {
 }
 
 @Composable
-private fun TagGroup(items: List<String>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 120.dp)
-    ) {
-        items(items) { item ->
-            TagChip(text = item)
-        }
-    }
-}
-
-@Composable
 private fun TagGroupWithImage(items: List<MuscleGroup>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -947,25 +930,6 @@ private fun ExpandableTagField(
                 fontSize = 12.sp
             )
         }
-    }
-}
-
-@Composable
-private fun TagChip(text: String) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = getSecondaryColor(),
-        modifier = Modifier.padding(vertical = 2.dp).wrapContentWidth()
-    ) {
-        Text(
-            text = text,
-            color = getOnSecondaryColor(),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 

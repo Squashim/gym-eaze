@@ -80,7 +80,6 @@ fun ExercisesScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Funkcja pomocnicza do pokazywania toastów
     fun showToast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }

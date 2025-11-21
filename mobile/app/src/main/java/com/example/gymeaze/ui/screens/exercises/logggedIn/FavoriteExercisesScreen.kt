@@ -199,10 +199,8 @@ fun FavoriteExercisesScreen(
                                             }
                                         },
                                         onEditClick = { exerciseId ->
-                                            // TODO: Implementacja edycji
                                         },
                                         onDeleteClick = { exerciseId ->
-                                            // TODO: Implementacja usuwania
                                         },
                                         onExerciseClick = { onExerciseClick(exercise.id) }
                                     )

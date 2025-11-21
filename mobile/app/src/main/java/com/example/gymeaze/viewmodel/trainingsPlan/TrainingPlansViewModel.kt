@@ -163,71 +163,6 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
         loadTrainingPlans()
     }
 
-    /*
-    private fun loadTrainingPlans(append: Boolean = false) {
-        viewModelScope.launch {
-            try {
-                if (append) {
-                    _uiState.value = _uiState.value.copy(isLoadingMore = true)
-                } else {
-                    _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-                }
-
-                val currentState = _uiState.value
-                val page = if (append) currentState.currentPage + 1 else 1
-
-                val filters = TrainingPlanFilters(
-                    search = _searchQuery.value.takeIf { it.isNotBlank() },
-                    goal = _selectedGoal.value,
-                    difficulty = _selectedDifficulty.value,
-                    minDuration = _minDuration.value,
-                    maxDuration = _maxDuration.value,
-                    hashtags = _selectedHashtags.value.takeIf { it.isNotEmpty() },
-                    followers = _followersOnly.value.takeIf { it }
-                )
-
-                val result = repository.getTrainingPlans(
-                    filters = filters,
-                    sortBy = _sortBy.value,
-                    page = page,
-                    pageSize = 9
-                )
-
-                result.onSuccess { response ->
-                    val newPlans = if (append) {
-                        currentState.trainingPlans + response.items
-                    } else {
-                        response.items
-                    }
-
-                    _uiState.value = _uiState.value.copy(
-                        trainingPlans = newPlans,
-                        currentPage = response.page,
-                        totalPages = (response.total + response.pageSize - 1) / response.pageSize,
-                        hasMorePages = response.page * response.pageSize < response.total,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = null
-                    )
-                }.onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = exception.message ?: "Błąd podczas ładowania planów treningowych"
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    isLoadingMore = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
-                )
-            }
-        }
-    }
-
-     */
-
     fun loadMoreTrainingPlans() {
         if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore && !_uiState.value.isRefreshing) {
             viewModelScope.launch {
@@ -280,15 +215,6 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
             }
         }
     }
-
-
-    /*
-    fun refreshTrainingPlans() {
-        loadTrainingPlans()
-    }
-
-
-     */
 
     private fun loadTrainingPlans(append: Boolean = false) {
         viewModelScope.launch {

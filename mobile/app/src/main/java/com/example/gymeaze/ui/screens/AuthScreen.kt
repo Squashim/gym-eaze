@@ -670,35 +670,5 @@ fun AuthScreen(
     }
 }
 
-        /*
-@Composable
-fun AuthScreenPreview() {
-    GymEazeTheme {
-        AuthScreen(
-            uiState = AuthUiState(
-                username = "Test",
-                email = "Test@example.com",
-                password = "",
-                confirmPassword = "",
-                usernameOrEmail = "",
-                isRegistering = true,
-                isLoading = false,
-                errorMessage = null
-            ),
-            onUsernameChange = {},
-            onEmailChange = {},
-            onPasswordChange = {},
-            onConfirmPasswordChange = {},
-            onUsernameOrEmailChange = {},
-            onToggleAuthMode = {},
-            onRegister = {},
-            onLogin = {},
-            onGoogleLogin = {},
-            onSettingsClick = {},
-            isLoggedIn = {}
-        )
-    }
-}}}
-*/
 
 

@@ -39,9 +39,7 @@ fun PostsMenuScreen(
             GymEazeBottomNavigationBar(
                 selectedRoute = selectedRoute,
                 onItemSelected = { route -> selectedRoute = route }
-            )
-
-             */
+            )*/
         },
 
         containerColor = getBackgroundColor()

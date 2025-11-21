@@ -191,7 +191,6 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
             try {
                 _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
 
-                // Ładuj pierwszą stronę (odświeżanie zawsze zaczyna od początku)
                 val result = repository.getFavoriteTrainingPlans(page = 1, pageSize = 9)
 
                 result.onSuccess { response ->
@@ -201,14 +200,14 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                         hasMorePages = response.page * response.pageSize < response.total,
                         isLoading = false,
                         isLoadingMore = false,
-                        isRefreshing = false, // Resetuj isRefreshing
+                        isRefreshing = false,
                         error = null
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        isRefreshing = false, // Resetuj isRefreshing także przy błędzie
+                        isRefreshing = false,
                         error = exception.message ?: "Błąd podczas odświeżania ulubionych planów"
                     )
                 }
@@ -216,7 +215,7 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    isRefreshing = false, // Resetuj isRefreshing także przy wyjątku
+                    isRefreshing = false,
                     error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
                 )
             }

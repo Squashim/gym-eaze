@@ -392,7 +392,6 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     fun isTrainingPlanLiked(planId: String): Flow<Boolean>  = _likedPlans.map { it.contains(planId) }.distinctUntilChanged()
 
 
-    //=========================COMMENTS SECTION=============================
 
     private val _trainingPlanComments = MutableStateFlow<List<Comment>>(emptyList())
     val trainingPlanComments: StateFlow<List<Comment>> = _trainingPlanComments.asStateFlow()

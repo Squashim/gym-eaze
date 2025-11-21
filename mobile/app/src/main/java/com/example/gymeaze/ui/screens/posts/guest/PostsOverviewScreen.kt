@@ -91,7 +91,6 @@ fun PostsOverviewScreen(
                 isLoading = isLoading,
                 onRefresh = { viewModel.refreshPosts() },
                 isRefreshing = isRefreshing,
-                // Zamiast polubienia pokazujemy dialog z komunikatem o logowaniu:
                 onToggleLike = { showLoginToLikeDialog = true },
                 onToggleSeeMore = {
                     showLoginToSeeMoreDialog = true

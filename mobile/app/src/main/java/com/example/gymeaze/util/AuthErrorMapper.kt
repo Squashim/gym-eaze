@@ -33,10 +33,8 @@ object AuthErrorMapper {
     }
 
     fun mapAuthErrorToUserMessage(context: Context, errorBody: String?, httpCode: Int? = null): String {
-        // 1) Priorytet: message z backendu
         extractServerMessage(errorBody)?.let { return it }
 
-        // 2) Fallback: po statusie HTTP (backend i tak daje message, więc to pójdzie rzadko)
         when (httpCode) {
             400 -> return context.getString(R.string.error_validation_failed)
             401 -> return context.getString(R.string.error_invalid_credentials)
@@ -47,7 +45,6 @@ object AuthErrorMapper {
             in 500..599 -> return context.getString(R.string.error_server_error)
         }
 
-        // 3) Ostateczny fallback
         return context.getString(R.string.error_unknown)
     }
 }

@@ -10,14 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 
 @Composable
@@ -132,18 +130,4 @@ fun LoginRequiredDialog(
             }
         }
     }
-}
-
-@Composable
-fun WorkoutLoginRequiredDialog(
-    onDismiss: () -> Unit,
-    onLoginClick: () -> Unit
-) {
-    LoginRequiredDialog(
-        onDismiss = onDismiss,
-        onLoginClick = onLoginClick,
-        title = "Zaloguj się, aby tworzyć plany",
-        message = "Tworzenie i zarządzanie planami treningowymi wymaga posiadania konta. Zaloguj się lub zarejestruj, aby korzystać z pełni możliwości aplikacji!",
-        actionText = "Przejdź do logowania"
-    )
 }

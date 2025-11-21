@@ -88,7 +88,6 @@ fun SettingsScreen(
                 .background(getBackgroundColor())
         ) {
 
-            // sekcja: Wygląd
             SettingsSection(title = stringResource(R.string.appearance)) {
                 SettingsItem(
                     icon = Icons.Default.FormatPaint,
@@ -98,7 +97,6 @@ fun SettingsScreen(
                 )
             }
 
-            // sekcja: Konto (tylko dla zalogowanych)
             if (isUserLoggedIn) {
                 SettingsSection(title = stringResource(R.string.account)) {
                     onPrivacySettingsClick?.let { callback ->
@@ -111,7 +109,6 @@ fun SettingsScreen(
                     }
                 }
 
-                // sekcja: Pomoc
                 SettingsSection(title = stringResource(R.string.help_and_support)) {
                     onHelpClick?.let { callback ->
                         SettingsItem(

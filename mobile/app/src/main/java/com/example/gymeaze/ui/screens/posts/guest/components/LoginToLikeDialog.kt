@@ -36,12 +36,9 @@ fun LoginToLikeDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Ikona
-
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Nagłówek
                 Text(
                     text = "Dołącz do społeczności",
                     fontSize = 20.sp,
@@ -52,7 +49,6 @@ fun LoginToLikeDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Opis
                 Text(
                     text = "Zaloguj się, lub zarejestruj aby móc w pełni korzystać z możliwości aplikacji",
                     fontSize = 14.sp,
@@ -63,7 +59,6 @@ fun LoginToLikeDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Przyciski
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center

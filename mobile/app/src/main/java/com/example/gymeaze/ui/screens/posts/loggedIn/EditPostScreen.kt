@@ -57,7 +57,6 @@ fun EditPostScreen(
 
     val postContent = ui.content
 
-    // Sprawdzenie czy nastąpiły jakiekolwiek zmiany
     val hasChanges = remember(ui.content, ui.hashtags, ui.imageFile, ui.videoFile, ui.imageRemoved, ui.videoRemoved) {
         val contentChanged = ui.content != postToEdit.content
         val hashtagsChanged = ui.hashtags != postToEdit.hashtags

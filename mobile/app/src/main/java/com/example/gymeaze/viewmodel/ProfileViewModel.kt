@@ -54,7 +54,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             val userId = authRepository.getCurrentUserId()
 
-            // Sprawdź czy userId nie jest null
             if (userId.isNullOrEmpty()) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -226,12 +225,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun refreshUserProfile(username: String) {
-        viewModelScope.launch {
-            loadUserProfile(username)
-        }
-    }
-
     fun loadFollowersAndFollowing() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingFollowers = true) }
@@ -263,77 +256,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             _uiState.update { it.copy(isLoadingFollowers = false) }
         }
-    }
-
-
-
-    // ==================== PROFIL UŻYTKOWNIKA (dla zakładek) ====================
-
-    private val _viewedUserProfile = MutableStateFlow<UserProfileDetails?>(null)
-    val viewedUserProfile: StateFlow<UserProfileDetails?> = _viewedUserProfile
-
-    private val _isLoadingProfile = MutableStateFlow(false)
-    val isLoadingProfile: StateFlow<Boolean> = _isLoadingProfile
-
-    private val _profileError = MutableStateFlow<String?>(null)
-    val profileErrorState: StateFlow<String?> = _profileError
-
-
-    private val _startedPlans = MutableStateFlow<List<StartedTrainingPlan>>(emptyList())
-    val startedPlans: StateFlow<List<StartedTrainingPlan>> = _startedPlans
-
-    private val _deletingPlanId = MutableStateFlow<String?>(null)
-    val deletingPlanId: StateFlow<String?> = _deletingPlanId
-
-    private val _resettingPlanId = MutableStateFlow<String?>(null)
-    val resettingPlanId: StateFlow<String?> = _resettingPlanId
-
-    private val _isFollowLoading = MutableStateFlow(false)
-    val isFollowLoading: StateFlow<Boolean> = _isFollowLoading
-
-    private val _followers = MutableStateFlow<List<FollowerUser>>(emptyList())
-    val followers: StateFlow<List<FollowerUser>> = _followers
-
-    private val _following = MutableStateFlow<List<FollowerUser>>(emptyList())
-    val following: StateFlow<List<FollowerUser>> = _following
-
-    private val _isLoadingFollowers = MutableStateFlow(false)
-    val isLoadingFollowers: StateFlow<Boolean> = _isLoadingFollowers
-
-    private val _showFollowersDialog = MutableStateFlow(false)
-    val showFollowersDialog: StateFlow<Boolean> = _showFollowersDialog
-
-    private val _showFollowingDialog = MutableStateFlow(false)
-    val showFollowingDialog: StateFlow<Boolean> = _showFollowingDialog
-
-    private val _operationSuccessMessage = MutableStateFlow<String?>(null)
-    val operationSuccessMessage: StateFlow<String?> = _operationSuccessMessage
-
-    private val _operationErrorMessage = MutableStateFlow<String?>(null)
-    val operationErrorMessage: StateFlow<String?> = _operationErrorMessage
-
-    // ==================== FUNKCJE PROFILU ====================
-
-    fun loadUserProfileByUsername(username: String) {
-        viewModelScope.launch {
-            _isLoadingProfile.value = true
-            _profileError.value = null
-
-            val result = userRepository.getUserProfile(username)
-
-            result.onSuccess { profile ->
-                _viewedUserProfile.value = profile
-                _isLoadingProfile.value = false
-            }.onFailure { error ->
-                _profileError.value = error.message ?: "Błąd ładowania profilu"
-                _isLoadingProfile.value = false
-            }
-        }
-    }
-
-    fun clearViewedProfile() {
-        _viewedUserProfile.value = null
-        _profileError.value = null
     }
 
     fun loadUserStartedPlans(username: String) {

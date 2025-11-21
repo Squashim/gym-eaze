@@ -122,17 +122,14 @@ fun MyTrainingPlansScreen(
         ) {
             BackgroundWithDotsAndCircles(modifier = Modifier.fillMaxSize())
 
-            // UPROSZCZONE: Używamy prostszego PullToRefreshBox z Material3
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { viewModel.refreshTrainingPlans() },
                 modifier = Modifier.fillMaxSize()
             ) {
-                // JEŚLI TRWA ODSWIEŻANIE, POKAŻ LOADING SCREEN
                 if (uiState.isRefreshing) {
                     LoadingScreen()
                 } else {
-                    // W PRZECIWNYM WYPADKU POKAŻ NORMALNĄ ZAWARTOŚĆ
                     when {
                         uiState.isLoading && uiState.trainingPlans.isEmpty() -> {
                             Box(

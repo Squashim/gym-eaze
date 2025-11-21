@@ -6,7 +6,6 @@ import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.TrainingPlanQuery
 import com.example.gymeaze.data.models.TrainingPlansResponse
-import com.example.gymeaze.data.models.UpdateTrainingDay
 import com.example.gymeaze.data.models.UserFavorites
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -92,10 +91,6 @@ interface TrainingPlanApiService {
     suspend fun downloadTrainingPlanPDF(
         @Path("id") planId: String
     ): Response<ResponseBody>
-
-    data class DeleteResponse(
-        val message: String
-    )
 
     @GET("/api/user/favorites")
     suspend fun getUserFavorites(): Response<UserFavorites>

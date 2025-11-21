@@ -54,7 +54,6 @@ fun WorkoutsNotLoggedInScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
-    // Sprawdzenie, czy są aktywne filtry
     val hasFilters = hasActiveFilters(
         selectedGoal,
         selectedDifficulty,
@@ -69,7 +68,6 @@ fun WorkoutsNotLoggedInScreen(
         viewModel.refreshTrainingPlans()
     }
 
-    // Infinite scroll
     LaunchedEffect(listState) {
         snapshotFlow {
             val layoutInfo = listState.layoutInfo
@@ -152,7 +150,6 @@ fun WorkoutsNotLoggedInScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        // Pole wyszukiwania
                         SearchField(
                             query = searchQuery,
                             onQueryChange = { query ->
@@ -249,7 +246,6 @@ fun WorkoutsNotLoggedInScreen(
             }
         }
 
-        // Dialog filtrów
         if (showFilters) {
             TrainingPlanFiltersDialog(
                 isVisible = showFilters,
@@ -278,7 +274,6 @@ fun WorkoutsNotLoggedInScreen(
             )
         }
 
-        // Dialog logowania
         if (showLoginDialog) {
             LoginToLikeDialog(
                 onDismiss = { showLoginDialog = false }

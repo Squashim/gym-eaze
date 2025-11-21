@@ -675,9 +675,6 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
             )
         }
     }
-
-    // ==================== KOMENTARZE DO ĆWICZEŃ ====================
-
     private val _exerciseComments = MutableStateFlow<List<Comment>>(emptyList())
     val exerciseComments: StateFlow<List<Comment>> = _exerciseComments.asStateFlow()
 

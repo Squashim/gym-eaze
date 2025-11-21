@@ -494,10 +494,6 @@ class TrainingPlanRepository(private val context: Context) {
             Result.failure(e)
         }
     }
-
-    /**
-     * Pobierz plany treningowe użytkownika (zmieniona - przyjmuje userId)
-     */
     suspend fun getMyTrainingPlans(
         userId: String,
         page: Int = 1,

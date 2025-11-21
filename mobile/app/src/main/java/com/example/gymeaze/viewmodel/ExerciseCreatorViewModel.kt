@@ -92,35 +92,28 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
 
     fun loadExerciseForEdit(exercise: Exercise) {
         viewModelScope.launch {
-            println("=== Loading exercise for edit ===")
 
-            // Poczekaj, aż dostępne opcje zostaną załadowane (jeśli jeszcze nie są)
             if (_uiState.value.availableMuscleGroups.isEmpty() ||
                 _uiState.value.availableEquipment.isEmpty()) {
-                println("Loading available options first...")
-                loadFilterOptions() // Upewnij się, że ta metoda istnieje
+
+                loadFilterOptions()
             }
 
-            // Połącz wybrane elementy z pełnymi danymi (z obrazami)
             val muscleGroupsWithImages = exercise.muscleGroup.mapNotNull { selectedGroup ->
                 val fullData = _uiState.value.availableMuscleGroups.find { it._id == selectedGroup._id }
                 if (fullData != null) {
-                    println("  ✓ Found image for ${selectedGroup.name}: ${fullData.image}")
                     fullData
                 } else {
-                    println("  ✗ No image found for ${selectedGroup.name}")
-                    selectedGroup // Użyj bez obrazu jako fallback
+                    selectedGroup
                 }
             }
 
             val equipmentWithImages = exercise.equipment.mapNotNull { selectedEquip ->
                 val fullData = _uiState.value.availableEquipment.find { it._id == selectedEquip._id }
                 if (fullData != null) {
-                    println("  ✓ Found image for ${selectedEquip.name}: ${fullData.image}")
                     fullData
                 } else {
-                    println("  ✗ No image found for ${selectedEquip.name}")
-                    selectedEquip // Użyj bez obrazu jako fallback
+                    selectedEquip
                 }
             }
 
@@ -144,7 +137,6 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
                 videoUri = null
             )
 
-            println("=== Final state ===")
             println("Muscle groups: ${_uiState.value.selectedMuscleGroups.size}")
             _uiState.value.selectedMuscleGroups.forEach {
                 println("  - ${it.name}: ${it.image}")
@@ -166,15 +158,12 @@ class ExerciseCreatorViewModel(application: Application) : AndroidViewModel(appl
 
                 muscleGroupsResult.onSuccess { groups ->
                     _uiState.value = _uiState.value.copy(availableMuscleGroups = groups)
-                    println("Loaded ${groups.size} muscle groups")
                 }
 
                 equipmentResult.onSuccess { equipment ->
                     _uiState.value = _uiState.value.copy(availableEquipment = equipment)
-                    println("Loaded ${equipment.size} equipment items")
                 }
             } catch (e: Exception) {
-                println("Error loading filter options: ${e.message}")
             } finally {
                 _uiState.value = _uiState.value.copy(isLoadingData = false)
             }

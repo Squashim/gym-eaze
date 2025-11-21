@@ -27,10 +27,9 @@ object GoogleErrorMapper {
     }
 
     fun mapGoogleAuthApiError(context: Context, errorBody: String?, httpCode: Int? = null): String {
-        // 1) Priorytet: message z backendu
+
         extractServerMessage(errorBody)?.let { return it }
 
-        // 2) Fallback po statusie HTTP
         return when (httpCode) {
             400 -> context.getString(R.string.google_code_invalid)
             401 -> context.getString(R.string.google_auth_code_invalid)

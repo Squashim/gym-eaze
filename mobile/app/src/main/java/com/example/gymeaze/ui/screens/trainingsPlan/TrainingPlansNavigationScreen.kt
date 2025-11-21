@@ -184,7 +184,6 @@ fun TrainingPlansNavigationScreen(
                                 planSection = "exercise_details"
                             },
                             onUserClick = { userId ->
-                                // ZAPISZ KONTEKST PRZED PRZEJŚCIEM
                                 previousPlanContext = "plan_detail_${selectedPlanId}"
                                 onUserClick(userId)
                             },

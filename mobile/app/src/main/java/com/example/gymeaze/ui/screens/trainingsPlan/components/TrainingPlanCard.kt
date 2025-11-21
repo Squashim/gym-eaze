@@ -352,14 +352,3 @@ private fun GoalChip(
     }
 }
 
-private fun formatDuration(seconds: Int): String {
-    val minutes = seconds / 60
-    val hours = minutes / 60
-    val remainingMinutes = minutes % 60
-
-    return when {
-        hours == 0 -> "${minutes}min"
-        remainingMinutes == 0 -> "${hours}h"
-        else -> "${hours}h ${remainingMinutes}min"
-    }
-}
