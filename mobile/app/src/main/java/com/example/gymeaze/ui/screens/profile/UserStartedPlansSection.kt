@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.StartedTrainingPlan
-import com.example.gymeaze.ui.screens.profile.EmptySectionMessage
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ProfileViewModel
 
@@ -63,12 +63,15 @@ fun UserStartedPlansSection(
                 )
             }
         } else if (startedPlans.isEmpty()) {
-            EmptySectionMessage(
-                message = if (isOwnProfile)
-                    "Nie masz jeszcze żadnych rozpoczętych treningów"
-                else
-                    "$username nie ma jeszcze żadnych rozpoczętych treningów",
-                icon = Icons.Default.FitnessCenter
+            val message = if (isOwnProfile)
+                "Nie masz jeszcze żadnych rozpoczętych treningów"
+            else
+                "$username nie ma jeszcze żadnych rozpoczętych treningów"
+
+            EmptyStateView(
+                icon = Icons.Default.FitnessCenter,
+                title = message,
+                modifier = Modifier.fillMaxWidth()
             )
         } else {
             Column(

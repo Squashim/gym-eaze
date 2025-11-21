@@ -30,12 +30,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ExerciseCard
 import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.screens.exercises.logggedIn.DeleteExerciseDialog
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
-import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 
@@ -176,7 +176,12 @@ fun MyExercisesScreen(
                         }
 
                         uiState.exercises.isEmpty() -> {
-                            EmptyMyExercisesMessage(modifier = Modifier.padding(paddingValues))
+                            EmptyStateView(
+                                icon = Icons.Default.FitnessCenter,
+                                title = "Nie masz jeszcze ćwiczeń",
+                                subtitle = "Dodaj swoje pierwsze ćwiczenie, aby było widoczne tutaj",
+                                modifier = Modifier.fillMaxSize().padding(paddingValues)
+                            )
                         }
 
                         else -> {
@@ -279,37 +284,3 @@ fun MyExercisesScreen(
 }
 
 
-@Composable
-private fun EmptyMyExercisesMessage(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.FitnessCenter,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = getOnSurfaceSecondaryColor()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Nie masz jeszcze ćwiczeń",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = getOnSurfaceColor(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Dodaj swoje pierwsze ćwiczenie, aby było widoczne tutaj",
-            fontSize = 14.sp,
-            color = getOnSurfaceSecondaryColor(),
-            textAlign = TextAlign.Center
-        )
-    }
-}

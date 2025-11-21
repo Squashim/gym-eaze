@@ -37,6 +37,7 @@ import coil.compose.AsyncImage
 import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.ui.components.GoalSelectionDialog
 import com.example.gymeaze.ui.components.DifficultySelectionDialog
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanState
@@ -1250,7 +1251,11 @@ private fun DaysAndExercisesStep(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (uiState.days.isEmpty()) {
-            EmptyDaysMessage()
+            EmptyStateView(
+                icon = Icons.Default.CalendarToday,
+                title = "Brak dni treningowych",
+                subtitle = "Dodaj pierwszy dzień, aby rozpocząć",
+                modifier = Modifier.fillMaxSize())
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -1526,38 +1531,6 @@ private fun ImageUploadSection(
         }
     }
 }
-
-@Composable
-private fun EmptyDaysMessage() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.CalendarToday,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = getOnSurfaceSecondaryColor()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Brak dni treningowych",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = getOnSurfaceColor()
-        )
-
-        Text(
-            text = "Dodaj pierwszy dzień, aby rozpocząć",
-            fontSize = 14.sp,
-            color = getOnSurfaceSecondaryColor()
-        )
-    }
-}
-
 @Composable
 private fun ExerciseItem(
     dayExercise: DayExercise,

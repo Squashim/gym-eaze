@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.screens.trainingsPlan.components.TrainingPlanCard
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -72,10 +73,10 @@ fun UserTrainingPlansSection(
                 )
             }
         } else if (userPlans.isEmpty()) {
-            EmptySectionMessage(
-                message = "$username nie ma jeszcze żadnych planów treningowych",
-                icon = Icons.Default.Assignment
-            )
+            EmptyStateView(
+                icon = Icons.Default.Assignment,
+                title = "$username nie ma jeszcze żadnych planów treningowych",
+                modifier = Modifier.fillMaxWidth())
         } else {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),

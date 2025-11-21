@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.PostUi
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.screens.comments.CommentsPanel
 import com.example.gymeaze.ui.screens.posts.components.MediaFullScreenDialog
@@ -101,9 +102,10 @@ fun UserPostsSection(
                     )
                 }
             } else if (userPosts.isEmpty()) {
-                EmptySectionMessage(
-                    message = "$username nie ma jeszcze żadnych postów",
-                    icon = Icons.Default.Comment
+                EmptyStateView(
+                    icon = Icons.Default.Comment,
+                    title = "$username nie ma jeszcze żadnych postów",
+                    modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 Column(

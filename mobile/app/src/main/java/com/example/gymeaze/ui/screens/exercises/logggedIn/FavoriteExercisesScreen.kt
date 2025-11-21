@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ExerciseCard
 import com.example.gymeaze.ui.components.LoadingScreen
 import com.example.gymeaze.ui.theme.*
@@ -156,7 +157,12 @@ fun FavoriteExercisesScreen(
                         }
 
                         uiState.exercises.isEmpty() -> {
-                            EmptyFavoritesMessage()
+                            EmptyStateView(
+                                icon = Icons.Default.FavoriteBorder,
+                                title = "Brak ulubionych ćwiczeń",
+                                subtitle = "Dodaj ćwiczenia do ulubionych, aby były tutaj widoczne",
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
 
                         else -> {
@@ -236,35 +242,3 @@ fun FavoriteExercisesScreen(
     }
 }
 
-@Composable
-private fun EmptyFavoritesMessage() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.FavoriteBorder,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = getOnSurfaceSecondaryColor()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Brak ulubionych ćwiczeń",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = getOnSurfaceColor(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Dodaj ćwiczenia do ulubionych, aby były tutaj widoczne",
-            fontSize = 14.sp,
-            color = getOnSurfaceSecondaryColor(),
-            textAlign = TextAlign.Center
-        )
-    }
-}

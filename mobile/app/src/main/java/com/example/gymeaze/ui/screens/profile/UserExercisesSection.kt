@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.gymeaze.data.models.Exercise
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ExerciseCard
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
@@ -77,12 +78,9 @@ fun UserExercisesSection(
                 )
             }
         } else if (userExercises.isEmpty()) {
-            EmptySectionMessage(
-                message = if (isOwnProfile)
-                    "Nie masz jeszcze żadnych ćwiczeń"
-                else
-                    "$username nie ma jeszcze żadnych ćwiczeń",
-                icon = Icons.Default.FitnessCenter
+            EmptyStateView(
+                icon = Icons.Default.FitnessCenter,
+                title = if (isOwnProfile) "Nie masz jeszcze żadnych ćwiczeń" else "$username nie ma jeszcze żadnych ćwiczeń",
             )
         } else {
             Column(

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.screens.comments.CommentsPanel
 import com.example.gymeaze.ui.theme.LocalDarkTheme
@@ -238,7 +239,16 @@ fun SeeAllPostsContent(
 
                         if (posts.isEmpty() && !isLoading) {
                             item {
-                                NoPostsInfo(isSearchActive, selectedHashtags.isNotEmpty())
+                                val title = if (isSearchActive && selectedHashtags.isNotEmpty())
+                                    "Nie znaleziono postów" else "Brak postów"
+                                val subtitle = if (isSearchActive && selectedHashtags.isNotEmpty())
+                                    "Spróbuj wyszukać inne hashtagi" else "Sprawdź ponownie później"
+
+                                EmptyStateView(
+                                    icon = Icons.Default.Search,
+                                    title = title,
+                                    subtitle = subtitle
+                                )
                             }
                         } else {
                             itemsIndexed(
