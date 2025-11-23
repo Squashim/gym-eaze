@@ -1,8 +1,6 @@
 package com.example.gymeaze.data.repository
 
 import android.content.Context
-import android.net.Uri
-import android.util.Log
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
@@ -21,7 +19,6 @@ import com.example.gymeaze.data.models.UpdatePersonalDataResponse
 import com.example.gymeaze.data.models.UpdatePrivacySettingsRequest
 import com.example.gymeaze.data.models.UpdatePrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
-import com.example.gymeaze.data.models.UserFavorites
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
 import com.example.gymeaze.data.models.UserProfileDetails
@@ -29,24 +26,15 @@ import com.example.gymeaze.util.ApiUtils
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor
 import com.example.gymeaze.util.TokenAuthenticator
-import com.example.gymeaze.viewmodel.ProfileUiState
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import kotlin.Boolean
 
 class UserRepository(private val context: Context) {

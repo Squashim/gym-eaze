@@ -208,7 +208,7 @@ fun TrainingPlanCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = stringResource(R.string.plan_author_username, trainingPlan.author?.username),
+                text = stringResource(R.string.plan_author_username, trainingPlan.author?.username ?: ""),
                 fontSize = 12.sp,
                 color = getOnSurfaceSecondaryColor(),
                 maxLines = 1,

@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.data.repository.TrainingPlanRepository
-import com.example.gymeaze.data.repository.ExerciseRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

@@ -2,7 +2,6 @@ package com.example.gymeaze.viewmodel
 
 import android.app.Application
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +10,6 @@ import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
-import com.example.gymeaze.data.models.ExercisesResponse
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository

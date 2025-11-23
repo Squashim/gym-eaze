@@ -2,7 +2,6 @@ package com.example.gymeaze.data.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences

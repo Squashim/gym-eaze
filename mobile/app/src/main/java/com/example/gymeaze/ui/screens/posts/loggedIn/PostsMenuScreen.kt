@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
-import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.screens.SectionButton
 import com.example.gymeaze.ui.theme.getBackgroundColor

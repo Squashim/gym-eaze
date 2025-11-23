@@ -149,7 +149,7 @@ fun PrivacySettingsScreen(
                     isLoading = isLoading,
                     onCheckedChange = {
                         viewModel.updatePersonalDataEnabled(it)
-                        viewModel.updatePrivacySettings() // Auto-save
+                        viewModel.updatePrivacySettings()
                     }
                 )
 

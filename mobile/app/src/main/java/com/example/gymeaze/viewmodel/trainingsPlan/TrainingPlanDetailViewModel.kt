@@ -11,11 +11,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Comment
-import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
-import com.example.gymeaze.data.repository.ExerciseRepository
 import com.example.gymeaze.data.repository.PostsRepository
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository

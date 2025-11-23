@@ -19,10 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.example.gymeaze.R
-import com.example.gymeaze.data.models.ExerciseSet
-import com.example.gymeaze.data.models.StartedExercise
 import com.example.gymeaze.ui.components.VideoPlayer
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.PlayerState

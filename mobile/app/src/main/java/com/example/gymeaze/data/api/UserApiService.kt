@@ -14,7 +14,6 @@ import com.example.gymeaze.data.models.UpdatePersonalDataResponse
 import com.example.gymeaze.data.models.UpdatePrivacySettingsRequest
 import com.example.gymeaze.data.models.UpdatePrivacySettingsResponse
 import com.example.gymeaze.data.models.UpdateProfileResponse
-import com.example.gymeaze.data.models.UserFavorites
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
 import com.example.gymeaze.data.models.UserProfileDetails
@@ -24,7 +23,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.Part

@@ -30,7 +30,6 @@ import com.example.gymeaze.ui.theme.getInputBorderColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
-import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import java.text.SimpleDateFormat
 import java.util.*
 

@@ -1,7 +1,6 @@
 package com.example.gymeaze.ui.screens
 
 import UserStartedPlansSection
-import android.R.attr.description
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,7 +14,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,29 +22,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Article
-import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.filled.ListAlt
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Man
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material.icons.filled.Woman
 import androidx.compose.material3.AlertDialog
@@ -94,10 +80,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Badge
-import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
-import com.example.gymeaze.ui.components.DifficultyBadgeExercise
 import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
 import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.components.user.UserAvatar
@@ -113,7 +97,6 @@ import com.example.gymeaze.ui.screens.profile.UserTrainingPlansSection
 import com.example.gymeaze.ui.screens.profile.components.ProfileTab
 import com.example.gymeaze.ui.screens.profile.components.ProfileTabRow
 import com.example.gymeaze.ui.screens.trainingsPlan.TrainingPlansNavigationScreen
-import com.example.gymeaze.ui.screens.trainingsPlan.guest.WorkoutsNotLoggedInScreen
 import com.example.gymeaze.ui.theme.getBackgroundColor
 import com.example.gymeaze.ui.theme.getCardBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor

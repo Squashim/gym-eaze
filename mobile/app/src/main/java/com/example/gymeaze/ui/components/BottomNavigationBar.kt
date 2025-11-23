@@ -10,18 +10,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Assignment
-import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,9 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.GymEazeTheme
 import com.example.gymeaze.ui.theme.getNavBarBackgroundColor
-import com.example.gymeaze.ui.theme.getNavBarSelectedColor
 import com.example.gymeaze.ui.theme.getNavBarUnselectedColor
-import com.example.gymeaze.ui.theme.getOnPrimaryColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 
 data class BottomNavItem(

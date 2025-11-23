@@ -1,9 +1,5 @@
 package com.example.gymeaze.data.models
 
-import com.example.gymeaze.constants.AdvancedLevel
-import com.example.gymeaze.constants.Goals
-import com.example.gymeaze.constants.PrivacySettings
-import com.example.gymeaze.viewmodel.trainingsPlan.TrainingDay
 import com.google.gson.annotations.SerializedName
 
 data class TrainingPlan(
@@ -16,7 +12,7 @@ data class TrainingPlan(
     val visibility: String,
     val advancedLevel: String,
     val likes: Int = 0,
-    val days: List<com.example.gymeaze.data.models.TrainingDay> = emptyList(),
+    val days: List<TrainingDay> = emptyList(),
     val hashtags: List<String> = emptyList(),
     val createdAt: String,
     val updatedAt: String,
