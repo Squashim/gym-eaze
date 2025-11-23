@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.CountDownTimer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.ExerciseSet
 import com.example.gymeaze.data.models.StartedDayDetails
 import com.example.gymeaze.data.models.StartedExercise
@@ -119,7 +120,7 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
                 if (_uiState.value.playerState == PlayerState.LOADING) {
                     _uiState.value = _uiState.value.copy(
                         playerState = PlayerState.ERROR,
-                        error = exception.message ?: "Błąd ładowania szczegółów dnia."
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_workout_loading_details)
                     )
                 }
             }
@@ -349,7 +350,7 @@ class WorkoutPlayerViewModel(application: Application) : AndroidViewModel(applic
             }.onFailure { exception ->
                 _uiState.value = _uiState.value.copy(
                     playerState = PlayerState.FINISHED,
-                    error = exception.message ?: "Błąd podczas zapisywania ukończenia dnia."
+                    error = exception.message ?: getApplication<Application>().getString(R.string.error_workout_save_complete)
                 )
             }
         }

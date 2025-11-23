@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.data.models.User
@@ -124,12 +125,15 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
         when {
             type == null || !(allowedTypes.contains(type)) -> {
-                _uiState.value = _uiState.value.copy(error = "Dozwolone formaty zdjęć: JPG, PNG, WEBP.")
+                _uiState.value = _uiState.value.copy(
+                    error = getApplication<Application>().getString(R.string.error_image_format)
+                )
                 return
             }
             size != null && size > 5 * 1024 * 1024 -> {
-                _uiState.value = _uiState.value.copy(error = "Obraz jest za duży (maks. 5MB).")
-                return
+                _uiState.value = _uiState.value.copy(
+                    error = getApplication<Application>().getString(R.string.error_image_size)
+                )
             }
             else -> {
                 _imageFile.value = uri
@@ -157,11 +161,14 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
 
         when {
             type == null || !(allowedTypes.contains(type)) -> {
-                _uiState.value = _uiState.value.copy(error = "Dozwolone formaty filmów: MP4, WEBM.")
-                return
+                _uiState.value = _uiState.value.copy(
+                error = getApplication<Application>().getString(R.string.error_video_format)
+            )
             }
             size != null && size > 20 * 1024 * 1024 -> {
-                _uiState.value = _uiState.value.copy(error = "Film jest za duży (maks. 20MB).")
+                _uiState.value = _uiState.value.copy(
+                    error = getApplication<Application>().getString(R.string.error_video_size)
+                )
                 return
             }
             else -> {
@@ -273,7 +280,7 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                     _error.value = "Błąd pobierania postów"
                 }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Błąd pobierania postów"
+                _error.value = e.message ?: getApplication<Application>().getString(R.string.error_fetch_posts)
             } finally {
                 _isLoading.value = false
             }
@@ -336,7 +343,7 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                     _error.value = "Błąd pobierania postów"
                 }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Błąd pobierania postów"
+                _error.value = getApplication<Application>().getString(R.string.error_fetch_posts)
             } finally {
                 _isLoading.value = false
             }
@@ -411,10 +418,10 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                         userPostsHasMore = response.hasMore
                         allPostsLastLoadTime = System.currentTimeMillis()
                     }.onFailure {
-                        _error.value = it.message ?: "Błąd pobierania postów"
+                        _error.value = it.message ?: getApplication<Application>().getString(R.string.error_fetch_posts)
                     }
                 }.onFailure {
-                    _error.value = "Nie udało się pobrać użytkownika"
+                    _error.value = getApplication<Application>().getString(R.string.error_fetch_user)
                 }
             } catch (e: Exception) {
                 _error.value = e.message ?: "Błąd pobierania postów"
@@ -796,20 +803,25 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
     fun editComment(comment: Comment, newContent: String, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             val result = repository.editComment(comment._id, newContent)
-            onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd edycji" })
-            if (result.isSuccess) {
-                loadComments(comment.parentId ?: "")
-            }
+            onResult(
+                result.isSuccess,
+                result.getOrElse {
+                    it.message ?: getApplication<Application>().getString(R.string.error_edit_comment)
+                }
+            )
         }
     }
+
 
     fun deleteComment(comment: Comment, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             val result = repository.deleteComment(comment._id)
-            onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd usuwania" })
-            if (result.isSuccess) {
-                loadComments(comment.parentId ?: "")
-            }
+            onResult(
+                result.isSuccess,
+                result.getOrElse {
+                    it.message ?: getApplication<Application>().getString(R.string.error_delete_comment)
+                }
+            )
         }
     }
 
@@ -880,10 +892,10 @@ class PostsViewModel(application: Application) : AndroidViewModel(application) {
                     userPostsByUsernameLastLoadTime = System.currentTimeMillis()
 
                 }.onFailure { error ->
-                    _error.value = error.message ?: "Błąd pobierania postów użytkownika $username"
+                    _error.value = error.message ?: getApplication<Application>().getString(R.string.error_fetch_user_posts, username)
                 }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Błąd pobierania postów"
+                _error.value = e.message ?: getApplication<Application>().getString(R.string.error_fetch_posts)
             } finally {
                 _isLoading.value = false
             }

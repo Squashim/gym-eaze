@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Notification
 import com.example.gymeaze.data.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +46,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
                 onFailure = { error ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Wystąpił błąd podczas ładowania powiadomień"
+                        error = error.message ?: getApplication<Application>().getString(R.string.error_load_notifications)
                     )
                 }
             )
@@ -65,7 +66,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
                 onFailure = { error ->
                     _uiState.value = _uiState.value.copy(
                         isDeleting = false,
-                        error = error.message ?: "Nie udało się usunąć powiadomień"
+                        error = error.message ?: getApplication<Application>().getString(R.string.error_delete_notifications_failed)
                     )
                 }
             )

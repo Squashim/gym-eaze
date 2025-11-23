@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel.trainingsPlan
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
@@ -203,13 +204,13 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                     }.onFailure { exception ->
                         _uiState.value = _uiState.value.copy(
                             isLoadingMore = false,
-                            error = exception.message ?: "Błąd podczas ładowania kolejnych planów"
+                            error = exception.message ?: getApplication<Application>().getString(R.string.error_load_more_plans)
                         )
                     }
                 } catch (e: Exception) {
                     _uiState.value = _uiState.value.copy(
                         isLoadingMore = false,
-                        error = e.message ?: "Nieoczekiwany błąd podczas ładowania kolejnych planów"
+                        error = e.message ?: getApplication<Application>().getString(R.string.error_load_more_plans)
                     )
                 }
             }
@@ -271,7 +272,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                         isLoading = false,
                         isLoadingMore = false,
                         isRefreshing = false,
-                        error = exception.message ?: "Błąd podczas ładowania planów treningowych"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_plans)
                     )
                 }
             } catch (e: Exception) {
@@ -279,7 +280,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                     isLoading = false,
                     isLoadingMore = false,
                     isRefreshing = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }
@@ -323,7 +324,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                         isLoading = false,
                         isLoadingMore = false,
                         isRefreshing = false,
-                        error = exception.message ?: "Błąd podczas odświeżania planów treningowych"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_refresh_plans_failed)
                     )
                 }
             } catch (e: Exception) {
@@ -331,7 +332,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                     isLoading = false,
                     isLoadingMore = false,
                     isRefreshing = false,
-                    error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_refresh_unknown)
                 )
             }
         }
@@ -372,12 +373,12 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas polubienia planu"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_like_plan_toggle)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas polubienia planu"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_like_plan_toggle)
                 )
             }
         }
@@ -392,7 +393,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
 
                 if (plan?.author?.username == currentUser && currentUser != null) {
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = "Nie możesz dodać swojego planu do ulubionych",
+                        snackbarMessage = getApplication<Application>().getString(R.string.error_favorite_own_plan),
                         snackbarType = SnackbarType.ERROR
                     )
                     return@launch
@@ -402,9 +403,9 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
 
                 _uiState.value = _uiState.value.copy(
                     snackbarMessage = if (newState) {
-                        "Dodano do ulubionych"
+                        getApplication<Application>().getString(R.string.msg_favorite_added)
                     } else {
-                        "Usunięto z ulubionych"
+                        getApplication<Application>().getString(R.string.msg_favorite_removed)
                     },
                     snackbarType = SnackbarType.SUCCESS
                 )
@@ -422,7 +423,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                     GlobalFavoriteState.getInstance(getApplication()).toggleFavorite(planId)
 
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = "Błąd: ${exception.message}",
+                        snackbarMessage = "${getApplication<Application>().getString(R.string.error_unknown)}: ${exception.message}",
                         snackbarType = SnackbarType.ERROR
                     )
                 }
@@ -463,14 +464,14 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
 
                         _uiState.update {
                             it.copy(
-                                snackbarMessage = "Plan został usunięty",
+                                snackbarMessage = getApplication<Application>().getString(R.string.error_plan_deleted),
                                 snackbarType = SnackbarType.SUCCESS
                             )
                         }
                     }.onFailure { exception ->
                         _uiState.update {
                             it.copy(
-                                snackbarMessage = "Błąd podczas usuwania planu: ${exception.message}",
+                                snackbarMessage = getApplication<Application>().getString(R.string.error_plan_delete_fail, exception.message),
                                 snackbarType = SnackbarType.ERROR
                             )
                         }
@@ -479,7 +480,7 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
-                        snackbarMessage = "Błąd podczas usuwania planu: ${e.message}",
+                        snackbarMessage = getApplication<Application>().getString(R.string.error_plan_delete_fail, e.message),
                         snackbarType = SnackbarType.ERROR
                     )
                 }
@@ -528,21 +529,21 @@ class TrainingPlansViewModel(application: Application) : AndroidViewModel(applic
                         )
                     }.onFailure { error ->
                         _uiState.value = _uiState.value.copy(
-                            error = error.message ?: "Błąd ładowania planów",
+                            error = error.message ?: getApplication<Application>().getString(R.string.error_load_user_plans),
                             isLoadingContent = false,
                             isLoadingMore = false
                         )
                     }
                 }.onFailure { error ->
                     _uiState.value = _uiState.value.copy(
-                        error = error.message ?: "Nie znaleziono użytkownika",
+                        error = error.message ?: getApplication<Application>().getString(R.string.error_user_not_found),
                         isLoadingContent = false,
                         isLoadingMore = false
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Nieoczekiwany błąd",
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred),
                     isLoadingContent = false,
                     isLoadingMore = false
                 )

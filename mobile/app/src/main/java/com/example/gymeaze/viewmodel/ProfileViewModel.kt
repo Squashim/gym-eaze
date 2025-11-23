@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.FollowerUser
 import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.data.models.UserProfileDetails
@@ -57,7 +58,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             if (userId.isNullOrEmpty()) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Użytkownik nie jest zalogowany"
+                    error = getApplication<Application>().getString(R.string.error_user_not_logged_in)
                 )
                 return@launch
             }
@@ -98,7 +99,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.update {
                     it.copy(
                         deletingPlanId = null,
-                        operationError = exception.message ?: "Błąd podczas usuwania planu"
+                        operationError = exception.message ?: getApplication<Application>().getString(R.string.error_delete_started_plan)
                     )
                 }
             }
@@ -128,7 +129,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.update {
                     it.copy(
                         resettingPlanId = null,
-                        operationError = exception.message ?: "Błąd podczas resetowania planu"
+                        operationError = exception.message ?: getApplication<Application>().getString(R.string.error_reset_started_plan)
                     )
                 }
             }
@@ -175,7 +176,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     it.copy(
                         isLoading = false,
                         operationError = result.exceptionOrNull()?.message
-                            ?: "Błąd ładowania profilu"
+                            ?: getApplication<Application>().getString(R.string.error_load_profile)
                     )
                 }
             }
@@ -189,7 +190,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             if (currentProfile == null) {
                 _uiState.update {
-                    it.copy(operationError = "Brak danych profilu")
+                    it.copy(operationError = getApplication<Application>().getString(R.string.error_profile_missing))
                 }
                 return@launch
             }
@@ -218,7 +219,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 } else {
                     currentState.copy(
                         isFollowLoading = false,
-                        operationError = result.exceptionOrNull()?.message ?: "Błąd obserwowania"
+                        operationError = result.exceptionOrNull()?.message ?: getApplication<Application>().getString(R.string.error_follow_failed)
                     )
                 }
             }
@@ -273,7 +274,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        operationError = "Nie udało się pobrać rozpoczętych planów"
+                        operationError = getApplication<Application>().getString(R.string.error_load_started_plans)
                     )
                 }
             }
