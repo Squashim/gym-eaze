@@ -336,7 +336,7 @@
     <string name="notifications_subtitle">Kontroluj powiadomienia</string>
     <string name="badges_help_subtitle">Dowiedz się jak zdobywać odznaki</string>
     <string name="training_goals">Cel treningowy</string>
-    <string name="badge_reminders">Przypomnienia odznak</string>
+    <string name="badge_visibility">Przypięte odznaki</string>
     <string name="training_stats">Statystyki treningów</string>
 
     <!-- Privacy Settings -->
@@ -347,7 +347,7 @@
     <string name="personal_data_description_settings">Pozwól innym użytkownikom zobaczyć Twoje dane personalne (imię, nazwisko, miasto, kraj) będą one widoczne dla innych użytkowników</string>
     <string name="physical_info_description_settings">Twoje informacje fizyczne (płeć, waga, wzrost, wiek a także wsaźnik bmi) będą widoczne dla innych użytkowników</string>
     <string name="training_goals_description_settings">Pozwól innym użytkownikom zobaczyć Twój cel treningowy</string>
-    <string name="badge_reminders_description_settings">Inni użytkownicy mogą przeglądać Twoje zdobyte odznaki. Jeśli chcesz ukryć je przed innymi, możesz wyłączyć tę opcję.</string>
+    <string name="badge_visibility_description_settings">Inni użytkownicy mogą przeglądać Twoje zdobyte odznaki. Jeśli chcesz ukryć je przed innymi, możesz wyłączyć tę opcję.</string>
     <string name="training_stats_description_settings">Pozwól innym użytkownikom widzieć Twoje postępy w treningach i obserwować systematyczność.</string>
 
     <!-- Help Screen Settings-->
@@ -359,7 +359,7 @@
     <string name="workout_frequency_badges">Po dwóch latach – "2 lata wytrwałości"</string>
     <string name="consistency_badges">…aż do "5 lat konsekwencji"</string>
     <string name="training_with_detection">2. Podłącz czujnik i rozpocznij trening</string>
-    <string name="training_with_detection_example">Po pierwszym połączeniu z czujnikiem otrzymasz odznakę "Techniczny debiut" To znak, że trenujesz inteligentnie i nowocześnie!</string>
+    <string name="training_with_detection_example">Po pierwszym połączeniu z czujnikiem otrzymasz odznakę "Techniczny debiut"To znak, że trenujesz inteligentnie i nowocześnie!</string>
     <string name="social_activity">3. Dodawaj treningi do społeczności</string>
     <string name="social_activity_description">Twoje plany mogą inspirować całą społeczność!</string>
     <string name="community_badges">Stwórz swój pierwszy publiczny trening – zdobądź "Trenera w akcji"</string>
@@ -370,7 +370,7 @@
     <string name="improvement_exercises">Tworząc ćwićzenia możesz awansować aż do "Mistrza tworzenia ćwiczeń"</string>
     <string name="exploration_badges">5. Bądź aktywny w społeczności!</string>
     <string name="feature_discovery_badges">Za pierwszy post – "Pierwszy głos"</string>
-    <string name="profile_completion_badges">Regularność nagradzamy aż do "Lidera dyskusji"  Wspieraj, motywuj i buduj atmosferę!</string>
+    <string name="profile_completion_badges">Regularność nagradzamy aż do "Lidera dyskusji" Wspieraj, motywuj i buduj atmosferę!</string>
     <string name="popularity_profile">6. Zyskuj popularność dzięki wartościowym treściom</string>
     <string name="popularity_profile_description">Podziel się swoją formą – ludzie Cię uwielbiają!</string>
     <string name="milestone_profile">10 motywatorów? Otrzymasz odznakę "Pierwsza dziesiątka"</string>

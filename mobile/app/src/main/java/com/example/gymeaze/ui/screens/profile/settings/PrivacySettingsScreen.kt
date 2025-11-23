@@ -176,8 +176,8 @@ fun PrivacySettingsScreen(
                 )
 
                 PrivacySwitchItem(
-                    title = stringResource(R.string.badge_reminders),
-                    description = stringResource(R.string.badge_reminders_description_settings),
+                    title = stringResource(R.string.badge_visibility),
+                    description = stringResource(R.string.badge_visibility_description_settings),
                     isChecked = badgeRemindersEnabled,
                     isLoading = isLoading,
                     onCheckedChange = {
