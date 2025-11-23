@@ -35,7 +35,9 @@ import com.example.gymeaze.viewmodel.ExercisesViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.LoadingScreen
@@ -120,7 +122,7 @@ fun ExercisesScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Przeglądaj ćwiczenia",
+                            text = stringResource(R.string.browse_exercises),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = getOnSurfaceColor()
@@ -131,7 +133,7 @@ fun ExercisesScreen(
                             IconButton(onClick = backCallback) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Wstecz",
+                                    contentDescription = stringResource(R.string.back),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -160,7 +162,7 @@ fun ExercisesScreen(
                             IconButton(onClick = { showFilters = true }) {
                                 Icon(
                                     imageVector = Icons.Default.FilterList,
-                                    contentDescription = "Filtry",
+                                    contentDescription = stringResource(R.string.filters),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -213,13 +215,13 @@ fun ExercisesScreen(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = uiState.error ?: "Wystąpił nieznany błąd",
+                                        text = uiState.error ?: stringResource(R.string.unknown_error),
                                         color = MaterialTheme.colorScheme.error,
                                         textAlign = TextAlign.Center
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(onClick = { viewModel.refreshExercises() }) {
-                                        Text("Spróbuj ponownie")
+                                        Text(text = stringResource(R.string.try_again))
                                     }
                                 }
                             }
@@ -412,14 +414,14 @@ fun SearchField(
         onValueChange = onQueryChange,
         placeholder = {
             Text(
-                text = "Wyszukaj ćwiczenia...",
+                text = stringResource(R.string.search_exercise),
                 color = getOnSurfaceSecondaryColor()
             )
         },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Wyszukaj",
+                contentDescription = null,
                 tint = getOnSurfaceSecondaryColor()
             )
         },
@@ -428,7 +430,7 @@ fun SearchField(
                 IconButton(onClick = { onQueryChange("") }) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Wyczyść",
+                        contentDescription = null,
                         tint = getOnSurfaceSecondaryColor()
                     )
                 }
@@ -489,7 +491,7 @@ fun FilterDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Filtry i sortowanie",
+                        text = stringResource(R.string.filters_and_sort),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -505,14 +507,14 @@ fun FilterDialog(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Wyczyść filtry",
+                                contentDescription = stringResource(R.string.clear_filters),
                                 tint = getOnSurfaceSecondaryColor()
                             )
                         }
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Zamknij",
+                                contentDescription = stringResource(R.string.close),
                                 tint = getOnSurfaceColor()
                             )
                         }
@@ -546,7 +548,7 @@ fun FilterDialog(
 
                     item {
                         MultiSelectDropdown(
-                            label = "Partie mięśniowe",
+                            label = stringResource(R.string.muscle_parts),
                             selectedItems = selectedMuscleGroups,
                             availableItems = availableMuscleGroups,
                             onSelectionChange = onMuscleGroupsChange,
@@ -556,7 +558,9 @@ fun FilterDialog(
                                     AsyncImage(
                                         model = muscleGroup.image,
                                         contentDescription = muscleGroup.name,
-                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
@@ -565,7 +569,7 @@ fun FilterDialog(
                                     )
                                 }
                             },
-                            placeholder = "Wybierz partie mięśniowe",
+                            placeholder = stringResource(R.string.choose_muscle_parts),
                             isLoading = availableMuscleGroups.isEmpty(),
                             useFullScreen = true
                         )
@@ -573,7 +577,7 @@ fun FilterDialog(
 
                     item {
                         MultiSelectDropdown(
-                            label = "Sprzęt",
+                            label = stringResource(R.string.equipment),
                             selectedItems = selectedEquipment,
                             availableItems = availableEquipment,
                             onSelectionChange = onEquipmentChange,
@@ -583,7 +587,9 @@ fun FilterDialog(
                                     AsyncImage(
                                         model = equipment.image,
                                         contentDescription = equipment.name,
-                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
@@ -592,7 +598,7 @@ fun FilterDialog(
                                     )
                                 }
                             },
-                            placeholder = "Wybierz sprzęt",
+                            placeholder = stringResource(R.string.choose_equipment),
                             isLoading = availableEquipment.isEmpty(),
                             useFullScreen = true
                         )
@@ -639,14 +645,14 @@ fun FollowersOnlyToggle(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Tylko obserwowani",
+                    text = stringResource(R.string.followers_only),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = getOnSurfaceColor()
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Pokaż ćwiczenia tylko od obserwowanych użytkowników",
+                    text = stringResource(R.string.exercises_from_followers),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     lineHeight = 18.sp
@@ -674,7 +680,7 @@ fun SortingSection(
 ) {
     Column {
         Text(
-            text = "Sortowanie",
+            text = stringResource(R.string.sorting),
             color = getOnSurfaceColor(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
@@ -686,12 +692,12 @@ fun SortingSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SortChip(
-                text = "Najnowsze",
+                text = stringResource(R.string.fresh),
                 isSelected = selectedSort == "latest",
                 onClick = { onSortChange("latest") }
             )
             SortChip(
-                text = "Najwyżej oceniane",
+                text = stringResource(R.string.highest_rated),
                 isSelected = selectedSort == "top-rated",
                 onClick = { onSortChange("top-rated") }
             )
@@ -733,7 +739,7 @@ fun DifficultySelector(
     Column(modifier = modifier) {
         if (isInteractive) {
             Text(
-                text = "Poziom trudności",
+                text = stringResource(R.string.difficulty_level),
                 color = getOnSurfaceColor(),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -792,7 +798,7 @@ fun DifficultySelector(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Poziom zaawansowania: ",
+                        text = stringResource(R.string.experience_level),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor(),
@@ -851,7 +857,7 @@ fun EmptyExercisesMessage() {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Nie znaleziono ćwiczeń",
+            text = stringResource(R.string.didnt_find_exercise),
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             color = getOnSurfaceColor(),
@@ -859,7 +865,7 @@ fun EmptyExercisesMessage() {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Spróbuj zmienić filtry wyszukiwania lub wyczyść filtry",
+            text = stringResource(R.string.try_changing_filters),
             fontSize = 14.sp,
             color = getOnSurfaceSecondaryColor(),
             textAlign = TextAlign.Center

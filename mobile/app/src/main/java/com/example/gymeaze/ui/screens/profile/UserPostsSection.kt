@@ -34,9 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ReportDialog
@@ -104,7 +106,7 @@ fun UserPostsSection(
             } else if (userPosts.isEmpty()) {
                 EmptyStateView(
                     icon = Icons.Default.Comment,
-                    title = "$username nie ma jeszcze żadnych postów",
+                    title = stringResource(R.string.user_dont_have_posts, username),
                     modifier = Modifier.fillMaxWidth()
                 )
             } else {
@@ -126,11 +128,8 @@ fun UserPostsSection(
                             },
                             onToggleLike = { postId ->
                                 if (isUserLoggedIn) {
-                                    Log.d("UserPostsSection", "Toggling like for post: $postId")
                                     postsViewModel.toggleLike(postId)
-                                } else {
-                                    Log.d("UserPostsSection", "User not logged in")
-                                }
+                                } else { }
                             },
                             onToggleSeeMore = { true },
                             onCommentClick = {

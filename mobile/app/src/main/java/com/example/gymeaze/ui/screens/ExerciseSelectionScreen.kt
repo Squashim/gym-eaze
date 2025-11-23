@@ -14,12 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Exercise
-import com.example.gymeaze.ui.components.ExerciseCard
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ExercisesViewModel
 
@@ -46,7 +47,7 @@ fun ExerciseSelectionScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Dodaj ćwiczenia",
+                        text = stringResource(R.string.exercise_selection_title),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -56,7 +57,7 @@ fun ExerciseSelectionScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Wstecz",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -96,7 +97,7 @@ fun ExerciseSelectionScreen(
                     modifier = Modifier.height(48.dp)
                 ){
                     Text(
-                        text = "Publiczne",
+                        text = stringResource(R.string.exercise_selection_tab_community),
                         fontSize = 14.sp,
                         fontWeight = if (selectedTab == ExerciseTab.COMMUNITY) FontWeight.Bold else FontWeight.Normal,
                         color = if (selectedTab == ExerciseTab.COMMUNITY) getPrimaryColor() else getOnSurfaceSecondaryColor()
@@ -109,7 +110,7 @@ fun ExerciseSelectionScreen(
                     modifier = Modifier.height(48.dp)
                 ) {
                     Text(
-                        text = "Moje",
+                        text = stringResource(R.string.exercise_selection_tab_my),
                         fontSize = 14.sp,
                         fontWeight = if (selectedTab == ExerciseTab.MY) FontWeight.Bold else FontWeight.Normal,
                         color = if (selectedTab == ExerciseTab.MY) getPrimaryColor() else getOnSurfaceSecondaryColor()
@@ -122,7 +123,7 @@ fun ExerciseSelectionScreen(
                     modifier = Modifier.height(48.dp)
                 ) {
                     Text(
-                        text = "Ulubione",
+                        text = stringResource(R.string.exercise_selection_tab_favorites),
                         fontSize = 14.sp,
                         fontWeight = if (selectedTab == ExerciseTab.FAVORITES) FontWeight.Bold else FontWeight.Normal,
                         color = if (selectedTab == ExerciseTab.FAVORITES) getPrimaryColor() else getOnSurfaceSecondaryColor()
@@ -136,14 +137,14 @@ fun ExerciseSelectionScreen(
                     onValueChange = viewModel::updateSearchQuery,
                     placeholder = {
                         Text(
-                            text = "Wyszukaj ćwiczenia...",
+                            text = stringResource(R.string.exercises_search_hint),
                             color = getOnSurfaceSecondaryColor()
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Wyszukaj",
+                            contentDescription = stringResource(R.string.action_search),
                             tint = getOnSurfaceSecondaryColor()
                         )
                     },
@@ -195,21 +196,21 @@ fun ExerciseSelectionScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = uiState.error ?: "Wystąpił błąd",
+                            text = uiState.error ?: stringResource(R.string.error_unknown),
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = { viewModel.refreshExercises() }) {
-                            Text("Spróbuj ponownie")
+                            Text(stringResource(R.string.action_try_again))
                         }
                     }
                 }
 
                 uiState.exercises.isEmpty() -> {
                     val (titleText, subtitleText) = when (selectedTab) {
-                        ExerciseTab.COMMUNITY -> "Nie znaleziono ćwiczeń" to "Spróbuj zmienić kryteria wyszukiwania"
-                        ExerciseTab.MY -> "Nie masz jeszcze własnych ćwiczeń" to "Dodaj nowe ćwiczenie, aby je tu zobaczyć"
-                        ExerciseTab.FAVORITES -> "Brak ulubionych ćwiczeń" to "Oznacz ćwiczenia jako ulubione, aby pojawiły się tutaj"
+                        ExerciseTab.COMMUNITY -> stringResource(R.string.exercise_selection_empty_community_title) to stringResource(R.string.exercise_selection_empty_community_subtitle)
+                        ExerciseTab.MY -> stringResource(R.string.exercise_selection_empty_my_title) to stringResource(R.string.exercise_selection_empty_my_subtitle)
+                        ExerciseTab.FAVORITES -> stringResource(R.string.exercise_selection_empty_favorites_title) to stringResource(R.string.exercise_selection_empty_favorites_subtitle)
                     }
 
                     Column(
@@ -320,7 +321,7 @@ private fun ExerciseSelectionCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Autor: ${exercise.author.username}",
+                    text = stringResource(R.string.exercise_author_label, exercise.author.username),
                     fontSize = 12.sp,
                     color = getOnSurfaceSecondaryColor()
                 )
@@ -338,7 +339,7 @@ private fun ExerciseSelectionCard(
 
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Dodaj ćwiczenie",
+                contentDescription = stringResource(R.string.edit_plan_add_exercise_desc),
                 tint = getPrimaryColor(),
                 modifier = Modifier.size(24.dp)
             )

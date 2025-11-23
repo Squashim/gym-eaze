@@ -24,9 +24,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.screens.trainingsPlan.components.TrainingPlanCard
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
@@ -75,7 +77,7 @@ fun UserTrainingPlansSection(
         } else if (userPlans.isEmpty()) {
             EmptyStateView(
                 icon = Icons.Default.Assignment,
-                title = "$username nie ma jeszcze żadnych planów treningowych",
+                title = stringResource(R.string.user_dont_have_training_plans, username),
                 modifier = Modifier.fillMaxWidth())
         } else {
             Column(

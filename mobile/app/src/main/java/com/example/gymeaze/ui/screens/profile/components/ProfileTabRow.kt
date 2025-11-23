@@ -18,8 +18,10 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.R
 
 enum class ProfileTab {
     POSTS,
@@ -55,7 +57,7 @@ fun ProfileTabRow(
             modifier = Modifier.height(48.dp)
         ) {
             Text(
-                text = "Posty",
+                text = stringResource(R.string.posts),
                 fontSize = 14.sp,
                 fontWeight = if (selectedTab == ProfileTab.POSTS) FontWeight.Bold else FontWeight.Normal,
                 color = if (selectedTab == ProfileTab.POSTS) getPrimaryColor() else getOnSurfaceSecondaryColor()
@@ -68,7 +70,7 @@ fun ProfileTabRow(
             modifier = Modifier.height(48.dp)
         ) {
             Text(
-                text = "Ćwiczenia",
+                text = stringResource(R.string.exercises),
                 fontSize = 14.sp,
                 fontWeight = if (selectedTab == ProfileTab.EXERCISES) FontWeight.Bold else FontWeight.Normal,
                 color = if (selectedTab == ProfileTab.EXERCISES) getPrimaryColor() else getOnSurfaceSecondaryColor()
@@ -81,7 +83,7 @@ fun ProfileTabRow(
             modifier = Modifier.height(48.dp)
         ) {
             Text(
-                text = "Plany",
+                text = stringResource(R.string.plans2),
                 fontSize = 14.sp,
                 fontWeight = if (selectedTab == ProfileTab.TRAINING_PLANS) FontWeight.Bold else FontWeight.Normal,
                 color = if (selectedTab == ProfileTab.TRAINING_PLANS) getPrimaryColor() else getOnSurfaceSecondaryColor()
@@ -94,7 +96,7 @@ fun ProfileTabRow(
             modifier = Modifier.height(48.dp)
         ) {
             Text(
-                text = "Aktywne",
+                text = stringResource(R.string.active),
                 fontSize = 14.sp,
                 fontWeight = if (selectedTab == ProfileTab.STARTED_TRAINING_PLANS) FontWeight.Bold else FontWeight.Normal,
                 color = if (selectedTab == ProfileTab.STARTED_TRAINING_PLANS) getPrimaryColor() else getOnSurfaceSecondaryColor()

@@ -14,11 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.*
 import com.example.gymeaze.ui.screens.trainingsPlan.components.TrainingPlanCard
 import com.example.gymeaze.ui.theme.*
@@ -115,7 +117,7 @@ fun FavoriteTrainingPlansScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Ulubione plany",
+                        text = stringResource(R.string.favorite_plans),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -125,7 +127,7 @@ fun FavoriteTrainingPlansScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Wróć",
+                            contentDescription = null,
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -171,14 +173,14 @@ fun FavoriteTrainingPlansScreen(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Brak ulubionych planów",
+                                    text = stringResource(R.string.no_favorite_plans),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = getOnSurfaceColor()
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Dodaj plany do ulubionych, aby mieć je pod ręką",
+                                    text = stringResource(R.string.add_plans_to_favorite),
                                     fontSize = 14.sp,
                                     color = getOnSurfaceSecondaryColor(),
                                     textAlign = TextAlign.Center

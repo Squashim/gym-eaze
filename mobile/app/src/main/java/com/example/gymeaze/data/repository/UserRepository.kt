@@ -360,7 +360,11 @@ class UserRepository(private val context: Context) {
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Błąd podczas pobierania ulubionych: ${response.message()}"))
+                Result.failure(Exception(
+                    context.getString(
+                        R.string.error_get_favorites,
+                        response.message()
+                    )))
             }
         } catch (e: Exception) {
             Result.failure(e)

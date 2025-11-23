@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.Goals
 import com.example.gymeaze.data.models.Comment
@@ -166,7 +168,7 @@ fun TrainingPlanDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Błąd ładowania",
+                                text = stringResource(R.string.plan_detail_loading_error),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = getOnSurfaceColor()
@@ -184,7 +186,7 @@ fun TrainingPlanDetailScreen(
                                     containerColor = getPrimaryColor()
                                 )
                             ) {
-                                Text("Spróbuj ponownie")
+                                Text(stringResource(R.string.action_try_again))
                             }
                         }
                     }
@@ -259,13 +261,13 @@ private fun DeleteConfirmationDialog(
         },
         title = {
             Text(
-                text = "Usuń plan treningowy",
+                text = stringResource(R.string.dialog_delete_title),
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Text(
-                text = "Czy na pewno chcesz usunąć plan \"$planName\"?\n\nTa operacja nie może zostać cofnięta.",
+                text = stringResource(R.string.dialog_delete_msg_plan),
                 fontSize = 14.sp
             )
         },
@@ -274,7 +276,7 @@ private fun DeleteConfirmationDialog(
                 onClick = onConfirm
             ) {
                 Text(
-                    text = "Usuń",
+                    text = stringResource(R.string.action_delete),
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Medium
                 )
@@ -283,7 +285,7 @@ private fun DeleteConfirmationDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Anuluj",
+                    text = stringResource(R.string.action_cancel),
                     color = getOnSurfaceColor()
                 )
             }
@@ -298,12 +300,12 @@ fun DifficultyBadgeTrainingPlan(
     difficulty: String,
     modifier: Modifier = Modifier
 ) {
-    val (text, backgroundColor, textColor) = when (difficulty) {
-        AdvancedLevel.NONE -> Triple("Nie wybrano", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
-        AdvancedLevel.EASY -> Triple("Początkujący", getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
-        AdvancedLevel.MEDIUM -> Triple("Średniozaawansowany", getYellowColor(), getOnYellowColor())
-        AdvancedLevel.HARD -> Triple("Zaawansowany", getErrorColor().copy(alpha = 0.2f), getErrorColor())
-        else -> Triple("?", getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
+    val (textRes, backgroundColor, textColor) = when (difficulty) {
+        AdvancedLevel.NONE -> Triple(AdvancedLevel.getLabelResId(AdvancedLevel.NONE), getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
+        AdvancedLevel.EASY -> Triple(AdvancedLevel.getLabelResId(AdvancedLevel.EASY), getPrimaryColor().copy(alpha = 0.2f), getPrimaryColor())
+        AdvancedLevel.MEDIUM -> Triple(AdvancedLevel.getLabelResId(AdvancedLevel.MEDIUM), getYellowColor(), getOnYellowColor())
+        AdvancedLevel.HARD -> Triple(AdvancedLevel.getLabelResId(AdvancedLevel.HARD), getErrorColor().copy(alpha = 0.2f), getErrorColor())
+        else -> Triple(AdvancedLevel.getLabelResId(AdvancedLevel.NONE), getOnSurfaceColor().copy(alpha = 0.1f), getOnSurfaceSecondaryColor())
     }
 
     Box(
@@ -313,7 +315,7 @@ fun DifficultyBadgeTrainingPlan(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = text,
+            text = stringResource(textRes),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = textColor
@@ -323,16 +325,7 @@ fun DifficultyBadgeTrainingPlan(
 
 @Composable
 private fun GoalSection(goal: String) {
-    val goalText = when (goal) {
-        Goals.MUSCLE_GAIN -> "Budowanie masy mięśniowej"
-        Goals.STRENGTH -> "Zwiększanie siły"
-        Goals.ENDURANCE -> "Poprawa wytrzymałości"
-        Goals.FAT_LOSS -> "Redukcja tkanki tłuszczowej"
-        Goals.CALORIE_BURN -> "Spalanie kalorii"
-        Goals.FLEXIBILITY -> "Poprawa gibkości"
-        Goals.MOBILITY -> "Poprawa mobilności"
-        else -> goal
-    }
+    val goalResId = Goals.getLabelResId(goal)
 
     Surface(
         color = getPrimaryColor().copy(alpha = 0.1f),
@@ -340,7 +333,7 @@ private fun GoalSection(goal: String) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Cel: $goalText",
+            text = stringResource(goalResId),
             fontSize = 14.sp,
             color = getPrimaryColor(),
             fontWeight = FontWeight.Medium,
@@ -369,24 +362,24 @@ private fun StatsSection(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         StatItem(
-            label = "Dni",
+            label = stringResource(R.string.stats_days),
             value = totalDays.toString(),
-            subtitle = "$trainingDays treningowych"
+            subtitle = stringResource(R.string.stats_days_training, trainingDays)
         )
         StatItem(
-            label = "Ćwiczenia",
+            label = stringResource(R.string.stats_exercises),
             value = totalExercises.toString(),
-            subtitle = "łącznie"
+            subtitle = stringResource(R.string.stats_exercises_total)
         )
         StatItem(
-            label = "Czas",
+            label = stringResource(R.string.stats_time),
             value = if (totalDuration > 0) formatDuration(totalDuration) else "-",
-            subtitle = "szacowany"
+            subtitle = stringResource(R.string.stats_time_estimated)
         )
         StatItem(
-            label = "Odpoczynek",
+            label = stringResource(R.string.stats_rest),
             value = restDays.toString(),
-            subtitle = "dni"
+            subtitle = stringResource(R.string.stats_rest_days)
         )
     }
 }
@@ -425,7 +418,7 @@ private fun StatItem(
 @Composable
 private fun HashtagsSection(hashtags: List<String>) {
     Text(
-        text = "Hashtagi",
+        text = stringResource(R.string.plan_detail_hashtags_label),
         fontSize = 16.sp,
         fontWeight = FontWeight.SemiBold,
         color = getOnSurfaceColor()
@@ -541,7 +534,7 @@ private fun ActionButtonsSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (isFavoriteGlobal) "Usuń" else "Zapisz"
+                text = if (isFavoriteGlobal) stringResource(R.string.plan_detail_remove_favorite) else stringResource(R.string.plan_detail_save_favorite)
             )
         }
 
@@ -569,7 +562,7 @@ private fun ActionButtonsSection(
                         color = Color.White,
                         strokeWidth = 2.dp
                     )
-                    Text("Pobieranie", fontSize = 10.sp)
+                    Text(stringResource(R.string.plan_detail_downloading), fontSize = 10.sp)
                 }
             } else {
                 Icon(
@@ -580,7 +573,7 @@ private fun ActionButtonsSection(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "PDF",
+                    text = stringResource(R.string.plan_detail_download_pdf),
                     color = getOnPrimaryColor()
                 )
             }
@@ -622,7 +615,7 @@ private fun TrainingDayDetailCard(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Odpoczynek",
+                            text = stringResource(R.string.day_rest_label),
                             fontSize = 10.sp,
                             color = getOnSurfaceColor(),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -648,7 +641,7 @@ private fun TrainingDayDetailCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Szacowany czas: ${day.totalDuration?.let { formatDuration(it) } ?: "?"}",
+                    text = stringResource(R.string.day_estimated_time, day.totalDuration?.let { formatDuration(it) } ?: "?"),
                     fontSize = 12.sp,
                     color = getOnSurfaceSecondaryColor()
                 )
@@ -729,9 +722,9 @@ private fun ExerciseItem(
                         )
 
                         val details = if (exercise.isRepsSet) {
-                            "${exercise.sets.size} serie × ${exercise.sets.firstOrNull()?.repetitions ?: 0} powtórzeń"
+                            stringResource(R.string.exercise_reps_sets, exercise.sets.size, exercise.sets.firstOrNull()?.repetitions ?: 0)
                         } else {
-                            "${formatDuration(exercise.duration ?: 0)} × ${exercise.sets.size} serie"
+                            stringResource(R.string.exercise_time_sets, formatDuration(exercise.duration ?: 0), exercise.sets.size)
                         }
 
                         Text(
@@ -743,7 +736,7 @@ private fun ExerciseItem(
 
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isExpanded) "Zwiń" else "Rozwiń",
+                            contentDescription = if (isExpanded) stringResource(R.string.comments_see_less) else stringResource(R.string.comments_see_all),
                             tint = getOnSurfaceSecondaryColor(),
                             modifier = Modifier.size(16.dp)
                         )
@@ -760,7 +753,7 @@ private fun ExerciseItem(
                             modifier = Modifier.size(12.dp)
                         )
                         Text(
-                            text = "Odpoczynek: ${formatDuration(exercise.restAfterSet)}",
+                            text = stringResource(R.string.exercise_rest_time, formatDuration(exercise.restAfterSet)),
                             fontSize = 12.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
@@ -799,7 +792,7 @@ private fun ExerciseItem(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ChevronRight,
-                            contentDescription = "Zobacz ćwiczenie",
+                            contentDescription = stringResource(R.string.exercise_view_details),
                             tint = getPrimaryColor(),
                             modifier = Modifier.size(20.dp)
                         )
@@ -833,7 +826,7 @@ private fun ExerciseItem(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Seria ${index + 1}",
+                                    text = stringResource(R.string.exercise_set_title, index + 1),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = getOnSurfaceColor()
@@ -846,7 +839,7 @@ private fun ExerciseItem(
                                     if (exercise.isRepsSet) {
                                         set.repetitions?.let { reps ->
                                             Text(
-                                                text = "$reps powtórzeń",
+                                                text = stringResource(R.string.exercise_set_reps, reps),
                                                 fontSize = 12.sp,
                                                 color = getOnSurfaceSecondaryColor()
                                             )
@@ -854,7 +847,7 @@ private fun ExerciseItem(
 
                                         set.weight?.let { weight ->
                                             Text(
-                                                text = "${weight}kg",
+                                                text = stringResource(R.string.exercise_set_weight, weight),
                                                 fontSize = 12.sp,
                                                 color = getPrimaryColor(),
                                                 fontWeight = FontWeight.Medium
@@ -920,7 +913,7 @@ private fun StartTrainingButton(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Rozpocznij plan treningowy",
+                    text = stringResource(R.string.plan_detail_start_training),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -1018,7 +1011,7 @@ private fun TrainingPlanDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Wróć",
+                        contentDescription = stringResource(R.string.action_back),
                         tint = Color.White
                     )
                 }
@@ -1042,7 +1035,7 @@ private fun TrainingPlanDetailContent(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edytuj plan",
+                                contentDescription = stringResource(R.string.plan_detail_edit),
                                 tint = Color.White
                             )
                         }
@@ -1059,7 +1052,7 @@ private fun TrainingPlanDetailContent(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Usuń plan",
+                                contentDescription = stringResource(R.string.plan_detail_delete),
                                 tint = Color.White
                             )
                         }
@@ -1080,7 +1073,7 @@ private fun TrainingPlanDetailContent(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Flag,
-                                contentDescription = "Zgłoś",
+                                contentDescription = stringResource(R.string.plan_detail_report),
                                 tint = Color.White
                             )
                         }
@@ -1134,7 +1127,7 @@ private fun TrainingPlanDetailContent(
                                     Spacer(modifier = Modifier.height(4.dp))
 
                                     Text(
-                                        text = "Dodano ${plan.createdAt.formatToRelativeTime()}",
+                                        text = stringResource(R.string.plan_detail_added_date, plan.createdAt.formatToRelativeTime()),
                                         fontSize = 14.sp,
                                         color = Color.White.copy(alpha = 0.7f)
                                     )
@@ -1173,7 +1166,7 @@ private fun TrainingPlanDetailContent(
                     if (!plan.description.isNullOrBlank()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Opis",
+                            text = stringResource(R.string.plan_detail_description_label),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = getOnSurfaceColor()
@@ -1224,7 +1217,7 @@ private fun TrainingPlanDetailContent(
 
         item {
             Text(
-                text = "Plan treningowy (${plan.days.size} dni)",
+                text = stringResource(R.string.plan_detail_days_count, plan.days.size),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor(),
@@ -1261,12 +1254,12 @@ private fun TrainingPlanDetailContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Comment,
-                    contentDescription = "Komentarze",
+                    contentDescription = stringResource(R.string.post_comment_icon_desc),
                     tint = getPrimaryColor(),
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "Komentarze (${comments.size})",
+                    text = stringResource(R.string.plan_comments_header, comments.size),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
@@ -1289,7 +1282,7 @@ private fun TrainingPlanDetailContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Odpowiadasz @$replyingToUsername",
+                                stringResource(R.string.comments_replying_to_format, replyingToUsername.orEmpty()),
                                 fontSize = 14.sp,
                                 color = getOnSurfaceSecondaryColor()
                             )
@@ -1302,7 +1295,7 @@ private fun TrainingPlanDetailContent(
                             ) {
                                 Icon(
                                     Icons.Default.Close,
-                                    contentDescription = "Anuluj",
+                                    contentDescription = stringResource(R.string.action_cancel),
                                     modifier = Modifier.size(18.dp),
                                     tint = getOnSurfaceColor()
                                 )
@@ -1321,8 +1314,8 @@ private fun TrainingPlanDetailContent(
                             modifier = Modifier.weight(1f),
                             placeholder = {
                                 Text(
-                                    if (replyingTo != null) "Napisz odpowiedź..."
-                                    else "Dodaj komentarz..."
+                                    if (replyingTo != null) stringResource(R.string.comments_reply_placeholder)
+                                    else stringResource(R.string.comments_input_placeholder)
                                 )
                             },
                             shape = RoundedCornerShape(12.dp),
@@ -1360,7 +1353,7 @@ private fun TrainingPlanDetailContent(
                         ) {
                             Icon(
                                 Icons.Default.Send,
-                                contentDescription = "Wyślij",
+                                contentDescription = stringResource(R.string.action_send),
                                 tint = if (newCommentText.isNotBlank())
                                     getPrimaryColor()
                                 else
@@ -1383,13 +1376,13 @@ private fun TrainingPlanDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Zaloguj się",
+                        contentDescription = stringResource(R.string.auth_login_title),
                         modifier = Modifier.size(32.dp),
                         tint = getOnSurfaceSecondaryColor()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Zaloguj się, aby dodawać komentarze",
+                        text = stringResource(R.string.comments_login_prompt_title),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor(),
@@ -1415,14 +1408,14 @@ private fun TrainingPlanDetailContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Brak komentarzy",
+                        text = stringResource(R.string.plan_comments_empty_title),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor()
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Bądź pierwszy, który skomentuje ten plan treningowy",
+                        text = stringResource(R.string.plan_comments_empty_subtitle),
                         fontSize = 14.sp,
                         color = getOnSurfaceSecondaryColor(),
                         textAlign = TextAlign.Center
@@ -1517,7 +1510,7 @@ private fun TrainingPlanDetailContent(
                             viewModel.loadMoreTrainingPlanComments(plan.id)
                         }
                     ) {
-                        Text("Załaduj więcej komentarzy", color = getPrimaryColor())
+                        Text(stringResource(R.string.comments_see_all), color = getPrimaryColor())
                     }
                 }
             }
@@ -1667,7 +1660,7 @@ private fun TrainingPlanCommentItem(
                             ) {
                                 Icon(
                                     Icons.Default.MoreVert,
-                                    contentDescription = "Więcej",
+                                    contentDescription = stringResource(R.string.action_options),
                                     modifier = Modifier.size(18.dp),
                                     tint = getOnSurfaceColor()
                                 )
@@ -1692,7 +1685,7 @@ private fun TrainingPlanCommentItem(
                                                     tint = getOnSurfaceColor()
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
-                                                Text("Edytuj komentarz", color = getOnSurfaceColor())
+                                                Text(stringResource(R.string.comments_edit_option), color = getOnSurfaceColor())
                                             }
                                         }
                                     )
@@ -1717,7 +1710,7 @@ private fun TrainingPlanCommentItem(
                                                     tint = getErrorColor()
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
-                                                Text("Usuń komentarz", color = getErrorColor())
+                                                Text(stringResource(R.string.comments_delete_option), color = getErrorColor())
                                             }
                                         }
                                     )
@@ -1736,7 +1729,7 @@ private fun TrainingPlanCommentItem(
                                                     tint = getOnSurfaceColor()
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
-                                                Text("Zgłoś komentarz", color = getOnSurfaceColor())
+                                                Text(stringResource(R.string.comments_report_option), color = getOnSurfaceColor())
                                             }
                                         }
                                     )
@@ -1760,7 +1753,7 @@ private fun TrainingPlanCommentItem(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            if (expanded) "Zobacz mniej" else "Zobacz wszystko",
+                            if (expanded) stringResource(R.string.comments_see_less) else stringResource(R.string.comments_see_all),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceSecondaryColor()
@@ -1790,13 +1783,13 @@ private fun TrainingPlanCommentItem(
                         }
                     ) {
                         Text(
-                            text = comment.timeAgo(),
+                            text = " ${comment.timeAgo()}",
                             color = getOnSurfaceSecondaryColor(),
                             fontSize = 11.sp
                         )
                         if (comment.isEdited == true) {
                             Text(
-                                text = "(edytowany)",
+                                text = stringResource(R.string.comments_edited_suffix),
                                 color = getOnSurfaceSecondaryColor(),
                                 fontSize = 11.sp,
                                 modifier = Modifier.padding(start = 4.dp)
@@ -1821,7 +1814,7 @@ private fun TrainingPlanCommentItem(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            "Odpowiedz",
+                            stringResource(R.string.comments_reply_action),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor()
@@ -1834,8 +1827,8 @@ private fun TrainingPlanCommentItem(
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(
-                                if (isExpanded) "Ukryj odp."
-                                else "Zobacz odp. (${comment.repliesCount})",
+                                if (isExpanded) stringResource(R.string.comments_hide_replies)
+                                else stringResource(R.string.comments_show_replies_format, comment.repliesCount),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = getOnSurfaceColor()
@@ -1900,7 +1893,7 @@ private fun TrainingPlanReplyItem(
                         ) {
                             Icon(
                                 Icons.Default.MoreVert,
-                                contentDescription = "Więcej",
+                                contentDescription = stringResource(R.string.action_options),
                                 modifier = Modifier.size(16.dp),
                                 tint = getOnSurfaceColor()
                             )
@@ -1912,7 +1905,7 @@ private fun TrainingPlanReplyItem(
                         ) {
                             if (reply.author.username == currentUsername) {
                                 DropdownMenuItem(
-                                    text = { Text("Edytuj odpowiedź", color = getOnSurfaceColor()) },
+                                    text = { Text(stringResource(R.string.comments_edit_reply_option), color = getOnSurfaceColor()) },
                                     onClick = {
                                         showMenu = false
                                         onEditClick(reply)
@@ -1933,7 +1926,7 @@ private fun TrainingPlanReplyItem(
                                 )
 
                                 DropdownMenuItem(
-                                    text = { Text("Usuń odpowiedź", color = getErrorColor()) },
+                                    text = { Text(stringResource(R.string.comments_delete_reply_option), color = getErrorColor()) },
                                     onClick = {
                                         showMenu = false
                                         onDeleteClick(reply)
@@ -1948,7 +1941,7 @@ private fun TrainingPlanReplyItem(
                                 )
                             } else {
                                 DropdownMenuItem(
-                                    text = { Text("Zgłoś", color = getOnSurfaceColor()) },
+                                    text = { Text(stringResource(R.string.comments_report_option), color = getOnSurfaceColor()) },
                                     onClick = {
                                         showMenu = false
                                         onReportClick(reply._id)
@@ -1999,7 +1992,7 @@ private fun TrainingPlanReplyItem(
                 )
                 if (reply.isEdited == true) {
                     Text(
-                        text = "(edytowany)",
+                        text = stringResource(R.string.comments_edited_suffix),
                         color = getOnSurfaceSecondaryColor(),
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)

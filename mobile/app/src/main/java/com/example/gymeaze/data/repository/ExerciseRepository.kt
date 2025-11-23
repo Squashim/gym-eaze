@@ -376,7 +376,7 @@ class ExerciseRepository(private val context: Context) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         context,
-                        "Ćwiczenie zostało zaktualizowane pomyślnie",
+                        context.getString(R.string.exercise_updated),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -437,7 +437,11 @@ class ExerciseRepository(private val context: Context) {
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Błąd podczas przełączania ulubionego: ${response.message()}"))
+                Result.failure(Exception(
+                    context.getString(
+                        R.string.error_favorite_toggle,
+                        response.message()
+                    )))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -493,7 +497,7 @@ class ExerciseRepository(private val context: Context) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         context,
-                        "Ćwiczenie zostało pomyślnie usunięte",
+                        context.getString(R.string.exercise_succesfully_deleted),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -555,7 +559,11 @@ class ExerciseRepository(private val context: Context) {
                     }
                 },
                 onFailure = {
-                    Result.failure(IllegalStateException("Nie znaleziono użytkownika o nazwie $username"))
+                    Result.failure(IllegalStateException(
+                        context.getString(
+                            R.string.didnt_find_user,
+                            username
+                        )))
                 }
             )
         } catch (e: Exception) {

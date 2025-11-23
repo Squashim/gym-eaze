@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -92,7 +93,7 @@ fun ExerciseDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Szczegóły ćwiczenia",
+                        text = stringResource(R.string.exericse_detail),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -102,7 +103,7 @@ fun ExerciseDetailScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Wstecz",
+                            contentDescription = stringResource(R.string.return_button),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -131,7 +132,7 @@ fun ExerciseDetailScreen(
                                     } else {
                                         Icons.Default.ThumbUpOffAlt
                                     },
-                                    contentDescription = "Polub",
+                                    contentDescription = stringResource(R.string.like),
                                     tint = if (isUserLoggedIn && exercisesViewModel.isExerciseLiked(exercise.id)) {
                                         getPrimaryColor()
                                     } else {
@@ -155,7 +156,7 @@ fun ExerciseDetailScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edytuj",
+                                        contentDescription = stringResource(R.string.edit),
                                         tint = getOnSurfaceColor()
                                     )
                                 }
@@ -165,7 +166,7 @@ fun ExerciseDetailScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Usuń",
+                                        contentDescription = stringResource(R.string.delete),
                                         tint = Color(0xFFF44336)
                                     )
                                 }
@@ -190,7 +191,7 @@ fun ExerciseDetailScreen(
                                         } else {
                                             Icons.Default.FavoriteBorder
                                         },
-                                        contentDescription = "Dodaj do ulubionych",
+                                        contentDescription = stringResource(R.string.add_to_favorite),
                                         tint = if (isFavorite) {
                                             Color(0xFFE91E63)
                                         } else {
@@ -208,7 +209,7 @@ fun ExerciseDetailScreen(
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.Flag,
-                                        contentDescription = "Zgłoś",
+                                        contentDescription = stringResource(R.string.report),
                                         tint = getOnSurfaceSecondaryColor()
                                     )
                                 }
@@ -241,13 +242,13 @@ fun ExerciseDetailScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = uiState.error ?: "Wystąpił błąd",
+                        text = uiState.error ?: stringResource(R.string.error),
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(onClick = { exercisesViewModel.loadExerciseDetail(exerciseId) }) {
-                        Text("Spróbuj ponownie")
+                        Text(text = stringResource(R.string.try_again))
                     }
                 }
             }
@@ -314,7 +315,7 @@ fun DeleteExerciseDialog(
                 horizontalArrangement = Arrangement.Start
             ) {
                 Text(
-                    text = "Usuń ćwiczenie",
+                    text = stringResource(R.string.delete_exercise),
                     color = getOnSurfaceColor(),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -327,7 +328,7 @@ fun DeleteExerciseDialog(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Czy na pewno chcesz usunąć ćwiczenie:",
+                    text = stringResource(R.string.delete_exercise_confirm),
                     color = getOnSurfaceColor(),
                     fontSize = 14.sp
                 )
@@ -340,7 +341,7 @@ fun DeleteExerciseDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Ta operacja jest nieodwracalna.",
+                    text = stringResource(R.string.cant_rewind_operation),
                     color = getOnSurfaceSecondaryColor(),
                     fontSize = 12.sp,
                     fontStyle = FontStyle.Italic
@@ -362,7 +363,7 @@ fun DeleteExerciseDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Anuluj",
+                        text = stringResource(R.string.cancel),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.Medium
                     )
@@ -377,7 +378,7 @@ fun DeleteExerciseDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Usuń",
+                        text = stringResource(R.string.delete),
                         color = Color.White,
                         fontWeight = FontWeight.Medium
                     )
@@ -498,12 +499,12 @@ private fun ExerciseDetailContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Comment,
-                    contentDescription = "Komentarze",
+                    contentDescription = stringResource(R.string.comments),
                     tint = getPrimaryColor(),
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "Komentarze (${comments.size})",
+                    text = stringResource(R.string.comments_header_format, comments.size),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
@@ -524,7 +525,7 @@ private fun ExerciseDetailContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Odpowiadasz @$replyingToUsername",
+                                text = stringResource(R.string.comments_replying_to_format, replyingToUsername.orEmpty()),
                                 fontSize = 14.sp,
                                 color = getOnSurfaceSecondaryColor()
                             )
@@ -537,7 +538,7 @@ private fun ExerciseDetailContent(
                             ) {
                                 Icon(
                                     Icons.Default.Close,
-                                    contentDescription = "Anuluj",
+                                    contentDescription = stringResource(R.string.cancel),
                                     modifier = Modifier.size(18.dp),
                                     tint = getOnSurfaceColor()
                                 )
@@ -556,8 +557,8 @@ private fun ExerciseDetailContent(
                             modifier = Modifier.weight(1f),
                             placeholder = {
                                 Text(
-                                    if (replyingTo != null) "Napisz odpowiedź..."
-                                    else "Dodaj komentarz..."
+                                    if (replyingTo != null) stringResource(R.string.write_reply)
+                                    else stringResource(R.string.add_comment)
                                 )
                             },
                             shape = RoundedCornerShape(12.dp),
@@ -595,7 +596,7 @@ private fun ExerciseDetailContent(
                         ) {
                             Icon(
                                 Icons.Default.Send,
-                                contentDescription = "Wyślij",
+                                contentDescription = null,
                                 tint = if (newCommentText.isNotBlank())
                                     getPrimaryColor()
                                 else
@@ -617,13 +618,13 @@ private fun ExerciseDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Zaloguj się",
+                        contentDescription = stringResource(R.string.login),
                         modifier = Modifier.size(32.dp),
                         tint = getOnSurfaceSecondaryColor()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Zaloguj się, aby dodawać komentarze",
+                        text = stringResource(R.string.login_to_comment),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor(),
@@ -649,14 +650,14 @@ private fun ExerciseDetailContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Brak komentarzy",
+                        text = stringResource(R.string.no_comments),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor()
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Bądź pierwszy, który skomentuje to ćwiczenie",
+                        text = stringResource(R.string.be_first_to_comment),
                         fontSize = 14.sp,
                         color = getOnSurfaceSecondaryColor(),
                         textAlign = TextAlign.Center
@@ -747,7 +748,7 @@ private fun ExerciseDetailContent(
                             exercisesViewModel.loadMoreExerciseComments(exercise.id)
                         }
                     ) {
-                        Text("Załaduj więcej komentarzy", color = getPrimaryColor())
+                        Text(stringResource(R.string.load_more_comments), color = getPrimaryColor())
                     }
                 }
             }
@@ -847,7 +848,7 @@ private fun DeleteCommentDialog(
         },
         title = {
             Text(
-                text = "Usuń komentarz",
+                text = stringResource(R.string.delete_comment),
                 color = getOnSurfaceColor(),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -856,7 +857,7 @@ private fun DeleteCommentDialog(
         },
         text = {
             Text(
-                text = "Czy na pewno chcesz usunąć ten komentarz? Ta operacja jest nieodwracalna.",
+                text = stringResource(R.string.delete_comment_confirm),
                 color = getOnSurfaceColor(),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center
@@ -869,12 +870,12 @@ private fun DeleteCommentDialog(
                     containerColor = getErrorColor()
                 )
             ) {
-                Text("Usuń", color = Color.White)
+                Text(stringResource(R.string.delete), color = Color.White)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Anuluj", color = getOnSurfaceSecondaryColor())
+                Text(stringResource(R.string.cancel), color = getOnSurfaceSecondaryColor())
             }
         }
     )
@@ -895,7 +896,7 @@ fun EditCommentDialog(
         containerColor = getSurfaceColor(),
         title = {
             Text(
-                text = if (isReply) "Edytuj odpowiedź" else "Edytuj komentarz",
+                text = if (isReply) stringResource(R.string.edit_reply) else stringResource(R.string.edit_comment),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
@@ -908,7 +909,7 @@ fun EditCommentDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 120.dp, max = 300.dp),
-                    placeholder = { Text("Napisz swój komentarz...") },
+                    placeholder = { Text(stringResource(R.string.write_your_comment)) },
                     shape = RoundedCornerShape(12.dp),
                     maxLines = 10,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -939,13 +940,13 @@ fun EditCommentDialog(
                     containerColor = getPrimaryColor()
                 )
             ) {
-                Text("Zapisz", fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.save), fontWeight = FontWeight.Medium)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    "Anuluj",
+                    stringResource(R.string.cancel),
                     color = getOnSurfaceSecondaryColor(),
                     fontWeight = FontWeight.Medium
                 )
@@ -1001,7 +1002,7 @@ private fun DescriptionSection(description: String) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Opis ćwiczenia:",
+                text = stringResource(R.string.exercise_description),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = getOnSurfaceColor()
@@ -1033,7 +1034,7 @@ private fun MuscleGroupsSection(muscleGroups: List<MuscleGroup>) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Aktywne grupy mięśniowe:",
+                text = stringResource(R.string.active_muscle_groups),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = getOnSurfaceColor()
@@ -1105,7 +1106,7 @@ private fun EquipmentSection(equipment: List<Equipment>) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Potrzebny sprzęt ćwiczeniowy:",
+                text = stringResource(R.string.required_equipment),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = getOnSurfaceColor()
@@ -1176,7 +1177,7 @@ private fun HashtagsSection(hashtags: List<String>) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Hashtagi:",
+                text = stringResource(R.string.hashtags2),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = getOnSurfaceColor()
@@ -1231,7 +1232,7 @@ private fun AuthorSection(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Dodane przez:",
+                text = stringResource(R.string.added_by),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = getOnSurfaceColor()
@@ -1346,7 +1347,7 @@ private fun ExerciseCommentItem(
                             ) {
                                 Icon(
                                     Icons.Default.MoreVert,
-                                    contentDescription = "Więcej",
+                                    contentDescription = stringResource(R.string.more),
                                     modifier = Modifier.size(18.dp),
                                     tint = getOnSurfaceColor()
                                 )
@@ -1371,7 +1372,7 @@ private fun ExerciseCommentItem(
                                                     tint = getOnSurfaceColor()
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
-                                                Text("Edytuj komentarz", color = getOnSurfaceColor())
+                                                Text(stringResource(R.string.edit_comment), color = getOnSurfaceColor())
                                             }
                                         }
                                     )
@@ -1396,7 +1397,7 @@ private fun ExerciseCommentItem(
                                                     tint = getErrorColor()
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
-                                                Text("Usuń komentarz", color = getErrorColor())
+                                                Text(stringResource(R.string.delete_comment), color = getErrorColor())
                                             }
                                         }
                                     )
@@ -1415,7 +1416,7 @@ private fun ExerciseCommentItem(
                                                     tint = getOnSurfaceColor()
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
-                                                Text("Zgłoś komentarz", color = getOnSurfaceColor())
+                                                Text(stringResource(R.string.report_comment), color = getOnSurfaceColor())
                                             }
                                         }
                                     )
@@ -1439,7 +1440,7 @@ private fun ExerciseCommentItem(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            if (expanded) "Zobacz mniej" else "Zobacz wszystko",
+                            if (expanded) stringResource(R.string.see_less) else stringResource(R.string.see_all),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceSecondaryColor()
@@ -1475,7 +1476,7 @@ private fun ExerciseCommentItem(
                         )
                         if (comment.isEdited == true) {
                             Text(
-                                text = "(edytowany)",
+                                text = stringResource(R.string.edited),
                                 color = getOnSurfaceSecondaryColor(),
                                 fontSize = 11.sp,
                                 modifier = Modifier.padding(start = 4.dp)
@@ -1484,7 +1485,7 @@ private fun ExerciseCommentItem(
                         Spacer(Modifier.padding(2.dp))
                         Icon(
                             if (isUserLoggedIn && isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                            contentDescription = "Polub",
+                            contentDescription = stringResource(R.string.like),
                             tint = if (isUserLoggedIn && isLiked) getPrimaryColor() else getOnSurfaceColor(),
                             modifier = Modifier.size(16.dp)
                         )
@@ -1500,7 +1501,7 @@ private fun ExerciseCommentItem(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            "Odpowiedz",
+                            stringResource(R.string.reply),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor()
@@ -1513,8 +1514,8 @@ private fun ExerciseCommentItem(
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(
-                                if (isExpanded) "Ukryj odp."
-                                else "Zobacz odp. (${comment.repliesCount})",
+                                if (isExpanded) stringResource(R.string.hide_reply)
+                                else stringResource(R.string.comments_show_replies_format, comment.repliesCount ?: 0),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = getOnSurfaceColor()
@@ -1580,7 +1581,7 @@ private fun ExerciseReplyItem(
                         ) {
                             Icon(
                                 Icons.Default.MoreVert,
-                                contentDescription = "Więcej",
+                                contentDescription = null,
                                 modifier = Modifier.size(16.dp),
                                 tint = getOnSurfaceColor()
                             )
@@ -1592,7 +1593,7 @@ private fun ExerciseReplyItem(
                         ) {
                             if (reply.author.username == currentUsername) {
                                 DropdownMenuItem(
-                                    text = { Text("Edytuj odpowiedź", color = getOnSurfaceColor()) },
+                                    text = { Text(stringResource(R.string.edit_reply), color = getOnSurfaceColor()) },
                                     onClick = {
                                         showMenu = false
                                         onEditClick(reply)
@@ -1613,7 +1614,7 @@ private fun ExerciseReplyItem(
                                 )
 
                                 DropdownMenuItem(
-                                    text = { Text("Usuń odpowiedź", color = getErrorColor()) },
+                                    text = { Text(stringResource(R.string.delete_reply), color = getErrorColor()) },
                                     onClick = {
                                         showMenu = false
                                         onDeleteClick(reply)
@@ -1628,7 +1629,7 @@ private fun ExerciseReplyItem(
                                 )
                             } else {
                                 DropdownMenuItem(
-                                    text = { Text("Zgłoś", color = getOnSurfaceColor()) },
+                                    text = { Text(stringResource(R.string.report), color = getOnSurfaceColor()) },
                                     onClick = {
                                         showMenu = false
                                         onReportClick(reply._id)
@@ -1679,7 +1680,7 @@ private fun ExerciseReplyItem(
                 )
                 if (reply.isEdited == true) {
                     Text(
-                        text = "(edytowany)",
+                        text = stringResource(R.string.edited),
                         color = getOnSurfaceSecondaryColor(),
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
@@ -1688,7 +1689,7 @@ private fun ExerciseReplyItem(
                 Spacer(Modifier.padding(3.dp))
                 Icon(
                     if (isUserLoggedIn && isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                    contentDescription = "Polub",
+                    contentDescription = null,
                     tint = if (isUserLoggedIn && isLiked) getPrimaryColor() else getOnSurfaceColor(),
                     modifier = Modifier.size(16.dp)
                 )

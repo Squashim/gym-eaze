@@ -83,6 +83,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -91,6 +92,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.StartedTrainingPlan
@@ -399,7 +401,7 @@ fun HomeScreen(
                             showPlanDetail = true
                         }
                     },
-                    onBrowseTrainingPlansClick = { /* TODO */ },
+                    onBrowseTrainingPlansClick = {},
                     onBrowsePostClick = {
                         if (previousPostContext == "community") {
                             selectedRoute = "community"
@@ -672,7 +674,7 @@ fun ProfileScreen(
 
     if (uiState.showFollowersDialog) {
         FollowListDialog(
-            title = "Obserwujący",
+            title = stringResource(R.string.followers),
             users = uiState.followers,
             isLoading = uiState.isLoadingFollowers,
             isFollowers = true,
@@ -686,7 +688,7 @@ fun ProfileScreen(
 
     if (uiState.showFollowingDialog) {
         FollowListDialog(
-            title = "Obserwowani",
+            title = stringResource(R.string.following_users),
             users = uiState.following,
             isLoading = uiState.isLoadingFollowers,
             isFollowers = false,
@@ -732,7 +734,7 @@ fun FollowButton(
             )
         } else {
             Text(
-                text = if (isFollowing) "Przestań obserwować" else "Obserwuj",
+                text = if (isFollowing) stringResource(R.string.stop_following) else stringResource(R.string.follow),
                 fontWeight = FontWeight.Medium
             )
         }
@@ -804,7 +806,11 @@ private fun WelcomeSection(
 
                         if (firstName != null && lastName != null) {
                             Text(
-                                text = "$firstName $lastName",
+                                text = stringResource(
+                                    R.string.firstname_lastname,
+                                    firstName,
+                                    lastName
+                                ),
                                 fontSize = 14.sp,
                                 color = getOnSurfaceSecondaryColor(),
                                 modifier = Modifier.padding(top = 2.dp)
@@ -820,7 +826,7 @@ private fun WelcomeSection(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Edytuj profil",
+                            contentDescription = null,
                             tint = getOnSurfaceSecondaryColor(),
                             modifier = Modifier.size(20.dp)
                         )
@@ -852,7 +858,8 @@ private fun WelcomeSection(
                 ) {
                     gender?.let {
                         ProfileInfoChip(
-                            icon = if (it.lowercase() == "mężczyzna" || it.lowercase() == "male")
+                            icon = if (it.lowercase() == stringResource(R.string.mezczyzna) || it.lowercase() == stringResource(
+                                    R.string.man))
                                 Icons.Default.Man else Icons.Default.Woman,
                             text = it
                         )
@@ -861,7 +868,7 @@ private fun WelcomeSection(
                     age?.let {
                         ProfileInfoChip(
                             icon = Icons.Default.Cake,
-                            text = "$it lat"
+                            text = stringResource(R.string.years, it)
                         )
                     }
 
@@ -884,21 +891,21 @@ private fun WelcomeSection(
                     height?.let {
                         MeasurementItem(
                             value = "$it cm",
-                            label = "Wzrost"
+                            label = stringResource(R.string.height)
                         )
                     }
 
                     weight?.let {
                         MeasurementItem(
                             value = String.format("%.1f kg", it),
-                            label = "Waga"
+                            label = stringResource(R.string.weight)
                         )
                     }
 
                     bmi?.let {
                         MeasurementItem(
                             value = String.format("%.1f", it),
-                            label = "BMI",
+                            label = stringResource(R.string.bmi),
                             color = getBmiColor(it)
                         )
                     }
@@ -920,7 +927,7 @@ private fun WelcomeSection(
                 ) {
                     Icon(
                         imageVector = Icons.Default.TrackChanges,
-                        contentDescription = "Cel treningowy",
+                        contentDescription = stringResource(R.string.traininggoal),
                         modifier = Modifier
                             .size(42.dp)
                             .padding(end = 8.dp),
@@ -928,7 +935,7 @@ private fun WelcomeSection(
                     )
                     Column {
                         Text(
-                            text = "Cel treningowy",
+                            text = stringResource(R.string.traininggoal),
                             fontSize = 12.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
@@ -947,7 +954,7 @@ private fun WelcomeSection(
 
                 Column {
                     Text(
-                        text = "Wyróżnione odznaki",
+                        text = stringResource(R.string.pinned_badges),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = getOnSurfaceColor(),
@@ -1005,12 +1012,10 @@ private fun BadgeItem(
         if (imageUrl.isNotEmpty()) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "Odznaka $title",
+                contentDescription = stringResource(R.string.badge_title, title),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                onError = {
-                    println("ERROR loading badge image: $imageUrl for badge: $title")
-                }
+                onError = {}
             )
         } else {
             Text(
@@ -1064,7 +1069,7 @@ private fun BadgeDetailsDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = null,
                             tint = getOnSurfaceSecondaryColor()
                         )
                     }
@@ -1130,7 +1135,7 @@ private fun BadgeDetailsDialog(
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "Zdobyto:",
+                                text = stringResource(R.string.gained),
                                 fontSize = 12.sp,
                                 color = getOnSurfaceSecondaryColor(),
                                 fontWeight = FontWeight.Medium
@@ -1161,7 +1166,7 @@ private fun BadgeDetailsDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Zamknij",
+                            text = stringResource(R.string.close),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -1257,7 +1262,7 @@ private fun RecentActivitySection(
 ) {
     Column {
         Text(
-            text = "Aktywne Treningi",
+            text = stringResource(R.string.active_trainings),
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = getOnSurfaceColor(),
@@ -1305,14 +1310,14 @@ private fun RecentActivitySection(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Brak aktywności",
+                            text = stringResource(R.string.no_activity),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor(),
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Rozpocznij swój pierwszy trening!",
+                            text = stringResource(R.string.start_first_training),
                             fontSize = 14.sp,
                             color = getOnSurfaceSecondaryColor(),
                             textAlign = TextAlign.Center
@@ -1415,7 +1420,7 @@ private fun StartedPlanCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "Autor: ${plan.author.username}",
+                    text = stringResource(R.string.author, plan.author.username),
                     fontSize = 12.sp,
                     color = getOnSurfaceSecondaryColor().copy(alpha = contentAlpha),
                     maxLines = 1,
@@ -1429,7 +1434,11 @@ private fun StartedPlanCard(
                 } else 0f
 
                 Text(
-                    text = if(isComplete) "Ukończono" else "Ukończono ${plan.completedDays} z ${plan.totalDays} dni",
+                    text = if(isComplete) stringResource(R.string.finished) else stringResource(
+                        R.string.finished_days,
+                        plan.completedDays,
+                        plan.totalDays
+                    ),
                     fontSize = 10.sp,
                     color = if (isComplete) getPrimaryColor() else getOnSurfaceSecondaryColor().copy(alpha = contentAlpha)
                 )
@@ -1456,7 +1465,7 @@ private fun StartedPlanCard(
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Opcje",
+                            contentDescription = null,
                             tint = getOnSurfaceSecondaryColor().copy(alpha = contentAlpha)
                         )
                     }
@@ -1466,7 +1475,7 @@ private fun StartedPlanCard(
                         modifier = Modifier.background(getSurfaceVariantColor())
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Resetuj postęp") },
+                            text = { Text(stringResource(R.string.reset_progress)) },
                             onClick = {
                                 showMenu = false
                                 showResetDialog = true
@@ -1474,12 +1483,12 @@ private fun StartedPlanCard(
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.Refresh,
-                                    contentDescription = "Resetuj"
+                                    contentDescription = null
                                 )
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Usuń plan", color = getErrorColor()) },
+                            text = { Text(stringResource(R.string.deleteplan), color = getErrorColor()) },
                             onClick = {
                                 showMenu = false
                                 showDeleteDialog = true
@@ -1487,7 +1496,7 @@ private fun StartedPlanCard(
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.DeleteOutline,
-                                    contentDescription = "Usuń",
+                                    contentDescription = null,
                                     tint = getErrorColor()
                                 )
                             }
@@ -1500,8 +1509,8 @@ private fun StartedPlanCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Potwierdź usunięcie") },
-            text = { Text("Czy na pewno chcesz usunąć ten rozpoczęty plan treningowy? Tej operacji nie można cofnąć.") },
+            title = { Text(stringResource(R.string.delete_confirm)) },
+            text = { Text(stringResource(R.string.confirm_delete_active_plan)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -1510,7 +1519,7 @@ private fun StartedPlanCard(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = getErrorColor())
                 ) {
-                    Text("Usuń")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
@@ -1518,7 +1527,7 @@ private fun StartedPlanCard(
                     onClick = { showDeleteDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = getOnSurfaceColor())
                 ) {
-                    Text("Anuluj")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -1527,8 +1536,8 @@ private fun StartedPlanCard(
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Potwierdź reset") },
-            text = { Text("Czy na pewno chcesz zresetować postęp w tym planie? Ukończone dni zostaną oznaczone jako nieukończone.") },
+            title = { Text(stringResource(R.string.confirm_reset)) },
+            text = { Text(stringResource(R.string.confirm_progress_reset)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -1537,7 +1546,7 @@ private fun StartedPlanCard(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = getPrimaryColor())
                 ) {
-                    Text("Resetuj")
+                    Text(stringResource(R.string.reset))
                 }
             },
             dismissButton = {
@@ -1545,7 +1554,7 @@ private fun StartedPlanCard(
                     onClick = { showResetDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = getOnSurfaceColor())
                     ) {
-                    Text("Anuluj")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

@@ -73,7 +73,7 @@ fun ExercisesMenuScreen(
                 )
 
                 Text(
-                    text = "Dołącz, dziel się i inspiruj - razem budujemy przestrzeń, w której każdy znajdzie coś dla siebie!",
+                    text = stringResource(R.string.join_our_community),
                     modifier = Modifier.padding(bottom = 48.dp),
                     color = getOnSurfaceColor().copy(alpha = 0.8f),
                     style = MaterialTheme.typography.bodyMedium,
@@ -89,8 +89,8 @@ fun ExercisesMenuScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         SectionButton(
-                            title = "Kreator\nćwiczenia",
-                            subtitle = "Stwórz swoje\nidealne\nćwiczenie",
+                            title = stringResource(R.string.exercises_menu_create_title),
+                            subtitle = stringResource(R.string.exercises_menu_create_subtitle),
                             imageRes = R.drawable.create_exercise,
                             backgroundColor = getSurfaceColor(),
                             innerBackgroundColor = getPrimaryColor().copy(alpha = 0.3f),
@@ -100,8 +100,8 @@ fun ExercisesMenuScreen(
                         )
 
                         SectionButton(
-                            title = "Moje\nćwiczenia",
-                            subtitle = "Zbiór Twoich\nćwiczeń",
+                            title = stringResource(R.string.exercises_menu_my_title),
+                            subtitle = stringResource(R.string.exercises_menu_my_subtitle),
                             imageRes = R.drawable.my_exercises,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),
@@ -114,8 +114,8 @@ fun ExercisesMenuScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         SectionButton(
-                            title = "Przeglądaj\nćwiczenia",
-                            subtitle = "Odkrywaj\nnowe\npomysły",
+                            title = stringResource(R.string.exercises_menu_browse_title),
+                            subtitle = stringResource(R.string.exercises_menu_browse_subtitle),
                             imageRes = R.drawable.overview_exercises,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),
@@ -123,8 +123,8 @@ fun ExercisesMenuScreen(
                         )
 
                         SectionButton(
-                            title = "Ulubione",
-                            subtitle = "Tutaj znajdziesz\nćwiczenia które\nchcesz mieć\npod ręką",
+                            title = stringResource(R.string.exercises_menu_favorites_title),
+                            subtitle = stringResource(R.string.exercises_menu_favorites_subtitle),
                             imageRes = R.drawable.favorites_exercises,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),

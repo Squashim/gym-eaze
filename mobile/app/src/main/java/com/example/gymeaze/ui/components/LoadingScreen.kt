@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
+import androidx.compose.ui.res.stringResource
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.LocalDarkTheme
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -37,7 +38,7 @@ fun LoadingScreen() {
     ) {
         Image(
             painter = painterResource(id = logoRes),
-            contentDescription = "App Logo",
+            contentDescription = stringResource(R.string.app_logo),
             modifier = Modifier.size(110.dp)
         )
         Canvas(

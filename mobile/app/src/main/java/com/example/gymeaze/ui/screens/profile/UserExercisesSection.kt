@@ -33,10 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ExerciseCard
@@ -80,7 +82,8 @@ fun UserExercisesSection(
         } else if (userExercises.isEmpty()) {
             EmptyStateView(
                 icon = Icons.Default.FitnessCenter,
-                title = if (isOwnProfile) "Nie masz jeszcze żadnych ćwiczeń" else "$username nie ma jeszcze żadnych ćwiczeń",
+                title = if (isOwnProfile) stringResource(R.string.dont_have_exercises) else stringResource(
+                    R.string.user_dont_have_exercises, username)
             )
         } else {
             Column(

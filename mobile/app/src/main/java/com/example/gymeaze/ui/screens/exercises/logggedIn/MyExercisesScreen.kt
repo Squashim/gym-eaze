@@ -23,11 +23,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.EmptyStateView
@@ -111,7 +113,7 @@ fun MyExercisesScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Moje ćwiczenia",
+                            text = stringResource(R.string.my_exercises),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = getOnSurfaceColor()
@@ -122,7 +124,7 @@ fun MyExercisesScreen(
                             IconButton(onClick = backCallback) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Wstecz",
+                                    contentDescription = stringResource(R.string.back),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -162,7 +164,7 @@ fun MyExercisesScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = uiState.error ?: "Wystąpił nieznany błąd",
+                                    text = uiState.error ?: stringResource(R.string.unknown_error),
                                     color = MaterialTheme.colorScheme.error,
                                     textAlign = TextAlign.Center
                                 )
@@ -170,7 +172,7 @@ fun MyExercisesScreen(
                                 Button(onClick = {
                                     currentUser?._id?.let { viewModel.refreshUserExercises(it) }
                                 }) {
-                                    Text("Spróbuj ponownie")
+                                    Text(text = stringResource(R.string.try_again))
                                 }
                             }
                         }
@@ -178,9 +180,11 @@ fun MyExercisesScreen(
                         uiState.exercises.isEmpty() -> {
                             EmptyStateView(
                                 icon = Icons.Default.FitnessCenter,
-                                title = "Nie masz jeszcze ćwiczeń",
-                                subtitle = "Dodaj swoje pierwsze ćwiczenie, aby było widoczne tutaj",
-                                modifier = Modifier.fillMaxSize().padding(paddingValues)
+                                title = stringResource(R.string.no_exercises_yet),
+                                subtitle = stringResource(R.string.add_first_exercise),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(paddingValues)
                             )
                         }
 

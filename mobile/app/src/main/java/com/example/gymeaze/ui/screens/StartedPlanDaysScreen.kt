@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +62,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.StartedDay
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.theme.getBackgroundColor
@@ -110,7 +112,7 @@ fun StartedPlanDaysScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Przebieg Treningu",
+                            text = stringResource(R.string.workout_days_title),
                             fontSize = 14.sp,
                             color = getOnSurfaceSecondaryColor()
                         )
@@ -126,7 +128,7 @@ fun StartedPlanDaysScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Wróć",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -163,13 +165,13 @@ fun StartedPlanDaysScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = uiState.error ?: "Wystąpił nieznany błąd",
+                            text = uiState.error ?: stringResource(R.string.error_unknown),
                             color = getErrorColor(),
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { viewModel.refreshDays() }) {
-                            Text("Spróbuj ponownie")
+                            Text(stringResource(R.string.action_try_again))
                         }
                     }
                 }
@@ -179,7 +181,7 @@ fun StartedPlanDaysScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Brak dni w tym planie.",
+                            text = stringResource(R.string.workout_days_empty),
                             color = getOnSurfaceSecondaryColor(),
                             textAlign = TextAlign.Center
                         )
@@ -193,7 +195,7 @@ fun StartedPlanDaysScreen(
                     ) {
                         item {
                             Text(
-                                text = "Wybierz dzień, aby rozpocząć trening:",
+                                text = stringResource(R.string.workout_days_select_instruction),
                                 fontSize = 16.sp,
                                 color = getOnSurfaceColor(),
                                 modifier = Modifier.padding(bottom = 8.dp)
@@ -261,7 +263,10 @@ private fun DayCard(
                 ) {
                     Icon(
                         imageVector = if (day.isRestDay) Icons.Default.Bedtime else Icons.Default.FitnessCenter,
-                        contentDescription = if (day.isRestDay) "Dzień odpoczynku" else "Dzień treningowy",
+                        contentDescription = if (day.isRestDay)
+                            stringResource(R.string.workout_days_rest_day_desc)
+                        else
+                            stringResource(R.string.workout_days_training_day_desc),
                         tint = if (day.isRestDay) getOnSurfaceSecondaryColor() else getPrimaryColor(),
                         modifier = Modifier.size(20.dp)
                     )
@@ -305,7 +310,7 @@ private fun DayCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = "Ukończono",
+                                contentDescription = stringResource(R.string.workout_days_completed),
                                 tint = Color(0xFF4CAF50),
                                 modifier = Modifier.size(20.dp)
                             )
@@ -326,7 +331,7 @@ private fun DayCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text("Zalicz dzień", fontSize = 12.sp)
+                            Text(stringResource(R.string.workout_days_complete_rest), fontSize = 12.sp)
                         }
                     }
                     !day.isRestDay && !day.isCompleted -> {
@@ -339,7 +344,7 @@ private fun DayCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Schedule,
-                                contentDescription = "Nieukończono",
+                                contentDescription = stringResource(R.string.workout_days_not_completed),
                                 tint = Color.Gray,
                                 modifier = Modifier.size(20.dp)
                             )

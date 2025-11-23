@@ -66,7 +66,7 @@ fun PostsMenuScreen(
                 )
 
                 Text(
-                    text = "Dołącz, dziel się i inspiruj - razem budujemy przestrzeń, w której każdy znajdzie coś dla siebie!",
+                    text = stringResource(R.string.join_share_inspire),
                     modifier = Modifier.padding(bottom = 48.dp),
                     color = getOnSurfaceColor().copy(alpha = 0.8f),
                     style = MaterialTheme.typography.bodyMedium,
@@ -82,8 +82,8 @@ fun PostsMenuScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         SectionButton(
-                            title = "Nowy post",
-                            subtitle = "Stwórz nowy post\n i pochwal się\npostępami",
+                            title = stringResource(R.string.new_post),
+                            subtitle = stringResource(R.string.posts_menu_create_subtitle),
                             imageRes = R.drawable.created_posts,
                             backgroundColor = getSurfaceColor(),
                             innerBackgroundColor = getPrimaryColor().copy(alpha = 0.3f),
@@ -93,8 +93,8 @@ fun PostsMenuScreen(
                         )
 
                         SectionButton(
-                            title = "Moje posty",
-                            subtitle = "Zbiór Twoich\npostów",
+                            title = stringResource(R.string.posts_menu_my_title),
+                            subtitle = stringResource(R.string.posts_menu_my_subtitle),
                             imageRes = R.drawable.my_posts,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),
@@ -107,8 +107,8 @@ fun PostsMenuScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         SectionButton(
-                            title = "Przeglądaj\nposty",
-                            subtitle = "Odkrywaj\nnowe\npomysły",
+                            title = stringResource(R.string.posts_menu_browse_title),
+                            subtitle = stringResource(R.string.posts_menu_browse_subtitle),
                             imageRes = R.drawable.search_posts,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),
@@ -116,8 +116,8 @@ fun PostsMenuScreen(
                         )
 
                         SectionButton(
-                            title = "Posty\nobserwowanych",
-                            subtitle = "Sprawdź co\nsłychać u\ninnych",
+                            title = stringResource(R.string.posts_menu_followed_title),
+                            subtitle = stringResource(R.string.posts_menu_followed_subtitle),
                             imageRes = R.drawable.followed_posts,
                             backgroundColor = getSurfaceColor(),
                             modifier = Modifier.weight(1f),

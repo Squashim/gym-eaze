@@ -15,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ExerciseCard
@@ -94,7 +96,7 @@ fun FavoriteExercisesScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Ulubione ćwiczenia",
+                            text = stringResource(R.string.favorite_exercises),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = getOnSurfaceColor()
@@ -105,7 +107,7 @@ fun FavoriteExercisesScreen(
                             IconButton(onClick = backCallback) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Wstecz",
+                                    contentDescription = stringResource(R.string.back),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -145,13 +147,13 @@ fun FavoriteExercisesScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = uiState.error ?: "Wystąpił nieznany błąd",
+                                    text = uiState.error ?: stringResource(R.string.unknown_error),
                                     color = MaterialTheme.colorScheme.error,
                                     textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Button(onClick = { viewModel.refreshFavoriteExercises() }) {
-                                    Text("Spróbuj ponownie")
+                                    Text(text = stringResource(R.string.try_again))
                                 }
                             }
                         }
@@ -159,8 +161,8 @@ fun FavoriteExercisesScreen(
                         uiState.exercises.isEmpty() -> {
                             EmptyStateView(
                                 icon = Icons.Default.FavoriteBorder,
-                                title = "Brak ulubionych ćwiczeń",
-                                subtitle = "Dodaj ćwiczenia do ulubionych, aby były tutaj widoczne",
+                                title = stringResource(R.string.no_fav_exerices),
+                                subtitle = stringResource(R.string.add_to_favorite_to_seeit),
                                 modifier = Modifier.fillMaxSize()
                             )
                         }

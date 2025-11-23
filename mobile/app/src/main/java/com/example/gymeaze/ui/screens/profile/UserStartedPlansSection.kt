@@ -2,8 +2,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
@@ -16,12 +14,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.StartedTrainingPlan
 import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.theme.*
@@ -64,9 +63,9 @@ fun UserStartedPlansSection(
             }
         } else if (startedPlans.isEmpty()) {
             val message = if (isOwnProfile)
-                "Nie masz jeszcze żadnych rozpoczętych treningów"
+                stringResource(R.string.dont_have_started_trainings)
             else
-                "$username nie ma jeszcze żadnych rozpoczętych treningów"
+                stringResource(R.string.user_dont_have_started_trainings, username)
 
             EmptyStateView(
                 icon = Icons.Default.FitnessCenter,
@@ -148,7 +147,7 @@ private fun StartedPlanCompactCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Kontynuuj",
+                            contentDescription = null,
                             tint = getOnPrimaryColor(),
                             modifier = Modifier.size(32.dp)
                         )
@@ -175,7 +174,7 @@ private fun StartedPlanCompactCard(
                     )
 
                     Text(
-                        text = "Autor: ${plan.author.username}",
+                        text = stringResource(R.string.plan_author, plan.author.username),
                         fontSize = 11.sp,
                         color = getOnSurfaceSecondaryColor().copy(alpha = contentAlpha),
                         maxLines = 1,
@@ -191,7 +190,8 @@ private fun StartedPlanCompactCard(
                     } else 0f
 
                     Text(
-                        text = if (isComplete) "Ukończono" else "${plan.completedDays}/${plan.totalDays} dni",
+                        text = if (isComplete) stringResource(R.string.completed) else stringResource(
+                            R.string.completed_days, plan.completedDays, plan.totalDays),
                         fontSize = 10.sp,
                         color = if (isComplete) getPrimaryColor() else getOnSurfaceSecondaryColor().copy(alpha = contentAlpha),
                         fontWeight = if (isComplete) FontWeight.SemiBold else FontWeight.Normal

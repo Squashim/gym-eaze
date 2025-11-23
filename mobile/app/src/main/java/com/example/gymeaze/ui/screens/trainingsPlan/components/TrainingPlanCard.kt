@@ -39,11 +39,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.User
@@ -134,7 +136,7 @@ fun TrainingPlanCard(
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = "${daysCount.total} dni",
+                            text = stringResource(R.string.days, daysCount.total),
                             color = Color.White,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium,
@@ -163,7 +165,7 @@ fun TrainingPlanCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edytuj plan",
+                                    contentDescription = stringResource(R.string.edit_plan),
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -182,7 +184,7 @@ fun TrainingPlanCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Usuń plan",
+                                    contentDescription = stringResource(R.string.delete_plan),
                                     tint = Color.White,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -206,7 +208,7 @@ fun TrainingPlanCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Autor: ${trainingPlan.author?.username}",
+                text = stringResource(R.string.plan_author_username, trainingPlan.author?.username),
                 fontSize = 12.sp,
                 color = getOnSurfaceSecondaryColor(),
                 maxLines = 1,
@@ -216,7 +218,7 @@ fun TrainingPlanCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Dodano: ${trainingPlan.createdAt.formatToRelativeTime()}",
+                text = stringResource(R.string.added, trainingPlan.createdAt.formatToRelativeTime()),
                 fontSize = 10.sp,
                 color = getOnSurfaceSecondaryColor()
             )
@@ -252,7 +254,7 @@ fun TrainingPlanCard(
                         ) {
                             Icon(
                                 imageVector = if (globalLikeState.isLiked(trainingPlan.id)) Icons.Default.ThumbUp else Icons.Default.ThumbUpOffAlt,
-                                contentDescription = "Polub",
+                                contentDescription = null,
                                 tint = getPrimaryColor(),
                                 modifier = Modifier.size(20.dp)
                             )
@@ -279,9 +281,9 @@ fun TrainingPlanCard(
                                     Icons.Default.FavoriteBorder
                                 },
                                 contentDescription = if (isFavoriteGlobal) {
-                                    "Usuń z ulubionych"
+                                    stringResource(R.string.remove_from_favorite)
                                 } else {
-                                    "Dodaj do ulubionych"
+                                    stringResource(R.string.add_to_favorites)
                                 },
                                 tint = if (isFavoriteGlobal) {
                                     Color(0xFFE91E63)

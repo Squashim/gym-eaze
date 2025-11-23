@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +33,7 @@ import com.example.gymeaze.viewmodel.ReportViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 import com.example.gymeaze.viewmodel.posts.cleanedCommentLength
 import kotlinx.coroutines.launch
+import com.example.gymeaze.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,7 +108,7 @@ fun CommentsPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Komentarze ($commentsCount)",
+                text = stringResource(R.string.comments_header_format, commentsCount),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 color = getOnSurfaceColor()
@@ -114,7 +116,7 @@ fun CommentsPanel(
             IconButton(onClick = onClose, modifier = Modifier.offset(x = (8).dp)) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Zamknij",
+                    contentDescription = stringResource(R.string.action_close),
                     tint = getOnSurfaceColor()
                 )
             }
@@ -257,9 +259,9 @@ fun CommentsPanel(
                 title = {
                     Text(
                         text = if (editingComment?.parentId != null)
-                            "Edytuj odpowiedź"
+                            stringResource(R.string.comments_edit_reply_dialog_title)
                         else
-                            "Edytuj komentarz",
+                            stringResource(R.string.comments_edit_dialog_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -272,7 +274,7 @@ fun CommentsPanel(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 120.dp, max = 300.dp),
-                            placeholder = { Text("Napisz swój komentarz...") },
+                            placeholder = { Text(stringResource(R.string.comments_input_placeholder)) },
                             shape = RoundedCornerShape(12.dp),
                             maxLines = 10,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -322,7 +324,7 @@ fun CommentsPanel(
                             containerColor = getPrimaryColor()
                         )
                     ) {
-                        Text("Zapisz", fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.action_save), fontWeight = FontWeight.Medium)
                     }
                 },
                 dismissButton = {
@@ -335,7 +337,7 @@ fun CommentsPanel(
                         }
                     ) {
                         Text(
-                            "Anuluj",
+                            stringResource(R.string.action_cancel),
                             color = getOnSurfaceSecondaryColor(),
                             fontWeight = FontWeight.Medium
                         )
@@ -354,7 +356,7 @@ fun CommentsPanel(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Odpowiadasz @$replyingToUsername",
+                        stringResource(R.string.comments_replying_to_format, replyingToUsername.orEmpty()),
                         fontSize = 16.sp,
                         color = getOnSurfaceSecondaryColor()
                     )
@@ -367,7 +369,7 @@ fun CommentsPanel(
                     ) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Anuluj",
+                            contentDescription = stringResource(R.string.action_cancel),
                             modifier = Modifier.size(18.dp),
                             tint = getOnSurfaceColor()
                         )
@@ -388,8 +390,8 @@ fun CommentsPanel(
                     modifier = Modifier.weight(1f),
                     placeholder = {
                         Text(
-                            if (replyingTo != null) "Napisz odpowiedź..."
-                            else "Dodaj komentarz..."
+                            if (replyingTo != null) stringResource(R.string.comments_reply_placeholder)
+                            else stringResource(R.string.comments_input_placeholder)
                         )
                     },
                     shape = RoundedCornerShape(12.dp),
@@ -421,7 +423,7 @@ fun CommentsPanel(
                     },
                     enabled = newCommentText.isNotBlank()
                 ) {
-                    Icon(Icons.Default.Send, contentDescription = "Wyślij", tint = getOnSurfaceColor())
+                    Icon(Icons.Default.Send, contentDescription = stringResource(R.string.action_send), tint = getOnSurfaceColor())
                 }
             }
         } else {
@@ -438,13 +440,13 @@ fun CommentsPanel(
             ) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Zaloguj się",
+                    contentDescription = null,
                     modifier = Modifier.size(32.dp),
                     tint = getOnSurfaceSecondaryColor()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Zaloguj się, aby dodawać komentarze",
+                    text = stringResource(R.string.comments_login_prompt_title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = getOnSurfaceColor(),
@@ -452,7 +454,7 @@ fun CommentsPanel(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Dołącz do dyskusji i dołącz do społeczności",
+                    text = stringResource(R.string.comments_login_prompt_desc),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     textAlign = TextAlign.Center
@@ -534,7 +536,7 @@ fun CommentItem(
                         ) {
                             Icon(
                                 Icons.Default.MoreVert,
-                                contentDescription = "Więcej",
+                                contentDescription = stringResource(R.string.more),
                                 modifier = Modifier.size(18.dp),
                                 tint = getOnSurfaceColor()
                             )
@@ -563,7 +565,7 @@ fun CommentItem(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                "Edytuj komentarz",
+                                                stringResource(R.string.comments_edit_option),
                                                 color = getOnSurfaceColor()
                                             )
                                         }
@@ -594,7 +596,7 @@ fun CommentItem(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                "Usuń komentarz",
+                                                stringResource(R.string.comments_delete_option),
                                                 color = getErrorColor()
                                             )
                                         }
@@ -619,7 +621,7 @@ fun CommentItem(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                "Zgłoś komentarz",
+                                                stringResource(R.string.comments_report_option),
                                                 color = getOnSurfaceColor()
                                             )
                                         }
@@ -644,7 +646,8 @@ fun CommentItem(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            if (expanded) "Zobacz mniej" else "Zobacz wszystko",
+                            if (expanded) stringResource(R.string.comments_see_less)
+                            else stringResource(R.string.comments_see_all),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceSecondaryColor()
@@ -674,7 +677,7 @@ fun CommentItem(
                         )
                         if (comment.isEdited == true) {
                             Text(
-                                text = "(edytowany)",
+                                text = stringResource(R.string.comments_edited_suffix),
                                 color = getOnSurfaceSecondaryColor(),
                                 fontSize = 11.sp,
                                 modifier = Modifier.padding(start = 4.dp)
@@ -683,7 +686,7 @@ fun CommentItem(
                         Spacer(Modifier.padding(2.dp))
                         Icon(
                             if (isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                            contentDescription = "Polub",
+                            contentDescription = stringResource(R.string.like),
                             tint = if (isLiked) getPrimaryColor() else getOnSurfaceColor(),
                             modifier = Modifier.size(16.dp)
                         )
@@ -703,7 +706,7 @@ fun CommentItem(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            "Odpowiedz",
+                            stringResource(R.string.comments_reply_action),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor()
@@ -716,8 +719,8 @@ fun CommentItem(
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(
-                                if (isExpanded) "Ukryj odp."
-                                else "Zobacz odp. (${comment.repliesCount})",
+                                if (isExpanded) stringResource(R.string.comments_hide_replies)
+                                else stringResource(R.string.comments_show_replies_format, comment.repliesCount),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = getOnSurfaceColor()
@@ -789,7 +792,7 @@ fun ReplyItem(
                     ) {
                         Icon(
                             Icons.Default.MoreVert,
-                            contentDescription = "Więcej",
+                            contentDescription = stringResource(R.string.more),
                             modifier = Modifier.size(16.dp),
                             tint = getOnSurfaceColor()
                         )
@@ -803,7 +806,7 @@ fun ReplyItem(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        "Edytuj odpowiedź",
+                                        stringResource(R.string.comments_edit_reply_option),
                                         color = getOnSurfaceColor()
                                     )
                                 },
@@ -829,7 +832,7 @@ fun ReplyItem(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        "Usuń odpowiedź",
+                                        stringResource(R.string.comments_delete_reply_option),
                                         color = getErrorColor()
                                     )
                                 },
@@ -849,7 +852,7 @@ fun ReplyItem(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        "Zgłoś",
+                                        stringResource(R.string.comments_report_option),
                                         color = getOnSurfaceColor()
                                     )
                                 },
@@ -896,7 +899,7 @@ fun ReplyItem(
                 )
                 if (reply.isEdited == true) {
                     Text(
-                        text = "(edytowany)",
+                        text = stringResource(R.string.comments_edited_suffix),
                         color = getOnSurfaceSecondaryColor(),
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
@@ -905,7 +908,7 @@ fun ReplyItem(
                 Spacer(Modifier.padding(3.dp))
                 Icon(
                     if (isLiked) Icons.Filled.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                    contentDescription = "Polub",
+                    contentDescription = stringResource(R.string.like),
                     tint = if (isLiked) getPrimaryColor() else getOnSurfaceColor(),
                     modifier = Modifier.size(16.dp)
                 )

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.ExerciseCard
 import com.example.gymeaze.ui.components.LoadingScreen
@@ -107,7 +108,7 @@ fun ExercisesOverviewScreen(
                             IconButton(onClick = { showFilters = true }) {
                                 Icon(
                                     imageVector = Icons.Default.FilterList,
-                                    contentDescription = "Filtry",
+                                    contentDescription = stringResource(R.string.filters),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -157,13 +158,13 @@ fun ExercisesOverviewScreen(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = uiState.error ?: "Wystąpił nieznany błąd",
+                                        text = uiState.error ?: stringResource(R.string.unknown_error),
                                         color = MaterialTheme.colorScheme.error,
                                         textAlign = TextAlign.Center
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(onClick = { viewModel.refreshExercises() }) {
-                                        Text("Spróbuj ponownie")
+                                        Text(text = stringResource(R.string.try_again))
                                     }
                                 }
                             }

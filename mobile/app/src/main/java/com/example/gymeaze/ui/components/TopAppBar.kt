@@ -40,7 +40,7 @@ fun GymEazeTopAppBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Wróć",
+                        contentDescription = stringResource(R.string.back),
                         tint = getOnSurfaceColor()
                     )
                 }
@@ -49,7 +49,7 @@ fun GymEazeTopAppBar(
         title = {
             if (showBackButton) {
                 Text(
-                    text = "Profil użytkownika",
+                    text = stringResource(R.string.user_profile),
                     color = getOnSurfaceColor(),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
@@ -91,7 +91,7 @@ fun GymEazeTopAppBar(
                     IconButton(onClick = onNotificationsClick) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
-                            contentDescription = "Powiadomienia",
+                            contentDescription = stringResource(R.string.notifications),
                             tint = getOnSurfaceColor()
                         )
                     }

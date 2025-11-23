@@ -55,7 +55,6 @@ class ReportRepository(private val context: Context) {
             val response = api.createReport(request)
             if (response.isSuccessful) response.body() else null
         } catch (e: Exception) {
-            Log.e("Repository", "Error reporting item", e)
             null
         }
     }

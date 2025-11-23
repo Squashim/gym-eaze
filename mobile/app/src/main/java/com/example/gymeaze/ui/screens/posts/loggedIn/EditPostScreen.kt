@@ -83,7 +83,7 @@ fun EditPostScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Edytuj post",
+                        text = stringResource(R.string.edit_post),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -129,9 +129,9 @@ fun EditPostScreen(
                         }
                         Text(
                             text = when {
-                                ui.isLoading -> "..."
-                                !hasChanges -> "Brak zmian"
-                                else -> "Zapisz zmiany"
+                                ui.isLoading -> stringResource(R.string.zzz)
+                                !hasChanges -> stringResource(R.string.no_changes)
+                                else -> stringResource(R.string.save_changes)
                             },
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp
@@ -166,7 +166,7 @@ fun EditPostScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Public,
-                            contentDescription = "Publiczny post",
+                            contentDescription = stringResource(R.string.public_post),
                             tint = getOnSurfaceSecondaryColor(),
                             modifier = Modifier.size(24.dp)
                         )
@@ -174,7 +174,7 @@ fun EditPostScreen(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = "Wszyscy to zobaczą!",
+                            text = stringResource(R.string.everyone_will_see_it),
                             color = getOnSurfaceColor(),
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontSize = 20.sp,
@@ -219,7 +219,7 @@ fun EditPostScreen(
                                     IconButton(onClick = { viewModel.clearError() }) {
                                         Icon(
                                             imageVector = Icons.Default.Close,
-                                            contentDescription = "Zamknij",
+                                            contentDescription = stringResource(R.string.close),
                                             tint = getErrorColor()
                                         )
                                     }
@@ -238,7 +238,7 @@ fun EditPostScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         UploadCard(
-                            title = "Zdjęcie",
+                            title = stringResource(R.string.photo),
                             subtitle = stringResource(R.string.click_to_upload),
                             hint = stringResource(R.string.image_upload_requirements),
                             selected = imageSelected,
@@ -253,7 +253,7 @@ fun EditPostScreen(
                         )
 
                         UploadCard(
-                            title = "Film",
+                            title = stringResource(R.string.film),
                             subtitle = stringResource(R.string.click_to_upload),
                             hint = stringResource(R.string.video_upload_requirements),
                             selected = videoSelected,

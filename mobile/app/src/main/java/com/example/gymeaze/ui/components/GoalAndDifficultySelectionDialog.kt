@@ -3,6 +3,7 @@ package com.example.gymeaze.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import com.example.gymeaze.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,7 +78,7 @@ fun GoalSelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Wybierz cel treningu",
+                        text = stringResource(R.string.choose_training_goal),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -85,7 +87,7 @@ fun GoalSelectionDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = stringResource(R.string.close),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -138,7 +140,7 @@ fun DifficultySelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Wybierz poziom trudności",
+                        text = stringResource(R.string.choose_difficulty),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -147,7 +149,7 @@ fun DifficultySelectionDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = stringResource(R.string.close),
                             tint = getOnSurfaceColor()
                         )
                     }

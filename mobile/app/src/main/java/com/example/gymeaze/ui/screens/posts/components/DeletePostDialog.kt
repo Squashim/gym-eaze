@@ -6,12 +6,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 
 @Composable
@@ -39,14 +41,14 @@ fun DeletePostDialog(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Text(
-                    text = "Usuwanie posta",
+                    text = stringResource(R.string.deleting_post),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
                 )
 
                 Text(
-                    text = "Czy na pewno chcesz usunąć ten post? Tej operacji nie można cofnąć.",
+                    text = stringResource(R.string.delete_post_confirmation),
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     color = getOnSurfaceColor(),
@@ -69,7 +71,7 @@ fun DeletePostDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Anuluj",
+                            text = stringResource(R.string.cancel),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -84,7 +86,7 @@ fun DeletePostDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Usuń",
+                            text = stringResource(R.string.delete),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnPrimaryColor()

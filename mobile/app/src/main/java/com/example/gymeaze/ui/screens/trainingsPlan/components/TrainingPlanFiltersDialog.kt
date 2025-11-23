@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.theme.*
+import com.example.gymeaze.R
+import com.example.gymeaze.constants.AdvancedLevel
+import com.example.gymeaze.constants.Goals
 
 @Composable
 fun TrainingPlanFiltersDialog(
@@ -121,7 +125,7 @@ fun TrainingPlanFiltersDialog(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Filtry i sortowanie",
+                            text = stringResource(R.string.filters_and_sort),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = getOnSurfaceColor()
@@ -143,7 +147,7 @@ fun TrainingPlanFiltersDialog(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Wyczyść filtry",
+                                    contentDescription = stringResource(R.string.clear_filters),
                                     tint = getOnSurfaceSecondaryColor()
                                 )
                             }
@@ -155,7 +159,7 @@ fun TrainingPlanFiltersDialog(
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Zamknij",
+                                    contentDescription = stringResource(R.string.close),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -190,7 +194,7 @@ fun TrainingPlanFiltersDialog(
                         item {
                             Column {
                                 Text(
-                                    text = "Cel treningowy",
+                                    text = stringResource(R.string.training_goal),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = getOnSurfaceColor()
@@ -206,7 +210,7 @@ fun TrainingPlanFiltersDialog(
                         item {
                             Column {
                                 Text(
-                                    text = "Poziom trudności",
+                                    text = stringResource(R.string.difficulty_level),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = getOnSurfaceColor()
@@ -222,13 +226,13 @@ fun TrainingPlanFiltersDialog(
                         item {
                             Column {
                                 Text(
-                                    text = "Liczba dni",
+                                    text = stringResource(R.string.number_days),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = getOnSurfaceColor()
                                 )
                                 Text(
-                                    text = "Zakres od 1 do 30 dni",
+                                    text = stringResource(R.string.range_from_1_to_30),
                                     fontSize = 12.sp,
                                     color = getOnSurfaceSecondaryColor(),
                                     modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
@@ -347,7 +351,7 @@ private fun SortingSection(
 ) {
     Column {
         Text(
-            text = "Sortowanie",
+            text = stringResource(R.string.sorting),
             color = getOnSurfaceColor(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
@@ -359,17 +363,17 @@ private fun SortingSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SortChip(
-                text = "Najnowsze",
+                text = stringResource(R.string.newest),
                 isSelected = selectedSort == "latest",
                 onClick = { onSortChange("latest") }
             )
             SortChip(
-                text = "Popularne",
+                text = stringResource(R.string.popular),
                 isSelected = selectedSort == "popular",
                 onClick = { onSortChange("popular") }
             )
             SortChip(
-                text = "Najwyżej ocenione",
+                text = stringResource(R.string.highest_rated),
                 isSelected = selectedSort == "top-rated",
                 onClick = { onSortChange("top-rated") }
             )
@@ -422,14 +426,14 @@ private fun FollowersOnlyToggle(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Tylko obserwowani",
+                    text = stringResource(R.string.only_following),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = getOnSurfaceColor()
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Pokaż plany tylko od obserwowanych użytkowników",
+                    text = stringResource(R.string.plans_only_following),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     lineHeight = 18.sp
@@ -457,21 +461,7 @@ private fun GoalDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val goals = listOf(
-        "Nie wybrano" to "Nie wybrano",
-        "Budowanie masy mięśniowej" to "Budowanie masy mięśniowej",
-        "Zwiększanie siły" to "Zwiększanie siły",
-        "Poprawa wytrzymałości" to "Poprawa wytrzymałości",
-        "Redukcja tkanki tłuszczowej" to "Redukcja tkanki tłuszczowej",
-        "Spalanie kalorii" to "Spalanie kalorii",
-        "Zwiększenie masy ciała" to "Zwiększenie masy ciała",
-        "Poprawa koordynacji" to "Poprawa koordynacji",
-        "Poprawa mobilności" to "Poprawa mobilności",
-        "Poprawa gibkości" to "Poprawa gibkości",
-        "Rozwój nóg i pośladków" to "Rozwój nóg i pośladków",
-        "Poprawa postawy ciała" to "Poprawa postawy ciała",
-        "Regeneracja i odpoczynek" to "Regeneracja i odpoczynek"
-    )
+    val goals = Goals.getAllOptions()
 
     Box {
         Box(
@@ -494,8 +484,14 @@ private fun GoalDropdown(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val displayText = if (selectedGoal == null || selectedGoal == Goals.NONE) {
+                    stringResource(R.string.goal_none)
+                } else {
+                    stringResource(Goals.getLabelResId(selectedGoal))
+                }
+
                 Text(
-                    text = selectedGoal ?: "Nie wybrano",
+                    text = displayText,
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -515,13 +511,16 @@ private fun GoalDropdown(
                 .background(getSurfaceColor())
                 .heightIn(max = 400.dp)
         ) {
-            goals.forEach { (value, label) ->
+            goals.forEach { backendValue ->
                 DropdownMenuItem(
                     text = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (selectedGoal == value || (selectedGoal == null && value == "Nie wybrano")) {
+                            val isSelected = selectedGoal == backendValue ||
+                                    (selectedGoal == null && backendValue == Goals.NONE)
+
+                            if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
@@ -534,14 +533,14 @@ private fun GoalDropdown(
                             }
 
                             Text(
-                                text = label,
+                                text = stringResource(Goals.getLabelResId(backendValue)),
                                 fontSize = 14.sp,
                                 color = getOnSurfaceColor()
                             )
                         }
                     },
                     onClick = {
-                        onSelectionChanged(if (value == "Nie wybrano") null else value)
+                        onSelectionChanged(if (backendValue == Goals.NONE) null else backendValue)
                         expanded = false
                     }
                 )
@@ -557,12 +556,7 @@ private fun DifficultyDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val difficulties = listOf(
-        "Nie wybrano" to "Nie wybrano",
-        "Początkujący" to "Początkujący",
-        "Średniozaawansowany" to "Średniozaawansowany",
-        "Zaawansowany" to "Zaawansowany"
-    )
+    val difficulties = AdvancedLevel.getAllOptions()
 
     Box {
         Box(
@@ -585,8 +579,14 @@ private fun DifficultyDropdown(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val displayText = if (selectedDifficulty == null || selectedDifficulty == AdvancedLevel.NONE) {
+                    stringResource(R.string.level_none)
+                } else {
+                    stringResource(AdvancedLevel.getLabelResId(selectedDifficulty))
+                }
+
                 Text(
-                    text = selectedDifficulty ?: "Nie wybrano",
+                    text = displayText,
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -602,15 +602,19 @@ private fun DifficultyDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(getSurfaceColor())
+            modifier = Modifier
+                .background(getSurfaceColor())
         ) {
-            difficulties.forEach { (value, label) ->
+            difficulties.forEach { backendValue ->
                 DropdownMenuItem(
                     text = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (selectedDifficulty == value || (selectedDifficulty == null && value == "Nie wybrano")) {
+                            val isSelected = selectedDifficulty == backendValue ||
+                                    (selectedDifficulty == null && backendValue == AdvancedLevel.NONE)
+
+                            if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
@@ -623,14 +627,14 @@ private fun DifficultyDropdown(
                             }
 
                             Text(
-                                text = label,
+                                text = stringResource(AdvancedLevel.getLabelResId(backendValue)),
                                 fontSize = 14.sp,
                                 color = getOnSurfaceColor()
                             )
                         }
                     },
                     onClick = {
-                        onSelectionChanged(if (value == "Nie wybrano") null else value)
+                        onSelectionChanged(if (backendValue == AdvancedLevel.NONE) null else backendValue)
                         expanded = false
                     }
                 )

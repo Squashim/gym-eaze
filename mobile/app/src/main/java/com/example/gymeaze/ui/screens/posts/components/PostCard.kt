@@ -25,10 +25,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.VideoPlayer
 import com.example.gymeaze.ui.components.user.UserAvatar
@@ -126,7 +128,7 @@ fun PostCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Więcej opcji",
+                            contentDescription = stringResource(R.string.more_options),
                             tint = getOnSurfaceSecondaryColor()
                         )
                     }
@@ -155,7 +157,7 @@ fun PostCard(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            "Edytuj post",
+                                            stringResource(R.string.edit_post),
                                             color = getOnSurfaceColor()
                                         )
                                     }
@@ -186,7 +188,7 @@ fun PostCard(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            "Usuń post",
+                                            stringResource(R.string.delete_post),
                                             color = getErrorColor()
                                         )
                                     }
@@ -211,7 +213,7 @@ fun PostCard(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            "Zgłoś post",
+                                            stringResource(R.string.report_post),
                                             color = getOnSurfaceColor()
                                         )
                                     }
@@ -242,7 +244,7 @@ fun PostCard(
 
                     if (post.content.length > maxContentLength) {
                         Text(
-                            text = if (isContentExpanded) "Zobacz mniej" else "Zobacz wszystko",
+                            text = if (isContentExpanded) stringResource(R.string.see_less) else stringResource(R.string.see_all),
                             color = getOnSurfaceSecondaryColor(),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
@@ -295,7 +297,7 @@ fun PostCard(
                     } else {
                         AsyncImage(
                             model = mediaUrl,
-                            contentDescription = "Zdjęcie w poście",
+                            contentDescription = stringResource(R.string.image_in_post),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clickable { onImageClick() },
@@ -318,13 +320,13 @@ fun PostCard(
                 ) {
                     Icon(
                         imageVector = if (post.isLiked) Icons.Default.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                        contentDescription = if (post.isLiked) "Cofnij polubienie" else "Dodaj polubienie",
+                        contentDescription = if (post.isLiked) stringResource(R.string.cancel_like) else stringResource(R.string.add_like),
                         tint = if (post.isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Polubienia (${post.likes})",
+                        text = stringResource(R.string.post_likes_count, post.likes),
                         color = if (post.isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
                         fontSize = 14.sp,
                         fontWeight = if (post.isLiked) FontWeight.Medium else FontWeight.Normal
@@ -349,13 +351,13 @@ fun PostCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,
-                        contentDescription = "Komentarz",
+                        contentDescription = stringResource(R.string.post_comment_icon_desc),
                         tint = getOnSurfaceSecondaryColor(),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Komentarze (${post.commentsCount})",
+                        text = stringResource(R.string.post_comments_count, post.commentsCount),
                         color = getOnSurfaceSecondaryColor(),
                         fontSize = 14.sp
                     )

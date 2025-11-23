@@ -18,9 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
@@ -51,7 +53,7 @@ fun FollowStatsSection(
         ) {
             FollowStatItem(
                 count = followersCount,
-                label = "Obserwujący",
+                label = stringResource(R.string.followers),
                 onClick = onFollowersClick
             )
 
@@ -64,7 +66,7 @@ fun FollowStatsSection(
 
             FollowStatItem(
                 count = followingCount,
-                label = "Obserwowani",
+                label = stringResource(R.string.following_users),
                 onClick = onFollowingClick
             )
         }

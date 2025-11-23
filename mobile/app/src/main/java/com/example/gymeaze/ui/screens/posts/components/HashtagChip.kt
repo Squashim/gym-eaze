@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.stringResource
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.getPrimaryColor
 
 @Composable
@@ -49,7 +51,7 @@ fun HashtagChip(
                 Spacer(modifier = Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Usuń hashtag",
+                    contentDescription = stringResource(R.string.delete_hashtag),
                     tint = getPrimaryColor(),
                     modifier = Modifier
                         .size(16.dp)

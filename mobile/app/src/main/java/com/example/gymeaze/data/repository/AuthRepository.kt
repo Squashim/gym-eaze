@@ -377,7 +377,7 @@ class AuthRepository(private val context: Context){
             userPreferences.clearTokens()
             userPreferences.clearUserData()
             userPreferences.setLoggedIn(false)
-            Result.success("Session cleared")
+            Result.success(context.getString(R.string.session_cleared))
         } catch(e: Exception) {
             userPreferences.clearTokens()
             userPreferences.clearUserData()

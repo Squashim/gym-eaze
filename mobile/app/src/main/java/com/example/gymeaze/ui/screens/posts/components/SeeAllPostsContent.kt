@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
 import com.example.gymeaze.ui.components.EmptyStateView
@@ -107,7 +108,7 @@ fun SeeAllPostsContent(
                             ) {
                                 Icon(
                                     imageVector = if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
-                                    contentDescription = if (isSearchActive) "Zamknij wyszukiwanie" else "Szukaj",
+                                    contentDescription = if (isSearchActive) stringResource(R.string.close_searching) else stringResource(R.string.search),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -130,7 +131,7 @@ fun SeeAllPostsContent(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Wróć",
+                                contentDescription = stringResource(R.string.back),
                                 tint = getOnSurfaceColor()
                             )
                         }
@@ -149,7 +150,7 @@ fun SeeAllPostsContent(
                             ) {
                                 Icon(
                                     imageVector = if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
-                                    contentDescription = if (isSearchActive) "Zamknij wyszukiwanie" else "Szukaj",
+                                    contentDescription = if (isSearchActive) stringResource(R.string.close_searching) else stringResource(R.string.search),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -240,10 +241,9 @@ fun SeeAllPostsContent(
                         if (posts.isEmpty() && !isLoading) {
                             item {
                                 val title = if (isSearchActive && selectedHashtags.isNotEmpty())
-                                    "Nie znaleziono postów" else "Brak postów"
+                                    stringResource(R.string.no_posts_found) else stringResource(R.string.no_posts)
                                 val subtitle = if (isSearchActive && selectedHashtags.isNotEmpty())
-                                    "Spróbuj wyszukać inne hashtagi" else "Sprawdź ponownie później"
-
+                                    stringResource(R.string.try_other_hashtags) else stringResource(R.string.check_again_later)
                                 EmptyStateView(
                                     icon = Icons.Default.Search,
                                     title = title,

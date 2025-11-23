@@ -44,13 +44,6 @@ fun BadgeSelectionDialog(
         selectedBadgeIds = currentlySelectedBadges.map { it.id }.toSet()
     }
 
-    LaunchedEffect(availableBadges) {
-        println("Available badges: ${availableBadges.size}")
-        availableBadges.forEachIndexed { index, badge ->
-            println("Badge $index: id='${badge.id}', title='${badge.title}'")
-        }
-    }
-
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
