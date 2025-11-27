@@ -16,7 +16,7 @@ data class StartedTrainingPlan(
     val goal: String,
     val advancedLevel: String,
     val author: TrainingPlanAuthor,
-    val status: String, // "active", "finished"
+    val status: String,
     val totalDays: Int,
     val trainingDays: Int,
     val restDays: Int,

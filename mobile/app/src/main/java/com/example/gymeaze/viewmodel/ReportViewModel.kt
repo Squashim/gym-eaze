@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.repository.ReportRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,13 +34,14 @@ class ReportViewModel(application: Application) : AndroidViewModel(application) 
                 )
 
                 if (response != null) {
-                    _reportState.value = ReportState.Success("Zgłoszenie zostało wysłane")
+                    _reportState.value = ReportState.Success(getApplication<Application>().getString(
+                        R.string.report_send_success))
                 } else {
-                    _reportState.value = ReportState.Error("Nie udało się wysłać zgłoszenia")
+                    _reportState.value = ReportState.Error(getApplication<Application>().getString(R.string.report_send_error))
                 }
             } catch (e: Exception) {
                 _reportState.value = ReportState.Error(
-                    e.message ?: "Wystąpił błąd"
+                    e.message ?: getApplication<Application>().getString(R.string.error_unknown)
                 )
             }
         }

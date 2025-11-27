@@ -2,15 +2,14 @@ package com.example.gymeaze.viewmodel
 
 import android.app.Application
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Comment
 import com.example.gymeaze.data.models.Equipment
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.ExerciseFilters
-import com.example.gymeaze.data.models.ExercisesResponse
 import com.example.gymeaze.data.models.MuscleGroup
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
@@ -140,7 +139,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = "Błąd ładowania opcji filtrowania: ${e.message}"
+                    error = getApplication<Application>().getString(R.string.error_load_filter_options, e.message)
                 )
             }
         }
@@ -232,14 +231,14 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        error = exception.message ?: "Błąd podczas ładowania ćwiczeń"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_exercises)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }
@@ -306,7 +305,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
             }.onFailure { exception ->
                 _isLoadingExerciseDetail.value = false
                 _uiState.value = _uiState.value.copy(
-                    error = exception.message ?: "Błąd podczas ładowania ćwiczenia"
+                    error = exception.message ?: getApplication<Application>().getString(R.string.error_load_exercise_detail)
                 )
             }
         }
@@ -318,7 +317,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                 ?: _currentExercise.value?.takeIf { it.id == exerciseId }
 
             if (currentExercise == null) {
-                onResult(false, "Nie znaleziono ćwiczenia")
+                onResult(false, getApplication<Application>().getString(R.string.error_exercise_not_found))
                 return@launch
             }
 
@@ -348,22 +347,20 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     }
 
                     val message = if (!isCurrentlyLiked) {
-                        "Polubiono ćwiczenie"
+                        getApplication<Application>().getString(R.string.msg_exercise_like_added)
                     } else {
-                        "Usunięto polubienie ćwiczenia"
+                        getApplication<Application>().getString(R.string.msg_exercise_like_removed)
                     }
                     onResult(true, message)
                 }.onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas polubienia"
-                    )
-                    onResult(false, exception.message ?: "Błąd podczas polubienia")
+                    val msg = exception.message ?: getApplication<Application>().getString(R.string.error_like_exercise_toggle)
+                    _uiState.value = _uiState.value.copy(error = msg)
+                    onResult(false, msg)
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Nieoczekiwany błąd podczas polubienia ćwiczenia"
-                )
-                onResult(false, e.message ?: "Nieoczekiwany błąd")
+                val msg = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
+                _uiState.value = _uiState.value.copy(error = msg)
+                onResult(false, msg)
             }
         }
     }
@@ -386,7 +383,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                 ?: _currentExercise.value?.takeIf { it.id == exerciseId }
 
             if (currentExercise == null) {
-                onResult(false, "Nie znaleziono ćwiczenia")
+                onResult(false, getApplication<Application>().getString(R.string.error_exercise_not_found))
                 return@launch
             }
 
@@ -399,22 +396,20 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     loadUserFavorites()
 
                     val message = if (isFavorited) {
-                        "Dodano do ulubionych"
+                        getApplication<Application>().getString(R.string.msg_favorite_added)
                     } else {
-                        "Usunięto z ulubionych"
+                        getApplication<Application>().getString(R.string.msg_favorite_removed)
                     }
                     onResult(true, message)
                 }.onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas przełączania ulubionego"
-                    )
-                    onResult(false, exception.message ?: "Błąd podczas przełączania ulubionego")
+                    val msg = exception.message ?: getApplication<Application>().getString(R.string.error_favorite_toggle)
+                    _uiState.value = _uiState.value.copy(error = msg)
+                    onResult(false, msg)
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Nieoczekiwany błąd podczas dodawania do ulubionych"
-                )
-                onResult(false, e.message ?: "Nieoczekiwany błąd")
+                val msg = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
+                _uiState.value = _uiState.value.copy(error = msg)
+                onResult(false, msg)
             }
         }
     }
@@ -510,14 +505,14 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        error = exception.message ?: "Błąd podczas ładowania ulubionych ćwiczeń"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_favorite_plans) // Można użyć podobnego stringa
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_load_favorite_plans) // Można użyć podobnego stringa
                 )
             }
         }
@@ -561,14 +556,14 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        error = exception.message ?: "Błąd podczas ładowania ćwiczeń użytkownika"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_user_exercises)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }
@@ -675,9 +670,6 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
             )
         }
     }
-
-    // ==================== KOMENTARZE DO ĆWICZEŃ ====================
-
     private val _exerciseComments = MutableStateFlow<List<Comment>>(emptyList())
     val exerciseComments: StateFlow<List<Comment>> = _exerciseComments.asStateFlow()
 
@@ -811,17 +803,17 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     updateExerciseCommentLikes(commentId, response.likes)
 
                     val message = if (isLiked) {
-                        "Polubiono komentarz"
+                        getApplication<Application>().getString(R.string.msg_comment_like_added)
                     } else {
-                        "Usunięto polubienie komentarza"
+                        getApplication<Application>().getString(R.string.msg_comment_like_removed)
                     }
                     onResult(true, message)
                 } else {
-                    onResult(false, "Błąd podczas polubienia komentarza")
+                    onResult(false, getApplication<Application>().getString(R.string.error_comment_like))
                 }
             } catch (e: Exception) {
                 println("Błąd podczas przełączania polubienia: ${e.message}")
-                onResult(false, e.message ?: "Błąd podczas polubienia komentarza")
+                onResult(false, e.message ?: getApplication<Application>().getString(R.string.error_comment_like))
             }
         }
     }
@@ -859,7 +851,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             try {
                 val result = postRepository.editComment(comment._id, newContent)
-                onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd edycji" })
+                onResult(result.isSuccess, result.getOrElse { it.message ?: getApplication<Application>().getString(R.string.error_edit_comment) })
                 if (result.isSuccess) {
                     loadExerciseComments(comment.parentId ?: "", refresh = true)
 
@@ -868,7 +860,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     }
                 }
             } catch (e: Exception) {
-                onResult(false, e.message ?: "Błąd edycji")
+                onResult(false, e.message ?: getApplication<Application>().getString(R.string.error_edit_comment))
             }
         }
     }
@@ -878,7 +870,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             try {
                 val result = postRepository.deleteComment(comment._id)
-                onResult(result.isSuccess, result.getOrElse { it.message ?: "Błąd usuwania" })
+                onResult(result.isSuccess, result.getOrElse { it.message ?: getApplication<Application>().getString(R.string.error_delete_comment) })
                 if (result.isSuccess) {
                     loadExerciseComments(comment.parentId ?: "", refresh = true)
 
@@ -887,7 +879,7 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     }
                 }
             } catch (e: Exception) {
-                onResult(false, e.message ?: "Błąd usuwania")
+                onResult(false, e.message ?: getApplication<Application>().getString(R.string.error_delete_comment))
             }
         }
     }
@@ -952,14 +944,14 @@ class ExercisesViewModel(application: Application) : AndroidViewModel(applicatio
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        error = exception.message ?: "Błąd podczas ładowania ćwiczeń użytkownika $username"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_user_exercises_by_username, username)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }

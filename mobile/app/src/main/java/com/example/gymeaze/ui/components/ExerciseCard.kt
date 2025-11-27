@@ -35,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.ui.theme.getErrorColor
@@ -114,7 +116,7 @@ fun ExerciseCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edytuj",
+                                contentDescription = stringResource(R.string.edit),
                                 tint = getSurfaceColor(),
                                 modifier = Modifier.size(20.dp)
                             )
@@ -132,7 +134,7 @@ fun ExerciseCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Usuń",
+                                contentDescription = stringResource(R.string.delete),
                                 tint = Color.White,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -155,7 +157,7 @@ fun ExerciseCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Autor: ${exercise.author.username}",
+                text = stringResource(R.string.exercise_author_label, exercise.author.username),
                 fontSize = 12.sp,
                 color = getOnSurfaceSecondaryColor(),
                 maxLines = 1,
@@ -211,7 +213,7 @@ fun ExerciseCard(
                         ) {
                             Icon(
                                 imageVector = if (isLiked) Icons.Default.ThumbUpAlt else Icons.Default.ThumbUpOffAlt,
-                                contentDescription = "Polub",
+                                contentDescription = stringResource(R.string.like),
                                 tint = if (isLiked) getPrimaryColor() else getOnSurfaceSecondaryColor(),
                                 modifier = Modifier.size(20.dp)
                             )
@@ -231,7 +233,7 @@ fun ExerciseCard(
                         ) {
                             Icon(
                                 imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Dodaj do ulubionych",
+                                contentDescription = stringResource(R.string.add_to_favorite),
                                 tint = if (isFavorite) Color(0xFFE91E63) else getOnSurfaceSecondaryColor(),
                                 modifier = Modifier.size(20.dp)
                             )

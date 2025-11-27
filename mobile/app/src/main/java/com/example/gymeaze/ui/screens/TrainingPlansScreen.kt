@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.*
 import com.example.gymeaze.ui.screens.trainingsPlan.components.TrainingPlanCard
 import com.example.gymeaze.ui.screens.trainingsPlan.components.TrainingPlanFiltersDialog
@@ -26,7 +28,6 @@ import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.util.GlobalFavoriteState
 import com.example.gymeaze.viewmodel.trainingsPlan.SnackbarType
 import com.example.gymeaze.viewmodel.trainingsPlan.TrainingPlansViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +130,7 @@ fun TrainingPlansScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Plany treningowe",
+                        text = stringResource(R.string.plans_browse_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -139,7 +140,7 @@ fun TrainingPlansScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Wróć",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -149,7 +150,7 @@ fun TrainingPlansScreen(
                         IconButton(onClick = { showFilters = true }) {
                             Icon(
                                 imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filtry i sortowanie",
+                                contentDescription = stringResource(R.string.plans_filter_desc),
                                 tint = getOnSurfaceColor()
                             )
                         }
@@ -203,14 +204,14 @@ fun TrainingPlansScreen(
                                 onValueChange = viewModel::updateSearchQuery,
                                 placeholder = {
                                     Text(
-                                        "Szukaj planów treningowych...",
+                                        stringResource(R.string.plans_search_hint),
                                         color = getOnSurfaceSecondaryColor()
                                     )
                                 },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Search,
-                                        contentDescription = "Szukaj",
+                                        contentDescription = stringResource(R.string.action_search),
                                         tint = getOnSurfaceSecondaryColor()
                                     )
                                 },
@@ -219,7 +220,7 @@ fun TrainingPlansScreen(
                                         IconButton(onClick = { viewModel.updateSearchQuery("") }) {
                                             Icon(
                                                 imageVector = Icons.Default.Close,
-                                                contentDescription = "Wyczyść",
+                                                contentDescription = stringResource(R.string.plans_search_clear_desc),
                                                 tint = getOnSurfaceSecondaryColor()
                                             )
                                         }
@@ -265,13 +266,13 @@ fun TrainingPlansScreen(
                                         )
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Text(
-                                            text = "Brak planów treningowych",
+                                            text = stringResource(R.string.plans_empty_search_title),
                                             fontSize = 18.sp,
                                             fontWeight = FontWeight.Medium,
                                             color = getOnSurfaceColor()
                                         )
                                         Text(
-                                            text = "Spróbuj zmienić filtry wyszukiwania",
+                                            text = stringResource(R.string.plans_empty_search_subtitle),
                                             fontSize = 14.sp,
                                             color = getOnSurfaceSecondaryColor()
                                         )
@@ -383,13 +384,13 @@ private fun DeleteConfirmationDialog(
         },
         title = {
             Text(
-                text = "Usuń plan treningowy",
+                text = stringResource(R.string.plans_delete_confirm_title),
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Text(
-                text = "Czy na pewno chcesz usunąć plan \"$planName\"?\n\nTa operacja nie może zostać cofnięta.",
+                text = stringResource(R.string.plans_delete_confirm_message, planName),
                 fontSize = 14.sp
             )
         },
@@ -398,7 +399,7 @@ private fun DeleteConfirmationDialog(
                 onClick = onConfirm
             ) {
                 Text(
-                    text = "Usuń",
+                    text = stringResource(R.string.action_delete),
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Medium
                 )
@@ -407,7 +408,7 @@ private fun DeleteConfirmationDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Anuluj",
+                    text = stringResource(R.string.action_cancel),
                     color = getOnSurfaceColor()
                 )
             }

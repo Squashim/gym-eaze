@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,7 @@ import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.viewmodel.AuthViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
+import com.example.gymeaze.R
 
 @Composable
 fun MyPosts(
@@ -120,7 +122,7 @@ fun MyPosts(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Wystąpił błąd",
+                            text = stringResource(R.string.error_occured),
                             color = Color.Red,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
@@ -136,7 +138,9 @@ fun MyPosts(
                             onClick = { viewModel.clearError() },
                             colors = ButtonDefaults.buttonColors(containerColor = getPrimaryColor())
                         ) {
-                            Text("OK")
+                            Text(
+                                text = stringResource(R.string.ok)
+                                )
                         }
                     }
                 }

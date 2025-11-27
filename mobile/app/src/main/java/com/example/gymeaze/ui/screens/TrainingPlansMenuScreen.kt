@@ -13,14 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.BackgroundWithDotsAndCircles
-import com.example.gymeaze.ui.components.GymEazeBottomNavigationBar
-import com.example.gymeaze.ui.components.GymEazeTopAppBar
 import com.example.gymeaze.ui.theme.*
 
 @Composable
@@ -45,7 +44,7 @@ fun TrainingPlansMenuScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Plany treningowe",
+                text = stringResource(R.string.training_plans),
                 modifier = Modifier.padding(top = 32.dp, bottom = 16.dp),
                 color = getOnSurfaceColor(),
                 style = MaterialTheme.typography.headlineMedium,
@@ -53,7 +52,7 @@ fun TrainingPlansMenuScreen(
             )
 
             Text(
-                text = "Twórz spersonalizowane plany treningowe, śledź postęp i osiągaj swoje cele fitness!",
+                text = stringResource(R.string.create_personalized_plans),
                 modifier = Modifier.padding(bottom = 48.dp),
                 color = getOnSurfaceColor().copy(alpha = 0.8f),
                 style = MaterialTheme.typography.bodyMedium,
@@ -69,8 +68,8 @@ fun TrainingPlansMenuScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     TrainingPlanSectionButton(
-                        title = "Kreator\nplanu",
-                        subtitle = "Stwórz własny\nplan treningowy",
+                        title = stringResource(R.string.training_plan_creator_screen),
+                        subtitle = stringResource(R.string.create_own_plan_screen),
                         imageRes = R.drawable.create_plan,
                         backgroundColor = getSurfaceColor(),
                         innerBackgroundColor = getPrimaryColor().copy(alpha = 0.3f),
@@ -80,8 +79,8 @@ fun TrainingPlansMenuScreen(
                     )
 
                     TrainingPlanSectionButton(
-                        title = "Moje\nplany",
-                        subtitle = "Zbiór Twoich\nplanów",
+                        title = stringResource(R.string.my_plans_screen),
+                        subtitle = stringResource(R.string.collection_of_your_plans_screen),
                         imageRes = R.drawable.my_plans,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),
@@ -94,8 +93,8 @@ fun TrainingPlansMenuScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     TrainingPlanSectionButton(
-                        title = "Przeglądaj\nplany",
-                        subtitle = "Odkrywaj\nnowe\npomysły",
+                        title = stringResource(R.string.browse_plans_screen),
+                        subtitle = stringResource(R.string.discover_new_ideas_screen),
                         imageRes = R.drawable.overview_plans,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),
@@ -103,8 +102,8 @@ fun TrainingPlansMenuScreen(
                     )
 
                     TrainingPlanSectionButton(
-                        title = "Ulubione",
-                        subtitle = "Tutaj znajdziesz\nplany które\nchcesz mieć\npod ręką",
+                        title = stringResource(R.string.favorite_screen),
+                        subtitle = stringResource(R.string.here_fav_plans_screen),
                         imageRes = R.drawable.favorite_plans,
                         backgroundColor = getSurfaceColor(),
                         modifier = Modifier.weight(1f),

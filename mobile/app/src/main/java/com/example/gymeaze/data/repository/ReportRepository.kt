@@ -1,12 +1,9 @@
 package com.example.gymeaze.data.repository
 
 import android.content.Context
-import android.util.Log
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.data.UserPreferences
-import com.example.gymeaze.data.api.PostApiService
 import com.example.gymeaze.data.api.ReportsApiService
-import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.CreateReportRequest
 import com.example.gymeaze.data.models.ReportResponse
 import com.example.gymeaze.util.AuthInterceptor
@@ -55,7 +52,6 @@ class ReportRepository(private val context: Context) {
             val response = api.createReport(request)
             if (response.isSuccessful) response.body() else null
         } catch (e: Exception) {
-            Log.e("Repository", "Error reporting item", e)
             null
         }
     }

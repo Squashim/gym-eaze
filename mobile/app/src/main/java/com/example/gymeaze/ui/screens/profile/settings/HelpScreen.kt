@@ -74,7 +74,6 @@ fun HelpScreen(
                 .verticalScroll(rememberScrollState())
                 .background(getBackgroundColor())
         ) {
-            // Nagłówek
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {

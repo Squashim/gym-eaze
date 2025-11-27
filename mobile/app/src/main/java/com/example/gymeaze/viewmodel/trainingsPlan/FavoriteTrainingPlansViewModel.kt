@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel.trainingsPlan
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.TrainingPlanAuthor
 import com.example.gymeaze.data.repository.TrainingPlanRepository
@@ -71,7 +72,7 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        error = exception.message ?: "Błąd podczas ładowania ulubionych planów",
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_favorite_plans),
                         snackbarType = SnackbarType.ERROR
                     )
                 }
@@ -79,7 +80,7 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    error = e.message ?: "Nieoczekiwany błąd",
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred),
                     snackbarType = SnackbarType.ERROR
                 )
             }
@@ -106,7 +107,7 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
 
                     _uiState.value = _uiState.value.copy(
                         trainingPlans = _uiState.value.trainingPlans.filter { it.id != planId },
-                        snackbarMessage = "Usunięto \"$planName\" z ulubionych",
+                        snackbarMessage = getApplication<Application>().getString(R.string.msg_removed_from_favorites, planName),
                         snackbarType = SnackbarType.SUCCESS
                     )
 
@@ -117,15 +118,15 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
 
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = "Błąd: ${exception.message}",
+                        snackbarMessage = "${getApplication<Application>().getString(R.string.error_unknown)}: ${exception.message}",
                         snackbarType = SnackbarType.ERROR
                     )
                 }
 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas usuwania z ulubionych",
-                    snackbarMessage = "Błąd podczas usuwania z ulubionych",
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_remove_favorite),
+                    snackbarMessage = getApplication<Application>().getString(R.string.error_remove_favorite),
                     snackbarType = SnackbarType.ERROR
                 )
             }
@@ -166,12 +167,12 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas polubienia planu"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_like_plan)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas polubienia planu"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_like_plan)
                 )
             }
         }
@@ -191,7 +192,6 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
             try {
                 _uiState.value = _uiState.value.copy(isRefreshing = true, error = null)
 
-                // Ładuj pierwszą stronę (odświeżanie zawsze zaczyna od początku)
                 val result = repository.getFavoriteTrainingPlans(page = 1, pageSize = 9)
 
                 result.onSuccess { response ->
@@ -201,23 +201,23 @@ class FavoriteTrainingPlansViewModel(application: Application) : AndroidViewMode
                         hasMorePages = response.page * response.pageSize < response.total,
                         isLoading = false,
                         isLoadingMore = false,
-                        isRefreshing = false, // Resetuj isRefreshing
+                        isRefreshing = false,
                         error = null
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoadingMore = false,
-                        isRefreshing = false, // Resetuj isRefreshing także przy błędzie
-                        error = exception.message ?: "Błąd podczas odświeżania ulubionych planów"
+                        isRefreshing = false,
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_refresh_favorites)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoadingMore = false,
-                    isRefreshing = false, // Resetuj isRefreshing także przy wyjątku
-                    error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
+                    isRefreshing = false,
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_refresh_unknown)
                 )
             }
         }

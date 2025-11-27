@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel.trainingsPlan
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.TrainingPlanAuthor
 import com.example.gymeaze.data.repository.AuthRepository
@@ -74,7 +75,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                         isLoading = false,
                         isLoadingMore = false,
                         isRefreshing = false,
-                        error = exception.message ?: "Błąd podczas ładowania moich planów"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_my_plans)
                     )
                 }
             } catch (e: Exception) {
@@ -82,7 +83,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                     isLoading = false,
                     isLoadingMore = false,
                     isRefreshing = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }
@@ -122,12 +123,12 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas polubienia planu"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_like_plan)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas polubienia planu"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_like_plan)
                 )
             }
         }
@@ -137,7 +138,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
         viewModelScope.launch {
 
             _uiState.value = _uiState.value.copy(
-                snackbarMessage = "Nie możesz dodać swojego planu do ulubionych",
+                snackbarMessage = getApplication<Application>().getString(R.string.error_favorite_own_plan),
                 snackbarType = SnackbarType.ERROR
             )
         }
@@ -171,7 +172,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                         isLoading = false,
                         isLoadingMore = false,
                         isRefreshing = false,
-                        error = exception.message ?: "Błąd podczas odświeżania planów"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_refresh_plans)
                     )
                 }
             } catch (e: Exception) {
@@ -179,7 +180,7 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                     isLoading = false,
                     isLoadingMore = false,
                     isRefreshing = false,
-                    error = e.message ?: "Nieoczekiwany błąd podczas odświeżania"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_refresh_unknown)
                 )
             }
         }
@@ -212,14 +213,14 @@ class MyTrainingPlansViewModel(application: Application) : AndroidViewModel(appl
                     )
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas usuwania planu",
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_delete_plan),
                         showDeleteDialog = false,
                         planToDelete = null
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Nieoczekiwany błąd",
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred),
                     showDeleteDialog = false,
                     planToDelete = null
                 )

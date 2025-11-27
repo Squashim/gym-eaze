@@ -4,12 +4,10 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -35,12 +32,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.ReportItemType
 import com.example.gymeaze.viewmodel.ReportState
@@ -94,7 +93,7 @@ fun ReportDialog(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 Text(
-                    text = "Zgłoś ${itemType.displayName.lowercase()}",
+                    text = stringResource(R.string.report_title_format, itemType.displayName.lowercase()),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
@@ -104,7 +103,7 @@ fun ReportDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Wybierz powód zgłoszenia:",
+                        text = stringResource(R.string.report_select_reason),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor()
@@ -137,7 +136,7 @@ fun ReportDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Powód zgłoszenia",
+                            text = stringResource(R.string.report_reason_label),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor()
@@ -150,7 +149,7 @@ fun ReportDialog(
                             },
                             placeholder = {
                                 Text(
-                                    "Opisz powód zgłoszenia...",
+                                    text = stringResource(R.string.report_reason_hint),
                                     color = getOnSurfaceSecondaryColor()
                                 )
                             },
@@ -192,7 +191,7 @@ fun ReportDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Anuluj",
+                            text = stringResource(R.string.action_cancel),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -208,7 +207,7 @@ fun ReportDialog(
                                 if (type == ReportType.OTHER && reason.isNullOrBlank()) {
                                     Toast.makeText(
                                         context,
-                                        "Powód jest wymagany przy wyborze 'Inny powód'",
+                                        context.getString(R.string.report_error_reason_required),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     return@let
@@ -242,7 +241,7 @@ fun ReportDialog(
                             )
                         } else {
                             Text(
-                                text = "Zgłoś",
+                                text = stringResource(R.string.action_report),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )

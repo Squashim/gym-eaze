@@ -10,10 +10,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.ui.components.VideoPlayer
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
@@ -52,7 +54,7 @@ fun MediaFullScreenDialog(
                 var imageLoading by remember { mutableStateOf(true) }
                 AsyncImage(
                     model = mediaUrl,
-                    contentDescription = "Zdjęcie w poście (pełny ekran)",
+                    contentDescription = stringResource(R.string.image_in_post),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 28.dp, vertical = 128.dp)
@@ -76,7 +78,7 @@ fun MediaFullScreenDialog(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Zamknij",
+                    contentDescription = stringResource(R.string.close),
                     tint = getOnSurfaceColor()
                 )
             }

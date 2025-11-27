@@ -1,11 +1,9 @@
 package com.example.gymeaze.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,17 +12,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import com.example.gymeaze.data.models.ExerciseSet
-import com.example.gymeaze.data.models.StartedExercise
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.VideoPlayer
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.PlayerState
@@ -129,8 +124,8 @@ fun WorkoutPlayerScreen(
             if (showExitConfirmationDialog) {
                 AlertDialog(
                     onDismissRequest = { showExitConfirmationDialog = false },
-                    title = { Text("Zakończyć trening?") },
-                    text = { Text("Czy na pewno chcesz wyjść? Postępy z tego dnia nie zostaną zapisane.") },
+                    title = { Text(stringResource(R.string.workout_player_exit_title)) },
+                    text = { Text(stringResource(R.string.workout_player_exit_msg)) },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -140,7 +135,7 @@ fun WorkoutPlayerScreen(
                             },
                             colors = ButtonDefaults.textButtonColors(contentColor = getErrorColor())
                         ) {
-                            Text("Zakończ")
+                            Text(stringResource(R.string.workout_player_finish_action))
                         }
                     },
                     dismissButton = {
@@ -148,7 +143,7 @@ fun WorkoutPlayerScreen(
                             onClick = { showExitConfirmationDialog = false },
                             colors = ButtonDefaults.textButtonColors(contentColor = getOnSurfaceColor())
                         ) {
-                            Text("Anuluj")
+                            Text(stringResource(R.string.action_cancel))
                         }
                     },
                     containerColor = getSurfaceColor(),
@@ -207,7 +202,11 @@ private fun ExerciseState(
             textAlign = TextAlign.Center
         )
         Text(
-            text = "Ćwiczenie ${state.currentExerciseIndex + 1}/${state.totalExercises} | Seria ${state.currentSetIndex + 1}/${state.totalSetsInCurrentExercise}",
+            text = stringResource(
+                R.string.workout_player_progress_format,
+                state.currentExerciseIndex + 1, state.totalExercises,
+                state.currentSetIndex + 1, state.totalSetsInCurrentExercise
+            ),
             fontSize = 14.sp,
             color = getOnSurfaceSecondaryColor(),
             textAlign = TextAlign.Center
@@ -221,16 +220,16 @@ private fun ExerciseState(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                InfoChip("Powtórzenia", set.repetitions.toString())
+                InfoChip(stringResource(R.string.workout_player_reps_label), set.repetitions.toString())
                 if (set.weight != null && set.weight > 0) {
-                    InfoChip("Ciężar", "${set.weight} kg")
+                    InfoChip(stringResource(R.string.workout_player_weight_label), "${set.weight} kg")
                 }
             }
         } else if (set.duration != null && set.duration > 0) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TimerDisplay(
                     timeRemaining = state.exerciseTimeRemaining,
-                    label = "Czas ćwiczenia"
+                    label = stringResource(R.string.workout_player_time_label)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -254,11 +253,11 @@ private fun ExerciseState(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 if (state.isExerciseTimerRunning) Icons.Default.PauseCircleOutline else Icons.Default.PlayCircleOutline,
-                                contentDescription = if (state.isExerciseTimerRunning) "Stop" else "Start",
+                                contentDescription = if (state.isExerciseTimerRunning) stringResource(R.string.workout_player_stop_timer) else stringResource(R.string.workout_player_start_timer),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(if (state.isExerciseTimerRunning) "Stop" else "Start", fontSize = 14.sp)
+                            Text(if (state.isExerciseTimerRunning) stringResource(R.string.workout_player_stop_timer) else stringResource(R.string.workout_player_start_timer), fontSize = 14.sp)
                         }
                     }
 
@@ -272,9 +271,9 @@ private fun ExerciseState(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = getOnSurfaceSecondaryColor())
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Replay, contentDescription = "Reset", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Replay, contentDescription = stringResource(R.string.workout_player_reset_timer), modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Reset", fontSize = 14.sp)
+                            Text(stringResource(R.string.workout_player_reset_timer), fontSize = 14.sp)
                         }
                     }
                 }
@@ -283,7 +282,7 @@ private fun ExerciseState(
         Spacer(modifier = Modifier.height(24.dp))
 
         if (exercise.muscleGroup.isNotEmpty()) {
-            InfoSection(title = "Zaangażowane partie", icon = Icons.Default.SportsGymnastics) {
+            InfoSection(title = stringResource(R.string.workout_player_muscle_groups), icon = Icons.Default.SportsGymnastics) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
@@ -298,7 +297,7 @@ private fun ExerciseState(
         }
 
         if (exercise.equipment.isNotEmpty()) {
-            InfoSection(title = "Wymagany sprzęt", icon = Icons.Default.MonitorWeight) {
+            InfoSection(title = stringResource(R.string.workout_player_equipment), icon = Icons.Default.MonitorWeight) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
@@ -383,7 +382,7 @@ private fun RestState(
     ) {
         TimerDisplay(
             timeRemaining = state.restTimeRemaining,
-            label = "Odpoczynek"
+            label = stringResource(R.string.workout_player_rest_label)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -405,9 +404,9 @@ private fun RestState(
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.RemoveCircleOutline, contentDescription = "-15s", modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.RemoveCircleOutline, contentDescription = stringResource(R.string.workout_player_minus_15s), modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("15s", fontSize = 14.sp)
+                    Text(stringResource(R.string.workout_player_15s), fontSize = 14.sp)
                 }
             }
 
@@ -425,9 +424,9 @@ private fun RestState(
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.AddCircleOutline, contentDescription = "+15s", modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.AddCircleOutline, contentDescription = stringResource(R.string.workout_player_plus_15s), modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("15s", fontSize = 14.sp)
+                    Text(stringResource(R.string.workout_player_15s), fontSize = 14.sp)
                 }
             }
         }
@@ -451,19 +450,19 @@ private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.EmojiEvents,
-            contentDescription = "Gratulacje",
+            contentDescription = stringResource(R.string.workout_player_congrats_title),
             tint = getPrimaryColor(),
             modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "Gratulacje!",
+            text = stringResource(R.string.workout_player_congrats_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = getOnSurfaceColor()
         )
         Text(
-            text = "Ukończyłeś wszystkie ćwiczenia na dzisiaj.",
+            text = stringResource(R.string.workout_player_congrats_msg),
             fontSize = 16.sp,
             color = getOnSurfaceSecondaryColor(),
             textAlign = TextAlign.Center,
@@ -486,14 +485,14 @@ private fun FinishedState(state: WorkoutPlayerUiState, onComplete: () -> Unit) {
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Oznacz Dzień jako Ukończony", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.workout_player_mark_complete), fontWeight = FontWeight.SemiBold)
             }
         }
 
         state.error?.let {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Błąd zapisu: $it",
+                text = stringResource(R.string.workout_player_save_error, it),
                 color = getErrorColor(),
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center
@@ -521,22 +520,22 @@ private fun WorkoutSummary(
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircleOutline,
-            contentDescription = "Zakończono",
+            contentDescription = stringResource(R.string.workout_player_completed_title),
             tint = getPrimaryColor(),
             modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "Dzień Ukończony!",
+            text = stringResource(R.string.workout_player_completed_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = getOnSurfaceColor()
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        SummaryInfoRow("Wykonane ćwiczenia:", summaryData.exerciseCount.toString())
-        SummaryInfoRow("Łączna liczba serii:", summaryData.totalSets.toString())
-        SummaryInfoRow("Szacowany czas:", formatDurationForSummary(summaryData.estimatedDurationSeconds))
+        SummaryInfoRow(stringResource(R.string.workout_player_summary_exercises), summaryData.exerciseCount.toString())
+        SummaryInfoRow(stringResource(R.string.workout_player_summary_sets), summaryData.totalSets.toString())
+        SummaryInfoRow(stringResource(R.string.workout_player_summary_time), formatDurationForSummary(summaryData.estimatedDurationSeconds))
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -588,7 +587,7 @@ private fun CompletingState() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(color = getPrimaryColor())
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Zapisywanie postępu...", color = getOnSurfaceSecondaryColor())
+            Text(stringResource(R.string.workout_player_saving_progress), color = getOnSurfaceSecondaryColor())
         }
     }
 }
@@ -605,26 +604,26 @@ private fun ErrorState(error: String?, onRetry: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.ErrorOutline,
-            contentDescription = "Błąd",
+            contentDescription = stringResource(R.string.error),
             tint = getErrorColor(),
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Wystąpił błąd",
+            text = stringResource(R.string.error),
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
             color = getOnSurfaceColor()
         )
         Text(
-            text = error ?: "Nieznany błąd.",
+            text = error ?: stringResource(R.string.error_unknown),
             fontSize = 14.sp,
             color = getOnSurfaceSecondaryColor(),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
         )
         Button(onClick = onRetry) {
-            Text("Spróbuj ponownie")
+            Text(stringResource(R.string.action_try_again))
         }
     }
 }
@@ -652,7 +651,7 @@ private fun WorkoutPlayerAppBar(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Zakończ trening",
+                    contentDescription = stringResource(R.string.workout_player_close_desc),
                     tint = getOnSurfaceColor()
                 )
             }
@@ -725,9 +724,9 @@ private fun WorkoutNavigationButtons(
             ),
             border = BorderStroke(1.dp, getInputBorderColor())
         ) {
-            Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Poprzedni")
+            Icon(Icons.Default.ArrowBackIosNew, contentDescription = stringResource(R.string.workout_nav_prev_desc))
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Cofnij")
+            Text(stringResource(R.string.workout_nav_prev_label))
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -743,9 +742,9 @@ private fun WorkoutNavigationButtons(
                 disabledContainerColor = getPrimaryColor().copy(alpha = 0.5f)
             )
         ) {
-            Text("Dalej")
+            Text(stringResource(R.string.workout_nav_next_label))
             Spacer(modifier = Modifier.width(4.dp))
-            Icon(Icons.Default.ArrowForwardIos, contentDescription = "Następny")
+            Icon(Icons.Default.ArrowForwardIos, contentDescription = stringResource(R.string.workout_nav_next_desc))
         }
     }
 }

@@ -79,7 +79,6 @@ fun ExerciseCreatorScreen(
         }
     }
 
-    // DODAJ TO - Funkcja obsługująca powrót
     val handleBackClick = {
         if (ui.name.isNotBlank() ||
             ui.imageUri != null ||
@@ -89,10 +88,8 @@ fun ExerciseCreatorScreen(
             ui.selectedEquipment.isNotEmpty() ||
             ui.hashtags.isNotEmpty()
         ) {
-            // Jeśli są jakieś dane, pokaż dialog
             showExitDialog = true
         } else {
-            // Jeśli puste, po prostu wyjdź i wyczyść
             viewModel.clearData()
             onBackClick()
         }
@@ -104,16 +101,16 @@ fun ExerciseCreatorScreen(
                 title = {
                     Text(
                         text = if (ui.isEditMode) {
-                            "Edytuj ćwiczenie"
+                            stringResource(R.string.exercise_edit_title)
                         } else {
-                            stringResource(R.string.exercise_creator)
+                            stringResource(R.string.exercise_creator_title)
                         },
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.ExtraBold
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = handleBackClick) { // ZMIEŃ TO
+                    IconButton(onClick = handleBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -198,7 +195,7 @@ fun ExerciseCreatorScreen(
             text = { Text(ui.error!!) },
             confirmButton = {
                 TextButton(onClick = viewModel::clearError) {
-                    Text("OK", color = getPrimaryColor())
+                    Text(stringResource(R.string.ok), color = getPrimaryColor())
                 }
             }
         )
@@ -209,7 +206,7 @@ fun ExerciseCreatorScreen(
             onDismiss = { showExitDialog = false },
             onConfirm = {
                 showExitDialog = false
-                viewModel.clearData() // Resetuje wszystkie pola
+                viewModel.clearData()
                 onBackClick()
             },
             isEditMode = ui.isEditMode
@@ -230,7 +227,7 @@ fun ExitConfirmationDialog(
         title = {
             Text(
                 text = if (isEditMode) {
-                    "Czy na pewno chcesz przerwać edycję?"
+                    stringResource(R.string.exercise_exit_title)
                 } else {
                     stringResource(R.string.exit_creation_confirmation_title)
                 },
@@ -244,7 +241,7 @@ fun ExitConfirmationDialog(
         text = {
             Text(
                 text = if (isEditMode) {
-                    "Czy na pewno chcesz przerwać edycję tego ćwiczenia? Wszystkie niezapisane zmiany zostaną utracone."
+                    stringResource(R.string.exercise_exit_message)
                 } else {
                     stringResource(R.string.exit_creation_confirmation_message)
                 },
@@ -270,7 +267,7 @@ fun ExitConfirmationDialog(
                 ) {
                     Text(
                         text = if (isEditMode) {
-                            "Powrót"
+                            stringResource(R.string.return_button)
                         } else {
                             stringResource(R.string.return_button)
                         },
@@ -290,7 +287,7 @@ fun ExitConfirmationDialog(
                 ) {
                     Text(
                         text = if (isEditMode) {
-                            "Przerwij"
+                            stringResource(R.string.interrupt)
                         } else {
                             stringResource(R.string.interrupt)
                         },
@@ -396,12 +393,12 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             UploadCard(
                 title = if (ui.isEditMode && ui.existingImageUrl != null) {
-                    "Zmień obraz"
+                    stringResource(R.string.exercise_image_title)
                 } else {
                     stringResource(R.string.exercise_image_required)
                 },
                 subtitle = if (ui.isEditMode && ui.existingImageUrl != null) {
-                    "Obecny: ${ui.existingImageUrl?.takeLast(20) ?: ""}"
+                    stringResource(R.string.exercise_current_file_format, ui.existingImageUrl?.takeLast(20) ?: "")
                 } else {
                     stringResource(R.string.click_to_upload)
                 },
@@ -416,12 +413,12 @@ private fun StepBasic(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
             )
             UploadCard(
                 title = if (ui.isEditMode && ui.existingVideoUrl != null) {
-                    "Zmień wideo"
+                    stringResource(R.string.exercise_video_title)
                 } else {
                     stringResource(R.string.instructional_video_required)
                 },
                 subtitle = if (ui.isEditMode && ui.existingVideoUrl != null) {
-                    "Obecne: ${ui.existingVideoUrl?.takeLast(20) ?: ""}"
+                    stringResource(R.string.exercise_current_file_format, ui.existingVideoUrl?.takeLast(20) ?: "")
                 } else {
                     stringResource(R.string.click_to_upload)
                 },
@@ -537,7 +534,9 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
                     AsyncImage(
                         model = muscleGroup.image,
                         contentDescription = muscleGroup.name,
-                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -563,7 +562,9 @@ private fun StepExtra(ui: ExerciseCreatorState, vm: ExerciseCreatorViewModel) {
                     AsyncImage(
                         model = equipment.image,
                         contentDescription = equipment.name,
-                        modifier = Modifier.size(28.dp).clip(RoundedCornerShape(6.dp))
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp))
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -804,20 +805,6 @@ private fun VisibilityBadge(isPublic: Boolean) {
 }
 
 @Composable
-private fun TagGroup(items: List<String>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 120.dp)
-    ) {
-        items(items) { item ->
-            TagChip(text = item)
-        }
-    }
-}
-
-@Composable
 private fun TagGroupWithImage(items: List<MuscleGroup>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -869,7 +856,10 @@ private fun EquipmentTagGroup(items: List<Equipment>) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .background(getOnSurfaceColor().copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
+                        .background(
+                            getOnSurfaceColor().copy(alpha = 0.1f),
+                            RoundedCornerShape(8.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
@@ -951,25 +941,6 @@ private fun ExpandableTagField(
 }
 
 @Composable
-private fun TagChip(text: String) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = getSecondaryColor(),
-        modifier = Modifier.padding(vertical = 2.dp).wrapContentWidth()
-    ) {
-        Text(
-            text = text,
-            color = getOnSecondaryColor(),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
 private fun HashtagChip(text: String) {
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -1038,7 +1009,7 @@ private fun BottomBar(
                 Text(
                     text = if (step == ExerciseCreatorStep.SUMMARY) {
                         if (isEditMode) {
-                            "Zapisz"
+                            stringResource(R.string.save)
                         } else {
                             stringResource(R.string.create_exercise)
                         }

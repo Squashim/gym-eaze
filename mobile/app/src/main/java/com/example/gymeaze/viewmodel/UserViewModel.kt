@@ -2,7 +2,6 @@ package com.example.gymeaze.viewmodel
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,16 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Badge
 import com.example.gymeaze.data.models.PrivacySettings
-import com.example.gymeaze.data.models.UpdateLoginRequest
-import com.example.gymeaze.data.models.UpdateLoginResponse
-import com.example.gymeaze.data.models.UpdateProfileResponse
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.models.UserFitnessData
 import com.example.gymeaze.data.models.UserPersonalData
 import com.example.gymeaze.data.models.UserProfileDetails
 import com.example.gymeaze.data.repository.AuthRepository
 import com.example.gymeaze.data.repository.UserRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +36,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             onTokenExpired?.invoke()
         }
     }
-    // PROFILE INFO -------------------------------------------------------------
 
     private val _userProfile = MutableStateFlow<UserProfileDetails?>(null)
     val userProfile: StateFlow<UserProfileDetails?> = _userProfile
@@ -246,7 +240,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         }
     }
 
-    // LOGIN DETAILS -------------------------------------------------------------
     private val _currentUsername = MutableStateFlow("")
     val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
 
@@ -509,7 +502,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         }
     }
 
-    // PERSONAL DETAILS -------------------------------------------------------------
     private val _personalData = MutableStateFlow<UserPersonalData?>(null)
     val personalData: StateFlow<UserPersonalData?> = _personalData
 
@@ -624,7 +616,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
         }
     }
 
-    // FITNESS DETAILS -------------------------------------------------------------
     private val _fitnessData = MutableStateFlow<UserFitnessData?>(null)
     val fitnessData: StateFlow<UserFitnessData?> = _fitnessData.asStateFlow()
 
@@ -759,9 +750,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
             _fitnessDataLoading.value = false
         }
     }
-
-    // SETTINGS FOR LOGGED-IN -------------------------------------------------------------
-
     private val privateShowPrivacySettings = MutableStateFlow(false)
     val showPrivacySettings = privateShowPrivacySettings.asStateFlow()
 
@@ -791,8 +779,6 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
     fun hideNotificationsScreen() {
         privateShowNotificationsScreen.value = false
     }
-
-    // PRIVACY SETTINGS ------------------------------------------------------------------------------
 
     private val _privacySettings = MutableLiveData<PrivacySettings?>()
     val privacySettings: LiveData<PrivacySettings?> = _privacySettings
@@ -929,35 +915,5 @@ class UserViewModel(application: Application,  private val onTokenExpired: (() -
 
     private val _profileError = MutableStateFlow<String?>(null)
     val profileError: StateFlow<String?> = _profileError.asStateFlow()
-
-    fun fetchUserProfileByUsername(username: String) {
-        viewModelScope.launch {
-            _profileLoading.value = true
-            _profileError.value = null
-
-            val authRepository = AuthRepository(getApplication())
-            val refreshResult = authRepository.refreshAccessToken()
-
-            if (refreshResult.isFailure) {
-                _profileError.value = getApplication<Application>().getString(R.string.error_session_expired_please_login)
-                _profileLoading.value = false
-                handleTokenExpiration()
-                _navigateToAuth.value = true
-                return@launch
-            }
-
-            val result = userRepository.getUserProfile(username)
-
-            if (result.isSuccess) {
-                _userProfileMain.value = result.getOrNull()
-                _profileError.value = null
-            } else {
-                _profileError.value = result.exceptionOrNull()?.message
-                    ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
-            }
-
-            _profileLoading.value = false
-        }
-    }
 
 }

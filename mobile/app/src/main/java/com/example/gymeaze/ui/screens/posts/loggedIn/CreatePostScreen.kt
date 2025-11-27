@@ -59,7 +59,7 @@ fun CreatePostScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Nowy post",
+                        text = stringResource(R.string.new_post),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -98,7 +98,7 @@ fun CreatePostScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
-                            text = if (ui.isLoading) "..." else "Opublikuj",
+                            text = if (ui.isLoading) "..." else stringResource(R.string.publish),
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp
                         )
@@ -132,7 +132,7 @@ fun CreatePostScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Public,
-                            contentDescription = "Publiczny post",
+                            contentDescription = stringResource(R.string.public_post),
                             tint = getOnSurfaceSecondaryColor(),
                             modifier = Modifier.size(24.dp)
                         )
@@ -140,7 +140,7 @@ fun CreatePostScreen(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = "Wszyscy to zobaczą!",
+                            text = stringResource(R.string.everyone_will_see_it),
                             color = getOnSurfaceColor(),
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontSize = 20.sp,
@@ -185,7 +185,7 @@ fun CreatePostScreen(
                                     IconButton(onClick = { viewModel.clearError() }) {
                                         Icon(
                                             imageVector = Icons.Default.Close,
-                                            contentDescription = "Zamknij",
+                                            contentDescription = stringResource(R.string.close),
                                             tint = getErrorColor()
                                         )
                                     }
@@ -204,7 +204,7 @@ fun CreatePostScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         UploadCard(
-                            title = "Zdjęcie",
+                            title = stringResource(R.string.photo),
                             subtitle = stringResource(R.string.click_to_upload),
                             hint = stringResource(R.string.image_upload_requirements),
                             selected = ui.imageFile != null,
@@ -218,7 +218,7 @@ fun CreatePostScreen(
                         )
 
                         UploadCard(
-                            title = "Film",
+                            title = stringResource(R.string.film),
                             subtitle = stringResource(R.string.click_to_upload),
                             hint = stringResource(R.string.video_upload_requirements),
                             selected = ui.videoFile != null,
@@ -272,7 +272,7 @@ fun PostContentSection(
             },
             placeholder = {
                 Text(
-                    text = "Co chcesz udostępnić?",
+                    text = stringResource(R.string.what_you_want_to_share),
                     color = getOnSurfaceColor().copy(alpha = 0.6f)
                 )
             },
@@ -293,7 +293,7 @@ fun PostContentSection(
         )
 
         Text(
-            text = "${postContent.length} / $maxLength znaków",
+            text = stringResource(R.string.post_char_counter, postContent.length, maxLength),
             color = getOnSurfaceColor(),
             fontSize = 12.sp,
             modifier = Modifier

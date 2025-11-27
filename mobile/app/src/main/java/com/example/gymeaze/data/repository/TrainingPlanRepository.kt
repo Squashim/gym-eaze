@@ -212,7 +212,7 @@ class TrainingPlanRepository(private val context: Context) {
                 Result.success(plan)
             } else {
                 val errorBody = response.errorBody()?.string()
-                Result.failure(Exception("Nie można pobrać planu treningowego"))
+                Result.failure(Exception(context.getString(R.string.cant_get_trainingplan)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -227,7 +227,7 @@ class TrainingPlanRepository(private val context: Context) {
             val userId = authRepository.getCurrentUserId()
 
             if (userId == null) {
-                return@withContext Result.failure(IllegalStateException("Nie można pobrać ID użytkownika"))
+                return@withContext Result.failure(IllegalStateException(context.getString(R.string.cant_get_user_ID)))
             }
 
             val response = api.getMyTrainingPlansByUserId(userId, page, pageSize)
@@ -329,21 +329,21 @@ class TrainingPlanRepository(private val context: Context) {
                 Result.success(pdfBytes)
             } else {
                 val errorMessage = when (response.code()) {
-                    404 -> "Plan treningowy nie został znaleziony"
-                    403 -> "Plan treningowy jest prywatny"
-                    401 -> "Musisz być zalogowany aby pobrać PDF"
-                    408 -> "Timeout - spróbuj ponownie za chwilę"
-                    504 -> "Serwer nie odpowiada - spróbuj ponownie"
-                    else -> "Błąd podczas pobierania PDF (${response.code()})"
+                    404 -> context.getString(R.string.error_plan_not_found)
+                    403 -> context.getString(R.string.error_plan_private)
+                    401 -> context.getString(R.string.error_pdf_login_required)
+                    408 -> context.getString(R.string.error_timeout_retry)
+                    504 -> context.getString(R.string.error_server_unavailable)
+                    else -> context.getString(R.string.error_pdf_download_code, response.code())
                 }
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: java.net.SocketTimeoutException) {
-            Result.failure(Exception("Pobieranie PDF trwa zbyt długo. Plan jest duży - spróbuj ponownie."))
+            Result.failure(Exception(context.getString(R.string.error_pdf_too_large)))
         } catch (e: java.net.ConnectException) {
-            Result.failure(Exception("Brak połączenia z serwerem"))
+            Result.failure(Exception(context.getString(R.string.error_no_connection)))
         } catch (e: java.io.IOException) {
-            Result.failure(Exception("Błąd pobierania pliku. Sprawdź połączenie internetowe."))
+            Result.failure(Exception(context.getString(R.string.error_download_file_generic)))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -458,7 +458,11 @@ class TrainingPlanRepository(private val context: Context) {
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Błąd podczas pobierania polubionych: ${response.message()}"))
+                Result.failure(Exception(
+                    context.getString(
+                        R.string.error_get_likes,
+                        response.message()
+                    )))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -488,16 +492,12 @@ class TrainingPlanRepository(private val context: Context) {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.id)
             } else {
-                Result.failure(Exception("Nie znaleziono użytkownika"))
+                Result.failure(Exception(context.getString(R.string.error_user_not_found)))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-
-    /**
-     * Pobierz plany treningowe użytkownika (zmieniona - przyjmuje userId)
-     */
     suspend fun getMyTrainingPlans(
         userId: String,
         page: Int = 1,
@@ -520,14 +520,14 @@ class TrainingPlanRepository(private val context: Context) {
 
     private fun parseErrorMessage(raw: String?, code: Int): String {
         if (raw.isNullOrEmpty()) {
-            return "Unknown error (HTTP $code)"
+            return context.getString(R.string.unknown_error_http, code)
         }
 
         return try {
             val json = JSONObject(raw)
-            json.optString("message", "Error (HTTP $code)")
+            json.optString("message", context.getString(R.string.error_http, code))
         } catch (e: Exception) {
-            "Error parsing message (HTTP $code)"
+            context.getString(R.string.error_parsing_message_http, code)
         }
     }
 

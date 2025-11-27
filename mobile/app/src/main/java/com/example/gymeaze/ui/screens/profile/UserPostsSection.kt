@@ -1,29 +1,18 @@
 package com.example.gymeaze.ui.screens.profile
 
-import android.util.Log
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Comment
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,16 +23,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.PostUi
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.ReportDialog
 import com.example.gymeaze.ui.screens.comments.CommentsPanel
 import com.example.gymeaze.ui.screens.posts.components.MediaFullScreenDialog
 import com.example.gymeaze.ui.screens.posts.components.PostCard
-import com.example.gymeaze.ui.theme.getOnSurfaceColor
-import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
 import com.example.gymeaze.viewmodel.AuthViewModel
@@ -101,9 +90,10 @@ fun UserPostsSection(
                     )
                 }
             } else if (userPosts.isEmpty()) {
-                EmptySectionMessage(
-                    message = "$username nie ma jeszcze żadnych postów",
-                    icon = Icons.Default.Comment
+                EmptyStateView(
+                    icon = Icons.Default.Comment,
+                    title = stringResource(R.string.user_dont_have_posts, username),
+                    modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 Column(
@@ -124,11 +114,8 @@ fun UserPostsSection(
                             },
                             onToggleLike = { postId ->
                                 if (isUserLoggedIn) {
-                                    Log.d("UserPostsSection", "Toggling like for post: $postId")
                                     postsViewModel.toggleLike(postId)
-                                } else {
-                                    Log.d("UserPostsSection", "User not logged in")
-                                }
+                                } else { }
                             },
                             onToggleSeeMore = { true },
                             onCommentClick = {

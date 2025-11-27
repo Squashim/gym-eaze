@@ -54,7 +54,6 @@ fun WorkoutsNotLoggedInScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
-    // Sprawdzenie, czy są aktywne filtry
     val hasFilters = hasActiveFilters(
         selectedGoal,
         selectedDifficulty,
@@ -69,7 +68,6 @@ fun WorkoutsNotLoggedInScreen(
         viewModel.refreshTrainingPlans()
     }
 
-    // Infinite scroll
     LaunchedEffect(listState) {
         snapshotFlow {
             val layoutInfo = listState.layoutInfo
@@ -120,7 +118,7 @@ fun WorkoutsNotLoggedInScreen(
                             IconButton(onClick = { showFilters = true }) {
                                 Icon(
                                     imageVector = Icons.Default.FilterList,
-                                    contentDescription = "Filtry",
+                                    contentDescription = stringResource(R.string.filters),
                                     tint = getOnSurfaceColor()
                                 )
                             }
@@ -152,7 +150,6 @@ fun WorkoutsNotLoggedInScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        // Pole wyszukiwania
                         SearchField(
                             query = searchQuery,
                             onQueryChange = { query ->
@@ -178,7 +175,7 @@ fun WorkoutsNotLoggedInScreen(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = uiState.error ?: "Wystąpił nieznany błąd",
+                                        text = uiState.error ?: stringResource(R.string.unknown_error),
                                         color = MaterialTheme.colorScheme.error,
                                         textAlign = TextAlign.Center
                                     )
@@ -189,7 +186,9 @@ fun WorkoutsNotLoggedInScreen(
                                             containerColor = getPrimaryColor()
                                         )
                                     ) {
-                                        Text("Spróbuj ponownie")
+                                        Text(
+                                            text = stringResource(R.string.try_again)
+                                        )
                                     }
                                 }
                             }
@@ -249,7 +248,6 @@ fun WorkoutsNotLoggedInScreen(
             }
         }
 
-        // Dialog filtrów
         if (showFilters) {
             TrainingPlanFiltersDialog(
                 isVisible = showFilters,
@@ -278,7 +276,6 @@ fun WorkoutsNotLoggedInScreen(
             )
         }
 
-        // Dialog logowania
         if (showLoginDialog) {
             LoginToLikeDialog(
                 onDismiss = { showLoginDialog = false }
@@ -305,13 +302,13 @@ private fun EmptyTrainingPlansMessage() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Brak planów treningowych",
+                text = stringResource(R.string.no_training_plans),
                 fontSize = 18.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                 color = getOnSurfaceColor()
             )
             Text(
-                text = "Spróbuj zmienić filtry wyszukiwania",
+                text = stringResource(R.string.try_change_filters),
                 fontSize = 14.sp,
                 color = getOnSurfaceSecondaryColor()
             )

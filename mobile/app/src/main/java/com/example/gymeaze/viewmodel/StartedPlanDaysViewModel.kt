@@ -3,6 +3,7 @@ package com.example.gymeaze.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.StartedDay
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +55,7 @@ class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(appl
                     if (currentUserTrainingPlanId == userTrainingPlanId) {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = exception.message ?: "Błąd ładowania dni treningowych"
+                            error = exception.message ?: getApplication<Application>().getString(R.string.error_load_days)
                         )
                     } else {
                     }
@@ -84,7 +85,7 @@ class StartedPlanDaysViewModel(application: Application) : AndroidViewModel(appl
             }.onFailure { exception ->
                 _uiState.value = _uiState.value.copy(
                     completingDayNumber = null,
-                    error = exception.message ?: "Błąd podczas oznaczania dnia odpoczynku."
+                    error = exception.message ?: getApplication<Application>().getString(R.string.error_complete_rest_day)
                 )
             }
         }

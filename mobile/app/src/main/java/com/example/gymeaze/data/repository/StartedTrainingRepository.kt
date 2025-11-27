@@ -4,8 +4,6 @@ import android.content.Context
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.data.UserPreferences
 import com.example.gymeaze.data.api.StartedTrainingApiService
-import com.example.gymeaze.data.api.TrainingPlanApiService
-import com.example.gymeaze.data.api.UserApiService
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.util.AuthErrorMapper
 import com.example.gymeaze.util.AuthInterceptor

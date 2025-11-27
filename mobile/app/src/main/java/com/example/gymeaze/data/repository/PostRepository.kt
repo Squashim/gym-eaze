@@ -2,7 +2,6 @@ package com.example.gymeaze.data.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.example.gymeaze.BuildConfig
 import com.example.gymeaze.R
 import com.example.gymeaze.data.UserPreferences
@@ -127,9 +126,9 @@ class PostsRepository(private val context: Context) {
             videoFile?.delete()
 
             if (response.isSuccessful) {
-                Result.success(response.body()?.message ?: "Post dodany")
+                Result.success(response.body()?.message ?: context.getString(R.string.post_added))
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd serwera"))
+                Result.failure(Exception(response.errorBody()?.string() ?: context.getString(R.string.server_error)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -198,7 +197,7 @@ class PostsRepository(private val context: Context) {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd polubienia"))
+                Result.failure(Exception(response.errorBody()?.string() ?: context.getString(R.string.like_error)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -210,7 +209,7 @@ class PostsRepository(private val context: Context) {
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception("Błąd pobierania polubień"))
+            Result.failure(Exception(context.getString(R.string.error_fetching_likes)))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -296,9 +295,9 @@ class PostsRepository(private val context: Context) {
             videoFile?.delete()
 
             if (response.isSuccessful) {
-                Result.success(response.body()?.message ?: "Post zaktualizowany")
+                Result.success(response.body()?.message ?: context.getString(R.string.post_updated))
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd serwera"))
+                Result.failure(Exception(response.errorBody()?.string() ?: context.getString(R.string.server_error)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -309,9 +308,9 @@ class PostsRepository(private val context: Context) {
         return try {
             val response = api.deletePost(postId)
             if (response.isSuccessful) {
-                Result.success(response.body()?.message ?: "Post został usunięty")
+                Result.success(response.body()?.message ?: context.getString(R.string.post_deleted))
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Błąd serwera"))
+                Result.failure(Exception(response.errorBody()?.string() ?: context.getString(R.string.server_error)))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -356,15 +355,11 @@ class PostsRepository(private val context: Context) {
                 parentType = parentType,
                 parentId = parentId
             )
-            Log.d("API_CALL", "Creating comment: $body")
             val response = api.createComment(body)
-            Log.d("API_CALL", "Response code: ${response.code()}, body: ${response.body()}")
             if (response.isSuccessful) response.body() else {
-                Log.e("API_ERROR", "Error: ${response.errorBody()?.string()}")
                 null
             }
         } catch (e: Exception) {
-            Log.e("API_EXCEPTION", "Exception: ${e.message}", e)
             null
         }
     }
@@ -382,7 +377,7 @@ class PostsRepository(private val context: Context) {
         return try {
             val response = api.updateComment(commentId, UpdateCommentRequest(newContent))
             if (response.isSuccessful) {
-                Result.success(response.body()?.message ?: "Komentarz zaktualizowany")
+                Result.success(response.body()?.message ?: context.getString(R.string.comment_updated))
             } else {
                 Result.failure(Exception(response.errorBody()?.string()))
             }
@@ -395,7 +390,7 @@ class PostsRepository(private val context: Context) {
         return try {
             val response = api.deleteComment(commentId)
             if (response.isSuccessful) {
-                Result.success(response.body()?.message ?: "Komentarz usunięty")
+                Result.success(response.body()?.message ?: context.getString(R.string.comment_deleted))
             } else {
                 Result.failure(Exception(response.errorBody()?.string()))
             }
@@ -421,7 +416,7 @@ class PostsRepository(private val context: Context) {
                     Result.success(response)
                 },
                 onFailure = {
-                    Result.failure(IllegalStateException("Nie znaleziono użytkownika o nazwie $username"))
+                    Result.failure(IllegalStateException(context.getString(R.string.didnt_find_user)))
                 }
             )
         } catch (e: Exception) {

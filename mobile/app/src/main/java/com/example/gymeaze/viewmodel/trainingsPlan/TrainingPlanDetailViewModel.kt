@@ -9,12 +9,11 @@ import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Comment
-import com.example.gymeaze.data.models.Exercise
 import com.example.gymeaze.data.models.TrainingPlan
 import com.example.gymeaze.data.models.User
 import com.example.gymeaze.data.repository.AuthRepository
-import com.example.gymeaze.data.repository.ExerciseRepository
 import com.example.gymeaze.data.repository.PostsRepository
 import com.example.gymeaze.data.repository.StartedTrainingRepository
 import com.example.gymeaze.data.repository.TrainingPlanRepository
@@ -118,14 +117,14 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                     _uiState.value = _uiState.value.copy(
                         trainingPlan = null,
                         isLoading = false,
-                        error = exception.message ?: "Błąd podczas ładowania planu treningowego"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_load_plan_detail)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     trainingPlan = null,
                     isLoading = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }
@@ -153,13 +152,13 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message ?: "Błąd podczas polubienia planu",
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_like_plan_toggle),
                         snackbarType = SnackbarType.ERROR
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Błąd podczas polubienia planu",
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_like_plan_toggle),
                     snackbarType = SnackbarType.ERROR
                 )
             }
@@ -179,7 +178,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
                 if (plan.author?.username == currentUser && currentUser != null) {
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = "Nie możesz dodać swojego planu do ulubionych",
+                        snackbarMessage = getApplication<Application>().getString(R.string.error_favorite_own_plan),
                         snackbarType = SnackbarType.ERROR
                     )
                     return@launch
@@ -189,9 +188,9 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
 
                 _uiState.value = _uiState.value.copy(
                     snackbarMessage = if (newState) {
-                        "Dodano do ulubionych"
+                        getApplication<Application>().getString(R.string.msg_favorite_added)
                     } else {
-                        "Usunięto z ulubionych"
+                        getApplication<Application>().getString(R.string.msg_favorite_removed)
                     },
                     snackbarType = SnackbarType.SUCCESS
                 )
@@ -229,7 +228,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 _downloadProgress.value = 0f
 
                 _uiState.value = _uiState.value.copy(
-                    snackbarMessage = "Rozpoczynanie pobierania PDF...",
+                    snackbarMessage = getApplication<Application>().getString(R.string.error_pdf_download_start),
                     snackbarType = SnackbarType.SUCCESS
                 )
 
@@ -242,7 +241,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                     _downloadProgress.value = 0f
 
                     _uiState.value = _uiState.value.copy(
-                        snackbarMessage = exception.message ?: "Błąd podczas pobierania PDF",
+                        snackbarMessage = exception.message ?: getApplication<Application>().getString(R.string.error_pdf_download_code, 0),
                         snackbarType = SnackbarType.ERROR
                     )
                 }
@@ -250,7 +249,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 _downloadProgress.value = 0f
 
                 _uiState.value = _uiState.value.copy(
-                    snackbarMessage = "Nieoczekiwany błąd podczas pobierania PDF",
+                    snackbarMessage = getApplication<Application>().getString(R.string.error_unknown_occurred),
                     snackbarType = SnackbarType.ERROR
                 )
             } finally {
@@ -273,14 +272,14 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
             }
 
             _uiState.value = _uiState.value.copy(
-                snackbarMessage = "PDF zapisany w folderze Pobrane jako: $fileName",
+                snackbarMessage = getApplication<Application>().getString(R.string.error_pdf_save_success, fileName),
                 snackbarType = SnackbarType.SUCCESS
             )
 
         } catch (e: Exception) {
 
             _uiState.value = _uiState.value.copy(
-                snackbarMessage = "Błąd podczas zapisywania PDF: ${e.message}",
+                snackbarMessage = getApplication<Application>().getString(R.string.error_pdf_save_failed, e.message),
                 snackbarType = SnackbarType.ERROR
             )
         }
@@ -372,7 +371,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        snackbarMessage = "Plan treningowy został usunięty",
+                        snackbarMessage = getApplication<Application>().getString(R.string.msg_plan_deleted_success),
                         snackbarType = SnackbarType.SUCCESS,
                         isDeleted = true
                     )
@@ -381,7 +380,7 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        snackbarMessage = "Nie udało się usunąć planu: ${e.message}",
+                        snackbarMessage = getApplication<Application>().getString(R.string.error_plan_delete_failed, e.message),
                         snackbarType = SnackbarType.ERROR
                     )
                 }
@@ -392,7 +391,6 @@ class TrainingPlanDetailViewModel(application: Application) : AndroidViewModel(a
     fun isTrainingPlanLiked(planId: String): Flow<Boolean>  = _likedPlans.map { it.contains(planId) }.distinctUntilChanged()
 
 
-    //=========================COMMENTS SECTION=============================
 
     private val _trainingPlanComments = MutableStateFlow<List<Comment>>(emptyList())
     val trainingPlanComments: StateFlow<List<Comment>> = _trainingPlanComments.asStateFlow()

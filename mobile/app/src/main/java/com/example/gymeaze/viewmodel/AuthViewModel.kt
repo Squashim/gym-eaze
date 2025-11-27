@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ValidationErrors(
@@ -30,7 +28,7 @@ data class ValidationErrors(
 
 data class AuthUiState(
     val isLoading: Boolean = false,
-    val isRegistering: Boolean = true, //true - rejestracja, false - logowanie
+    val isRegistering: Boolean = true,
     val username: String = "",
     val password: String = "",
     val email: String = "",
@@ -748,20 +746,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun getCurrentUser(): Result<User> {
         return authRepository.getCurrentUser()
     }
-
-
-    fun completeProfileSetup() {
-        //TODO Zapisz dane
-        clearFirstLogin()
-        hideProfileEditScreen()
-    }
-
-    fun cancelProfileSetup() {
-        clearFirstLogin()
-        hideProfileEditScreen()
-    }
-
-
 
     fun showMyPostsScreen(){
        _showMyPosts.value = true

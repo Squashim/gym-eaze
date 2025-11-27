@@ -6,7 +6,6 @@ import com.example.gymeaze.data.models.GetCommentsResponse
 import com.example.gymeaze.data.models.GetPostsResponse
 import com.example.gymeaze.data.models.LikesResponse
 import com.example.gymeaze.data.models.MessageCommentResponse
-import com.example.gymeaze.data.models.MessageResponse
 import com.example.gymeaze.data.models.PostResponse
 import com.example.gymeaze.data.models.ToggleLikeCommentResponse
 import com.example.gymeaze.data.models.ToggleLikeResponse

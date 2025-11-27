@@ -1,13 +1,9 @@
 package com.example.gymeaze.viewmodel.posts
 
-import android.util.Log
 import com.example.gymeaze.data.models.Post
 import com.example.gymeaze.data.models.PostUi
 import com.example.gymeaze.util.formatToRelativeTime
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
+
 
 fun Post.toUiModel(isLiked: Boolean = false): PostUi {
     return PostUi(

@@ -2,8 +2,6 @@ package com.example.gymeaze.data.models
 
 import com.google.gson.annotations.SerializedName
 
-
-// Profile Info
 data class UserProfileDetails(
     @SerializedName("_id")
     val id: String = "",
@@ -47,7 +45,6 @@ data class UpdateProfileResponse(
     val message: String
 )
 
-// Login Details
 data class UpdateLoginRequest(
      val username: String?,
      val password: String?
@@ -58,7 +55,6 @@ data class UpdateLoginResponse(
     val error: String? = null
 )
 
-// Personal Details
 data class UserPersonalData(
     val firstName: String,
     val lastName: String,
@@ -77,7 +73,6 @@ data class UpdatePersonalDataResponse(
     val data: UserPersonalData?
 )
 
-// Fitness Details
 data class UserFitnessData(
     val gender: String?,
     val age: Int?,
@@ -97,8 +92,6 @@ data class UpdateFitnessDataResponse(
     val message: String,
     val data: UserFitnessData
 )
-
-// Privacy Settings
 
 data class PrivacySettings(
     val isPersonalDetailsPublic: Boolean = true,

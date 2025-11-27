@@ -4,9 +4,9 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.*
 import com.example.gymeaze.data.repository.TrainingPlanRepository
-import com.example.gymeaze.data.repository.ExerciseRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -158,13 +158,13 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = exception.message ?: "Błąd podczas ładowania planu"
+                        error = exception.message ?: getApplication<Application>().getString(R.string.error_plan_load_failed)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Nieoczekiwany błąd: ${e.message}"
+                    error = "${getApplication<Application>().getString(R.string.error_unknown_occurred)}: ${e.message}"
                 )
             }
         }
@@ -260,18 +260,18 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
         val day = currentDays[dayIndex]
 
         if (day.isRestDay) {
-            showValidationError("Nie można dodać ćwiczenia do dnia odpoczynku")
+            showValidationError(getApplication<Application>().getString(R.string.error_exercise_add_to_rest_day))
             return
         }
 
         val exerciseExists = day.exercises.any { it.exercise.id == exercise.id }
         if (exerciseExists) {
-            showValidationError("To ćwiczenie zostało już dodane do tego dnia")
+            showValidationError(getApplication<Application>().getString(R.string.error_exercise_already_added))
             return
         }
 
         if (day.exercises.size >= 15) {
-            showValidationError("Maksymalnie 15 ćwiczeń na dzień")
+            showValidationError(getApplication<Application>().getString(R.string.error_exercise_max_limit))
             return
         }
 
@@ -401,28 +401,29 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
 
     private fun validateDaysAndExercises(days: List<TrainingDay>): List<String> {
         val errors = mutableListOf<String>()
+        val context = getApplication<Application>()
 
         if (days.isEmpty()) {
-            errors.add("Dodaj przynajmniej jeden dzień treningowy")
+            errors.add(context.getString(R.string.error_plan_no_days))
             return errors
         }
 
         if (days.size > 30) {
-            errors.add("Maksymalnie 30 dni w planie")
+            errors.add(context.getString(R.string.error_plan_max_days))
             return errors
         }
 
         days.forEachIndexed { dayIndex, day ->
             if (day.name.isBlank()) {
-                errors.add("Dzień ${dayIndex + 1}: Nazwa dnia jest wymagana")
+                errors.add(context.getString(R.string.error_day_name_required, dayIndex + 1))
             }
             if (day.name.length > 100) {
-                errors.add("Dzień ${dayIndex + 1}: Nazwa dnia może mieć maksymalnie 100 znaków")
+                errors.add(context.getString(R.string.error_day_name_too_long, dayIndex + 1))
             }
 
             val exerciseIds = day.exercises.map { it.exercise.id }
             if (exerciseIds.toSet().size != exerciseIds.size) {
-                errors.add("Dzień ${dayIndex + 1}: Każde ćwiczenie może być dodane tylko raz")
+                errors.add(context.getString(R.string.error_day_duplicate_exercise, dayIndex + 1))
             }
 
             if (!day.isRestDay && day.exercises.isNotEmpty()) {
@@ -430,48 +431,47 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                     val exerciseName = dayExercise.exercise.name
 
                     if (dayExercise.sets.isEmpty()) {
-                        errors.add("Dzień ${dayIndex + 1}, $exerciseName: Dodaj przynajmniej jedną serię")
+                        errors.add(context.getString(R.string.error_exercise_no_sets, dayIndex + 1, exerciseName))
                     }
                     if (dayExercise.sets.size > 15) {
-                        errors.add("Dzień ${dayIndex + 1}, $exerciseName: Maksymalnie 15 serii")
+                        errors.add(context.getString(R.string.error_exercise_max_sets, dayIndex + 1, exerciseName))
                     }
 
                     if (dayExercise.restAfterSet !in 30..5400) {
-                        errors.add("Dzień ${dayIndex + 1}, $exerciseName: Czas odpoczynku musi być między 30s a 1.5h")
+                        errors.add(context.getString(R.string.error_exercise_rest_time, dayIndex + 1, exerciseName))
                     }
 
                     dayExercise.sets.forEachIndexed { setIndex, set ->
                         if (set.isRepsSet) {
                             if (set.repetitions == null || set.repetitions !in 1..100) {
-                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Powtórzenia muszą być między 1 a 100")
+                                errors.add(context.getString(R.string.error_set_reps_range, dayIndex + 1, exerciseName, setIndex + 1))
                             }
-
                             if (set.weight != null && set.weight > 300.0) {
-                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Waga musi być między 0.5kg a 400kg")
+                                errors.add(context.getString(R.string.error_set_weight_range, dayIndex + 1, exerciseName, setIndex + 1))
                             }
                         } else {
                             if (set.duration == null || set.duration !in 30..21600) {
-                                errors.add("Dzień ${dayIndex + 1}, $exerciseName, Seria ${setIndex + 1}: Czas musi być między 30s a 6h")
+                                errors.add(context.getString(R.string.error_set_time_range, dayIndex + 1, exerciseName, setIndex + 1))
                             }
                         }
                     }
                 }
             }
         }
-
         return errors
     }
 
     fun validateCurrentStep(): Boolean {
         val state = _uiState.value
+        val context = getApplication<Application>()
 
         if (!state.basicValid) {
             when {
-                state.name.isBlank() -> showValidationError("Nazwa planu jest wymagana")
-                state.name.length > 150 -> showValidationError("Nazwa planu może mieć maksymalnie 150 znaków")
-                state.description.length > 850 -> showValidationError("Opis może mieć maksymalnie 850 znaków")
-                state.hashtags.size > 50 -> showValidationError("Maksymalnie 50 hashtagów")
-                else -> showValidationError("Uzupełnij wszystkie wymagane pola")
+                state.name.isBlank() -> showValidationError(context.getString(R.string.error_plan_name_required))
+                state.name.length > 150 -> showValidationError(context.getString(R.string.error_plan_name_too_long))
+                state.description.length > 850 -> showValidationError(context.getString(R.string.error_plan_desc_too_long))
+                state.hashtags.size > 50 -> showValidationError(context.getString(R.string.error_plan_hashtags_limit))
+                else -> showValidationError(context.getString(R.string.error_plan_fill_all_required))
             }
             return false
         }
@@ -541,7 +541,7 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                         error = null
                     )
                 }.onFailure { exception ->
-                    if (exception.message?.contains("Expected BEGIN_OBJECT but was STRING") == true) {
+                    if (exception.message?.contains(getApplication<Application>().getString(R.string.error_json_exception)) == true) {
                         _uiState.value = _uiState.value.copy(
                             isUpdating = false,
                             updateSuccess = true,
@@ -550,14 +550,14 @@ class EditTrainingPlanViewModel(application: Application) : AndroidViewModel(app
                     } else {
                         _uiState.value = _uiState.value.copy(
                             isUpdating = false,
-                            error = exception.message ?: "Błąd podczas aktualizacji planu"
+                            error = exception.message ?: getApplication<Application>().getString(R.string.error_plan_update_failed)
                         )
                     }
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isUpdating = false,
-                    error = e.message ?: "Nieoczekiwany błąd"
+                    error = e.message ?: getApplication<Application>().getString(R.string.error_unknown_occurred)
                 )
             }
         }

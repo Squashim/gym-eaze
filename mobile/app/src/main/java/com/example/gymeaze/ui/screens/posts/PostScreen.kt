@@ -1,9 +1,7 @@
 package com.example.gymeaze.ui.screens.posts
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,15 +9,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.gymeaze.ui.screens.ExercisesMenuScreen
-import com.example.gymeaze.ui.screens.exercises.guest.ExercisesOverviewScreen
 import com.example.gymeaze.ui.screens.posts.guest.PostsOverviewScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.CreatePostScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.MyPosts
 import com.example.gymeaze.ui.screens.posts.loggedIn.PostsFollowedUsers
 import com.example.gymeaze.ui.screens.posts.loggedIn.PostsMenuScreen
 import com.example.gymeaze.ui.screens.posts.loggedIn.SeeAllPostsScreen
-import com.example.gymeaze.viewmodel.ExercisesViewModel
 import com.example.gymeaze.viewmodel.posts.PostsViewModel
 
 @Composable

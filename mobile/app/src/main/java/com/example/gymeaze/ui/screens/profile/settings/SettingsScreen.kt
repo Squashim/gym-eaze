@@ -11,7 +11,6 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.FormatPaint
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -88,7 +87,6 @@ fun SettingsScreen(
                 .background(getBackgroundColor())
         ) {
 
-            // sekcja: Wygląd
             SettingsSection(title = stringResource(R.string.appearance)) {
                 SettingsItem(
                     icon = Icons.Default.FormatPaint,
@@ -98,7 +96,6 @@ fun SettingsScreen(
                 )
             }
 
-            // sekcja: Konto (tylko dla zalogowanych)
             if (isUserLoggedIn) {
                 SettingsSection(title = stringResource(R.string.account)) {
                     onPrivacySettingsClick?.let { callback ->
@@ -111,7 +108,6 @@ fun SettingsScreen(
                     }
                 }
 
-                // sekcja: Pomoc
                 SettingsSection(title = stringResource(R.string.help_and_support)) {
                     onHelpClick?.let { callback ->
                         SettingsItem(

@@ -13,8 +13,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.theme.getInputBorderColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
@@ -46,7 +48,7 @@ fun EnhancedSearchBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Tag,
-                    contentDescription = "Hashtag",
+                    contentDescription = null,
                     tint = getOnSurfaceSecondaryColor(),
                     modifier = Modifier.size(18.dp)
                 )
@@ -56,7 +58,7 @@ fun EnhancedSearchBar(
                     onValueChange = onHashtagInputChange,
                     placeholder = {
                         Text(
-                            text = "Wpisz hasztag i kliknij +",
+                            text = stringResource(R.string.hashtag_and_press_plus),
                             color = getOnSurfaceSecondaryColor(),
                             fontSize = 13.sp
                         )
@@ -109,7 +111,7 @@ fun EnhancedSearchBar(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = "Dodaj hashtag",
+                                    contentDescription = stringResource(R.string.add_hashtag),
                                     tint = getPrimaryColor()
                                 )
                             }
@@ -134,7 +136,7 @@ fun EnhancedSearchBar(
             if (selectedHashtags.isEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Dodaj hashtagi do wyszukiwania. Możesz dodać kilka na raz.",
+                    text = stringResource(R.string.add_hashtag_to_search),
                     color = getOnSurfaceSecondaryColor(),
                     fontSize = 12.sp
                 )

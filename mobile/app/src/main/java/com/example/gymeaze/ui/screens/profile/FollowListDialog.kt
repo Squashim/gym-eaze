@@ -30,9 +30,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.R
 import com.example.gymeaze.ui.components.user.UserAvatar
 import com.example.gymeaze.ui.theme.getCardBackgroundColor
 import com.example.gymeaze.ui.theme.getInputBorderColor
@@ -78,9 +80,9 @@ fun FollowListDialog(
                 ) {
                     Text(
                         text = if (isFollowers) {
-                            "Twoi obserwujący (${users.size})"
+                            stringResource(R.string.your_followers, users.size)
                         } else {
-                            "Obserwowani (${users.size})"
+                            stringResource(R.string.following, users.size)
                         },
                         fontSize = 20.sp,
                         color = getOnSurfaceColor(),
@@ -89,9 +91,9 @@ fun FollowListDialog(
 
                     Text(
                         text = if (isFollowers) {
-                            "Lista osób, które obserwują Twój profil i czerpią motywację z Twojej aktywności."
+                            stringResource(R.string.listof_people_following_you)
                         } else {
-                            "Lista osób, które obserwujesz i z których aktywności czerpiesz inspirację."
+                            stringResource(R.string.listof_people_you_follow)
                         },
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
@@ -128,9 +130,9 @@ fun FollowListDialog(
                         ) {
                             Text(
                                 text = if (isFollowers) {
-                                    "Brak obserwujących"
+                                    stringResource(R.string.no_followers)
                                 } else {
-                                    "Nie obserwujesz nikogo"
+                                    stringResource(R.string.no_following)
                                 },
                                 color = getOnSurfaceSecondaryColor(),
                                 fontSize = 16.sp,
@@ -138,9 +140,9 @@ fun FollowListDialog(
                             )
                             Text(
                                 text = if (isFollowers) {
-                                    "Zacznij publikować treści, aby zyskać obserwujących"
+                                    stringResource(R.string.start_publishing_to_get_followers)
                                 } else {
-                                    "Znajdź użytkowników, których chcesz obserwować"
+                                    stringResource(R.string.find_users_to_follow)
                                 },
                                 color = getOnSurfaceSecondaryColor(),
                                 fontSize = 14.sp,
@@ -177,7 +179,7 @@ fun FollowListDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Zamknij",
+                            text = stringResource(R.string.close),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )

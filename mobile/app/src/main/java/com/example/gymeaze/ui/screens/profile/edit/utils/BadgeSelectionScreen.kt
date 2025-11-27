@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -40,16 +39,8 @@ fun BadgeSelectionDialog(
 ) {
     var selectedBadgeIds by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    // Synchronizuj stan wewnętrzny z zewnętrznymi propami
     LaunchedEffect(currentlySelectedBadges) {
         selectedBadgeIds = currentlySelectedBadges.map { it.id }.toSet()
-    }
-
-    LaunchedEffect(availableBadges) {
-        println("Available badges: ${availableBadges.size}")
-        availableBadges.forEachIndexed { index, badge ->
-            println("Badge $index: id='${badge.id}', title='${badge.title}'")
-        }
     }
 
     Dialog(
@@ -158,7 +149,6 @@ fun BadgeSelectionDialog(
                             items(
                                 count = availableBadges.size,
                                 key = { index ->
-                                    // Używaj ID jeśli istnieje, w przeciwnym razie użyj indeksu
                                     val badge = availableBadges[index]
                                     if (badge.id.isNotEmpty()) badge.id else "badge_$index"
                                 }

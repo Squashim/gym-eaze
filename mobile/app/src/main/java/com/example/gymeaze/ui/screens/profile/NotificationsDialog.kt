@@ -15,12 +15,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.gymeaze.R
 import com.example.gymeaze.data.models.Notification
 import com.example.gymeaze.ui.theme.getCardBackgroundColor
 import com.example.gymeaze.ui.theme.getErrorColor
@@ -28,7 +30,6 @@ import com.example.gymeaze.ui.theme.getInputBorderColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
 import com.example.gymeaze.ui.theme.getSurfaceColor
-import com.example.gymeaze.ui.theme.getSurfaceVariantColor
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -89,7 +90,7 @@ fun NotificationsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Powiadomienia ($total)",
+                        text = stringResource(R.string.notifications_total, total),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -103,7 +104,7 @@ fun NotificationsDialog(
                             IconButton(onClick = { showDeleteDialog = true }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Usuń wszystkie",
+                                    contentDescription = null,
                                     tint = getOnSurfaceColor().copy(alpha = 0.4f),
                                 )
                             }
@@ -112,7 +113,7 @@ fun NotificationsDialog(
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Zamknij",
+                                contentDescription = stringResource(R.string.close),
                                 tint = getOnSurfaceColor()
                             )
                         }
@@ -214,14 +215,14 @@ fun DeleteConfirmationDialog(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 Text(
-                    text = "Usuń wszystkie powiadomienia",
+                    text = stringResource(R.string.delete_all_notifications),
                     fontSize = 20.sp,
                     color = getOnSurfaceColor(),
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "Czy na pewno chcesz usunąć wszystkie powiadomienia? Tej operacji nie można cofnąć.",
+                    text = stringResource(R.string.delete_notification_confirm),
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     color = getOnSurfaceColor()
@@ -243,7 +244,7 @@ fun DeleteConfirmationDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Anuluj",
+                            text = stringResource(R.string.cancel),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -258,7 +259,7 @@ fun DeleteConfirmationDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Usuń",
+                            text = stringResource(R.string.delete),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -352,7 +353,7 @@ fun EmptyNotifications() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Brak powiadomień",
+                text = stringResource(R.string.no_notifications),
                 fontSize = 16.sp,
                 color = getOnSurfaceColor().copy(alpha = 0.6f)
             )

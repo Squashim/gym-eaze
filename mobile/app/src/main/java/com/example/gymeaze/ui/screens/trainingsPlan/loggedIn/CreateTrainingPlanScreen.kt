@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -34,9 +35,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.gymeaze.R
 import com.example.gymeaze.constants.PrivacySettings
 import com.example.gymeaze.ui.components.GoalSelectionDialog
 import com.example.gymeaze.ui.components.DifficultySelectionDialog
+import com.example.gymeaze.ui.components.EmptyStateView
 import com.example.gymeaze.ui.components.HashtagInputField
 import com.example.gymeaze.ui.theme.*
 import com.example.gymeaze.viewmodel.trainingsPlan.CreateTrainingPlanState
@@ -66,7 +69,7 @@ private fun RestDayConversionWarningDialog(
         },
         title = {
             Text(
-                text = "Zmiana na dzień odpoczynku",
+                text = stringResource(R.string.change_for_rest_day),
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor(),
                 fontSize = 18.sp
@@ -75,7 +78,7 @@ private fun RestDayConversionWarningDialog(
         text = {
             Column {
                 Text(
-                    text = "Czy na pewno chcesz zmienić dzień:",
+                    text = stringResource(R.string.change_day_confirmation),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -88,7 +91,7 @@ private fun RestDayConversionWarningDialog(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "na dzień odpoczynku?",
+                    text = stringResource(R.string.for_rest_day),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -115,7 +118,7 @@ private fun RestDayConversionWarningDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "OSTRZEŻENIE - Utrata danych",
+                                text = stringResource(R.string.warning_lose_data),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFFF9800)
@@ -125,7 +128,7 @@ private fun RestDayConversionWarningDialog(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "Ta akcja spowoduje TRWAŁE usunięcie:",
+                            text = stringResource(R.string.this_will_cause_pernament_delete),
                             fontSize = 12.sp,
                             color = getOnSurfaceColor(),
                             fontWeight = FontWeight.Medium
@@ -145,7 +148,7 @@ private fun RestDayConversionWarningDialog(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "$exercisesCount ćwiczeń",
+                                    text = stringResource(R.string.cout_exercises, exercisesCount),
                                     fontSize = 12.sp,
                                     color = getOnSurfaceColor()
                                 )
@@ -160,7 +163,7 @@ private fun RestDayConversionWarningDialog(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "$totalSetsCount serii z wagami i powtórzeniami",
+                                    text = stringResource(R.string.sets_count, totalSetsCount),
                                     fontSize = 12.sp,
                                     color = getOnSurfaceColor()
                                 )
@@ -175,7 +178,7 @@ private fun RestDayConversionWarningDialog(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Wszystkie ustawienia czasów odpoczynku",
+                                    text = stringResource(R.string.all_rest_timers_set),
                                     fontSize = 12.sp,
                                     color = getOnSurfaceColor()
                                 )
@@ -185,7 +188,7 @@ private fun RestDayConversionWarningDialog(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "Tej akcji nie można cofnąć!",
+                            text = stringResource(R.string.cannot_undo_this_action),
                             fontSize = 13.sp,
                             color = getErrorColor(),
                             fontWeight = FontWeight.Bold,
@@ -212,7 +215,7 @@ private fun RestDayConversionWarningDialog(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Tak, zmień na odpoczynek",
+                        text = stringResource(R.string.yes_change_for_rest),
                         fontSize = 13.sp
                     )
                 }
@@ -233,7 +236,7 @@ private fun RestDayConversionWarningDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Anuluj")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         },
@@ -260,7 +263,7 @@ private fun DeleteDayConfirmationDialog(
         },
         title = {
             Text(
-                text = "Usuń dzień treningowy",
+                text = stringResource(R.string.delete_training_day),
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor()
             )
@@ -268,7 +271,7 @@ private fun DeleteDayConfirmationDialog(
         text = {
             Column {
                 Text(
-                    text = "Czy na pewno chcesz usunąć dzień:",
+                    text = stringResource(R.string.confirm_day_delete),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -281,7 +284,7 @@ private fun DeleteDayConfirmationDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Ta akcja spowoduje trwałe usunięcie dnia wraz ze wszystkimi ćwiczeniami i seriami.",
+                    text = stringResource(R.string.this_action_will_cause_pernament_delete),
                     fontSize = 12.sp,
                     color = getErrorColor(),
                     lineHeight = 16.sp
@@ -315,7 +318,7 @@ private fun DeleteDayConfirmationDialog(
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
             ) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         },
         containerColor = getSurfaceColor(),
@@ -343,7 +346,7 @@ private fun DeleteExerciseConfirmationDialog(
         },
         title = {
             Text(
-                text = "Usuń ćwiczenie",
+                text = stringResource(R.string.delete_exercise),
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor()
             )
@@ -351,7 +354,7 @@ private fun DeleteExerciseConfirmationDialog(
         text = {
             Column {
                 Text(
-                    text = "Czy na pewno chcesz usunąć ćwiczenie:",
+                    text = stringResource(R.string.delete_exercise_confirm),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -364,7 +367,7 @@ private fun DeleteExerciseConfirmationDialog(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "z dnia: \"$dayName\"",
+                    text = stringResource(R.string.from_day, dayName),
                     fontSize = 12.sp,
                     color = getOnSurfaceSecondaryColor()
                 )
@@ -389,7 +392,7 @@ private fun DeleteExerciseConfirmationDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Zostaną usunięte:",
+                                text = stringResource(R.string.will_be_deleted),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = getErrorColor()
@@ -397,7 +400,7 @@ private fun DeleteExerciseConfirmationDialog(
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "• Wszystkie $setsCount serii\n• Ustawienia wagi i powtórzeń\n• Czas odpoczynku",
+                            text = stringResource(R.string.all_sets, setsCount),
                             fontSize = 11.sp,
                             color = getErrorColor(),
                             lineHeight = 14.sp
@@ -421,7 +424,7 @@ private fun DeleteExerciseConfirmationDialog(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Usuń")
+                    Text(stringResource(R.string.delete))
                 }
             }
         },
@@ -433,7 +436,7 @@ private fun DeleteExerciseConfirmationDialog(
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
             ) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         },
         containerColor = getSurfaceColor(),
@@ -460,7 +463,7 @@ private fun DeleteSetConfirmationDialog(
         },
         title = {
             Text(
-                text = "Usuń serię",
+                text = stringResource(R.string.delete_set),
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor()
             )
@@ -468,19 +471,19 @@ private fun DeleteSetConfirmationDialog(
         text = {
             Column {
                 Text(
-                    text = "Czy na pewno chcesz usunąć serię ${setIndex + 1}?",
+                    text = stringResource(R.string.delete_set_confirmation, setIndex + 1),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Ćwiczenie: \"$exerciseName\"",
+                    text = stringResource(R.string.exercise_from_set, exerciseName),
                     fontSize = 12.sp,
                     color = getOnSurfaceSecondaryColor()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Ustawienia wagi i powtórzeń zostaną utracone.",
+                    text = stringResource(R.string.weight_and_reps_willbe_lost),
                     fontSize = 11.sp,
                     color = getErrorColor()
                 )
@@ -494,7 +497,7 @@ private fun DeleteSetConfirmationDialog(
                     contentColor = Color.White
                 )
             ) {
-                Text("Usuń")
+                Text(stringResource(R.string.delete))
             }
         },
         dismissButton = {
@@ -505,7 +508,7 @@ private fun DeleteSetConfirmationDialog(
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
             ) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         },
         containerColor = getSurfaceColor(),
@@ -558,7 +561,7 @@ fun CreateTrainingPlanScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Kreator planu treningowego",
+                        text = stringResource(R.string.plan_creator),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.Bold
                     )
@@ -567,7 +570,7 @@ fun CreateTrainingPlanScreen(
                     IconButton(onClick = { showExitDialog = true }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Wstecz",
+                            contentDescription = null,
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -744,11 +747,11 @@ fun CreateTrainingPlanScreen(
     uiState.error?.let { error ->
         AlertDialog(
             onDismissRequest = viewModel::clearError,
-            title = { Text("Błąd") },
+            title = { Text(stringResource(R.string.error)) },
             text = { Text(error) },
             confirmButton = {
                 TextButton(onClick = viewModel::clearError) {
-                    Text("OK", color = getPrimaryColor())
+                    Text(stringResource(R.string.ok), color = getPrimaryColor())
                 }
             }
         )
@@ -810,7 +813,7 @@ private fun CustomErrorSnackbar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Zamknij",
+                    contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(18.dp)
                 )
@@ -868,7 +871,7 @@ private fun TrainingPlanSuccessDialog(
 
 
                 Text(
-                    text = "Plan utworzony!",
+                    text = stringResource(R.string.plan_created),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor(),
@@ -879,7 +882,7 @@ private fun TrainingPlanSuccessDialog(
 
 
                 Text(
-                    text = "Twój plan treningowy został pomyślnie utworzony. Możesz go znaleźć w sekcji \"Moje plany\".",
+                    text = stringResource(R.string.plan_successfully_created),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     textAlign = TextAlign.Center,
@@ -898,7 +901,7 @@ private fun TrainingPlanSuccessDialog(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Świetnie!",
+                        text = stringResource(R.string.amazing),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -919,7 +922,7 @@ private fun TrainingPlanExitConfirmationDialog(
         shape = RoundedCornerShape(20.dp),
         title = {
             Text(
-                text = "Przerwać tworzenie planu?",
+                text = stringResource(R.string.stop_plan_creator),
                 color = getOnSurfaceColor(),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -929,7 +932,7 @@ private fun TrainingPlanExitConfirmationDialog(
         },
         text = {
             Text(
-                text = "Wszystkie wprowadzone dane zostaną utracone.",
+                text = stringResource(R.string.all_data_will_be_lost),
                 color = getOnSurfaceSecondaryColor(),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -951,7 +954,7 @@ private fun TrainingPlanExitConfirmationDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Kontynuuj",
+                        text = stringResource(R.string.continuee),
                         color = getOnSurfaceColor(),
                         fontWeight = FontWeight.Medium
                     )
@@ -966,7 +969,7 @@ private fun TrainingPlanExitConfirmationDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Przerwij",
+                        text = stringResource(R.string.stop),
                         color = Color.White,
                         fontWeight = FontWeight.Medium
                     )
@@ -1056,8 +1059,8 @@ private fun BasicInfoStep(
         OutlinedTextField(
             value = uiState.name,
             onValueChange = viewModel::setName,
-            label = { Text("Nazwa planu treningowego *") },
-            placeholder = { Text("Wpisz nazwę planu...") },
+            label = { Text(stringResource(R.string.plan_name)) },
+            placeholder = { Text(stringResource(R.string.type_plan_name)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
@@ -1068,7 +1071,7 @@ private fun BasicInfoStep(
                 cursorColor = getPrimaryColor()
             ),
             supportingText = {
-                Text("${uiState.name.length}/150")
+                Text(stringResource(R.string.length_150, uiState.name.length))
             },
             isError = uiState.name.length > 150
         )
@@ -1081,7 +1084,7 @@ private fun BasicInfoStep(
         OutlinedTextField(
             value = uiState.goal,
             onValueChange = { },
-            label = { Text("Cel treningu *") },
+            label = { Text(stringResource(R.string.train_goal)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showGoalDialog = true },
@@ -1102,7 +1105,7 @@ private fun BasicInfoStep(
         OutlinedTextField(
             value = uiState.advancedLevel,
             onValueChange = { },
-            label = { Text("Poziom zaawansowania *") },
+            label = { Text(stringResource(R.string.difficulty_level2)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDifficultyDialog = true },
@@ -1127,13 +1130,13 @@ private fun BasicInfoStep(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Plan publiczny",
+                    text = stringResource(R.string.public_plan),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = getOnSurfaceColor()
                 )
                 Text(
-                    text = "Inni użytkownicy będą mogli zobaczyć Twój plan",
+                    text = stringResource(R.string.others_will_be_able_to_see),
                     fontSize = 12.sp,
                     color = getOnSurfaceSecondaryColor()
                 )
@@ -1156,8 +1159,8 @@ private fun BasicInfoStep(
         OutlinedTextField(
             value = uiState.description,
             onValueChange = viewModel::setDescription,
-            label = { Text("Opis (opcjonalny)") },
-            placeholder = { Text("Opisz swój plan treningowy...") },
+            label = { Text(stringResource(R.string.desc_optional)) },
+            placeholder = { Text(stringResource(R.string.describe_plan)) },
             modifier = Modifier.fillMaxWidth(),
             minLines = 4,
             maxLines = 8,
@@ -1169,7 +1172,7 @@ private fun BasicInfoStep(
                 cursorColor = getPrimaryColor()
             ),
             supportingText = {
-                Text("${uiState.description.length}/850")
+                Text(stringResource(R.string.length_850, uiState.description.length))
             },
             isError = uiState.description.length > 850
         )
@@ -1226,7 +1229,7 @@ private fun DaysAndExercisesStep(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Dni treningowe i ćwiczenia",
+                text = stringResource(R.string.training_days_and_exercises),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor()
@@ -1240,7 +1243,7 @@ private fun DaysAndExercisesStep(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Dodaj dzień",
+                        contentDescription = null,
                         tint = getOnPrimaryColor()
                     )
                 }
@@ -1250,7 +1253,11 @@ private fun DaysAndExercisesStep(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (uiState.days.isEmpty()) {
-            EmptyDaysMessage()
+            EmptyStateView(
+                icon = Icons.Default.CalendarToday,
+                title = stringResource(R.string.no_training_days),
+                subtitle = stringResource(R.string.add_first_day),
+                modifier = Modifier.fillMaxSize())
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -1323,7 +1330,7 @@ private fun DayWithExercisesCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Dzień ${day.dayNumber}",
+                    text = stringResource(R.string.day_number, day.dayNumber),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = getOnSurfaceColor()
@@ -1332,7 +1339,7 @@ private fun DayWithExercisesCard(
                 IconButton(onClick = onRemoveDay) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Usuń dzień",
+                        contentDescription = null,
                         tint = getErrorColor()
                     )
                 }
@@ -1343,7 +1350,7 @@ private fun DayWithExercisesCard(
             OutlinedTextField(
                 value = day.name,
                 onValueChange = onNameChange,
-                label = { Text("Nazwa dnia") },
+                label = { Text(stringResource(R.string.day_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -1362,7 +1369,7 @@ private fun DayWithExercisesCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Dzień odpoczynku",
+                    text = stringResource(R.string.rest_day),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -1387,7 +1394,7 @@ private fun DayWithExercisesCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Ćwiczenia (${day.exercises.size})",
+                        text = stringResource(R.string.exercises_size, day.exercises.size),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor()
@@ -1397,7 +1404,7 @@ private fun DayWithExercisesCard(
                         IconButton(onClick = onAddExercise) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Dodaj ćwiczenie",
+                                contentDescription = null,
                                 tint = getPrimaryColor()
                             )
                         }
@@ -1406,7 +1413,7 @@ private fun DayWithExercisesCard(
 
                 if (day.exercises.isEmpty()) {
                     Text(
-                        text = "Brak ćwiczeń. Kliknij + aby dodać.\nKażde ćwiczenie można dodać tylko raz na dzień treningowy.",
+                        text = stringResource(R.string.no_exercises_click_to_add),
                         fontSize = 12.sp,
                         color = getOnSurfaceSecondaryColor(),
                         textAlign = TextAlign.Center,
@@ -1446,7 +1453,7 @@ private fun ImageUploadSection(
 
     Column {
         Text(
-            text = "Zdjęcie planu treningowego *",
+            text = stringResource(R.string.plan_photo),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = getOnSurfaceColor()
@@ -1464,7 +1471,7 @@ private fun ImageUploadSection(
                 Box {
                     AsyncImage(
                         model = selectedImageUri,
-                        contentDescription = "Zdjęcie planu",
+                        contentDescription = stringResource(R.string.plan_photo),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -1475,7 +1482,7 @@ private fun ImageUploadSection(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Usuń zdjęcie",
+                            contentDescription = stringResource(R.string.delete_photo),
                             tint = Color.White
                         )
                     }
@@ -1510,14 +1517,14 @@ private fun ImageUploadSection(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Kliknij, aby dodać zdjęcie",
+                        text = stringResource(R.string.press_to_add_photo),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = getOnSurfaceColor()
                     )
 
                     Text(
-                        text = "JPG, PNG, WebP (maks. 5MB)",
+                        text = stringResource(R.string.photo_format),
                         fontSize = 12.sp,
                         color = getOnSurfaceSecondaryColor()
                     )
@@ -1526,38 +1533,6 @@ private fun ImageUploadSection(
         }
     }
 }
-
-@Composable
-private fun EmptyDaysMessage() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.CalendarToday,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = getOnSurfaceSecondaryColor()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Brak dni treningowych",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = getOnSurfaceColor()
-        )
-
-        Text(
-            text = "Dodaj pierwszy dzień, aby rozpocząć",
-            fontSize = 14.sp,
-            color = getOnSurfaceSecondaryColor()
-        )
-    }
-}
-
 @Composable
 private fun ExerciseItem(
     dayExercise: DayExercise,
@@ -1603,7 +1578,7 @@ private fun ExerciseItem(
                     )
 
                     Text(
-                        text = if (dayExercise.isRepsSet) "Powtórzenia" else "Czas",
+                        text = if (dayExercise.isRepsSet) stringResource(R.string.repetitions) else stringResource(R.string.time),
                         fontSize = 12.sp,
                         color = getOnSurfaceSecondaryColor()
                     )
@@ -1613,7 +1588,7 @@ private fun ExerciseItem(
             IconButton(onClick = onRemove) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Usuń ćwiczenie",
+                    contentDescription = null,
                     tint = getErrorColor()
                 )
             }
@@ -1627,7 +1602,7 @@ private fun ExerciseItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Typ:",
+                text = stringResource(R.string.type),
                 fontSize = 14.sp,
                 color = getOnSurfaceColor()
             )
@@ -1636,7 +1611,7 @@ private fun ExerciseItem(
                 FilterChip(
                     selected = dayExercise.isRepsSet,
                     onClick = { if (!dayExercise.isRepsSet) onToggleType() },
-                    label = { Text("Powtórzenia") },
+                    label = { Text(stringResource(R.string.repetitions)) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = getPrimaryColor(),
                         selectedLabelColor = getOnPrimaryColor()
@@ -1648,7 +1623,7 @@ private fun ExerciseItem(
                 FilterChip(
                     selected = !dayExercise.isRepsSet,
                     onClick = { if (dayExercise.isRepsSet) onToggleType() },
-                    label = { Text("Czas") },
+                    label = { Text(stringResource(R.string.time)) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = getPrimaryColor(),
                         selectedLabelColor = getOnPrimaryColor()
@@ -1665,7 +1640,7 @@ private fun ExerciseItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Odpoczynek po serii:",
+                text = stringResource(R.string.rest_after_set),
                 fontSize = 14.sp,
                 color = getOnSurfaceColor()
             )
@@ -1686,7 +1661,7 @@ private fun ExerciseItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Serie:",
+                text = stringResource(R.string.sets),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = getOnSurfaceColor()
@@ -1696,7 +1671,7 @@ private fun ExerciseItem(
                 IconButton(onClick = onAddSet) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Dodaj serię",
+                        contentDescription = null,
                         tint = getPrimaryColor()
                     )
                 }
@@ -1754,7 +1729,7 @@ private fun SetItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Seria ${setIndex + 1}",
+                text = stringResource(R.string.set_numbers, setIndex + 1),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = getOnSurfaceColor()
@@ -1777,7 +1752,7 @@ private fun SetItem(
                                 }
                             }
                         },
-                        label = { Text("Powt.") },
+                        label = { Text(stringResource(R.string.powt)) },
                         modifier = Modifier.width(80.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -1805,11 +1780,11 @@ private fun SetItem(
                                 }
                             }
                         },
-                        label = { Text("kg") },
+                        label = { Text(stringResource(R.string.kg)) },
                         modifier = Modifier.width(80.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        placeholder = { Text("Brak") },
+                        placeholder = { Text(stringResource(R.string.brak)) },
                         isError = weightError,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = if (weightError) getErrorColor() else getPrimaryColor(),
@@ -1831,11 +1806,11 @@ private fun SetItem(
                             }
                         }
                     },
-                    label = { Text("Sekundy") },
+                    label = { Text(stringResource(R.string.seconds)) },
                     modifier = Modifier.width(100.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    placeholder = { Text("60") },
+                    placeholder = { Text(stringResource(R.string.sixty)) },
                     isError = durationError,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = if (durationError) getErrorColor() else getPrimaryColor(),
@@ -1848,7 +1823,7 @@ private fun SetItem(
                 IconButton(onClick = onRemove) {
                     Icon(
                         imageVector = Icons.Default.Remove,
-                        contentDescription = "Usuń serię",
+                        contentDescription = null,
                         tint = getErrorColor()
                     )
                 }
@@ -1883,7 +1858,7 @@ private fun RestTimeDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Czas odpoczynku po serii",
+                text = stringResource(R.string.resttime_after_set),
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor()
             )
@@ -1891,7 +1866,7 @@ private fun RestTimeDialog(
         text = {
             Column {
                 Text(
-                    text = "Ustaw czas odpoczynku między seriami (w sekundach)",
+                    text = stringResource(R.string.set_time_before_sets),
                     fontSize = 14.sp,
                     color = getOnSurfaceSecondaryColor(),
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -1904,11 +1879,11 @@ private fun RestTimeDialog(
                             restTimeText = value
                         }
                     },
-                    label = { Text("Sekundy") },
+                    label = { Text(stringResource(R.string.seconds)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    placeholder = { Text("60") },
+                    placeholder = { Text(stringResource(R.string.sixty)) },
                     isError = !isValid && restTimeText.isNotEmpty(),
                     supportingText = if (restTimeError != null) {
                         {
@@ -1948,14 +1923,14 @@ private fun RestTimeDialog(
                         modifier = Modifier.padding(12.dp)
                     ) {
                         Text(
-                            text = "Sugerowane czasy:",
+                            text = stringResource(R.string.recomended_times),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = getOnSurfaceColor()
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "• Siła: 120-180s\n• Masa: 60-90s\n• Wytrzymałość: 30-60s",
+                            text = stringResource(R.string.reccomendations),
                             fontSize = 11.sp,
                             color = getOnSurfaceSecondaryColor(),
                             lineHeight = 14.sp
@@ -1977,7 +1952,7 @@ private fun RestTimeDialog(
                     contentColor = getOnPrimaryColor()
                 )
             ) {
-                Text("Potwierdź")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
@@ -1988,7 +1963,7 @@ private fun RestTimeDialog(
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.3f))
             ) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         },
         containerColor = getSurfaceColor(),
@@ -2006,7 +1981,7 @@ private fun SummaryStep(uiState: CreateTrainingPlanState) {
     ) {
         item {
             Text(
-                text = "Podsumowanie planu treningowego",
+                text = stringResource(R.string.plan_summary),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = getOnSurfaceColor()
@@ -2014,24 +1989,24 @@ private fun SummaryStep(uiState: CreateTrainingPlanState) {
         }
 
         item {
-            SummaryCard(title = "Podstawowe informacje") {
-                SummaryField("Nazwa", uiState.name)
-                SummaryField("Cel", uiState.goal)
-                SummaryField("Poziom", uiState.advancedLevel)
-                SummaryField("Widoczność", uiState.visibility)
+            SummaryCard(title = stringResource(R.string.basic_info)) {
+                SummaryField(stringResource(R.string.name_plan), uiState.name)
+                SummaryField(stringResource(R.string.goal_plan), uiState.goal)
+                SummaryField(stringResource(R.string.level_plan), uiState.advancedLevel)
+                SummaryField(stringResource(R.string.visibility_plan), uiState.visibility)
                 if (uiState.description.isNotBlank()) {
-                    SummaryField("Opis", uiState.description)
+                    SummaryField(stringResource(R.string.desc_plan), uiState.description)
                 }
                 if (uiState.hashtags.isNotEmpty()) {
-                    SummaryField("Hashtagi", uiState.hashtags.joinToString(", ") { "#$it" })
+                    SummaryField(stringResource(R.string.hashtags_plan), uiState.hashtags.joinToString(", ") { "#$it" })
                 }
             }
         }
 
         item {
-            SummaryCard(title = "Struktura treningowa") {
+            SummaryCard(title = stringResource(R.string.training_structures)) {
                 Text(
-                    text = "Łączna liczba dni: ${uiState.days.size}",
+                    text = stringResource(R.string.combined_days, uiState.days.size),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -2040,20 +2015,20 @@ private fun SummaryStep(uiState: CreateTrainingPlanState) {
                 val restDays = uiState.days.count { it.isRestDay }
 
                 Text(
-                    text = "Dni treningowe: $workoutDays",
+                    text = stringResource(R.string.training_days_number, workoutDays),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
 
                 Text(
-                    text = "Dni odpoczynku: $restDays",
+                    text = stringResource(R.string.rest_days_number, restDays),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
 
                 val totalExercises = uiState.days.sumOf { it.exercises.size }
                 Text(
-                    text = "Łączna liczba ćwiczeń: $totalExercises",
+                    text = stringResource(R.string.combined_numer_of_exercises, totalExercises),
                     fontSize = 14.sp,
                     color = getOnSurfaceColor()
                 )
@@ -2143,7 +2118,7 @@ private fun DaySummaryCard(day: TrainingDay) {
                         color = getOnSurfaceColor().copy(alpha = 0.1f)
                     ) {
                         Text(
-                            text = "Odpoczynek",
+                            text = stringResource(R.string.rest),
                             fontSize = 12.sp,
                             color = getOnSurfaceColor(),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -2156,7 +2131,7 @@ private fun DaySummaryCard(day: TrainingDay) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Ćwiczenia (${day.exercises.size}):",
+                    text = stringResource(R.string.exercises_day_size, day.exercises.size),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = getOnSurfaceColor()
@@ -2190,7 +2165,8 @@ private fun DaySummaryCard(day: TrainingDay) {
                             )
 
                             Text(
-                                text = "${exercise.sets.size} ${if (exercise.sets.size == 1) "seria" else "serie"}",
+                                text = "${exercise.sets.size} ${if (exercise.sets.size == 1) stringResource(
+                                    R.string.set) else stringResource(R.string.sets)}",
                                 fontSize = 12.sp,
                                 color = getOnSurfaceSecondaryColor()
                             )
@@ -2228,7 +2204,7 @@ private fun TrainingPlanBottomBar(
                 ),
                 border = BorderStroke(1.dp, getOnSurfaceColor().copy(alpha = 0.5f))
             ) {
-                Text("Wstecz", color = getOnSurfaceColor())
+                Text(stringResource(R.string.goback), color = getOnSurfaceColor())
             }
         }
 
@@ -2247,7 +2223,7 @@ private fun TrainingPlanBottomBar(
                 )
             } else {
                 Text(
-                    text = if (step == TrainingPlanCreatorStep.SUMMARY) "Utwórz plan" else "Dalej",
+                    text = if (step == TrainingPlanCreatorStep.SUMMARY) stringResource(R.string.create_plan2) else stringResource(R.string.go_next),
                     color = getOnPrimaryColor()
                 )
             }

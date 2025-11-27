@@ -45,11 +45,6 @@ data class RefreshResponse(
     val accessToken: String
 )
 
-data class ErrorResponse(
-    val error: String,
-    val message: String
-)
-
 data class GoogleAuthLoginRequest(
     val code: String,
 )

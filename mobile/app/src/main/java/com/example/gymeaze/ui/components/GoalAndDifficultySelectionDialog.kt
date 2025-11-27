@@ -3,6 +3,7 @@ package com.example.gymeaze.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import com.example.gymeaze.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,28 +19,21 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.gymeaze.constants.AdvancedLevel
 import com.example.gymeaze.constants.Goals
-import com.example.gymeaze.ui.theme.getInputBorderColor
 import com.example.gymeaze.ui.theme.getOnSurfaceColor
 import com.example.gymeaze.ui.theme.getOnSurfaceSecondaryColor
 import com.example.gymeaze.ui.theme.getPrimaryColor
@@ -84,7 +78,7 @@ fun GoalSelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Wybierz cel treningu",
+                        text = stringResource(R.string.choose_training_goal),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -93,7 +87,7 @@ fun GoalSelectionDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = stringResource(R.string.close),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -146,7 +140,7 @@ fun DifficultySelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Wybierz poziom trudności",
+                        text = stringResource(R.string.choose_difficulty),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = getOnSurfaceColor()
@@ -155,7 +149,7 @@ fun DifficultySelectionDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
+                            contentDescription = stringResource(R.string.close),
                             tint = getOnSurfaceColor()
                         )
                     }
@@ -171,93 +165,6 @@ fun DifficultySelectionDialog(
                         color = getDifficultyColor(value),
                         onClick = { onDifficultySelected(value) }
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HashtagInputDialog(
-    onHashtagAdded: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var hashtag by remember { mutableStateOf("") }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = getSurfaceColor()),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Dodaj hashtag",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = getOnSurfaceColor()
-                    )
-
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Zamknij",
-                            tint = getOnSurfaceColor()
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = hashtag,
-                    onValueChange = {
-                        if (it.length <= 35 && !it.contains(" ") && !it.contains("#")) {
-                            hashtag = it
-                        }
-                    },
-                    label = { Text("Hashtag") },
-                    placeholder = { Text("npp biceps, klatka") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = getPrimaryColor(),
-                        unfocusedBorderColor = getInputBorderColor()
-                    ),
-                    supportingText = {
-                        Text("${hashtag.length}/35 • Bez spacji i znaków #")
-                    },
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Anuluj")
-                    }
-
-                    TextButton(
-                        onClick = {
-                            if (hashtag.trim().isNotEmpty()) {
-                                onHashtagAdded(hashtag.trim().lowercase())
-                            }
-                        },
-                        enabled = hashtag.trim().isNotEmpty()
-                    ) {
-                        Text("Dodaj", color = getPrimaryColor())
-                    }
                 }
             }
         }
