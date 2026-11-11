@@ -1,26 +1,28 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express, { Request, Response } from 'express';
 import authRoutes from '../src/routes/authRoutes';
-import { swaggerUi, swaggerSpec } from '../src/config/swagger';
+// import { swaggerUi, swaggerSpec } from '../src/config/swagger';
+import adminRoutes from './routes/adminRoutes';
+import commentRoutes from './routes/commentRoutes';
 import equipmentRoutes from './routes/equipmentRoutes';
 import exerciseRoutes from './routes/exerciseRoutes';
 import muscleGroupRoutes from './routes/muscleGroupRoutes';
-import userRoutes from './routes/userRoutes';
-import trainingsRoutes from './routes/trainingsRoutes';
-import postsRoutes from './routes/postsRoutes';
-import commentRoutes from './routes/commentRoutes';
-import reportRoutes from './routes/reportRoutes';
-import userTrainingRoutes from './routes/userTrainingRoutes';
 import notificationRoutes from './routes/notificationRoutes';
-import adminRoutes from './routes/adminRoutes';
+import postsRoutes from './routes/postsRoutes';
+import reportRoutes from './routes/reportRoutes';
+import trainingsRoutes from './routes/trainingsRoutes';
+import userRoutes from './routes/userRoutes';
+import userTrainingRoutes from './routes/userTrainingRoutes';
 
 const app = express();
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
@@ -43,6 +45,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('API działa 🚀');
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default app;
